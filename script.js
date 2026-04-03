@@ -127,6 +127,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- FIREBASE DISCORD SYNC (CUSTOM BOT) ---
+    const firebaseConfig = {
+        apiKey: "AI8SjFSqSJ6DYAcBJrNGN76hEhcij5vtyJK5G819CvV7Fm",
+        authDomain: "obscura-records.firebaseapp.com",
+        databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "obscura-records",
+        storageBucket: "obscura-records.firebasestorage.app",
+        messagingSenderId: "831882873428",
+        appId: "1:831882873428:web:3cf009875e160a9f8efbc1"
+    };
+
+    // Firebase Initialization (Using a simple script-loaded SDK)
+    if (typeof firebase !== 'undefined') {
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const staffItems = document.querySelectorAll('.artist-item[data-discord-id]');
+
+        staffItems.forEach(item => {
+            const discordId = item.getAttribute('data-discord-id');
+            const statusIndicator = item.querySelector('.status-indicator');
+            const avatar = item.querySelector('.artist-img');
+
+            // Listen for Real-Time updates from Firestore
+            db.collection('staff_status').doc(discordId)
+                .onSnapshot((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        const status = (data.status || 'offline').toLowerCase();
+                        
+                        // Update UI
+                        statusIndicator.textContent = status.toUpperCase();
+                        statusIndicator.className = `status-indicator ${status}`;
+                        
+                        if (data.avatar_url) {
+                            avatar.style.backgroundImage = `url(${data.avatar_url})`;
+                            avatar.style.backgroundSize = 'cover';
+                        }
+                    } else {
+                        statusIndicator.textContent = "OFFLINE";
+                        statusIndicator.className = "status-indicator offline";
+                    }
+                }, (error) => {
+                    console.error("Firebase Sync Error for ID " + discordId + ":", error);
+                });
+        });
+    }
+
     // Audio Sim
     const playBtn = document.querySelector('.play-btn');
     let isPlaying = false;
