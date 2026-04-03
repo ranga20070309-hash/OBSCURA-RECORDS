@@ -168,6 +168,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         avatar.style.backgroundImage = `url(${data.avatar_url})`;
                         avatar.style.backgroundSize = 'cover';
                     }
+
+                    // --- Discord Avatar Decoration (Frame) ---
+                    const decoration = item.querySelector('.avatar-decoration');
+                    if (data.decoration_url && data.decoration_url !== "") {
+                        decoration.src = data.decoration_url;
+                        decoration.style.display = 'block';
+                    } else {
+                        decoration.style.display = 'none';
+                    }
                 } else {
                     console.warn(`No status data found for ${nameLabel}`);
                     statusIndicator.textContent = "OFFLINE";
