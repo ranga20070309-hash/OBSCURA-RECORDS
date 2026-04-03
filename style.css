@@ -477,7 +477,7 @@ section {
 .artists-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
+    gap: 3rem;
 }
 
 .artist-item {
@@ -488,6 +488,7 @@ section {
     border: 1px solid var(--glass-border);
     text-align: center;
     transition: transform 0.4s, border-color 0.4s;
+    cursor: default;
 }
 
 .artist-item:hover {
@@ -495,13 +496,35 @@ section {
     border-color: var(--accent-blue);
 }
 
-.artist-img {
+.avatar-wrapper {
+    position: relative;
     width: 150px;
     height: 150px;
-    border-radius: 50%;
     margin: 0 auto 1.5rem;
-    background: linear-gradient(45deg, #111, #333);
-    border: 2px solid var(--glass-border);
+}
+
+.artist-img {
+    width: 125px;
+    height: 125px;
+    border-radius: 50%;
+    background: #111;
+    border: 2px solid var(--accent-blue);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+
+.avatar-decoration {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    z-index: 2;
+    pointer-events: none;
 }
 
 .artist-item h4 {
