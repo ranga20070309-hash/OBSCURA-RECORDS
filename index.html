@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBSCURA RECORDS | Galactic Music Collective</title>
+    <meta name="description" content="Official website of OBSCURA RECORDS - A premier record label for cosmic, futuristic, and ethereal electronic music. Explore the soundscape of the universe.">
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts: Space Grotesk for Tech, Outfit for Luxury -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- GSAP for animations & ScrollTo -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+</head>
+<body>
+
+    <!-- Galactic Background -->
+    <div class="space-bg"></div>
+    <div class="overlay"></div>
+    <div class="noise-overlay"></div>
+    <div class="scanlines"></div>
+
+
+    <!-- Custom Cursor -->
+    <div class="cursor-glow"></div>
+    <div class="cursor-outer"></div>
+
+    <!-- Entrance Screen (Ignition Core) -->
+    <div id="entrance-screen">
+        <div class="ignition-container">
+            <div class="core-ring outer"></div>
+            <div class="core-ring middle"></div>
+            <div class="core-center">
+                <h1 class="logo-text">OBSCURA</h1>
+            </div>
+            <div class="ignition-status">
+                <p class="status-msg">WAITING FOR CORE SIGNAL...</p>
+                <button id="grant-access" class="ignition-btn">INITIATE IGNITION</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content (Hidden until Access Granted) -->
+    <main id="main-site" style="opacity: 0; visibility: hidden;">
+        <!-- Header / Navigation -->
+        <header>
+            <nav class="glass-nav">
+                <div class="logo">OBSCURA <span>RECORDS</span></div>
+                <div class="nav-links">
+                    <a href="#home">HOME</a>
+                    <a href="#releases">RELEASES</a>
+                    <a href="#artists">STAFF</a>
+                    <a href="#contact">CONTACT</a>
+                </div>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-spotify"></i></a>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h2 class="reveal-text">WELCOME TO <span class="accent">OBSCURA RECORDS</span></h2>
+                <p>OBSCURA RECORDS is an independent music label focused on artist development, music production, and official releases. Our mission is to support talented artists and create high-quality music through collaboration and innovation.</p>
+                <div class="hero-actions">
+                    <a href="#releases" class="cta-primary">RELEASES</a>
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- Featured Release Section (Moved/Redesigned slightly) -->
+        <section id="releases" class="featured-release">
+            <div class="release-card glass">
+                <div class="release-cover">
+                    <img src="assets/cover.png" alt="Latest Release Cover">
+                    <div class="player-overlay">
+                        <button class="play-btn"><i class="fas fa-play"></i></button>
+                    </div>
+                    <span class="meta-tag">TRACK_ID: OS_992</span>
+                </div>
+                <div class="release-info">
+                    <span class="release-label">LATEST TRANSMISSION</span>
+                    <h3>STARLIGHT SYNDROME</h3>
+                    <p class="release-desc">A deep dive into melodic techno, exploring the edges of cinematic soundscapes and heavy sub-frequencies.</p>
+                    <div class="technical-specs">
+                        <span>BPM: 124</span> // <span>KEY: Dm</span> // <span>FREQ: 192KHZ</span>
+                    </div>
+                    <div class="stream-links">
+                        <a href="#"><i class="fab fa-spotify"></i> SPOTIFY</a>
+                        <a href="#"><i class="fab fa-apple"></i> APPLE</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Artist Showcase (Grid) -->
+        <section id="artists" class="artists">
+            <h2 class="section-title">STAFF</h2>
+            <div class="artists-grid">
+                <div class="artist-item glass">
+                    <div class="artist-img img-void"></div>
+                    <h4>VOID OVERDRIVE</h4>
+                    <p>Status: <span class="online">ONLINE</span></p>
+                    <span class="artist-loc">Sector 7, Orion</span>
+                </div>
+                <div class="artist-item glass">
+                    <div class="artist-img img-nebula"></div>
+                    <h4>NEBULA CORE</h4>
+                    <p>Status: <span class="offline">EN-ROUTE</span></p>
+                    <span class="artist-loc">Titan Station</span>
+                </div>
+                <div class="artist-item glass">
+                    <div class="artist-img img-cosmic"></div>
+                    <h4>COSMIC DUST</h4>
+                    <p>Status: <span class="online">ONLINE</span></p>
+                    <span class="artist-loc">Earth-C137</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section (Social Links) -->
+        <section id="contact" class="contact-section">
+            <div class="contact-container glass">
+                <h3>CONNECT WITH <span class="accent">US</span></h3>
+                <p>Follow our transmissions across the digital landscape.</p>
+                <div class="social-grid">
+                    <a href="#" class="social-card">
+                        <i class="fab fa-instagram"></i>
+                        <span>INSTAGRAM</span>
+                    </a>
+                    <a href="#" class="social-card">
+                        <i class="fab fa-youtube"></i>
+                        <span>YOUTUBE</span>
+                    </a>
+                    <a href="#" class="social-card">
+                        <i class="fab fa-discord"></i>
+                        <span>DISCORD</span>
+                    </a>
+                    <a href="#" class="social-card">
+                        <i class="fab fa-tiktok"></i>
+                        <span>TIKTOK</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <p>&copy; 2026 OBSCURA RECORDS. ALL RIGHTS RESERVED IN THIS DIMENSION.</p>
+                <div class="footer-links">
+                    <a href="#">FAQ</a>
+                    <a href="#">DEMO SUBMISSION</a>
+                    <a href="#">PRIVACY POLICY</a>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
