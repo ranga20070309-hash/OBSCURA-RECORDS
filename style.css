@@ -570,9 +570,19 @@ section {
     border-radius: 5px;
 }
 
-/* Artist Status */
-.online { color: #00ff00; text-shadow: 0 0 10px #00ff00; }
-.offline { color: #ffae00; opacity: 0.7; }
+/* Artist Status & Discord Sync */
+.status-indicator {
+    font-weight: 700;
+    letter-spacing: 0.1rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.status-indicator.online { color: #00ff00; text-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+.status-indicator.idle { color: #fff000; text-shadow: 0 0 10px rgba(255, 240, 0, 0.5); }
+.status-indicator.dnd { color: #ff0000; text-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+.status-indicator.offline { color: #888888; text-shadow: none; opacity: 0.7; }
+
 .artist-loc { display: block; margin-top: 1rem; font-size: 0.7rem; color: var(--text-secondary); font-family: var(--font-heading); }
 
 /* Contact Section (Social Links) */
