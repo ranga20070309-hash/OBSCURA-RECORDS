@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- FIREBASE DISCORD SYNC (CUSTOM BOT) ---
+    // --- FIREBASE DISCORD SYNC (REALTIME DATABASE) ---
     const firebaseConfig = {
         apiKey: "AI8SjFSqSJ6DYAcBJrNGN76hEhcij5vtyJK5G819CvV7Fm",
         authDomain: "obscura-records.firebaseapp.com",
@@ -138,41 +138,47 @@ document.addEventListener('DOMContentLoaded', () => {
         appId: "1:831882873428:web:3cf009875e160a9f8efbc1"
     };
 
-    // Firebase Initialization (Using a simple script-loaded SDK)
+    // Firebase Initialization
     if (typeof firebase !== 'undefined') {
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        console.log("Firebase initialized successfully targeting Realtime Database.");
 
         const staffItems = document.querySelectorAll('.artist-item[data-discord-id]');
+        console.log(`Found ${staffItems.length} staff members to sync.`);
 
         staffItems.forEach(item => {
             const discordId = item.getAttribute('data-discord-id');
+            const nameLabel = item.querySelector('h4').textContent;
             const statusIndicator = item.querySelector('.status-indicator');
             const avatar = item.querySelector('.artist-img');
 
-            // Listen for Real-Time updates from Firestore
-            db.collection('staff_status').doc(discordId)
-                .onSnapshot((doc) => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        const status = (data.status || 'offline').toLowerCase();
-                        
-                        // Update UI
-                        statusIndicator.textContent = status.toUpperCase();
-                        statusIndicator.className = `status-indicator ${status}`;
-                        
-                        if (data.avatar_url) {
-                            avatar.style.backgroundImage = `url(${data.avatar_url})`;
-                            avatar.style.backgroundSize = 'cover';
-                        }
-                    } else {
-                        statusIndicator.textContent = "OFFLINE";
-                        statusIndicator.className = "status-indicator offline";
+            // Listen for Real-Time updates
+            const staffRef = db.ref('staff_status/' + discordId);
+            staffRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                console.log(`Syncing update for ${nameLabel} (${discordId}):`, data);
+                
+                if (data) {
+                    const status = (data.status || 'offline').toLowerCase();
+                    statusIndicator.textContent = status.toUpperCase();
+                    statusIndicator.className = `status-indicator ${status}`;
+                    
+                    if (data.avatar_url) {
+                        avatar.style.backgroundImage = `url(${data.avatar_url})`;
+                        avatar.style.backgroundSize = 'cover';
                     }
-                }, (error) => {
-                    console.error("Firebase Sync Error for ID " + discordId + ":", error);
-                });
+                } else {
+                    console.warn(`No status data found for ${nameLabel}`);
+                    statusIndicator.textContent = "OFFLINE";
+                    statusIndicator.className = "status-indicator offline";
+                }
+            }, (error) => {
+                console.error(`Firebase Sync Error for ${nameLabel}:`, error);
+            });
         });
+    } else {
+        console.error("Firebase SDK not loaded! Check index.html scripts.");
     }
 
     // Audio Sim
