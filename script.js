@@ -18,8 +18,9 @@ let isYTApiReady = false;
 let currentPlayingBtn = null;
 let audioTimer = null;
 let previewAudio = new Audio();
-let playbackStartOffset = 0; // Tracks the start time for the 30s limit
-const PREVIEW_LIMIT = 30; // Seconds
+let playbackStartOffset = 0; 
+let autoScrollInterval = null; // Restore Auto-Scroll Global
+const PREVIEW_LIMIT = 30; 
 
 window.onYouTubeIframeAPIReady = function() {
     initYTPlayer();
@@ -122,7 +123,7 @@ function stopPlayback(btn) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+const initPortal = () => {
 
     const entranceScreen = document.getElementById('entrance-screen');
     const mainSite = document.getElementById('main-site');
@@ -258,6 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }, "-=0.2");
 
         tl.set(entranceScreen, { display: 'none' });
+        tl.call(() => {
+            document.body.classList.remove('no-scroll');
+        });
 
         // 5. Main Site Materialization
         tl.from(".glass-nav", {
@@ -800,7 +804,23 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
         });
     }
-    // --- ADVANCED GALACTIC PARTICLES & INTERACTION ---
+        function startAutoScroll() {
+            if (!releaseSlider) return;
+            if (autoScrollInterval) clearInterval(autoScrollInterval);
+            
+            autoScrollInterval = setInterval(() => {
+                // Only scroll if nothing is currently playing
+                if (!currentPlayingBtn) {
+                    releaseSlider.scrollLeft += 1;
+                    // Infinite loop reset
+                    if (releaseSlider.scrollLeft >= (releaseSlider.scrollWidth - releaseSlider.clientWidth - 5)) {
+                        gsap.to(releaseSlider, { scrollLeft: 0, duration: 1.5, ease: "power2.inOut" });
+                    }
+                }
+            }, 40); 
+        }
+
+        // --- ADVANCED GALACTIC PARTICLES & INTERACTION ---
     const pCanvas = document.getElementById('particle-bg');
     if (pCanvas) {
         const pCtx = pCanvas.getContext('2d');
@@ -926,4 +946,11 @@ document.addEventListener('DOMContentLoaded', () => {
         pResize();
         pAnimate();
     }
-});
+};
+
+// --- ENGINE STARTUP (Handles both static and dynamic context) ---
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPortal);
+} else {
+    initPortal();
+}
