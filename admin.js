@@ -71,7 +71,7 @@ function initializeSecurity() {
 
 function unlockDashboard() {
     if (loginOverlay) loginOverlay.style.display = 'none';
-    if (adminWrapper) adminWrapper.style.display = 'grid';
+    if (adminWrapper) adminWrapper.style.display = 'flex';
     sessionStorage.setItem('rootAuth', 'granted');
     
     // DELAYED DATA GATING (Only loads after unlock)
