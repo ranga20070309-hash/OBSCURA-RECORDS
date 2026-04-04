@@ -18,6 +18,8 @@ let isYTApiReady = false;
 let currentPlayingBtn = null;
 let audioTimer = null;
 let previewAudio = new Audio();
+let playbackStartOffset = 0; // Tracks the start time for the 30s limit
+const PREVIEW_LIMIT = 30; // Seconds
 
 window.onYouTubeIframeAPIReady = function() {
     initYTPlayer();
@@ -107,6 +109,9 @@ function stopPlayback(btn) {
     
     // Silence all sources
     previewAudio.pause();
+    previewAudio.currentTime = 0;
+    playbackStartOffset = 0;
+
     if (ytPlayer && ytPlayer.stopVideo) {
         try { ytPlayer.stopVideo(); } catch(e){}
     }
@@ -622,6 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
 
                         if (!isPlaying) {
+                            playbackStartOffset = -1; // Reset for relative 30s limit
                             // PRIORITY 1: Direct MP3/Snippet URL (User specified)
                             if (mp3Url && mp3Url !== '' && mp3Url !== '#' && !getYouTubeID(mp3Url)) {
                                 try {
@@ -690,29 +696,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 let current = 0;
 
                 try {
-                    if (type === 'yt' && ytPlayer && ytPlayer.getDuration) {
-                        duration = ytPlayer.getDuration();
+                    if (type === 'yt' && ytPlayer && ytPlayer.getCurrentTime) {
                         current = ytPlayer.getCurrentTime();
                     } else if (type === 'mp3') {
-                        duration = previewAudio.duration;
                         current = previewAudio.currentTime;
                     }
 
-                    const remaining = duration - current;
-                    if (!isNaN(remaining) && remaining > 0 && duration > 0) {
-                        const mins = Math.floor(remaining / 60);
-                        const secs = Math.floor(remaining % 60);
-                        display.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-                        
-                        if (remaining <= 0.3) {
+                    // On the very first valid frame, mark the start point
+                    if (current > 0 && playbackStartOffset === -1) {
+                        playbackStartOffset = current;
+                    }
+
+                    if (playbackStartOffset !== -1) {
+                        const elapsed = current - playbackStartOffset;
+                        const remaining = PREVIEW_LIMIT - elapsed;
+
+                        if (!isNaN(remaining) && remaining > 0) {
+                            const secs = Math.ceil(remaining);
+                            display.textContent = `0:${secs.toString().padStart(2, '0')}`;
+                            
+                            if (remaining <= 0.1) {
+                                stopPlayback(currentPlayingBtn);
+                                currentPlayingBtn = null;
+                            }
+                        } else if (remaining <= 0) {
                             stopPlayback(currentPlayingBtn);
                             currentPlayingBtn = null;
                         }
                     } else {
                         display.textContent = "...";
                     }
-                } catch(e) {}
-            }, 500);
+                } catch(e) { console.warn("Timer issue:", e); }
+            }, 200); // Faster update for smoother countdown
         }
 
         function startAutoScroll() {
