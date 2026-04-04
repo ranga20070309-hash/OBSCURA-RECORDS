@@ -35,6 +35,39 @@ body, html {
     scroll-behavior: smooth;
 }
 
+/* --- SCROLL LOCK FOR INTRO --- */
+body.no-scroll {
+    overflow: hidden !important;
+    height: 100vh;
+}
+
+/* --- CUSTOM GALACTIC SCROLLBAR --- */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 240, 255, 0.2);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-blue);
+    box-shadow: 0 0 15px var(--accent-blue);
+}
+
+/* Firefox Support */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 240, 255, 0.4) #000;
+}
+
 /* Background & Overlay */
 .space-bg {
     position: fixed;
@@ -324,6 +357,28 @@ section {
     margin-bottom: 4rem;
 }
 
+.archive-header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 4rem;
+    margin-bottom: 2rem;
+    min-height: 80px;
+}
+
+.header-content {
+    text-align: center;
+    flex: 1;
+}
+
+.slider-controls {
+    position: absolute;
+    right: 4rem;
+    display: flex;
+    gap: 1rem;
+}
+
 .section-desc {
     color: var(--text-secondary);
     font-size: 0.9rem;
@@ -337,44 +392,29 @@ section {
 }
 
 .slider-nav-btn {
-    position: absolute;
-    top: 40%;
-    transform: translateY(-50%);
-    width: 60px;
-    height: 60px;
-    background: rgba(0, 0, 0, 0.7);
-    border: 1px solid rgba(0, 240, 255, 0.4);
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
     border-radius: 50%;
     z-index: 10;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     cursor: pointer;
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
-    opacity: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.slider-wrapper:hover .slider-nav-btn {
-    opacity: 1;
 }
 
 .slider-nav-btn:hover {
     background: var(--accent-blue);
     color: #000;
     box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
-    transform: translateY(-50%) scale(1.1);
+    transform: scale(1.1);
 }
 
-.slider-nav-btn.prev {
-    left: 2rem;
-}
-
-.slider-nav-btn.next {
-    right: 2rem;
-}
 
 .releases-slider {
     display: flex;
