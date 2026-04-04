@@ -42,6 +42,8 @@
             console.log("ENGINE BOOT: v" + v);
         });
     </script>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body class="no-scroll">
 
@@ -68,14 +70,15 @@
         <!-- Header / Navigation -->
         <header>
             <nav class="glass-nav">
-                <a href="#home" class="logo-link">
+                <span data-target="reload" class="logo-link">
                     <div class="logo" data-sync="siteTitle" data-sync-target="html">OBSCURA <span>RECORD</span></div>
-                </a>
+                </span>
                 <div class="nav-links">
-                    <a href="#home" data-sync="navHome" data-sync-target="text">HOME</a>
-                    <a href="#releases" data-sync="navReleases" data-sync-target="text">RELEASES</a>
-                    <a href="#artists" data-sync="navStaff" data-sync-target="text">STAFF</a>
-                    <a href="#contact" data-sync="navContact" data-sync-target="text">CONTACT</a>
+                    <span data-target="#home" class="nav-item" data-sync="navHome" data-sync-target="text">HOME</span>
+                    <span data-target="#releases" class="nav-item" data-sync="navReleases" data-sync-target="text">RELEASES</span>
+                    <span data-target="#artists" class="nav-item" data-sync="navStaff" data-sync-target="text">STAFF</span>
+                    <span data-target="#contact" class="nav-item" data-sync="navContact" data-sync-target="text">CONTACT</span>
+                    <span id="open-form" class="nav-item">SEND DEMO</span>
                 </div>
                 <div class="social-menu">
                     <button id="nav-menu-trigger" class="menu-trigger">
@@ -99,7 +102,7 @@
                 <h2 class="reveal-text" data-sync="heroTitle" data-sync-target="html">WELCOME TO <span class="accent">OBSCURA RECORDS</span></h2>
                 <p data-sync="heroDesc" data-sync-target="text">OBSCURA RECORDS is an independent music label focused on artist development, music production, and official releases. Our mission is to support talented artists and create high-quality music through collaboration and innovation.</p>
                 <div class="hero-actions">
-                    <a href="#releases" class="cta-primary">RELEASES</a>
+                    <span data-target="#releases" class="cta-primary nav-item">RELEASES</span>
                 </div>
             </div>
         </section>
@@ -453,6 +456,80 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Demo Submission Modal (Restored Original) -->
+        <div id="demo-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content glass">
+                <button class="close-modal">&times;</button>
+                <h2 class="section-title">DEMO <span class="accent">SUBMISSION</span></h2>
+                <div class="legal-content">
+                    <p data-sync="demoDesc">We are searching for high-energy Phonk, Funk, and Futuristic vibrations to join the void. Submit your best work to our sonic reviewers.</p>
+                    <div class="demo-channels">
+                        <div class="channel-link tile">
+                            <i class="fab fa-discord"></i>
+                            <div class="channel-info">
+                                <span class="channel-label">DISCORD</span>
+                                <span class="channel-detail" data-sync="demoDiscordSub">Faster review & community vibes.</span>
+                            </div>
+                        </div>
+                        <div class="channel-link tile">
+                            <i class="fas fa-envelope"></i>
+                            <div class="channel-info">
+                                <span class="channel-label">DIRECT EMAIL</span>
+                                <span class="channel-detail" data-sync="demoEmailSub">artists@obscurarecord.com</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Submission Portal (Form State) -->
+        <div id="submission-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content glass demo-grid-wide no-tilt">
+                <button class="close-modal">&times;</button>
+                <div class="modal-header">
+                    <h2 class="section-title">SECURE <span class="accent">FORM SUBMISSION</span></h2>
+                    <p style="margin-top:-1rem; margin-bottom: 1.5rem; color: var(--text-secondary); opacity: 0.8; font-size: 0.8rem;">Transmit your audio frequency to the Obscura A&R department for priority review.</p>
+                </div>
+                <form id="submission-form" class="cyber-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>REAL NAME</label>
+                            <input type="text" name="name" placeholder="John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label>ARTIST ALIAS / PROJECT</label>
+                            <input type="text" name="artist" placeholder="VOX-99" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>EMAIL ADDRESS</label>
+                            <input type="email" name="email" placeholder="official@artist.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>PRIMARY GENRE</label>
+                            <input type="text" name="genre" placeholder="CYBER PHONK / FUTURISTIC" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>PRIVATE STREAMING LINK (SoundCloud / Dropbox / Drive)</label>
+                        <input type="url" name="link" placeholder="https://soundcloud.com/..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>MESSAGE / BIOGRAPHY (Optional)</label>
+                        <textarea name="message" placeholder="A brief transmission regarding your sound..."></textarea>
+                    </div>
+                    <div class="form-actions" style="margin-top: 1rem;">
+                        <button type="submit" class="cta-primary-small">INITIATE SUBMISSION</button>
+                    </div>
+                </form>
+                <div id="submission-status" class="form-status">TRANSMISSION DEPLOYED SUCCESSFULLY.</div>
             </div>
         </div>
 
