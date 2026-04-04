@@ -1559,8 +1559,97 @@ footer {
     font-size: 1.1rem;
 }
 
+/* --- UNIVERSAL RESOLUTION & MOBILE OPTIMIZATION --- */
+
+/* Hide Custom Cursor on Touch Devices (Mobile/Tablet) */
+@media (hover: none) and (pointer: coarse) {
+    .cursor, .cursor-follower {
+        display: none !important;
+    }
+}
+
+/* FIXING OVERLAPS & BALANCING LAYOUT */
+@media (max-width: 1200px) {
+    .archive-container {
+        grid-template-columns: repeat(3, 110px); /* 3 Columns for Tablet */
+        gap: 1.2rem;
+    }
+}
+
+@media (max-width: 900px) {
+    .archive-container {
+        grid-template-columns: repeat(2, 110px); /* 2 Columns for Small Tablet */
+    }
+    
+    .profile-hero h1 { font-size: 3.5rem; }
+    .nav-arrow { 
+        width: 40px; 
+        height: 100px;
+        opacity: 0.8;
+    }
+}
+
 @media (max-width: 600px) {
+    /* Main Layout Adjustments */
+    .hero h1 { font-size: 2.8rem; letter-spacing: 0.5rem; }
+    .hero p { font-size: 0.75rem; letter-spacing: 0.2rem; width: 90%; }
+    
+    #profile-detail { padding: 4rem 1.5rem; }
+    
+    .archive-container {
+        grid-template-columns: repeat(2, 110px); /* Keep 2 for Mobile */
+        padding-bottom: 5rem;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 2.5rem 1.5rem;
+    }
+
+    /* FIXING ARROW OVERLAPS */
+    .nav-arrow {
+        position: fixed; /* Lock to screen edges */
+        bottom: 2rem;
+        top: auto;
+        transform: none;
+        width: 60px;
+        height: 60px;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 50%; /* Circle look for mobile */
+        z-index: 999;
+    }
+
+    .nav-left { left: 1.5rem; }
+    .nav-right { right: 1.5rem; }
+
+    .nav-arrow i { font-size: 1.2rem; }
+
+    /* Compact UI for Mobile */
+    .cta-container { flex-direction: column; gap: 1rem; }
+    .cta-primary { width: 100%; text-align: center; }
+    
     .form-actions {
         grid-template-columns: 1fr !important;
+    }
+
+    /* FIXING ARCHIVE HEADER OVERLAPS */
+    .archive-header {
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 0;
+        min-height: auto;
+    }
+
+    .header-content {
+        width: 100%;
+        text-align: center;
+    }
+
+    .slider-controls {
+        position: static; /* Remove absolute positioning on mobile */
+        justify-content: center;
+        width: 100%;
     }
 }
