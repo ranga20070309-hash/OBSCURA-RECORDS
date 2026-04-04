@@ -318,7 +318,81 @@ const initPortal = () => {
     setupModal('open-faq', 'faq-modal');
     setupModal('open-privacy', 'privacy-modal');
     setupModal('open-demo', 'demo-modal');
+    setupModal('open-form', 'submission-modal');
     setupModal('open-contact', 'contact-modal');
+
+    // --- SUBMISSION FORM LOGIC ---
+    const subForm = document.getElementById('submission-form');
+    const subStatus = document.getElementById('submission-status');
+    if (subForm) {
+        subForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = subForm.querySelector('button');
+            btn.textContent = "TRANSMITTING...";
+            btn.disabled = true;
+
+            const formData = new FormData(subForm);
+            const submission = {
+                timestamp: Date.now(),
+                date: new Date().toLocaleString(),
+                name: formData.get('name'),
+                artist: formData.get('artist'),
+                email: formData.get('email'),
+                genre: formData.get('genre'),
+                link: formData.get('link'),
+                message: formData.get('message')
+            };
+
+            // --- EMAIL BROADCAST (EmailJS Integration) ---
+            const SERVICE_ID = "service_ft48ztn"; 
+            const TEMPLATE_ID = "template_3i1kqpt";
+            const PUBLIC_KEY = "ZTB9xthISj6SlffAR";
+
+            if (SERVICE_ID !== "service_xxxxxxx") {
+                emailjs.init(PUBLIC_KEY);
+                emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+                    artist: submission.artist,
+                    name: submission.name,
+                    email: submission.email,
+                    genre: submission.genre,
+                    link: submission.link,
+                    message: submission.message,
+                    date: submission.date
+                }).then(() => {
+                    console.log("Email Transmission Successful.");
+                }).catch(err => {
+                    console.error("Email Transmission Error:", err);
+                });
+            }
+
+            // Push to Firebase Realtime Database
+            const db = firebase.database();
+            db.ref('siteData/submissions').push(submission).then(() => {
+                setTimeout(() => {
+                    subForm.style.display = 'none';
+                    if (subStatus) subStatus.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        const subModal = document.getElementById('submission-modal');
+                        if (subModal) subModal.classList.remove('active');
+                        document.body.style.overflow = 'auto';
+                        
+                        setTimeout(() => {
+                            subForm.style.display = 'flex';
+                            if (subStatus) subStatus.style.display = 'none';
+                            subForm.reset();
+                            btn.textContent = "INITIATE SUBMISSION";
+                            btn.disabled = false;
+                        }, 500);
+                    }, 3000);
+                }, 1000);
+            }).catch(err => {
+                console.error("Submission Failure:", err);
+                btn.textContent = "TRANSMISSION ERROR";
+                btn.disabled = false;
+            });
+        });
+    }
 
     // --- FAQ ACCORDION (DYNAMIC) ---
     window.bindAccordionListeners = function(containerId) {
@@ -344,15 +418,20 @@ const initPortal = () => {
     window.bindAccordionListeners('privacy-container');
 
     // --- CLEAN URL NAVIGATION SYSTEM ---
-    const navLinks = document.querySelectorAll('.nav-links a, .logo-link');
+    const navLinks = document.querySelectorAll('.nav-links a, .nav-item, .logo-link');
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
-            const href = link.getAttribute('href');
+            const target = link.getAttribute('data-target') || link.getAttribute('href');
             
+            if (target === 'reload') {
+                window.location.reload();
+                return;
+            }
+
             // Only intercept internal section links
-            if (href.startsWith('#')) {
+            if (target && target.startsWith('#')) {
                 e.preventDefault();
-                const targetId = href.substring(1);
+                const targetId = target.substring(1);
                 const targetElement = document.getElementById(targetId);
                 
                 if (targetElement) {
@@ -369,7 +448,7 @@ const initPortal = () => {
     });
 
     // --- 3D TILT EFFECT ---
-    const tiltContainers = document.querySelectorAll('.glass, .release-card, .social-card, .faq-item');
+    const tiltContainers = document.querySelectorAll('.glass:not(.no-tilt), .release-card, .social-card, .faq-item');
     tiltContainers.forEach(container => {
         container.addEventListener('mousemove', (e) => {
             const { left, top, width, height } = container.getBoundingClientRect();
@@ -829,8 +908,9 @@ const initPortal = () => {
             e.stopPropagation();
         });
     }
-        function startAutoScroll() {
-            if (!releaseSlider) return;
+
+    function startAutoScroll() {
+        if (!releaseSlider) return;
             if (autoScrollInterval) clearInterval(autoScrollInterval);
             
             autoScrollInterval = setInterval(() => {
