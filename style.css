@@ -1325,3 +1325,52 @@ footer {
     text-align: center;
     border-radius: 5px;
 }
+/* Upcoming Releases Grid */
+.upcoming-archive {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.upcoming-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2.5rem;
+    margin-top: 2rem;
+}
+
+/* Specific styling for 'Coming Soon' variants */
+.upcoming-card {
+    position: relative; /* Fixed: Prevents badge from flying out */
+    border: 1px solid rgba(255,255,255,0.03);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.upcoming-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--accent-magenta);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+}
+
+.upcoming-card .release-cover-large {
+    height: 300px; /* Force consistent heights */
+}
+
+/* Universal badge for upcoming tags */
+.upcoming-status-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--accent-magenta);
+    color: #fff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1rem;
+    z-index: 5;
+    text-transform: uppercase;
+    box-shadow: 0 4px 15px rgba(255,0,255,0.3);
+}
