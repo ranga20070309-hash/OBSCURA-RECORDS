@@ -8,7 +8,10 @@ const firebaseConfig = {
     appId: "1:831882873428:web:3cf009875e160a9f8efbc1"
 };
 
-firebase.initializeApp(firebaseConfig);
+// Ensure Firebase is initialized only once (compatible with v10-compat)
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.database();
 
 // UI Elements
@@ -223,3 +226,66 @@ document.getElementById('save-releases').addEventListener('click', () => {
         });
     }
 });
+
+// --- DEMO INBOX LOGIC ---
+const inboxContainer = document.getElementById('demo-inbox-container');
+const refreshBtn = document.getElementById('refresh-inbox');
+const clearBtn = document.getElementById('clear-inbox');
+
+function loadSubmissions() {
+    if (!inboxContainer) return;
+    inboxContainer.innerHTML = '<p style="opacity:0.5">Scanning frequencies...</p>';
+    
+    db.ref('siteData/submissions').once('value').then(snapshot => {
+        const data = snapshot.val();
+        inboxContainer.innerHTML = '';
+        if (!data) {
+            inboxContainer.innerHTML = '<p style="opacity:0.5; font-style:italic;">No active transmissions detected.</p>';
+            return;
+        }
+
+        const subs = Object.keys(data).map(key => ({ id: key, ...data[key] })).reverse();
+        subs.forEach(sub => {
+            const card = document.createElement('div');
+            card.className = 'demo-card';
+            card.innerHTML = `
+                <div class="demo-header">
+                    <div class="demo-title">
+                        <h3>${sub.artist || 'UNKNOWN'}</h3>
+                        <p>${sub.date || 'DATETIME MISSING'}</p>
+                    </div>
+                    <button class="delete-btn" onclick="deleteSub('${sub.id}')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="demo-meta">
+                    <div class="meta-item"><label>Real Name</label><span>${sub.name || 'N/A'}</span></div>
+                    <div class="meta-item"><label>Contact</label><span>${sub.email || 'N/A'}</span></div>
+                    <div class="meta-item"><label>Genre</label><span>${sub.genre || 'N/A'}</span></div>
+                </div>
+                ${sub.message ? '<div class="demo-message">' + sub.message + '</div>' : ''}
+                <a href="${sub.link}" target="_blank" class="demo-link-btn" style="background: rgba(255, 255, 255, 0.05); color: var(--text-primary);"><i class="fas fa-external-link-alt"></i> ACCESS STORED SONG (Cloud Link)</a>
+            `;
+            inboxContainer.appendChild(card);
+        });
+    }).catch(err => {
+        console.error("Inbox Error:", err);
+        inboxContainer.innerHTML = '<p style="color:var(--accent-magenta); font-style:italic;">LINK FAILURE: Check your galactic connection.</p>';
+    });
+}
+
+window.deleteSub = function(id) {
+    if (confirm('Permanently wipe this transmission record?')) {
+        db.ref('siteData/submissions/' + id).remove().then(loadSubmissions);
+    }
+};
+
+if (refreshBtn) refreshBtn.addEventListener('click', loadSubmissions);
+if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+        if (confirm('SYSTEM OVERRIDE: Purge ALL transmission records in the vault?')) {
+            db.ref('siteData/submissions').remove().then(loadSubmissions);
+        }
+    });
+}
+
+// Initial load
+loadSubmissions();
