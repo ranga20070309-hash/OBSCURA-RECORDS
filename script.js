@@ -568,6 +568,16 @@ const initPortal = () => {
         db.ref('siteData/globals').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
+                // --- CATEGORY VISIBILITY OVERRIDE ---
+                const upcomingSection = document.getElementById('upcoming');
+                if (upcomingSection) {
+                    if (data.showUpcoming === 'Hidden') {
+                        upcomingSection.style.setProperty('display', 'none', 'important');
+                    } else {
+                        upcomingSection.style.setProperty('display', 'flex', 'important');
+                    }
+                }
+
                 const elements = document.querySelectorAll('[data-sync]');
                 elements.forEach(el => {
                     const key = el.getAttribute('data-sync');
@@ -884,6 +894,41 @@ const initPortal = () => {
                     renderReleases(data);
                 }
             }
+        });
+
+        // 3. Sync Upcoming Releases
+        const upcomingGrid = document.getElementById('upcoming-grid');
+        function renderUpcoming(items) {
+            if (!upcomingGrid) return;
+            upcomingGrid.innerHTML = '';
+            
+            if (!items || items.length === 0) {
+                upcomingGrid.innerHTML = '<p style="opacity:0.3; font-style:italic; grid-column: 1/-1; text-align:center;">All signals currently decrypted. New transmissions pending.</p>';
+                return;
+            }
+
+            items.forEach(item => {
+                const cardHtml = `
+                    <div class="release-card-large glass upcoming-card">
+                        <div class="upcoming-status-badge">COMING SOON</div>
+                        <div class="release-cover-large">
+                            <img src="${item.image || 'assets/cover.png'}" alt="${item.title}">
+                        </div>
+                        <div class="release-info-large">
+                            <span class="track-id">${item.id || 'OS-NEW'}</span>
+                            <h4>${item.title || 'FUTURE TRACK'}</h4>
+                            <div class="producers-text">Produced by: <span>${item.producers || 'UNKNOWN'}</span></div>
+                        </div>
+                    </div>
+                `;
+                upcomingGrid.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        db.ref('siteData/upcoming').on('value', (snapshot) => {
+            let data = snapshot.val();
+            if (!data) data = [];
+            if (Array.isArray(data)) renderUpcoming(data);
         });
     }
     // --- SOCIAL MENU TOGGLE ---
