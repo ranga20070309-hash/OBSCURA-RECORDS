@@ -22,6 +22,107 @@ let playbackStartOffset = 0;
 let autoScrollInterval = null; // Restore Auto-Scroll Global
 const PREVIEW_LIMIT = 30; 
 
+// --- UI SOUND SYNTHESIZER (Clean Web Audio API) ---
+let audioCtx = null;
+const playBleep = (freq = 600, type = 'sine', duration = 0.08) => {
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    } catch(e) {}
+};
+
+// --- STARFIELD PARTICLES (Optimized Canvas) ---
+const initStarfield = () => {
+    const canvas = document.getElementById('particle-bg');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const count = 120;
+
+    const resize = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', resize);
+    resize();
+
+    for(let i=0; i<count; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            z: Math.random() * canvas.width,
+            s: 0.2 + Math.random() * 0.8
+        });
+    }
+
+    const draw = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const center = { x: canvas.width/2, y: canvas.height/2 };
+        
+        particles.forEach(p => {
+            p.z -= p.s * 2;
+            if (p.z <= 0) p.z = canvas.width;
+            
+            const k = 128.0 / p.z;
+            const px = (p.x - center.x) * k + center.x;
+            const py = (p.y - center.y) * k + center.y;
+            
+            if (px < 0 || px >= canvas.width || py < 0 || py >= canvas.height) return;
+            
+            const size = (1 - p.z / canvas.width) * 1.5;
+            const alpha = (1 - p.z / canvas.width);
+            
+            ctx.fillStyle = `rgba(0, 240, 255, ${alpha})`;
+            ctx.fillRect(px, py, size, size);
+        });
+        requestAnimationFrame(draw);
+    };
+    draw();
+};
+
+// --- LOADER DISMISSAL (With Safety Timeout & Ignition Sync) ---
+let loaderDismissed = false; // Fixed: lowercase 'false'
+const dismissLoader = () => {
+    if (loaderDismissed) return;
+    loaderDismissed = true;
+    
+    const portalLoader = document.getElementById('portal-loader');
+    const loaderBar = document.getElementById('loader-bar');
+    if (!portalLoader) return;
+
+    gsap.to(loaderBar, { 
+        width: '100%', 
+        duration: 0.8, 
+        ease: "power2.out",
+        onComplete: () => {
+            gsap.to(portalLoader, { 
+                opacity: 0, 
+                duration: 1.2, 
+                ease: "power2.inOut",
+                onComplete: () => {
+                    portalLoader.style.display = 'none';
+                    document.body.classList.remove('no-scroll');
+                    // Kickstart the visual ignition sequence
+                    if (typeof runIgnition === 'function') runIgnition();
+                }
+            });
+        }
+    });
+};
+
+window.addEventListener('load', dismissLoader);
+setTimeout(dismissLoader, 4500); // Safety Override: Dismiss after 4.5s regardless
+
 window.onYouTubeIframeAPIReady = function() {
     initYTPlayer();
 };
@@ -89,14 +190,17 @@ function getYouTubeID(url) {
 
 function startUIPlayback(btn, row, img) {
     if (!btn) return;
+    playBleep(800, 'square', 0.1); 
     btn.innerHTML = '<i class="fas fa-pause"></i>';
     row.classList.add('active-track');
+    
     gsap.to(btn, { scale: 1.1, boxShadow: '0 0 20px #00f0ff', repeat: -1, yoyo: true, duration: 0.8 });
     if (img) gsap.to(img, { scale: 1.15, duration: 20, ease: "linear", repeat: -1, yoyo: true });
 }
 
 function stopPlayback(btn) {
     if (!btn) return;
+    playBleep(400, 'sine', 0.1); 
     const parentRow = btn.closest('.release-card-large');
     if (!parentRow) return;
     const parentImg = parentRow.querySelector('.release-cover-large img');
@@ -259,9 +363,7 @@ const initPortal = () => {
         }, "-=0.2");
 
         tl.set(entranceScreen, { display: 'none' });
-        tl.call(() => {
-            document.body.classList.remove('no-scroll');
-        });
+        // Removed scrollTo(0,0) and scroll block from here to allow loader handle it
 
         // 5. Main Site Materialization
         tl.from(".glass-nav", {
@@ -301,6 +403,7 @@ const initPortal = () => {
         const overlay = modal.querySelector('.modal-overlay');
 
         trigger.addEventListener('click', () => {
+            playBleep(700, 'sine', 0.1);
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         });
@@ -931,28 +1034,54 @@ const initPortal = () => {
             if (Array.isArray(data)) renderUpcoming(data);
         });
     }
-    // --- SOCIAL MENU TOGGLE ---
+    // --- SOCIAL SIDEBAR TOGGLE ---
     const menuTrigger = document.getElementById('nav-menu-trigger');
-    const socialPanel = document.getElementById('social-panel');
+    const socialSidebar = document.getElementById('social-sidebar');
+    const closeSidebar = document.getElementById('close-sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
 
-    if (menuTrigger && socialPanel) {
+    if (menuTrigger && socialSidebar) {
+        const toggleSidebar = (state) => {
+            if (state === 'close') {
+                socialSidebar.classList.remove('active');
+                if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+                document.body.classList.remove('no-scroll');
+            } else {
+                socialSidebar.classList.toggle('active');
+                if (sidebarOverlay) sidebarOverlay.classList.toggle('active');
+                document.body.classList.toggle('no-scroll');
+            }
+        };
+
         menuTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
-            socialPanel.classList.toggle('active');
+            playBleep(900, 'square', 0.05);
+            toggleSidebar();
         });
 
-        // Close menu when clicking anywhere else
-        window.addEventListener('click', (e) => {
-            if (socialPanel.classList.contains('active')) {
-                socialPanel.classList.remove('active');
+        [closeSidebar, sidebarOverlay].forEach(btn => {
+            if (btn) {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    playBleep(300, 'sine', 0.1);
+                    toggleSidebar('close');
+                });
             }
         });
-        
-        // Prevent panel from closing when clicking inside it
-        socialPanel.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
     }
+
+    // Removed initVisualizer call
+
+    // --- GLOBAL UI SOUND EFFECTS (ON CLICK) ---
+    document.addEventListener('click', (e) => {
+        // Find if the clicked element is interactive
+        const interactive = e.target.closest('a, button, [role="button"], .release-card, .faq-item, .nav-item, .social-icon');
+        if (interactive) {
+            // Randomize pitch slightly for a more "organic tech" feel
+            const freq = 600 + (Math.random() * 400); 
+            playBleep(freq, 'sine', 0.05);
+        }
+    });
 
     function startAutoScroll() {
         if (!releaseSlider) return;
