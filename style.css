@@ -206,7 +206,12 @@ header {
     font-weight: 300;
 }
 
-.nav-links a {
+.logo-link {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.nav-links a, .nav-links .nav-item {
     text-decoration: none;
     color: var(--text-primary);
     margin: 0 1.5rem;
@@ -214,9 +219,10 @@ header {
     font-weight: 500;
     letter-spacing: 0.1rem;
     transition: color 0.3s;
+    cursor: pointer;
 }
 
-.nav-links a:hover {
+.nav-links a:hover, .nav-links .nav-item:hover {
     color: var(--accent-blue);
     text-shadow: var(--glow-blue);
 }
@@ -292,6 +298,36 @@ header {
     transform: scale(1.2) translateY(-3px);
 }
 
+.social-divider {
+    width: 1px;
+    height: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 0.5rem;
+}
+
+.demo-trigger-link {
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    letter-spacing: 0.1rem;
+}
+
+.demo-trigger-link:hover {
+    color: var(--accent-blue);
+    text-shadow: 0 0 10px var(--accent-blue);
+}
+
+.demo-trigger-link i {
+    font-size: 0.7rem;
+    color: var(--accent-blue);
+}
+
 /* Sections */
 section {
     min-height: 100vh;
@@ -336,6 +372,7 @@ section {
     font-family: var(--font-heading);
     letter-spacing: 0.15rem;
     transition: box-shadow 0.4s, transform 0.4s;
+    cursor: pointer;
 }
 
 .cta-primary:hover {
@@ -1209,4 +1246,82 @@ footer {
 @keyframes auroraDance {
     0% { transform: scale(1) translate(-10%, -10%); opacity: 0.3; }
     100% { transform: scale(1.5) translate(10%, 10%); opacity: 0.7; }
+}
+
+/* --- CYBER DEMO FORM STYLES --- */
+.demo-grid-wide {
+    max-width: 900px !important;
+}
+
+.cyber-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-family: var(--font-heading);
+    font-size: 0.7rem;
+    color: var(--accent-blue);
+    letter-spacing: 0.1rem;
+}
+
+.form-group input, .form-group textarea {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    color: #fff;
+    font-family: var(--font-main);
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus, .form-group textarea:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: none;
+}
+
+.cta-primary-small {
+    padding: 0.8rem 2rem;
+    background: linear-gradient(45deg, var(--accent-blue), var(--accent-purple));
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.1rem;
+}
+
+.form-status {
+    display: none;
+    margin-top: 1.5rem;
+    padding: 0.8rem;
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid var(--accent-blue);
+    color: var(--accent-blue);
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    text-align: center;
+    border-radius: 5px;
 }
