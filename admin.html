@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="admin.css">
     
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- Firebase Infrastructure (v10.7.1-compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">
@@ -24,7 +24,8 @@
                 <a href="#" class="nav-btn active" data-target="settings-panel"><i class="fas fa-sliders-h"></i> GLOBALS</a>
                 <a href="#" class="nav-btn" data-target="links-panel"><i class="fas fa-link"></i> SITE LINKS</a>
                 <a href="#" class="nav-btn" data-target="modals-panel"><i class="fas fa-window-restore"></i> MODALS & FAQ</a>
-                <a href="#" class="nav-btn" data-target="releases-panel"><i class="fas fa-compact-disc"></i> TRANSMISSIONS</a>
+                <a href="#" class="nav-btn" data-target="demo-inbox-panel"><i class="fas fa-inbox"></i> DEMO INBOX</a>
+                <a href="#" class="nav-btn" data-target="releases-panel"><i class="fas fa-compact-disc"></i> RELEASE ARCHIVE</a>
             </nav>
             <div class="sidebar-footer">
                 <a href="index.html" class="return-site" target="_blank"><i class="fas fa-external-link-alt"></i> VIEW PORTAL</a>
@@ -183,6 +184,24 @@
                 <div class="btn-group" style="margin-top: 2rem; margin-bottom: 3rem;">
                     <button class="save-btn" id="save-modals-text"><i class="fas fa-save"></i> DEPLOY ALL MODAL DATA</button>
                     <span id="save-msg-modals-text" class="save-msg">Deploy successful.</span>
+                </div>
+            </section>
+
+            <!-- Demo Inbox Panel -->
+            <section id="demo-inbox-panel" class="panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-inbox"></i> DEMO INBOX (A&R VAULT)</h2>
+                    <p>Live transmissions from artists seeking portal access.</p>
+                </div>
+                
+                <div class="inbox-controls" style="margin-bottom: 1.5rem;">
+                    <button class="action-btn" id="refresh-inbox"><i class="fas fa-sync"></i> SCAN FOR NEW FREQUENCIES</button>
+                    <button class="save-btn" id="clear-inbox" style="background: rgba(255, 0, 0, 0.2); border-color: rgba(255, 0, 0, 0.3);"><i class="fas fa-trash"></i> PURGE ALL RECORDS</button>
+                </div>
+
+                <div id="demo-inbox-container" class="demo-list">
+                    <!-- Dynamic demo entries will load here -->
+                    <p style="opacity: 0.5; font-style: italic;">Standby... scanning frequencies...</p>
                 </div>
             </section>
 
