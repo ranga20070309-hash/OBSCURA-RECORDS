@@ -1,5 +1,5 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyAA2h1Ht6TLmpMc3xhN5euPZo5ecC4RJtfJrJu8",
+    apiKey: "AI8SjFSqSJ6DYAcBJrNGN76hEhcij5vtyJK5G819CvV7Fm",
     authDomain: "obscura-records.firebaseapp.com",
     databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "obscura-records",
@@ -14,6 +14,16 @@ const db = firebase.database();
 // UI Elements
 const navBtns = document.querySelectorAll('.nav-btn');
 const panels = document.querySelectorAll('.panel');
+
+// Auto-Versioning (Cache Buster)
+function bumpSiteVersion() {
+    db.ref('siteData/globals/v').transaction((v) => {
+        const nextV = (parseFloat(v || 1.0) + 0.1).toFixed(1);
+        const display = document.getElementById('display-v');
+        if (display) display.textContent = nextV;
+        return nextV;
+    });
+}
 
 // Navigation
 navBtns.forEach(btn => {
@@ -38,6 +48,18 @@ function showSaveMsg(id) {
 function loadGlobals() {
     db.ref('siteData/globals').once('value').then(snapshot => {
         const data = snapshot.val();
+        
+        // Update version display (Hard-sync to 60.0 baseline)
+        if (data && data.v && parseFloat(data.v) >= 60.0) {
+            const display = document.getElementById('display-v');
+            if (display) display.textContent = data.v;
+        } else {
+            // Re-align to 60.0 to match main site's latest engine deployment
+            const display = document.getElementById('display-v');
+            if (display) display.textContent = "60.0";
+            db.ref('siteData/globals/v').set("60.0");
+        }
+
         let needsSync = false;
         let updates = {};
 
@@ -64,6 +86,7 @@ function saveGlobals(msgId) {
         updates[el.id.replace('site_', '')] = el.value;
     });
     db.ref('siteData/globals').update(updates).then(() => {
+        bumpSiteVersion();
         showSaveMsg(msgId);
     });
 }
@@ -189,9 +212,14 @@ function gatherReleasesData() {
 document.getElementById('save-releases').addEventListener('click', () => {
     gatherReleasesData();
     if (releasesArray.length === 0) {
-        // Prevent Firebase from auto-deleting the node and thinking it's uninitialized next time
-        db.ref('siteData/releases').set([{ _isEmpty: true }]).then(() => showSaveMsg('save-msg-releases'));
+        db.ref('siteData/releases').set([{ _isEmpty: true }]).then(() => {
+            bumpSiteVersion();
+            showSaveMsg('save-msg-releases');
+        });
     } else {
-        db.ref('siteData/releases').set(releasesArray).then(() => showSaveMsg('save-msg-releases'));
+        db.ref('siteData/releases').set(releasesArray).then(() => {
+            bumpSiteVersion();
+            showSaveMsg('save-msg-releases');
+        });
     }
 });
