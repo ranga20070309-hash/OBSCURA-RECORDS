@@ -299,3 +299,101 @@ button {
 .delete-btn:hover {
     background: rgba(255, 0, 0, 0.1);
 }
+.demo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.demo-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+    transition: 0.3s;
+}
+
+.demo-card:hover {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+}
+
+.demo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 1rem;
+}
+
+.demo-title h3 {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    color: var(--accent-blue);
+}
+
+.demo-title p {
+    font-size: 0.8rem;
+    color: var(--text-secret);
+    margin-top: 0.2rem;
+}
+
+.demo-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.meta-item label {
+    font-size: 0.65rem;
+    color: var(--text-secret);
+    text-transform: uppercase;
+}
+
+.meta-item span {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.demo-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0, 240, 255, 0.1);
+    color: var(--accent-blue);
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: 0.3s;
+    margin-top: 0.5rem;
+}
+
+.demo-link-btn:hover {
+    background: var(--accent-blue);
+    color: #000;
+}
+
+.demo-message {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.inbox-controls {
+    display: flex;
+    gap: 1rem;
+}
