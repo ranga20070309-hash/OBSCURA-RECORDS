@@ -343,6 +343,31 @@ const initPortal = () => {
     window.bindAccordionListeners('faq-container');
     window.bindAccordionListeners('privacy-container');
 
+    // --- CLEAN URL NAVIGATION SYSTEM ---
+    const navLinks = document.querySelectorAll('.nav-links a, .logo-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href');
+            
+            // Only intercept internal section links
+            if (href.startsWith('#')) {
+                e.preventDefault();
+                const targetId = href.substring(1);
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    const headerHeight = 80;
+                    const targetPosition = targetElement.offsetTop - headerHeight;
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    });
+
     // --- 3D TILT EFFECT ---
     const tiltContainers = document.querySelectorAll('.glass, .release-card, .social-card, .faq-item');
     tiltContainers.forEach(container => {
