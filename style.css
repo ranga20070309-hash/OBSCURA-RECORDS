@@ -264,45 +264,199 @@ header {
     color: #000;
 }
 
-.social-panel {
-    position: absolute;
-    top: calc(100% + 20px);
-    right: 0;
-    padding: 1.2rem;
+/* Dynamic Social Sidebar */
+.social-sidebar {
+    position: fixed;
+    top: 0;
+    right: -380px;
+    width: 380px;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(40px);
+    border-left: 1px solid var(--accent-blue);
+    z-index: 10001; /* Higher than modals */
     display: flex;
+    flex-direction: column;
+    padding: 3.5rem 2.5rem;
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: -20px 0 50px rgba(0, 0, 0, 0.8);
+}
+
+.social-sidebar.active {
+    right: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4rem;
+}
+
+.sidebar-header h3 {
+    font-family: var(--font-heading);
+    letter-spacing: 0.6rem;
+    font-size: 1.1rem;
+    color: var(--accent-blue);
+    margin: 0;
+}
+
+.close-sidebar {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2.2rem;
+    cursor: pointer;
+    line-height: 1;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.close-sidebar:hover {
+    color: var(--accent-magenta);
+    transform: rotate(180deg) scale(1.2);
+}
+
+.sidebar-links {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.sidebar-links a {
+    display: flex;
+    align-items: center;
     gap: 1.5rem;
-    border-radius: 15px;
+    color: #fff;
+    text-decoration: none;
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    letter-spacing: 0.25rem;
+    padding: 1.2rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    transition: all 0.4s ease;
+}
+
+.sidebar-links a i {
+    font-size: 1.6rem;
+    color: var(--accent-blue);
+    width: 25px;
+    text-align: center;
+}
+
+.sidebar-links a:hover {
+    background: rgba(0, 240, 255, 0.08);
+    border-color: var(--accent-blue);
+    transform: translateX(-15px);
+    box-shadow: 10px 0 20px rgba(0, 240, 255, 0.1);
+}
+
+.sidebar-links a:hover i {
+    color: #fff;
+    text-shadow: 0 0 15px var(--accent-blue);
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 2.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.sidebar-footer-logo {
+    font-size: 1.3rem !important;
+    margin-bottom: 0.8rem;
+    display: block;
+}
+
+.sidebar-footer p {
+    font-size: 0.6rem;
+    letter-spacing: 0.4rem;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    text-transform: uppercase;
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    background: rgba(0, 0, 0, 0.9);
-    border: 1px solid var(--accent-blue);
-    z-index: 1000;
+    transition: all 0.5s ease;
 }
 
-.social-panel.active {
+.sidebar-overlay.active {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
 }
 
-.social-panel a {
-    color: var(--text-primary);
-    font-size: 1.1rem;
-    transition: all 0.3s ease;
+@media (max-width: 480px) {
+    .social-sidebar {
+        width: 100%;
+        right: -100%;
+    }
 }
 
-.social-panel a:hover {
+/* Cinematic Portal Loader */
+.portal-loader {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 100000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 1s ease, visibility 1s;
+}
+
+.loader-content {
+    text-align: center;
+    width: 300px;
+}
+
+.loader-logo {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    letter-spacing: 0.5rem;
+    margin-bottom: 1.5rem;
+    color: #fff;
+}
+
+.loader-bar-container {
+    width: 100%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.loader-bar {
+    width: 0%;
+    height: 100%;
+    background: var(--accent-blue);
+    box-shadow: 0 0 15px var(--accent-blue);
+}
+
+.loader-status {
+    font-size: 0.55rem;
+    letter-spacing: 0.3rem;
     color: var(--accent-blue);
-    transform: scale(1.2) translateY(-3px);
+    opacity: 0.7;
+    text-transform: uppercase;
 }
 
-.social-divider {
-    width: 1px;
-    height: 25px;
-    background: rgba(255, 255, 255, 0.1);
-    margin: 0 0.5rem;
+/* Starfield Particles (Performance Optimized) */
+#particle-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    opacity: 0.6;
+    pointer-events: none;
 }
 
 .demo-trigger-link {
@@ -1373,4 +1527,40 @@ footer {
     z-index: 5;
     text-transform: uppercase;
     box-shadow: 0 4px 15px rgba(255,0,255,0.3);
+}
+
+/* Discord CTA in Form */
+.discord-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1.5rem;
+    background: #5865F2; /* Official Discord Blurple */
+    text-decoration: none;
+    color: #fff;
+    border-radius: 5px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.1rem;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.discord-btn:hover {
+    background: #4752C4;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 25px rgba(88, 101, 242, 0.4);
+    border-color: rgba(255,255,255,0.3);
+}
+
+.discord-btn i {
+    font-size: 1.1rem;
+}
+
+@media (max-width: 600px) {
+    .form-actions {
+        grid-template-columns: 1fr !important;
+    }
 }
