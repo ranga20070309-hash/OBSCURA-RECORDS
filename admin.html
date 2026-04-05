@@ -30,6 +30,25 @@
         </div>
     </div>
 
+    <!-- Mobile Access Blocked Overlay -->
+    <div id="mobile-block-overlay" class="mobile-block-screen" style="display: none;">
+        <canvas id="mobile-vibe-canvas"></canvas>
+        <div class="block-glass">
+            <div class="block-header">
+                <i class="fas fa-desktop block-icon"></i>
+                <h2>DESKTOP ACCESS REQUIRED</h2>
+                <p>CORE DIRECTIVE: THE ADMIN PORTAL IS RESTRICTED TO HIGH-RESOLUTION DISPLAYS ONLY.</p>
+            </div>
+            <div class="block-body">
+                <div class="status-box">
+                    <p class="warning-text">MOBILE TRANSMISSION SCAN: <span class="status-fail">FAILED</span></p>
+                    <p class="instruction">PLEASE SWITCH TO A WORKSTATION TO ACCESS CORE CONTROLS.</p>
+                </div>
+                <a href="index.html" class="return-btn"><i class="fas fa-arrow-left"></i> RETURN TO MAIN TRANSMISSION</a>
+            </div>
+        </div>
+    </div>
+
     <div class="admin-wrapper" style="display: none;">
         <aside class="sidebar">
             <div class="logo">
@@ -67,11 +86,11 @@
                     </div>
                     <div class="input-group">
                         <label>HERO TITLE (HTML Allowed)</label>
-                        <input type="text" id="site_heroTitle" value="WELCOME TO <span class='accent'>OBSCURA RECORDS</span>">
+                        <input type="text" id="site_heroTitle" value="WELCOME TO <span class='accent'>OBSCURA RECORD</span>">
                     </div>
                     <div class="input-group full">
                         <label>HERO DESCRIPTION</label>
-                        <textarea id="site_heroDesc">OBSCURA RECORDS is an independent music label focused on artist development, music production, and official releases. Our mission is to support talented artists and create high-quality music through collaboration and innovation.</textarea>
+                        <textarea id="site_heroDesc">OBSCURA RECORD is an independent music label focused on artist development, music production, and official releases. Our mission is to support talented artists and create high-quality music through collaboration and innovation.</textarea>
                     </div>
                     <div class="input-group">
                         <label>ARCHIVE TITLE (HTML Allowed)</label>
@@ -130,7 +149,7 @@
                 
                 <h3 style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">FOOTER MENUS & COPYRIGHT</h3>
                 <div class="form-grid">
-                    <div class="input-group full"><label>Copyright Text</label><input type="text" id="site_footerCopyright" value="&copy; 2026 OBSCURA RECORDS. ALL RIGHTS RESERVED."></div>
+                    <div class="input-group full"><label>Copyright Text</label><input type="text" id="site_footerCopyright" value="&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED."></div>
                     <div class="input-group"><label>FAQ text</label><input type="text" id="site_footerFaqText" value="FAQ"></div>
                     <div class="input-group"><label>DEMO text</label><input type="text" id="site_footerDemoText" value="DEMO SUBMISSION"></div>
                     <div class="input-group"><label>CONTACT text</label><input type="text" id="site_footerContactText" value="CONTACT US"></div>
@@ -184,7 +203,7 @@
                 <h3 style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">PRIVACY POLICY CONTENT</h3>
                 <div class="form-grid">
                     <div class="input-group"><label>P1: Title</label><input type="text" id="site_p1_q" value="INTELLECTUAL PROPERTY"></div>
-                    <div class="input-group"><label>P1: Text</label><textarea id="site_p1_a">All content in this dimension—including audio, graphics, logos, and visual art—is the property of Obscura Records or its licensors.</textarea></div>
+                    <div class="input-group"><label>P1: Text</label><textarea id="site_p1_a">All content in this dimension—including audio, graphics, logos, and visual art—is the property of Obscura Record or its licensors.</textarea></div>
                     
                     <div class="input-group"><label>P2: Title</label><input type="text" id="site_p2_q" value="DATA SECURITY"></div>
                     <div class="input-group"><label>P2: Text</label><textarea id="site_p2_a">Your portal data is encrypted and secure. We only collect what is necessary to maintain your connection.</textarea></div>
