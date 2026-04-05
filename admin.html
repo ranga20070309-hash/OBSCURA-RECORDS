@@ -44,6 +44,7 @@
                 <a href="#" class="nav-btn" data-target="demo-inbox-panel"><i class="fas fa-inbox"></i> DEMO INBOX</a>
                 <a href="#" class="nav-btn" data-target="upcoming-panel"><i class="fas fa-calendar-alt"></i> UPCOMING</a>
                 <a href="#" class="nav-btn" data-target="releases-panel"><i class="fas fa-compact-disc"></i> RELEASE ARCHIVE</a>
+                <a href="#" class="nav-btn" data-target="staff-panel"><i class="fas fa-users-cog"></i> STAFF PROFILES</a>
             </nav>
             <div class="sidebar-footer">
                 <a href="index.html" class="return-site" target="_blank"><i class="fas fa-external-link-alt"></i> VIEW PORTAL</a>
@@ -210,6 +211,26 @@
                 </div>
             </section>
 
+            <!-- Release Archive Panel -->
+            <section id="releases-panel" class="panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-compact-disc"></i> RELEASE ARCHIVE</h2>
+                    <p>Manage the label's back-catalog frequencies and streaming transmissions.</p>
+                </div>
+                
+                <div class="btn-group mb-2">
+                    <button class="action-btn" id="add-release-btn"><i class="fas fa-plus"></i> INITIALIZE NEW FREQUENCY</button>
+                    <button class="save-btn" id="save-staff" style="display:none;"><i class="fas fa-upload"></i> SYNC ALL TO SERVER</button>
+                    <button class="save-btn" id="save-releases" style="background:var(--accent-magenta); border-color:var(--accent-magenta);"><i class="fas fa-cloud-upload-alt"></i> DEPLOY ALL RELEASES</button>
+                    <span id="save-msg-staff" class="save-msg">Sync successful.</span>
+                </div>
+
+                <div id="releases-container" class="releases-list">
+                    <!-- Dynamic release forms will compile here -->
+                    <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Accessing encrypted release frequency archive...</p>
+                </div>
+            </section>
+
             <!-- Demo Inbox Panel -->
             <section id="demo-inbox-panel" class="panel">
                 <div class="panel-header">
@@ -257,26 +278,68 @@
                 </div>
             </section>
 
-            <!-- Releases Manager Panel -->
-            <section id="releases-panel" class="panel">
+            <!-- Staff Profiles Panel -->
+            <section id="staff-panel" class="panel">
                 <div class="panel-header">
-                    <h2><i class="fas fa-database"></i> TRANSMISSION ARCHIVE (RELEASES)</h2>
-                    <p>Manage, add, and override active tracklists.</p>
+                    <h2><i class="fas fa-users-cog"></i> STAFF & ARTIST PROFILES</h2>
+                    <p>Edit bios, social links, and profile details for label staff. Data is synced with Discord IDs.</p>
                 </div>
                 
-                <div class="btn-group mb-2">
-                    <button class="action-btn" id="add-release-btn"><i class="fas fa-plus"></i> INITIALIZE NEW RELEASE</button>
-                    <button class="save-btn" id="save-releases"><i class="fas fa-upload"></i> SYNC ALL TO SERVER</button>
-                    <span id="save-msg-releases" class="save-msg">Sync successful.</span>
+                <div class="btn-group mb-2" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2.5rem;">
+                    <button class="save-btn" id="save-staff"><i class="fas fa-upload"></i> SYNC ALL PROFILES TO SERVER</button>
+                    <button class="action-btn" id="init-staff-btn" style="background: rgba(0, 240, 255, 0.05); border: 1.5px solid var(--primary); color: var(--primary); padding: 1.25rem 2rem; border-radius: 14px; cursor: pointer; font-family: inherit; font-size: 0.8rem; letter-spacing: 0.1rem; font-weight: 700; transition: 0.4s;">
+                        <i class="fas fa-seedling"></i> INITIALIZE BASE PERSONNEL
+                    </button>
+                    <span id="save-msg-staff" class="save-msg">Profiles synced successfully.</span>
                 </div>
 
-                <div id="releases-container" class="releases-list">
-                    <!-- Dynamic release forms will compile here -->
+                <div id="staff-container" class="releases-list">
+                    <!-- Dynamic staff forms will compile here -->
+                    <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Initializing neural link to staff database...</p>
                 </div>
             </section>
         </main>
     </div>
 
-    <script src="admin.js?v=4.2"></script>
+    <script src="admin.js?v=4.4"></script>
+    <script>
+        // Emergency Cache-Bypass for Staff Management
+        function removeStaff(discordId) {
+            if (confirm('SYSTEM OVERRIDE: Purge this personnel record from the transmission?')) {
+                if (typeof firebase !== 'undefined') {
+                    const db = firebase.database();
+                    db.ref('staff_status/' + discordId).remove().then(() => {
+                        alert('Personnel record purged successfully.');
+                        if (typeof loadStaff === 'function') loadStaff();
+                        else window.location.reload();
+                    });
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('init-staff-btn');
+            if (btn) {
+                btn.onclick = () => {
+                    if (confirm('Initialize base staff records? This is only needed once.')) {
+                        const baseStaff = {
+                            "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                            "459345097373515777": { name: "IRANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                            "1296819349885161472": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                            "1296813876364705792": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" }
+                        };
+                        
+                        if (typeof firebase !== 'undefined') {
+                            const db = firebase.database();
+                            db.ref('staff_status').update(baseStaff).then(() => {
+                                alert('SUCCESS: Personnel synced! RELOADING...');
+                                window.location.reload();
+                            });
+                        }
+                    }
+                };
+            }
+        });
+    </script>
 </body>
 </html>
