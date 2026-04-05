@@ -503,76 +503,133 @@ const initPortal = () => {
         });
     }
 
-    // --- SUBMISSION FORM LOGIC ---
+    // --- SUBMISSION FORM LOGIC (WITH RECAPTCHA v3) ---
     const subForm = document.getElementById('submission-form');
     const subStatus = document.getElementById('submission-status');
+    const RECAPTCHA_SITE_KEY = "6LcFNKgsAAAAAEEdRhYJrwgeWzaRyMmzbgNy3swn";
+
     if (subForm) {
-        subForm.addEventListener('submit', (e) => {
+        subForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = subForm.querySelector('button');
-            btn.textContent = "TRANSMITTING...";
+            const originalBtnText = btn.textContent;
+            
+            btn.innerHTML = '<i class="fas fa-shield-alt fa-spin"></i> SECURING...';
             btn.disabled = true;
 
-            const formData = new FormData(subForm);
-            const submission = {
-                timestamp: Date.now(),
-                date: new Date().toLocaleString(),
-                name: formData.get('name'),
-                artist: formData.get('artist'),
-                email: formData.get('email'),
-                genre: formData.get('genre'),
-                link: formData.get('link'),
-                message: formData.get('message')
-            };
+            try {
+                // reCAPTCHA v3 Token Generation
+                const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, {action: 'demo_submission'});
+                if (!token) throw new Error("Security verification failed.");
 
-            // --- EMAIL BROADCAST (EmailJS Integration) ---
-            const SERVICE_ID = "service_ft48ztn"; 
-            const TEMPLATE_ID = "template_3i1kqpt";
-            const PUBLIC_KEY = "ZTB9xthISj6SlffAR";
+                const formData = new FormData(subForm);
+                const submission = {
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    date: new Date().toLocaleString(),
+                    name: formData.get('name'),
+                    artist: formData.get('artist'),
+                    email: formData.get('email'),
+                    genre: formData.get('genre'),
+                    link: formData.get('link'),
+                    message: formData.get('message'),
+                    recaptcha_token: token
+                };
 
-            if (SERVICE_ID !== "service_xxxxxxx") {
-                emailjs.init(PUBLIC_KEY);
-                emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-                    artist: submission.artist,
-                    name: submission.name,
-                    email: submission.email,
-                    genre: submission.genre,
-                    link: submission.link,
-                    message: submission.message,
-                    date: submission.date
-                }).then(() => {
-                    console.log("Email Transmission Successful.");
-                }).catch(err => {
-                    console.error("Email Transmission Error:", err);
-                });
-            }
+                // --- EMAIL BROADCAST (EmailJS Integration) ---
+                const SERVICE_ID = "service_ft48ztn"; 
+                const TEMPLATE_ID = "template_3i1kqpt";
+                const PUBLIC_KEY = "ZTB9xthISj6SlffAR";
 
-            // Push to Firebase Realtime Database
-            const db = firebase.database();
-            db.ref('siteData/submissions').push(submission).then(() => {
+                if (SERVICE_ID !== "service_xxxxxxx") {
+                    emailjs.init(PUBLIC_KEY);
+                    emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+                        artist: submission.artist,
+                        name: submission.name,
+                        email: submission.email,
+                        genre: submission.genre,
+                        link: submission.link,
+                        message: submission.message,
+                        date: submission.date
+                    }).catch(err => console.warn("Email notify error:", err));
+                }
+
+                // Push to Firebase Realtime Database
+                await db.ref('siteData/submissions/demo').push(submission);
+                
+                subForm.style.display = 'none';
+                if (subStatus) subStatus.style.display = 'block';
+                
                 setTimeout(() => {
-                    subForm.style.display = 'none';
-                    if (subStatus) subStatus.style.display = 'block';
+                    const subModal = document.getElementById('submission-modal');
+                    if (subModal) subModal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
                     
                     setTimeout(() => {
-                        const subModal = document.getElementById('submission-modal');
-                        if (subModal) subModal.classList.remove('active');
-                        document.body.style.overflow = 'auto';
-                        
-                        setTimeout(() => {
-                            subForm.style.display = 'flex';
-                            if (subStatus) subStatus.style.display = 'none';
-                            subForm.reset();
-                            btn.textContent = "INITIATE SUBMISSION";
-                            btn.disabled = false;
-                        }, 500);
-                    }, 3000);
-                }, 1000);
-            }).catch(err => {
+                        subForm.style.display = 'flex';
+                        if (subStatus) subStatus.style.display = 'none';
+                        subForm.reset();
+                        btn.textContent = originalBtnText;
+                        btn.disabled = false;
+                    }, 500);
+                }, 3000);
+
+            } catch (err) {
                 console.error("Submission Failure:", err);
+                alert("TRANSMISSION FAILURE: " + err.message);
                 btn.textContent = "TRANSMISSION ERROR";
                 btn.disabled = false;
-            });
+            }
+        });
+    }
+
+    // --- CONTACT FORM LOGIC (WITH RECAPTCHA v3) ---
+    const contactForm = document.getElementById('contact-form');
+    const contactStatus = document.getElementById('contact-status');
+    if (contactForm) {
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = contactForm.querySelector('button');
+            const originalBtnText = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="fas fa-shield-alt fa-spin"></i> SECURING...';
+            btn.disabled = true;
+
+            try {
+                const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, {action: 'contact_submit'});
+                if (!token) throw new Error("Security verification failed.");
+
+                const formData = new FormData(contactForm);
+                const data = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    message: formData.get('message'),
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    recaptcha_token: token
+                };
+
+                await db.ref('siteData/submissions/contact').push(data);
+                
+                contactForm.style.display = 'none';
+                if (contactStatus) contactStatus.style.display = 'block';
+                
+                setTimeout(() => {
+                    const contactModal = document.getElementById('contact-modal');
+                    if (contactModal) contactModal.classList.remove('active');
+                    
+                    setTimeout(() => {
+                        contactForm.style.display = 'block';
+                        if (contactStatus) contactStatus.style.display = 'none';
+                        contactForm.reset();
+                        btn.innerHTML = originalBtnText;
+                        btn.disabled = false;
+                    }, 500);
+                }, 3000);
+
+            } catch (err) {
+                alert("TRANSMISSION ERROR: " + err.message);
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+            }
         });
     }
 
@@ -686,7 +743,7 @@ const initPortal = () => {
 
     // --- FIREBASE DISCORD SYNC (REALTIME DATABASE) ---
     const firebaseConfig = {
-        apiKey: "AI8SjFSqSJ6DYAcBJrNGN76hEhcij5vtyJK5G819CvV7Fm",
+        apiKey: "AIzaSyAA2h1Ht6TLmpMc3xhN5euPZo5ecC4RJtfJrJu8",
         authDomain: "obscura-records.firebaseapp.com",
         databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "obscura-records",
