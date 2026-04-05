@@ -442,6 +442,7 @@ const initPortal = () => {
 
     if (subForm) {
         subForm.addEventListener('submit', async (e) => {
+            const db = firebase.database(); // DEFINING DB SCOPE
             e.preventDefault();
             const btn = subForm.querySelector('button');
             const originalBtnText = btn.textContent;
@@ -519,6 +520,7 @@ const initPortal = () => {
     const contactStatus = document.getElementById('contact-status');
     if (contactForm) {
         contactForm.addEventListener('submit', async (e) => {
+            const db = firebase.database(); // DEFINING DB SCOPE
             e.preventDefault();
             const btn = contactForm.querySelector('button');
             const originalBtnText = btn.innerHTML;
