@@ -354,42 +354,66 @@ input:focus, textarea:focus {
     background: #050505;
 }
 
-/* --- REFINED NEON BUTTONS --- */
-.save-btn {
+/* --- REFINED NEON BUTTONS & GROUPS --- */
+.btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.save-btn, .action-btn {
     background: transparent;
     color: var(--primary);
     border: 1.5px solid var(--primary);
-    padding: 1.25rem 3.5rem;
-    border-radius: 14px;
+    padding: 1.1rem 2.2rem;
+    border-radius: 12px;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
-    letter-spacing: 0.15rem;
+    letter-spacing: 0.12rem;
     cursor: pointer;
-    transition: 0.4s;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
-    gap: 1rem;
+    justify-content: center;
+    gap: 0.8rem;
+    min-width: 200px;
+}
+
+.action-btn {
+    background: rgba(0, 240, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
 }
 
 .save-btn:hover {
     background: var(--primary);
     color: #000;
-    box-shadow: 0 0 35px rgba(0, 240, 255, 0.35);
-    transform: translateY(-3px);
+    box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.action-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(0, 240, 255, 0.1);
+    transform: translateY(-2px);
 }
 
 .save-msg {
     display: inline-block;
-    margin-left: 2rem;
     color: var(--primary);
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     opacity: 0;
     visibility: hidden;
     transition: 0.4s;
     text-transform: uppercase;
     letter-spacing: 0.1rem;
+    padding-left: 1rem;
 }
 
 .save-msg.show {
@@ -400,25 +424,26 @@ input:focus, textarea:focus {
 /* --- THE FINISHED DELETE BUTTON --- */
 .delete-btn {
     position: absolute;
-    top: 2rem;
-    right: 2rem;
+    top: 1.5rem;
+    right: 1.5rem;
     background: rgba(255, 0, 0, 0.05);
     color: #ff4d4d;
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
     border: 1px solid rgba(255, 0, 0, 0.1);
-    border-radius: 12px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: 0.3s;
+    z-index: 5;
 }
 
 .delete-btn:hover {
     background: #ff4d4d;
     color: #fff;
-    transform: scale(1.1);
+    transform: scale(1.1) rotate(90deg);
 }
 
 /* --- INBOX (CLEAN) --- */
@@ -429,4 +454,9 @@ input:focus, textarea:focus {
 @media (max-width: 1100px) {
     .content-area { padding: 4rem; }
     .form-grid { grid-template-columns: 1fr; }
+    .sidebar { width: 80px; padding: 2rem 1rem; }
+    .sidebar .logo h2, .status-badge, .version-pill, .nav-btn span { display: none; }
+    .nav-btn { justify-content: center; padding: 1rem; }
+    .nav-btn i { font-size: 1.2rem; margin: 0; }
+    .content-area { margin-left: 80px; }
 }
