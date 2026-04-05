@@ -91,25 +91,47 @@ body {
     font-weight: 500;
 }
 
+.login-input-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.login-input-group i {
+    position: absolute;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary);
+    font-size: 0.9rem;
+    opacity: 0.6;
+    z-index: 5;
+}
+
 .login-body input {
     width: 100%;
-    margin-top: 1rem;
     background: #050505 !important;
-    text-align: center;
-    letter-spacing: 0.6rem;
-    font-family: 'Space Grotesk', sans-serif;
-    border-radius: 16px;
-    padding: 1.3rem;
+    text-align: left;
+    padding: 1.2rem 1.5rem 1.2rem 3.5rem;
+    letter-spacing: 0.1rem;
+    font-family: 'Inter', sans-serif;
     border: 1px solid var(--border);
-    color: var(--primary);
-    font-size: 1.2rem;
-    transition: 0.3s;
+    border-radius: 12px;
+    color: #fff;
+    outline: none;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
 }
 
 .login-body input::placeholder {
     letter-spacing: 0.2rem;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     opacity: 0.5;
+}
+
+.login-body input#root-pass-input {
+    letter-spacing: 0.5rem;
+    text-align: center;
+    padding-left: 1.5rem;
 }
 
 #login-btn {
@@ -578,4 +600,59 @@ input:focus, textarea:focus {
     .nav-btn { justify-content: center; padding: 1rem; }
     .nav-btn i { font-size: 1.2rem; margin: 0; }
     .content-area { margin-left: 80px; }
+}
+/* --- ADMINISTRATIVE KERNEL SECURITY --- */
+.kernel-monitor-admin {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 3rem;
+    background: rgba(0, 240, 255, 0.03);
+    border: 1px solid rgba(0, 240, 255, 0.1);
+    padding: 1.2rem 2.5rem;
+    border-radius: 20px;
+    margin-bottom: 3.5rem;
+    backdrop-filter: blur(10px);
+}
+
+.kernel-monitor-admin .kernel-node {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.1rem;
+    font-weight: 600;
+}
+
+.kernel-monitor-admin .kernel-node i {
+    color: var(--primary);
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.kernel-monitor-admin .kernel-label {
+    text-transform: uppercase;
+}
+
+.kernel-monitor-admin .kernel-status {
+    color: var(--primary);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+    font-weight: 800;
+}
+
+.kernel-monitor-admin .kernel-status.scanning {
+    animation: kernel-blink-admin 0.8s infinite alternate;
+}
+
+@keyframes kernel-blink-admin {
+    from { opacity: 0.3; }
+    to { opacity: 1; }
+}
+
+@media (max-width: 1400px) {
+    .kernel-monitor-admin {
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
 }
