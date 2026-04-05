@@ -1,5 +1,5 @@
 const firebaseConfig = {
-    apiKey: "AI8SjFSqSJ6DYAcBJrNGN76hEhcij5vtyJK5G819CvV7Fm",
+    apiKey: "AIzaSyAA2h1Ht6TLmpMc3xhN5euPZo5ecC4RJtfJrJu8",
     authDomain: "obscura-records.firebaseapp.com",
     databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "obscura-records",
@@ -160,6 +160,7 @@ function initMobileVibe() {
 // --- SECURE AUTHENTICATION SYSTEM ---
 const loginOverlay = document.getElementById('login-overlay');
 const loginBtn = document.getElementById('login-btn');
+const emailInput = document.getElementById('root-email-input');
 const passInput = document.getElementById('root-pass-input');
 const loginError = document.getElementById('login-error');
 const adminWrapper = document.querySelector('.admin-wrapper');
@@ -168,16 +169,17 @@ function initializeSecurity() {
     checkDevice();
     window.addEventListener('resize', checkDevice);
 
-    db.ref('siteData/security/rootKey').once('value').then(snap => {
-        if (!snap.exists()) {
-            db.ref('siteData/security/rootKey').set("ORC ADMINS PASS 2026");
+    // Track real auth state via Firebase
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            console.log("Transmission link secured for:", user.email);
+            unlockDashboard();
+        } else {
+            console.log("Portal locked. Awaiting valid authorization.");
+            if (loginOverlay) loginOverlay.style.display = 'flex';
+            if (adminWrapper) adminWrapper.style.display = 'none';
         }
     });
-
-    // Check session
-    if (sessionStorage.getItem('rootAuth') === 'granted') {
-        unlockDashboard();
-    }
 }
 
 function unlockDashboard() {
@@ -191,29 +193,128 @@ function unlockDashboard() {
     try { loadReleases(); } catch(e) { console.error("Releases fail:", e); }
     try { loadUpcoming(); } catch(e) { console.error("Upcoming fail:", e); }
     try { loadStaff(); } catch(e) { console.error("Staff fail:", e); }
+    
+    // START KERNEL SECURITY MONITOR
+    initKernelSecurity();
 }
+
+function initKernelSecurity() {
+    console.log("INITIALIZING ADMINISTRATIVE KERNEL MONITOR...");
+    const kmIntegrity = document.getElementById('km-integrity');
+    const kmNetwork = document.getElementById('km-network');
+    const kmShield = document.getElementById('km-shield');
+
+    setInterval(() => {
+        if (kmNetwork) {
+            const lat = Math.floor(Math.random() * 20) + 5; // Admin connection usually faster
+            kmNetwork.textContent = `${lat}MS / ENCRYPTED`;
+        }
+        if (kmIntegrity) {
+            kmIntegrity.textContent = "CORE SECURE";
+            kmIntegrity.style.color = "var(--primary)";
+        }
+    }, 2000);
+
+    // Console detection for Admin
+    let devToolsOpen = false;
+    const threshold = 160;
+    setInterval(() => {
+        const widthDiff = window.outerWidth - window.innerWidth > threshold;
+        const heightDiff = window.outerHeight - window.innerHeight > threshold;
+        if ((widthDiff || heightDiff) && !devToolsOpen) {
+            devToolsOpen = true;
+            if (kmShield) {
+                kmShield.textContent = "INTERNAL VIOLATION";
+                kmShield.style.color = "#ff0080";
+                kmShield.classList.add('scanning');
+            }
+        } else if (!(widthDiff || heightDiff) && devToolsOpen) {
+            devToolsOpen = false;
+            if (kmShield) {
+                kmShield.textContent = "SHIELD ARMED";
+                kmShield.style.color = "var(--primary)";
+                kmShield.classList.remove('scanning');
+            }
+        }
+    }, 1000);
+}
+
+// --- GLOBAL SITE-WIDE ALARM SYNC ENGINE ---
+function initGlobalAlarmSync() {
+    const alarmOverlay = document.getElementById('global-security-alarm');
+    const alarmTypeText = document.getElementById('alarm-type');
+    
+    db.ref('siteData/security/globalAlarm').on('value', (snapshot) => {
+        const alarm = snapshot.val();
+        if (alarm && alarm.active === true) {
+            console.warn("!!! GLOBAL SECURITY ALARM ACTIVE !!!");
+            if (alarmOverlay) alarmOverlay.style.display = 'flex';
+            if (alarmTypeText) alarmTypeText.textContent = `TYPE: ${alarm.type || 'UNKNOWN'} | TRACE: ${new Date(alarm.time).toLocaleTimeString()}`;
+            
+            // Highlight the security monitor in admin
+            const kmShield = document.getElementById('km-shield');
+            if (kmShield) {
+                kmShield.textContent = "EXTERNAL THREAT";
+                kmShield.style.color = "#ff0080";
+                kmShield.classList.add('scanning');
+            }
+        } else {
+            if (alarmOverlay) alarmOverlay.style.display = 'none';
+            const kmShield = document.getElementById('km-shield');
+            if (kmShield) {
+                kmShield.textContent = "SHIELD ARMED";
+                kmShield.style.color = "var(--primary)";
+                kmShield.classList.remove('scanning');
+            }
+        }
+    });
+}
+
+// Attach to startup sequence
+(function() {
+    // Check for auth state and start sync once ready
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) initGlobalAlarmSync();
+    });
+})();
 
 if (loginBtn) {
     loginBtn.addEventListener('click', () => {
-        const input = passInput.value;
-        db.ref('siteData/security/rootKey').once('value').then(snap => {
-            const secret = snap.val();
-            if (input === secret) {
-                unlockDashboard();
-            } else {
+        const email = emailInput.value.trim();
+        const pass = passInput.value;
+        
+        if (!email || !pass) {
+            alert("SECURITY ALERT: Empty credentials detected.");
+            return;
+        }
+
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AUTHORIZING...';
+        loginBtn.disabled = true;
+
+        firebase.auth().signInWithEmailAndPassword(email, pass)
+            .then((userCredential) => {
+                alert("ACCESS GRANTED: Root frequency synced.");
+            })
+            .catch((error) => {
+                loginError.textContent = "AUTH FAILURE: " + error.message;
                 loginError.style.display = 'block';
                 passInput.value = '';
-                setTimeout(() => { loginError.style.display = 'none'; }, 2000);
-            }
-        });
+                loginBtn.innerHTML = '<i class="fas fa-unlock"></i> INITIATE ACCESS';
+                loginBtn.disabled = false;
+                setTimeout(() => { loginError.style.display = 'none'; }, 5000);
+            });
     });
 }
 
-if (passInput) {
-    passInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') loginBtn.click();
-    });
-}
+// Support for Enter key on both inputs
+const authInputs = [emailInput, passInput];
+authInputs.forEach(input => {
+    if (input) {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loginBtn.click();
+        });
+    }
+});
 
 // --- SPACE VIBE PARTICLES ENGINE ---
 (function() {
