@@ -67,7 +67,6 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body class="no-scroll">
-    <div class="sonic-aura"></div>
     <!-- Cinematic Portal Loader -->
     <div id="portal-loader" class="portal-loader">
         <div class="loader-content">
@@ -106,16 +105,16 @@
                     <div class="logo" data-sync="siteTitle" data-sync-target="html">OBSCURA <span>RECORD</span></div>
                 </span>
                 <div class="nav-links">
-                    <span data-target="#home" class="nav-item" data-sync="navHome" data-sync-target="text">HOME</span>
-                    <span data-target="#releases" class="nav-item" data-sync="navReleases" data-sync-target="text">RELEASES</span>
-                    <span data-target="#artists" class="nav-item" data-sync="navStaff" data-sync-target="text">STAFF</span>
-                    <span data-target="#contact" class="nav-item" data-sync="navContact" data-sync-target="text">CONTACT</span>
+                    <span data-target="#home" class="nav-item">HOME</span>
+                    <span data-target="#releases" class="nav-item">RELEASES</span>
+                    <span data-target="#artists" class="nav-item">STAFF</span>
+                    <span data-target="#contact" class="nav-item">CONTACT</span>
                     <span id="open-form" class="nav-item">SEND DEMO</span>
                 </div>
                 <div class="social-menu">
                     <button id="nav-menu-trigger" class="menu-trigger">
                         <i class="fas fa-ellipsis-v"></i>
-                        <span data-sync="navMenuBtn" data-sync-target="text">MENU</span>
+                        <span>MENU</span>
                     </button>
                 </div>
             </nav>
@@ -124,21 +123,21 @@
         <!-- Dynamic Social Sidebar -->
         <div id="social-sidebar" class="social-sidebar glass no-tilt">
             <div class="sidebar-header">
-                <h3 data-sync="sidebarTitle" data-sync-target="text">NETWORK</h3>
+                <h3>NETWORK</h3>
                 <button id="close-sidebar" class="close-sidebar">&times;</button>
             </div>
             <!-- High-Priority Navigation Links -->
             <div class="sidebar-nav">
-                <span data-target="#home" class="sidebar-nav-item nav-item" data-sync="navHome" data-sync-target="text">
+                <span data-target="#home" class="sidebar-nav-item nav-item">
                     <i class="fas fa-home"></i> <span>HOME</span>
                 </span>
-                <span data-target="#releases" class="sidebar-nav-item nav-item" data-sync="navReleases" data-sync-target="text">
+                <span data-target="#releases" class="sidebar-nav-item nav-item">
                     <i class="fas fa-compact-disc"></i> <span>RELEASES</span>
                 </span>
-                <span data-target="#artists" class="sidebar-nav-item nav-item" data-sync="navStaff" data-sync-target="text">
+                <span data-target="#artists" class="sidebar-nav-item nav-item">
                     <i class="fas fa-users-cog"></i> <span>STAFF</span>
                 </span>
-                <span data-target="#contact" class="sidebar-nav-item nav-item" data-sync="navContact" data-sync-target="text">
+                <span data-target="#contact" class="sidebar-nav-item nav-item">
                     <i class="fas fa-satellite-dish"></i> <span>CONTACT</span>
                 </span>
                 <span id="open-form-sidebar" class="sidebar-nav-item nav-item accent-btn">
@@ -151,22 +150,22 @@
             </div>
 
             <div class="sidebar-links-grid">
-                <a href="https://www.instagram.com/" target="_blank" data-sync="socialInstaUrl" data-sync-target="href">
+                <a href="https://www.instagram.com/" target="_blank">
                     <i class="fab fa-instagram"></i> <span class="sidebar-label">INSTAGRAM</span>
                 </a>
-                <a href="https://www.youtube.com/" target="_blank" data-sync="socialYoutubeUrl" data-sync-target="href">
+                <a href="https://www.youtube.com/" target="_blank">
                     <i class="fab fa-youtube"></i> <span class="sidebar-label">YOUTUBE</span>
                 </a>
-                <a href="https://discord.gg/" target="_blank" data-sync="socialDiscordUrl" data-sync-target="href">
+                <a href="https://discord.gg/" target="_blank">
                     <i class="fab fa-discord"></i> <span class="sidebar-label">DISCORD</span>
                 </a>
-                <a href="https://www.tiktok.com/" target="_blank" data-sync="socialTiktokUrl" data-sync-target="href">
+                <a href="https://www.tiktok.com/" target="_blank">
                     <i class="fab fa-tiktok"></i> <span class="sidebar-label">TIKTOK</span>
                 </a>
-                <a href="#" target="_blank" data-sync="socialSpotifyUrl" data-sync-target="href">
+                <a href="#" target="_blank">
                     <i class="fab fa-spotify"></i> <span class="sidebar-label">SPOTIFY</span>
                 </a>
-                <a href="mailto:info@obscurarcords.com" data-sync="socialEmailUrl" data-sync-target="href">
+                <a href="mailto:info@obscurarcords.com">
                     <i class="fas fa-envelope"></i> <span class="sidebar-label">EMAIL</span>
                 </a>
             </div>
@@ -176,14 +175,12 @@
             </div>
         </div>
         <div id="sidebar-overlay" class="sidebar-overlay"></div>
-            </nav>
-        </header>
 
         <!-- Hero Section -->
         <section id="home" class="hero">
             <div class="hero-content">
-                <h2 class="reveal-text" data-sync="heroTitle" data-sync-target="html">WELCOME TO <span class="accent">OBSCURA RECORD</span></h2>
-                <p data-sync="heroDesc" data-sync-target="text">OBSCURA RECORD is an independent music label focused on artist development, music production, and official releases. Our mission is to support talented artists and create high-quality music through collaboration and innovation.</p>
+                <h2 class="reveal-text"><span>WELCOME TO</span> <span class="accent">OBSCURA RECORD</span></h2>
+                <p>OBSCURA RECORD is an independent music label focused on artist development, music production, and official releases. Our mission is to support talented artists and create high-quality music through collaboration and innovation.</p>
                 <div class="hero-actions">
                     <span data-target="#releases" class="cta-primary nav-item">RELEASES</span>
                 </div>
@@ -196,7 +193,7 @@
         <section id="upcoming" class="upcoming-archive" style="padding-top: 6rem; padding-bottom: 2rem;">
             <div class="section-header">
                 <div class="header-content">
-                    <h2 class="section-title"><span class="accent">UPCOMING</span> RELEASES</h2>
+                    <h2 class="section-title"><span class="accent">UPCOMING</span> <span>RELEASES</span></h2>
                     <p class="section-desc">Intercepting future signals... decryption in progress.</p>
                 </div>
             </div>
@@ -210,8 +207,8 @@
         <section id="releases" class="releases-archive">
             <div class="section-header archive-header">
                 <div class="header-content">
-                    <h2 class="section-title" data-sync="archiveTitle" data-sync-target="html">TRANSMISSION <span class="accent">ARCHIVE</span></h2>
-                    <p class="section-desc" data-sync="archiveDesc" data-sync-target="text">Accessing encrypted audio logs and deep space frequencies.</p>
+                    <h2 class="section-title">LABEL <span class="accent">RELEASES</span></h2>
+                    <p class="section-desc">THESE ARE THE RELEASES THAT IS PUBLISHED THROUGH OUR LABEL</p>
                 </div>
                 <div class="slider-controls">
                     <button class="slider-nav-btn prev"><i class="fas fa-chevron-left"></i></button>
@@ -310,7 +307,7 @@
 
         <!-- Staff Showcase (Grid) -->
         <section id="artists" class="artists">
-            <h2 class="section-title">STAFF</h2>
+            <h2 class="section-title">OBSCURA <span class="accent">STAFF</span></h2>
             <div class="artists-grid">
                 <div class="artist-item glass" data-discord-id="1296819659131326556">
                     <div class="avatar-wrapper">
@@ -354,28 +351,28 @@
         <!-- Contact Section (Social Links) -->
         <section id="contact" class="contact-section">
             <div class="contact-container glass">
-                <h3 data-sync="contactTitle" data-sync-target="html">CONNECT WITH <span class="accent">US</span></h3>
-                <p data-sync="contactDesc" data-sync-target="text">Follow our transmissions across the digital landscape.</p>
+                <h2 class="section-title">CONNECT WITH <span class="accent">US</span></h2>
+                <p>Follow our transmissions across the digital landscape.</p>
                 <div class="social-grid">
-                    <a href="https://www.instagram.com/" target="_blank" class="social-card" data-sync="socialInstaUrl" data-sync-target="href">
+                    <a href="https://www.instagram.com/" target="_blank" class="social-card">
                         <i class="fab fa-instagram"></i>
-                        <span data-sync="socialInstaText" data-sync-target="text">INSTAGRAM</span>
+                        <span>INSTAGRAM</span>
                     </a>
-                    <a href="https://www.youtube.com/" target="_blank" class="social-card" data-sync="socialYoutubeUrl" data-sync-target="href">
+                    <a href="https://www.youtube.com/" target="_blank" class="social-card">
                         <i class="fab fa-youtube"></i>
-                        <span data-sync="socialYoutubeText" data-sync-target="text">YOUTUBE</span>
+                        <span>YOUTUBE</span>
                     </a>
-                    <a href="https://discord.gg/" target="_blank" class="social-card" data-sync="socialDiscordUrl" data-sync-target="href">
+                    <a href="https://discord.gg/" target="_blank" class="social-card">
                         <i class="fab fa-discord"></i>
-                        <span data-sync="socialDiscordText" data-sync-target="text">DISCORD</span>
+                        <span>DISCORD</span>
                     </a>
-                    <a href="https://www.tiktok.com/" target="_blank" class="social-card" data-sync="socialTiktokUrl" data-sync-target="href">
+                    <a href="https://www.tiktok.com/" target="_blank" class="social-card">
                         <i class="fab fa-tiktok"></i>
-                        <span data-sync="socialTiktokText" data-sync-target="text">TIKTOK</span>
+                        <span>TIKTOK</span>
                     </a>
-                    <a href="mailto:info@obscurarecords.com" class="social-card" data-sync="socialEmailUrl" data-sync-target="href">
+                    <a href="mailto:info@obscurarecords.com" class="social-card">
                         <i class="fas fa-envelope"></i>
-                        <span data-sync="socialEmailText" data-sync-target="text">DIRECT EMAIL</span>
+                        <span>DIRECT EMAIL</span>
                     </a>
                 </div>
             </div>
@@ -386,7 +383,7 @@
             <div class="modal-overlay"></div>
             <div class="modal-content glass">
                 <button class="close-modal">&times;</button>
-                <h2 class="section-title">CONNECT WITH THE VOID</h2>
+                <h2 class="section-title">CONNECT WITH <span class="accent">THE VOID</span></h2>
                 <div class="faq-item glass" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; margin-top: 1rem;">
                     <i class="fas fa-paper-plane" style="color: var(--accent-blue); font-size: 1.5rem;"></i>
                     <div style="text-align: left;">
@@ -415,8 +412,6 @@
                 <p style="margin-top: 1.5rem; font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.6;" data-sync="contactModalSubtext" data-sync-target="text">For partnerships, general questions, or portal feedback, reach out via the channels above.</p>
             </div>
         </div>
-
-        </section>
 
         <!-- Demo Submission Popup Modal -->
         <div id="demo-modal" class="modal">
@@ -631,6 +626,7 @@
                     <p style="font-size: 0.65rem; color: var(--accent-blue); opacity: 0.8; margin-top: 1.2rem; text-align: center; letter-spacing: 0.1rem; text-transform: uppercase; font-family: var(--font-heading); font-weight: 700;">
                         [ HIGHLY RECOMMENDED: JOIN THE SERVER FOR REAL-TIME FREQUENCY TRACKING ]
                     </p>
+                    <p style="font-size: 0.55rem; color: var(--text-secondary); opacity: 0.4; margin-top: 0.5rem; text-align: center;">This portal is protected by reCAPTCHA and Subject to Google Privacy Policy and Terms of Service.</p>
                 </form>
                 <div id="submission-status" class="form-status">TRANSMISSION DEPLOYED SUCCESSFULLY.</div>
             </div>
@@ -693,6 +689,36 @@
 
         <footer>
             <div class="footer-content">
+                <div class="kernel-monitor" id="kernel-monitor">
+                    <div class="kernel-node">
+                        <i class="fas fa-microchip"></i>
+                        <span class="kernel-label">SYSTEM INTEGRITY:</span>
+                        <span class="kernel-status scanning" id="km-integrity">SCANNING...</span>
+                    </div>
+                    <div class="kernel-node">
+                        <i class="fas fa-network-wired"></i>
+                        <span class="kernel-label">NETWORK FREQ:</span>
+                        <span class="kernel-status" id="km-network">CALIBRATING...</span>
+                    </div>
+                    <div class="kernel-node">
+                        <i class="fas fa-fingerprint"></i>
+                        <span class="kernel-label">AUTH PROTOCOL:</span>
+                        <span class="kernel-status">BIO-METRIC L3</span>
+                    </div>
+                    <div class="kernel-node">
+                        <i class="fas fa-user-secret"></i>
+                        <span class="kernel-label">TAMPER SHIELD:</span>
+                        <span class="kernel-status" id="km-shield">SHIELD ARMED</span>
+                    </div>
+                    <div class="kernel-node">
+                        <i class="fas fa-satellite-dish"></i>
+                        <span class="kernel-label">LIVE NODES ONLINE:</span>
+                        <span class="kernel-status" id="km-live-nodes" style="color:var(--accent-blue);">ACCESSING...</span>
+                    </div>
+                </div>
+
+                <div class="footer-divider"></div>
+
                 <p data-sync="footerCopyright" data-sync-target="text">&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED.</p>
                 <div class="footer-links">
                     <a href="javascript:void(0)" id="open-faq" data-sync="footerFaqText" data-sync-target="text">FAQ</a>
@@ -700,9 +726,23 @@
                     <a href="javascript:void(0)" id="open-contact" data-sync="footerContactText" data-sync-target="text">CONTACT US</a>
                     <a href="javascript:void(0)" id="open-privacy" data-sync="footerPrivacyText" data-sync-target="text">PRIVACY</a>
                 </div>
+                <div class="security-stamp">
+                    <i class="fas fa-shield-alt"></i> FREQUENCY GUARDED BY RECAPTCHA V3 | <a href="https://policies.google.com/privacy">PRIVACY</a> | <a href="https://policies.google.com/terms">TERMS</a>
+                </div>
+                <div class="footer-tech-stack">
+                    <span class="tech-node"><i class="fas fa-lock tech-pulse"></i> SSL SECURE</span>
+                    <span class="tech-node"><i class="fas fa-database"></i> CLOUD PROTECT</span>
+                    <span class="tech-node"><i class="fas fa-shield-alt"></i> RECAPTCHA V3</span>
+                    <span class="tech-node"><i class="fas fa-signal"></i> NODES ONLINE</span>
+                </div>
+
+                <div id="visitor-connection-node" class="visitor-node">
+                    [ ACCESSING CONNECTION FREQUENCY... ]
+                </div>
             </div>
         </footer>
     </main>
+    <canvas id="data-pulse-canvas" class="data-flow-canvas"></canvas>
 
     <!-- Professional Glitch Filters (SVG Displacement) -->
     <svg style="position: absolute; width: 0; height: 0;" xmlns="http://www.w3.org/2000/svg" version="1.1">
