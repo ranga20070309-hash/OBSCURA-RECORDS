@@ -91,6 +91,72 @@ function showSaveMsg(id) {
     }
 }
 
+// --- MOBILE ACCESS CONTROL ---
+const mobileBlockOverlay = document.getElementById('mobile-block-overlay');
+
+function checkDevice() {
+    if (window.innerWidth < 1024) {
+        if (mobileBlockOverlay) {
+            mobileBlockOverlay.style.display = 'flex';
+            initMobileVibe(); // Start secondary engine
+        }
+        document.body.style.overflow = 'hidden';
+    } else {
+        if (mobileBlockOverlay) mobileBlockOverlay.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Secondary Engine for Mobile Block Screen
+let mobileEngineRunning = false;
+function initMobileVibe() {
+    if (mobileEngineRunning) return;
+    const canvas = document.getElementById('mobile-vibe-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let pArray = [];
+    
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    
+    class P {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.s = Math.random() * 2;
+            this.sx = (Math.random() - 0.5) * 1;
+            this.sy = (Math.random() - 0.5) * 1;
+            this.o = Math.random();
+        }
+        update() {
+            this.x += this.sx;
+            this.y += this.sy;
+            if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+        }
+        draw() {
+            ctx.fillStyle = `rgba(255, 62, 62, ${this.o * 0.3})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.s, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    
+    function loop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pArray.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(loop);
+    }
+    
+    window.addEventListener('resize', resize);
+    resize();
+    for(let i=0; i<80; i++) pArray.push(new P());
+    mobileEngineRunning = true;
+    loop();
+}
+
 // --- SECURE AUTHENTICATION SYSTEM ---
 const loginOverlay = document.getElementById('login-overlay');
 const loginBtn = document.getElementById('login-btn');
@@ -99,6 +165,9 @@ const loginError = document.getElementById('login-error');
 const adminWrapper = document.querySelector('.admin-wrapper');
 
 function initializeSecurity() {
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+
     db.ref('siteData/security/rootKey').once('value').then(snap => {
         if (!snap.exists()) {
             db.ref('siteData/security/rootKey').set("ORC ADMINS PASS 2026");
