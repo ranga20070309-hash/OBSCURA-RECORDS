@@ -105,16 +105,16 @@
                     <div class="logo" data-sync="siteTitle" data-sync-target="html">OBSCURA <span>RECORD</span></div>
                 </span>
                 <div class="nav-links">
-                    <span data-target="#home" class="nav-item">HOME</span>
-                    <span data-target="#releases" class="nav-item">RELEASES</span>
-                    <span data-target="#artists" class="nav-item">STAFF</span>
-                    <span data-target="#contact" class="nav-item">CONTACT</span>
+                    <span data-target="#home" class="nav-item" data-sync="navHome" data-sync-target="text">HOME</span>
+                    <span data-target="#releases" class="nav-item" data-sync="navReleases" data-sync-target="text">RELEASES</span>
+                    <span data-target="#artists" class="nav-item" data-sync="navStaff" data-sync-target="text">STAFF</span>
+                    <span data-target="#contact" class="nav-item" data-sync="navContact" data-sync-target="text">CONTACT</span>
                     <span id="open-form" class="nav-item">SEND DEMO</span>
                 </div>
                 <div class="social-menu">
                     <button id="nav-menu-trigger" class="menu-trigger">
                         <i class="fas fa-ellipsis-v"></i>
-                        <span>MENU</span>
+                        <span data-sync="navMenuBtn" data-sync-target="text">MENU</span>
                     </button>
                 </div>
             </nav>
@@ -129,16 +129,16 @@
             <!-- High-Priority Navigation Links -->
             <div class="sidebar-nav">
                 <span data-target="#home" class="sidebar-nav-item nav-item">
-                    <i class="fas fa-home"></i> <span>HOME</span>
+                    <i class="fas fa-home"></i> <span data-sync="navHome" data-sync-target="text">HOME</span>
                 </span>
                 <span data-target="#releases" class="sidebar-nav-item nav-item">
-                    <i class="fas fa-compact-disc"></i> <span>RELEASES</span>
+                    <i class="fas fa-compact-disc"></i> <span data-sync="navReleases" data-sync-target="text">RELEASES</span>
                 </span>
                 <span data-target="#artists" class="sidebar-nav-item nav-item">
-                    <i class="fas fa-users-cog"></i> <span>STAFF</span>
+                    <i class="fas fa-users-cog"></i> <span data-sync="navStaff" data-sync-target="text">STAFF</span>
                 </span>
                 <span data-target="#contact" class="sidebar-nav-item nav-item">
-                    <i class="fas fa-satellite-dish"></i> <span>CONTACT</span>
+                    <i class="fas fa-satellite-dish"></i> <span data-sync="navContact" data-sync-target="text">CONTACT</span>
                 </span>
                 <span id="open-form-sidebar" class="sidebar-nav-item nav-item accent-btn">
                     <i class="fas fa-paper-plane"></i> <span>SEND DEMO</span>
@@ -179,8 +179,8 @@
         <!-- Hero Section -->
         <section id="home" class="hero">
             <div class="hero-content">
-                <h2 class="reveal-text"><span>WELCOME TO</span> <span class="accent">OBSCURA RECORD</span></h2>
-                <p>OBSCURA RECORD is an independent music label focused on artist development, music production, and official releases. Our mission is to support talented artists and create high-quality music through collaboration and innovation.</p>
+                <h2 class="reveal-text" data-sync="heroTitle" data-sync-target="html"><span>WELCOME TO</span> <span class="accent">OBSCURA RECORD</span></h2>
+                <p data-sync="heroDesc" data-sync-target="text">OBSCURA RECORD is an independent music label focused on artist development, music production, and official releases. Our mission is to support talented artists and create high-quality music through collaboration and innovation.</p>
                 <div class="hero-actions">
                     <span data-target="#releases" class="cta-primary nav-item">RELEASES</span>
                 </div>
@@ -207,8 +207,8 @@
         <section id="releases" class="releases-archive">
             <div class="section-header archive-header">
                 <div class="header-content">
-                    <h2 class="section-title">LABEL <span class="accent">RELEASES</span></h2>
-                    <p class="section-desc">THESE ARE THE RELEASES THAT IS PUBLISHED THROUGH OUR LABEL</p>
+                    <h2 class="section-title" data-sync="archiveTitle" data-sync-target="html">LABEL <span class="accent">RELEASES</span></h2>
+                    <p class="section-desc" data-sync="archiveDesc" data-sync-target="text">THESE ARE THE RELEASES THAT IS PUBLISHED THROUGH OUR LABEL</p>
                 </div>
                 <div class="slider-controls">
                     <button class="slider-nav-btn prev"><i class="fas fa-chevron-left"></i></button>
@@ -551,33 +551,6 @@
             </div>
         </div>
 
-        <!-- Demo Submission Modal (Restored Original) -->
-        <div id="demo-modal" class="modal">
-            <div class="modal-overlay"></div>
-            <div class="modal-content glass">
-                <button class="close-modal">&times;</button>
-                <h2 class="section-title">DEMO <span class="accent">SUBMISSION</span></h2>
-                <div class="legal-content">
-                    <p data-sync="demoDesc">We are searching for high-energy Phonk, Funk, and Futuristic vibrations to join the void. Submit your best work to our sonic reviewers.</p>
-                    <div class="demo-channels">
-                        <div class="channel-link tile">
-                            <i class="fab fa-discord"></i>
-                            <div class="channel-info">
-                                <span class="channel-label">DISCORD</span>
-                                <span class="channel-detail" data-sync="demoDiscordSub">Faster review & community vibes.</span>
-                            </div>
-                        </div>
-                        <div class="channel-link tile">
-                            <i class="fas fa-envelope"></i>
-                            <div class="channel-info">
-                                <span class="channel-label">DIRECT EMAIL</span>
-                                <span class="channel-detail" data-sync="demoEmailSub">artists@obscurarecord.com</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Professional Submission Portal (Form State) -->
         <div id="submission-modal" class="modal">
