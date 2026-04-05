@@ -17,6 +17,27 @@
     --font-body: 'Outfit', sans-serif;
     --glow-blue: 0 0 20px rgba(0, 240, 255, 0.6);
     --glow-purple: 0 0 25px rgba(183, 0, 255, 0.5);
+    --bg-pulse-intensity: 0.15;
+}
+
+/* --- SONIC AURA (DYNAMIC AUDIO PULSE) --- */
+.sonic-aura {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 140vw;
+    height: 140vh;
+    background: radial-gradient(circle at center, 
+        rgba(0, 240, 255, 0.15) 0%, 
+        rgba(183, 0, 255, 0.08) 35%, 
+        transparent 70%);
+    pointer-events: none;
+    z-index: -3; /* Deepest layer */
+    opacity: var(--bg-pulse-intensity);
+    transition: opacity 0.15s ease;
+    mix-blend-mode: screen;
+    filter: blur(100px);
 }
 
 /* Reset */
@@ -843,8 +864,9 @@ section {
 
 .artists-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 3rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3.5rem; /* Increased gap for better distance */
+    width: 100%;
 }
 
 .artist-item {
@@ -871,8 +893,8 @@ section {
 }
 
 .artist-img {
-    width: 125px;
-    height: 125px;
+    width: 118px; /* Balanced size for Discord frames */
+    height: 118px;
     border-radius: 50%;
     background: #111;
     border: 2px solid var(--accent-blue);
@@ -1373,6 +1395,12 @@ footer {
     .glitch-logo { font-size: 3.5rem; }
     .stats-grid { grid-template-columns: 1fr; }
     .sync-input { flex-direction: column; }
+    .artists-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+}
+
+@media (max-width: 480px) {
+    .artists-grid { grid-template-columns: 1fr; }
+    .artist-item { padding: 1.5rem; }
 }
 
 /* Particle Background Canvas - FLOAT OVER EVERYTHING */
@@ -1561,10 +1589,14 @@ footer {
 
 /* --- UNIVERSAL RESOLUTION & MOBILE OPTIMIZATION --- */
 
-/* Hide Custom Cursor on Touch Devices (Mobile/Tablet) */
-@media (hover: none) and (pointer: coarse) {
-    .cursor, .cursor-follower {
+/* Hide Custom Cursor on Mobile & Touch Devices */
+@media (hover: none) and (pointer: coarse), (max-width: 1024px) {
+    .cursor-outer, .cursor-glow {
         display: none !important;
+    }
+    
+    * {
+        cursor: auto !important;
     }
 }
 
@@ -1651,5 +1683,66 @@ footer {
         position: static; /* Remove absolute positioning on mobile */
         justify-content: center;
         width: 100%;
+    }
+}
+
+/* --- ARTIST DETAIL MODAL STYLES --- */
+.artist-modal-content {
+    max-width: 600px;
+    padding: 3.5rem;
+}
+
+.artist-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.artist-modal-img-wrapper {
+    flex-shrink: 0;
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+    border-radius: 50%;
+    border: 2px solid var(--accent-blue);
+}
+
+.artist-modal-title .section-title {
+    letter-spacing: 0.2rem;
+    text-transform: uppercase;
+}
+
+.artist-modal-links .platform-link {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.artist-modal-links .platform-link:hover {
+    background: var(--accent-blue);
+    color: #000;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 240, 255, 0.4);
+}
+
+@media (max-width: 600px) {
+    .artist-modal-content {
+        padding: 2rem 1.5rem;
+    }
+    .artist-modal-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    .artist-modal-title {
+        text-align: center !important;
     }
 }
