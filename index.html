@@ -124,30 +124,47 @@
                 <h3 data-sync="sidebarTitle" data-sync-target="text">NETWORK</h3>
                 <button id="close-sidebar" class="close-sidebar">&times;</button>
             </div>
-            <!-- Mobile Navigation Links (Visible only on mobile/tablet) -->
+            <!-- High-Priority Navigation Links -->
             <div class="sidebar-nav">
-                <span data-target="#home" class="sidebar-nav-item nav-item" data-sync="navHome" data-sync-target="text">HOME</span>
-                <span data-target="#releases" class="sidebar-nav-item nav-item" data-sync="navReleases" data-sync-target="text">RELEASES</span>
-                <span data-target="#artists" class="sidebar-nav-item nav-item" data-sync="navStaff" data-sync-target="text">STAFF</span>
-                <span data-target="#contact" class="sidebar-nav-item nav-item" data-sync="navContact" data-sync-target="text">CONTACT</span>
-                <span id="open-form-sidebar" class="sidebar-nav-item nav-item">SEND DEMO</span>
+                <span data-target="#home" class="sidebar-nav-item nav-item" data-sync="navHome" data-sync-target="text">
+                    <i class="fas fa-home"></i> <span>HOME</span>
+                </span>
+                <span data-target="#releases" class="sidebar-nav-item nav-item" data-sync="navReleases" data-sync-target="text">
+                    <i class="fas fa-compact-disc"></i> <span>RELEASES</span>
+                </span>
+                <span data-target="#artists" class="sidebar-nav-item nav-item" data-sync="navStaff" data-sync-target="text">
+                    <i class="fas fa-users-cog"></i> <span>STAFF</span>
+                </span>
+                <span data-target="#contact" class="sidebar-nav-item nav-item" data-sync="navContact" data-sync-target="text">
+                    <i class="fas fa-satellite-dish"></i> <span>CONTACT</span>
+                </span>
+                <span id="open-form-sidebar" class="sidebar-nav-item nav-item accent-btn">
+                    <i class="fas fa-paper-plane"></i> <span>SEND DEMO</span>
+                </span>
             </div>
 
-            <div class="sidebar-links">
+            <div class="sidebar-header compact">
+                <h3 style="font-size: 0.8rem; letter-spacing: 0.4rem; opacity: 0.6;">NETWORK</h3>
+            </div>
+
+            <div class="sidebar-links-grid">
                 <a href="https://www.instagram.com/" target="_blank" data-sync="socialInstaUrl" data-sync-target="href">
-                    <i class="fab fa-instagram"></i> <span>INSTAGRAM</span>
+                    <i class="fab fa-instagram"></i> <span class="sidebar-label">INSTAGRAM</span>
                 </a>
                 <a href="https://www.youtube.com/" target="_blank" data-sync="socialYoutubeUrl" data-sync-target="href">
-                    <i class="fab fa-youtube"></i> <span>YOUTUBE</span>
+                    <i class="fab fa-youtube"></i> <span class="sidebar-label">YOUTUBE</span>
                 </a>
                 <a href="https://discord.gg/" target="_blank" data-sync="socialDiscordUrl" data-sync-target="href">
-                    <i class="fab fa-discord"></i> <span>DISCORD</span>
+                    <i class="fab fa-discord"></i> <span class="sidebar-label">DISCORD</span>
                 </a>
                 <a href="https://www.tiktok.com/" target="_blank" data-sync="socialTiktokUrl" data-sync-target="href">
-                    <i class="fab fa-tiktok"></i> <span>TIKTOK</span>
+                    <i class="fab fa-tiktok"></i> <span class="sidebar-label">TIKTOK</span>
                 </a>
                 <a href="#" target="_blank" data-sync="socialSpotifyUrl" data-sync-target="href">
-                    <i class="fab fa-spotify"></i> <span>SPOTIFY</span>
+                    <i class="fab fa-spotify"></i> <span class="sidebar-label">SPOTIFY</span>
+                </a>
+                <a href="mailto:info@obscurarcords.com" data-sync="socialEmailUrl" data-sync-target="href">
+                    <i class="fas fa-envelope"></i> <span class="sidebar-label">EMAIL</span>
                 </a>
             </div>
             <div class="sidebar-footer">
