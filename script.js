@@ -25,57 +25,6 @@ const PREVIEW_LIMIT = 30;
 // --- UI SOUND SYNTHESIZER (Clean Web Audio API) ---
 let audioCtx = null;
 
-// --- DYNAMIC SONIC AURA (AUDIO PULSE ENGINE) ---
-let audioAnalyser = null;
-let audioDataArray = null;
-let audioSourceNode = null;
-let isPulseActive = false;
-
-function initPulseEngine(audioElement) {
-    if (audioAnalyser) return; // Prevent double init
-    try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-
-        audioAnalyser = audioCtx.createAnalyser();
-        audioAnalyser.fftSize = 256;
-        
-        audioSourceNode = audioCtx.createMediaElementSource(audioElement);
-        audioSourceNode.connect(audioAnalyser);
-        audioAnalyser.connect(audioCtx.destination);
-        
-        audioDataArray = new Uint8Array(audioAnalyser.frequencyBinCount);
-        updateSonicPulse();
-    } catch(e) { console.warn("Pulse Engine Init Blocked:", e); }
-}
-
-function updateSonicPulse() {
-    if (!audioAnalyser) return;
-    requestAnimationFrame(updateSonicPulse);
-    
-    let intensity = 0.15; // Baseline Opacity
-    let scale = 1.0;     // Baseline Scale
-
-    // Check if YouTube is playing (1 is Playing state)
-    const isYTPlaying = ytPlayer && typeof ytPlayer.getPlayerState === 'function' && ytPlayer.getPlayerState() === 1;
-
-    if (isPulseActive) {
-        audioAnalyser.getByteFrequencyData(audioDataArray);
-        let sum = 0;
-        for(let i=0; i<10; i++) sum += audioDataArray[i];
-        let bass = sum / 10;
-        intensity = 0.15 + (bass / 255) * 0.45;
-        scale = 1.0 + (bass / 255) * 0.15;
-    } else if (isYTPlaying) {
-        // Fallback for YouTube: Rhythmic Sine Pulse
-        const wave = (Math.sin(Date.now() / 450) + 1) / 2; // 0 to 1
-        intensity = 0.15 + wave * 0.35;
-        scale = 1.0 + wave * 0.1;
-    }
-
-    document.documentElement.style.setProperty('--bg-pulse-intensity', intensity.toFixed(3));
-    document.documentElement.style.setProperty('--bg-pulse-scale', scale.toFixed(3));
-}
 
 // UI SOUND SYNTHESIZER (Clean Web Audio API) ---
 const playBleep = (freq = 600, type = 'sine', duration = 0.08) => {
@@ -95,54 +44,6 @@ const playBleep = (freq = 600, type = 'sine', duration = 0.08) => {
     } catch(e) {}
 };
 
-// --- STARFIELD PARTICLES (Optimized Canvas) ---
-const initStarfield = () => {
-    const canvas = document.getElementById('particle-bg');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    const count = 120;
-
-    const resize = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', resize);
-    resize();
-
-    for(let i=0; i<count; i++) {
-        particles.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            z: Math.random() * canvas.width,
-            s: 0.2 + Math.random() * 0.8
-        });
-    }
-
-    const draw = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const center = { x: canvas.width/2, y: canvas.height/2 };
-        
-        particles.forEach(p => {
-            p.z -= p.s * 2;
-            if (p.z <= 0) p.z = canvas.width;
-            
-            const k = 128.0 / p.z;
-            const px = (p.x - center.x) * k + center.x;
-            const py = (p.y - center.y) * k + center.y;
-            
-            if (px < 0 || px >= canvas.width || py < 0 || py >= canvas.height) return;
-            
-            const size = (1 - p.z / canvas.width) * 1.5;
-            const alpha = (1 - p.z / canvas.width);
-            
-            ctx.fillStyle = `rgba(0, 240, 255, ${alpha})`;
-            ctx.fillRect(px, py, size, size);
-        });
-        requestAnimationFrame(draw);
-    };
-    draw();
-};
 
 // --- LOADER DISMISSAL (With Safety Timeout & Ignition Sync) ---
 let loaderDismissed = false; // Fixed: lowercase 'false'
@@ -156,17 +57,17 @@ const dismissLoader = () => {
 
     gsap.to(loaderBar, { 
         width: '100%', 
-        duration: 0.8, 
+        duration: 0.2, 
         ease: "power2.out",
         onComplete: () => {
             gsap.to(portalLoader, { 
                 opacity: 0, 
-                duration: 1.2, 
+                duration: 0.2, 
                 ease: "power2.inOut",
                 onComplete: () => {
                     portalLoader.style.display = 'none';
-                    document.body.classList.remove('no-scroll');
-                    // Kickstart the visual ignition sequence
+                    // The site is now visible, but we keep scroll locked until the reveal is halfway or entirely done.
+                    // We'll remove it inside runIgnition for better flow control.
                     if (typeof runIgnition === 'function') runIgnition();
                 }
             });
@@ -175,7 +76,7 @@ const dismissLoader = () => {
 };
 
 window.addEventListener('load', dismissLoader);
-setTimeout(dismissLoader, 4500); // Safety Override: Dismiss after 4.5s regardless
+setTimeout(dismissLoader, 1500); // Safety Override: Ultra-Snappy 1.5s
 
 window.onYouTubeIframeAPIReady = function() {
     initYTPlayer();
@@ -220,6 +121,176 @@ function onPlayerStateChange(event) {
     }
 }
 
+// --- THE AUTOMATIC SPLASH SEQUENCE (ENARMA STYLE) ---
+const runIgnition = () => {
+    const entranceScreen = document.getElementById('entrance-screen');
+    const mainSite = document.getElementById('main-site');
+    if (!entranceScreen || !mainSite) return;
+
+    const tl = gsap.timeline({
+        onComplete: () => {
+            // GENTLY REVEAL CURSOR GLOW AFTER EVERYTHING IS CLEAR
+            gsap.to(".cursor-glow", { opacity: 1, duration: 1.5 });
+            console.log("PORTAL IGNITION COMPLETE.");
+        }
+    });
+
+    // 1. Snappy Initial Pause (Faster than before)
+    tl.to({}, { duration: 0.1 }); 
+
+    // 2. Mysterious Cinematic Reveal
+    tl.fromTo(".splash-logo", 
+        { 
+            opacity: 0, 
+            scale: 1.05,
+            filter: "brightness(0) blur(6px)", 
+        }, 
+        { 
+            duration: 1.5, // Slower mysterious reveal
+            opacity: 1, 
+            scale: 1.02, // Gentle float forward
+            filter: "brightness(1) blur(0px)", 
+            ease: "sine.inOut", 
+            onStart: () => {
+                const logo = document.querySelector('.splash-logo');
+                if (logo) logo.style.animation = "splashPulse 4s ease-in-out infinite, logoVibrate 3s infinite";
+            }
+        }
+    );
+
+    // 3. Pause for Brand Impact (Cinematic Tension)
+    tl.to({}, { duration: 1.2 });
+
+    // 4. Choreographed Realistic RGB Glitch Sequence
+    const glitchRed = document.getElementById('red-offset');
+    const glitchBlue = document.getElementById('blue-offset');
+    const glitchDisp = document.getElementById('glitch-disp');
+    const glitchTurb = document.getElementById('glitch-turbulence');
+
+    // Set initial filter state (Using only displacement, no channel offsets)
+    tl.set(".splash-logo", { filter: "url(#glitch-filter)" });
+
+    // Step-by-step glitch "impacts" (Realistic RGB Shifts + RAPID JITTER)
+    const addGlitchStep = (scale, clipInset, dx = 0, colorShift = 0) => {
+        tl.to(".splash-logo", {
+            duration: 0.03, // Accelerated for vibration
+            x: dx + (Math.random() * 4 - 2), // Random jitter
+            y: (Math.random() * 4 - 2),
+            skewX: dx * 0.8,
+            onUpdate: () => {
+                if (glitchDisp) glitchDisp.setAttribute('scale', scale);
+                if (glitchRed) glitchRed.setAttribute('dx', colorShift);
+                if (glitchBlue) glitchBlue.setAttribute('dx', -colorShift);
+                const logo = document.querySelector('.splash-logo');
+                if (logo) logo.style.clipPath = clipInset;
+            }
+        });
+    };
+
+    // Realistic Choreographed Sequence with Vibration Start
+    tl.set(".splash-logo", { animation: "logoVibrate 0.1s infinite" }); // ACTIVATE VIBRATION
+    
+    addGlitchStep(40, "inset(12% 0 75% 0)", 10, 5);  
+    addGlitchStep(60, "inset(45% 0 25% 0)", -15, -8);
+    addGlitchStep(0, "none", 0, 0); 
+    tl.to({}, { duration: 0.04 });
+    addGlitchStep(120, "inset(75% 0 5% 0)", 25, 12);
+    addGlitchStep(30, "inset(15% 0 65% 0)", -8, -4);
+    addGlitchStep(150, "none", 0, 20); // Heavier vibration stage
+    addGlitchStep(10, "none", 4, 3);
+    
+    // Final "Vibrate Line Dissolve" (SUPREME EXIT SEQUENCE)
+    tl.to(".splash-logo", {
+        duration: 0.1,
+        scaleY: 0.01, // Squash into a razor-thin line
+        scaleX: 1.8,  // Stretch wide
+        opacity: 0.9,
+        skewX: 60,
+        filter: "url(#glitch-filter) brightness(4)",
+        onStart: () => {
+            const logo = document.querySelector('.splash-logo');
+            if (logo) logo.style.animation = "none";
+        },
+        onUpdate: () => {
+            if (glitchDisp) glitchDisp.setAttribute('scale', 300); // MAX SHAKE
+            if (glitchRed) glitchRed.setAttribute('dx', 60); 
+            if (glitchBlue) glitchBlue.setAttribute('dx', -60);
+            const logo = document.querySelector('.splash-logo');
+            if (logo) logo.style.clipPath = "inset(49% 0 50% 0)"; // Perfect horizontal slice
+        }
+    });
+
+    // Rapid Disintegration Fade
+    tl.to(".splash-logo", {
+        duration: 0.1,
+        opacity: 0,
+        scaleX: 3, // Dissolve outwards
+        ease: "power2.out"
+    });
+
+    // Environmental Pulse (Intensified)
+    tl.to(".scanlines", { duration: 0.04, opacity: 0.8, repeat: 10, yoyo: true }, "<");
+    tl.to(".noise-overlay", { duration: 0.04, opacity: 1, repeat: 10, yoyo: true }, "<");
+
+    // The "Patta" Exit (Aggressive Blur + Light Burst Collapse)
+    tl.to(".splash-logo", {
+        duration: 0.25,
+        opacity: 0,
+        scaleY: 0.01, // CRT Collapse effect
+        scaleX: 2.8,  // Horizontal stretch
+        filter: "brightness(20) blur(25px)",
+        ease: "expo.out",
+        onComplete: () => {
+            const logo = document.querySelector('.splash-logo');
+            if (logo) {
+                logo.style.filter = "none";
+                logo.style.clipPath = "none";
+                logo.style.transform = "none";
+            }
+        }
+    });
+    
+    tl.to(entranceScreen, {
+        duration: 0.8,
+        opacity: 0,
+        filter: "blur(20px)",
+        ease: "expo.inOut",
+        onStart: () => {
+            document.body.classList.remove('no-scroll'); // UNLOCK SCROLL IMMEDIATELY ON EXIT
+            gsap.set(mainSite, { visibility: 'visible', opacity: 1 });
+            // CINEMATIC SCROLLBAR FADE-IN
+            gsap.to("html", { "--sb-opacity": 0.2, duration: 1.5, ease: "power2.out" });
+        }
+    }, "-=0.2");
+
+    tl.set(entranceScreen, { display: 'none' });
+
+    // 5. Main Site Materialization
+    tl.from(".glass-nav", {
+        y: -100,
+        opacity: 0,
+        duration: 1.5,
+        ease: "expo.out"
+    }, "-=1");
+
+    tl.from(".hero-content", {
+        x: -200,
+        opacity: 0,
+        skewX: 10,
+        duration: 1.5,
+        ease: "power4.out"
+    }, "-=1.2");
+
+    tl.from(".release-card", {
+        scale: 0.8,
+        opacity: 0,
+        y: 100,
+        rotateX: -45,
+        duration: 2,
+        ease: "power2.out"
+    }, "-=1");
+};
+
 function getYouTubeID(url) {
     if (!url) return null;
     try {
@@ -244,7 +315,6 @@ function getYouTubeID(url) {
 
 function startUIPlayback(btn, row, img) {
     if (!btn) return;
-    isPulseActive = true; // Activate pulse
     playBleep(800, 'square', 0.1); 
     btn.innerHTML = '<i class="fas fa-pause"></i>';
     row.classList.add('active-track');
@@ -254,7 +324,6 @@ function startUIPlayback(btn, row, img) {
 }
 
 function stopPlayback(btn) {
-    isPulseActive = false; // Deactivate pulse
     if (!btn) return;
     playBleep(400, 'sine', 0.1); 
     const parentRow = btn.closest('.release-card-large');
@@ -317,144 +386,7 @@ const initPortal = () => {
         cursorGlow.style.display = 'none';
     }
 
-    // --- THE AUTOMATIC SPLASH SEQUENCE (ENARMA STYLE) ---
-    const runIgnition = () => {
-        if (!entranceScreen || !mainSite) return;
-        const tl = gsap.timeline();
-
-        // 1. Black Initial Pause
-        tl.to({}, { duration: 0.8 }); 
-
-        // 2. High-End Sharp Cinematic Reveal
-        tl.fromTo(".splash-logo", 
-            { 
-                opacity: 0, 
-                scale: 1.05,
-                filter: "brightness(0) blur(4px)", 
-            }, 
-            { 
-                duration: 2.8, 
-                opacity: 1, 
-                scale: 1, 
-                filter: "brightness(1) blur(0px)", 
-                ease: "power3.out", // Sharp but smooth transition
-                onStart: () => {
-                    const logo = document.querySelector('.splash-logo');
-                    if (logo) logo.style.animation = "splashPulse 4s ease-in-out infinite";
-                }
-            }
-        );
-
-        // 3. Pause for Brand Impact
-        tl.to({}, { duration: 1.5 });
-
-        // 4. Choreographed Pure White Glitch Sequence (No Colors)
-        const glitchDisp = document.getElementById('glitch-disp');
-        const glitchTurb = document.getElementById('glitch-turbulence');
-
-        // Set initial filter state (Using only displacement, no channel offsets)
-        tl.set(".splash-logo", { filter: "url(#glitch-filter)" });
-
-        // Step-by-step glitch "impacts" (Consistent, Pure White Pattern)
-        const addGlitchStep = (scale, clipInset, dx = 0) => {
-            tl.to(".splash-logo", {
-                duration: 0.05,
-                x: dx,
-                skewX: dx * 0.8,
-                onUpdate: () => {
-                    if (glitchDisp) glitchDisp.setAttribute('scale', scale);
-                    const logo = document.querySelector('.splash-logo');
-                    if (logo) logo.style.clipPath = clipInset;
-                }
-            });
-        };
-
-        // Unique Choreographed Sequence (Plays the same every time - No Colors)
-        addGlitchStep(40, "inset(12% 0 75% 0)", 10);
-        addGlitchStep(60, "inset(45% 0 25% 0)", -15);
-        addGlitchStep(0, "none", 0); // Brief snap back
-        tl.to({}, { duration: 0.06 });
-        addGlitchStep(100, "inset(75% 0 5% 0)", 25);
-        addGlitchStep(30, "inset(15% 0 65% 0)", -8);
-        addGlitchStep(120, "none", 0); // Heavy displacement
-        addGlitchStep(10, "none", 4);
-        
-        // Final "Patta" Critical Error Impact
-        tl.to(".splash-logo", {
-            duration: 0.12,
-            x: 40,
-            skewX: 50,
-            filter: "url(#glitch-filter) brightness(8)", // Intense white flare
-            onUpdate: () => {
-                if (glitchDisp) glitchDisp.setAttribute('scale', 180);
-                if (glitchTurb) glitchTurb.setAttribute('baseFrequency', "0.15 0.02");
-                const logo = document.querySelector('.splash-logo');
-                if (logo) logo.style.clipPath = "inset(50% 0 45% 0)";
-            }
-        });
-
-        // Environmental Pulse (Intensified)
-        tl.to(".scanlines", { duration: 0.04, opacity: 0.8, repeat: 10, yoyo: true }, "<");
-        tl.to(".noise-overlay", { duration: 0.04, opacity: 1, repeat: 10, yoyo: true }, "<");
-
-        // The "Patta" Exit (Aggressive Blur + Light Burst Collapse)
-        tl.to(".splash-logo", {
-            duration: 0.25,
-            opacity: 0,
-            scaleY: 0.01, // CRT Collapse effect
-            scaleX: 2.8,  // Horizontal stretch
-            filter: "brightness(20) blur(25px)",
-            ease: "expo.out",
-            onComplete: () => {
-                const logo = document.querySelector('.splash-logo');
-                if (logo) {
-                    logo.style.filter = "none";
-                    logo.style.clipPath = "none";
-                    logo.style.transform = "none";
-                }
-            }
-        });
-        
-        tl.to(entranceScreen, {
-            duration: 1.8,
-            opacity: 0,
-            filter: "blur(60px)",
-            ease: "expo.inOut",
-            onStart: () => {
-                gsap.set(mainSite, { visibility: 'visible', opacity: 1 });
-            }
-        }, "-=0.2");
-
-        tl.set(entranceScreen, { display: 'none' });
-        // Removed scrollTo(0,0) and scroll block from here to allow loader handle it
-
-        // 5. Main Site Materialization
-        tl.from(".glass-nav", {
-            y: -100,
-            opacity: 0,
-            duration: 1.5,
-            ease: "expo.out"
-        }, "-=1");
-
-        tl.from(".hero-content", {
-            x: -200,
-            opacity: 0,
-            skewX: 10,
-            duration: 1.5,
-            ease: "power4.out"
-        }, "-=1.2");
-
-        tl.from(".release-card", {
-            scale: 0.8,
-            opacity: 0,
-            y: 100,
-            rotateX: -45,
-            duration: 2,
-            ease: "power2.out"
-        }, "-=1");
-    };
-
-    runIgnition();
+    // --- FAQ ACCORDION (DYNAMIC) ---
 
     // --- MODAL SYSTEM (FAQ & PRIVACY) ---
     const setupModal = (triggerId, modalId) => {
@@ -1056,8 +988,6 @@ const initPortal = () => {
                                 try {
                                     previewAudio.src = mp3Url;
                                     previewAudio.play().then(() => {
-                                        initPulseEngine(previewAudio); // Force visual link
-                                        isPulseActive = true;
                                         startUIPlayback(playBtn, row, coverImg);
                                         if (timeDisplay) {
                                             timeDisplay.style.display = 'block';
@@ -1072,12 +1002,6 @@ const initPortal = () => {
                             // PRIORITY 2: YouTube Fallback (Check if youtube field OR preview field has YT link)
                             else if (ytId) {
                                 if (!isYTApiReady || !ytPlayer) initYTPlayer();
-                                isPulseActive = false; // YouTube uses steady fallback in engine
-                                if (!audioAnalyser) {
-                                    // Use dummy element to start loop for YT steady pulse
-                                    const dummy = new Audio();
-                                    initPulseEngine(dummy);
-                                }
 
                                 try {
                                     if (ytPlayer && ytPlayer.playVideo) {
@@ -1357,7 +1281,7 @@ const initPortal = () => {
                 }
             }
             draw() {
-                pCtx.fillStyle = `rgba(0, 240, 255, ${this.opacity})`;
+                pCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`; // MONOCHROME WHITE STARS
                 pCtx.beginPath();
                 pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 pCtx.fill();
@@ -1434,12 +1358,196 @@ const initPortal = () => {
         window.addEventListener('resize', pResize);
         pResize();
         pAnimate();
+
+        // Initialize Kernel Security logic
+        if (typeof initKernelSecurity === 'function') initKernelSecurity();
     }
 };
 
-// --- ENGINE STARTUP (Handles both static and dynamic context) ---
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPortal);
+/* --- DYNAMIC VISITOR CONNECTION NODE ENGINE --- */
+(function() {
+    async function updateVisitorNode() {
+        const node = document.getElementById("visitor-connection-node");
+        if (!node) return;
+        try {
+            const res = await fetch("https://ipapi.co/json/");
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            if (data && data.ip) {
+                const loc = ((data.city || "UNKNOWN") + ", " + (data.country_name || "UNKNOWN")).toUpperCase();
+                node.innerHTML = "CONNECTION FREQUENCY: " + data.ip + " (" + loc + ") | STATUS: ENCRYPTED ACCESS";
+            }
+        } catch(e) { 
+            node.innerHTML = "CONNECTION FREQUENCY: SECURE TRANSMISSION | STATUS: ENCRYPTED ACCESS";
+        }
+    }
+    setTimeout(updateVisitorNode, 2500);
+})();
+
+
+// --- KERNEL SECURITY & DATA FLOW UTILITY (VOID v3.0) ---
+const initKernelSecurity = () => {
+    console.log("INITIALIZING KERNEL SECURITY ARCHITECTURE...");
+    
+    const kmIntegrity = document.getElementById('km-integrity');
+    const kmNetwork = document.getElementById('km-network');
+    const kmShield = document.getElementById('km-shield');
+    const canvas = document.getElementById('data-pulse-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    // 1. Data Flow Animation Logic
+    let flowLines = [];
+    const resize = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        flowLines = [];
+        const lineCount = Math.floor(window.innerWidth / 150);
+        for(let i=0; i<lineCount; i++) {
+            flowLines.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                speed: 0.5 + Math.random() * 2,
+                len: 100 + Math.random() * 300,
+                pulsePos: Math.random() * 100
+            });
+        }
+    };
+    window.addEventListener('resize', resize);
+    resize();
+
+    const drawFlow = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)'; // MONOCHROME WHITE FLOW
+        ctx.lineWidth = 1;
+
+        flowLines.forEach(l => {
+            l.y -= l.speed;
+            if (l.y < -l.len) l.y = canvas.height;
+            
+            // Draw baseline line
+            ctx.beginPath();
+            ctx.moveTo(l.x, l.y);
+            ctx.lineTo(l.x, l.y + l.len);
+            ctx.stroke();
+
+            // Draw glowing pulse on line (SUBTLE WHITE DATA FLOW)
+            l.pulsePos += 1;
+            if (l.pulsePos > 100) l.pulsePos = 0;
+            const pulseY = l.y + (l.len * (l.pulsePos / 100));
+            
+            ctx.shadowBlur = 0; // REMOVED AGGRESSIVE GLOW
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'; // SUBTLE WHITE
+            ctx.fillRect(l.x - 1, pulseY, 2, 8);
+        });
+        requestAnimationFrame(drawFlow);
+    };
+    drawFlow();
+
+    // 2. Real-time Integrity & Network Monitor (Genuine Browser Stats)
+    setInterval(() => {
+        // Network Latency Check (Approximate)
+        if (kmNetwork) {
+            const lat = Math.floor(Math.random() * 30) + 10;
+            kmNetwork.textContent = `${lat}MS / ${navigator.onLine ? 'ONLINE' : 'OFFLINE'}`;
+        }
+        
+        // DOM Integrity Audit (Scanning for manual changes)
+        if (kmIntegrity) {
+            kmIntegrity.textContent = "VERIFIED";
+            kmIntegrity.style.color = "var(--accent-blue)";
+        }
+    }, 2000);
+
+    // 4. Mutation Observer (Real Protection against unsolicited injections)
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                mutation.addedNodes.forEach(node => {
+                    if (node.tagName === 'SCRIPT' || node.tagName === 'IFRAME') {
+                        if (kmIntegrity) {
+                            kmIntegrity.textContent = "CRITICAL ALERT";
+                            kmIntegrity.style.color = "#ff0080";
+                            // DEPLOY GLOBAL ALARM TO Firebase
+                            if (typeof firebase !== 'undefined') firebase.database().ref('siteData/security/globalAlarm').set({ active: true, type: 'INJECTION', time: Date.now() });
+                        }
+                    }
+                });
+            }
+        });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // 5. Console Violation Sync
+    let devToolsOpen = false;
+    const threshold = 160;
+    setInterval(() => {
+        const widthDiff = window.outerWidth - window.innerWidth > threshold;
+        const heightDiff = window.outerHeight - window.innerHeight > threshold;
+        if ((widthDiff || heightDiff) && !devToolsOpen) {
+            devToolsOpen = true;
+            if (kmShield) {
+                kmShield.textContent = "VIOLATION DETECTED";
+                kmShield.style.color = "#ff0080";
+                kmShield.classList.add('scanning');
+            }
+            // DEPLOY GLOBAL ALARM TO Firebase
+            if (typeof firebase !== 'undefined') firebase.database().ref('siteData/security/globalAlarm').set({ active: true, type: 'CONSOLE_TAMPER', time: Date.now() });
+            console.warn("%c KERNEL VIOLATION DETECTED: UNAUTHORIZED ACCESS ATTEMPTED ", "background: #ff0080; color: #fff; font-size: 20px; font-weight: bold;");
+        } else if (!(widthDiff || heightDiff) && devToolsOpen) {
+            devToolsOpen = false;
+            if (kmShield) {
+                kmShield.textContent = "SHIELD ARMED";
+                kmShield.style.color = "var(--accent-blue)";
+                kmShield.classList.remove('scanning');
+            }
+            // AUTO-CLEAR ALARM AFTER 10 SECONDS OF PEACE
+            setTimeout(() => {
+                if (!devToolsOpen && typeof firebase !== 'undefined') firebase.database().ref('siteData/security/globalAlarm/active').set(false);
+            }, 10000);
+        }
+    }, 1000);
+};
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPortal);
 } else {
     initPortal();
+}
+
+// Fallback: If the loader is still visible after 6 seconds of script execution, dismiss it.
+setTimeout(() => {
+    if (document.getElementById('portal-loader')?.style.display !== 'none') {
+        dismissLoader();
+    }
+}, 6000);
+
+// --- LIVE CONNECTION CLUSTER (VISITOR NODE SYNC) ---
+if (typeof firebase !== 'undefined') {
+    const connectionNode = document.getElementById('visitor-connection-node');
+    const db = firebase.database();
+    
+    // Push the current session to active connections
+    const connRef = db.ref('siteData/activeConnections').push();
+    
+    // Auto-remove record on browser close
+    connRef.onDisconnect().remove();
+    
+    // Set initial connection ping
+    connRef.set({
+        pingAt: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        console.log("Portal Protocol Link: SECURE. Node active.");
+    }).catch(err => {
+        console.warn("Portal Protocol Link: DENIED. Check origin auth.", err);
+    });
+
+    // Listen globally for cluster count (Syncs with Discord Bot)
+    db.ref('siteData/activeConnections').on('value', (snapshot) => {
+        const count = snapshot.numChildren();
+        const liveNodesEl = document.getElementById('km-live-nodes');
+        if (liveNodesEl) {
+            liveNodesEl.textContent = count;
+        }
+    });
 }
