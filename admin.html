@@ -10,9 +10,60 @@
     
     <!-- Firebase Infrastructure (v10.7.1-compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+        /* Emergency Security Overlay (Global Admin Sync) */
+        #global-security-alarm {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(255, 0, 0, 0.12);
+            backdrop-filter: blur(12px);
+            z-index: 1000000;
+            display: none;
+            flex-direction: column;
+            align-items: center; justify-content: center;
+            color: #fff;
+            pointer-events: none;
+            border: 8px solid #ff0055;
+            animation: alarm-border-pulse 0.4s infinite alternate;
+        }
+        .alarm-box {
+            text-align: center;
+            background: #000;
+            padding: 4rem 6rem;
+            border-radius: 40px;
+            border: 3px solid #ff0055;
+            box-shadow: 0 0 100px rgba(255, 0, 85, 0.6);
+            animation: alarm-shake 0.1s infinite;
+        }
+        .danger-icon { font-size: 5rem; color: #ff0055; margin-bottom: 2rem; filter: drop-shadow(0 0 20px #ff0055); }
+        .alarm-box h1 { font-family: 'Syncopate', sans-serif; font-size: 2.2rem; color: #ff0055; letter-spacing: 0.6rem; margin: 1.5rem 0; text-shadow: 0 0 20px #ff0055; }
+        .alarm-box p { font-size: 0.85rem; letter-spacing: 0.15rem; color: #fff; opacity: 0.9; margin-bottom: 2rem; }
+        #alarm-type { font-family: monospace; font-size: 0.75rem; color: #ff0055; font-weight: 700; background: rgba(255, 0, 85, 0.1); padding: 0.5rem 1.5rem; border-radius: 10px; }
+
+        @keyframes alarm-border-pulse { from { border-color: #ff0055; } to { border-color: transparent; } }
+        @keyframes alarm-shake {
+            0% { transform: translate(0,0); }
+            25% { transform: translate(-2px, 1px); }
+            50% { transform: translate(2px, -1px); }
+            75% { transform: translate(-1px, -2px); }
+            100% { transform: translate(1px, 2px); }
+        }
+    </style>
 </head>
 <body>
+    <!-- REAL-TIME GLOBAL SECURITY ALARM OVERLAY -->
+    <div id="global-security-alarm">
+        <div class="alarm-box">
+            <i class="fas fa-biohazard danger-icon"></i>
+            <h1>KERNEL VIOLATION</h1>
+            <p>CRITICAL INTEGRITY BREACH DETECTED IN MAIN TRANSMISSION</p>
+            <div id="alarm-type">SCANNING FREQUENCY...</div>
+        </div>
+    </div>
+
     <!-- Secure Login Overlay -->
     <div id="login-overlay" class="login-screen">
         <canvas id="vibe-canvas"></canvas>
@@ -23,7 +74,14 @@
                 <p>ACCESS TO LABELS PORTAL IS RESTRICTED</p>
             </div>
             <div class="login-body">
-                <input type="password" id="root-pass-input" placeholder="ENTER PORTAL KEY...">
+                <div class="login-input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="root-email-input" placeholder="ADMIN EMAIL...">
+                </div>
+                <div class="login-input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="root-pass-input" placeholder="PORTAL KEY...">
+                </div>
                 <button id="login-btn"><i class="fas fa-unlock"></i> INITIATE ACCESS</button>
                 <p id="login-error" class="error-msg">INVALID ROOT FREQUENCY.</p>
             </div>
@@ -72,6 +130,30 @@
 
         <main class="content-area">
             
+            <!-- Kernel Security Monitor (Administrative Grade) -->
+            <div class="kernel-monitor-admin">
+                <div class="kernel-node">
+                    <i class="fas fa-microchip"></i>
+                    <span class="kernel-label">SYSTEM INTEGRITY:</span>
+                    <span class="kernel-status" id="km-integrity">SCANNING...</span>
+                </div>
+                <div class="kernel-node">
+                    <i class="fas fa-network-wired"></i>
+                    <span class="kernel-label">NETWORK FREQ:</span>
+                    <span class="kernel-status" id="km-network">CALIBRATING...</span>
+                </div>
+                <div class="kernel-node">
+                    <i class="fas fa-fingerprint"></i>
+                    <span class="kernel-label">AUTH PROTOCOL:</span>
+                    <span class="kernel-status">ROOT-LEVEL L4</span>
+                </div>
+                <div class="kernel-node">
+                    <i class="fas fa-user-secret"></i>
+                    <span class="kernel-label">TAMPER SHIELD:</span>
+                    <span class="kernel-status" id="km-shield">SHIELD ARMED</span>
+                </div>
+            </div>
+
             <!-- Global Settings Panel -->
             <section id="settings-panel" class="panel active">
                 <div class="panel-header">
