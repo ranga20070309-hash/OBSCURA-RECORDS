@@ -13,6 +13,35 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.database();
+// Debug Initialization
+alert("CORE SYSTEM ONLINE: PERSONNEL SYNC READY (v4.4)");
+console.log("Transmission link established.");
+
+window.saveIndividualStaff = function(discordId) {
+    alert("SYNC ATTEMPT STARTED FOR: " + discordId);
+    const item = document.querySelector(`.staff-editor-item[data-discord-id="${discordId}"]`);
+    if (!item) {
+        alert("CRITICAL ERROR: Editor item not found for " + discordId);
+        return;
+    }
+    const bio = item.querySelector('.s-bio').value;
+    const avatar = item.querySelector('.s-avatar') ? item.querySelector('.s-avatar').value : '';
+    const socials = {};
+    item.querySelectorAll('input[class^="s-social-"]').forEach(input => {
+        const platform = input.className.replace('s-social-', '');
+        if (input.value.trim() !== '') {
+            socials[platform] = input.value.trim();
+        }
+    });
+    const data = { bio: bio, avatar_url: avatar, socials: socials };
+    db.ref('staff_status/' + discordId).update(data).then(() => {
+        alert('SUCCESS: Personnel frequency synced for ID ' + discordId);
+        bumpSiteVersion();
+        loadStaff(); 
+    }).catch(err => {
+        alert('SYNC ERROR: ' + err.message);
+    });
+};
 
 // UI Elements
 const navBtns = document.querySelectorAll('.nav-btn');
@@ -36,7 +65,20 @@ navBtns.forEach(btn => {
         panels.forEach(p => p.classList.remove('active'));
         
         btn.classList.add('active');
-        document.getElementById(btn.dataset.target).classList.add('active');
+        const target = btn.dataset.target;
+        const panel = document.getElementById(target);
+        if (panel) panel.classList.add('active');
+        
+        // Auto-refresh and trace panel data on navigation
+        console.log("Navigating to:", target);
+        if (target === 'staff-panel') {
+            loadStaff();
+        } else if (target === 'demo-inbox-panel') {
+            loadSubmissions();
+        } else if (target === 'releases-panel') {
+            alert("NAV: SWITCHING TO RELEASES PANEL...");
+            loadReleases();
+        }
     });
 });
 
@@ -74,11 +116,12 @@ function unlockDashboard() {
     if (adminWrapper) adminWrapper.style.display = 'flex';
     sessionStorage.setItem('rootAuth', 'granted');
     
-    // DELAYED DATA GATING (Only loads after unlock)
-    loadGlobals();
-    loadSubmissions();
-    loadReleases();
-    loadUpcoming();
+    // DELAYED DATA GATING (Fully Isolated for Stability)
+    try { loadGlobals(); } catch(e) { console.error("Globals fail:", e); }
+    try { loadSubmissions(); } catch(e) { console.error("Submissions fail:", e); }
+    try { loadReleases(); } catch(e) { console.error("Releases fail:", e); }
+    try { loadUpcoming(); } catch(e) { console.error("Upcoming fail:", e); }
+    try { loadStaff(); } catch(e) { console.error("Staff fail:", e); }
 }
 
 if (loginBtn) {
@@ -268,6 +311,9 @@ function createReleaseEditor(release, index) {
 }
 
 function renderReleases() {
+    const releasesContainer = document.getElementById('releases-container');
+    if (!releasesContainer) return;
+    
     releasesContainer.innerHTML = '';
     releasesArray.forEach((r, i) => {
         releasesContainer.appendChild(createReleaseEditor(r, i));
@@ -280,21 +326,32 @@ window.removeRelease = function(index) {
     renderReleases();
 };
 
-document.getElementById('add-release-btn').addEventListener('click', () => {
-    gatherReleasesData(); // Save current state before pushing
-    releasesArray.unshift({
-        id: "OS-NEW", title: "NEW TRACK", producers: "UNKNOWN", type: "SINGLE", 
-        image: "assets/cover.png", spotify: "#", apple: "#", youtube: "#"
-    });
-    renderReleases();
-});
+const addRelBtn = document.getElementById('add-release-btn');
+if (addRelBtn) {
+    addRelBtn.onclick = () => {
+        gatherReleasesData();
+        releasesArray.unshift({
+            id: "OS-NEW", title: "NEW TRACK", producers: "UNKNOWN", type: "SINGLE", 
+            image: "assets/cover.png", spotify: "#", apple: "#", youtube: "#"
+        });
+        renderReleases();
+    };
+}
 
 function loadReleases() {
-    // Load Releases
+    const releasesContainer = document.getElementById('releases-container');
+    if (!releasesContainer) {
+        console.error("Release container not found!");
+        return;
+    }
+    
+    releasesContainer.innerHTML = '<p style="opacity:0.5; padding:2rem;">Synchronizing release archive...</p>';
+    
     db.ref('siteData/releases').once('value').then(snapshot => {
         let data = snapshot.val();
         
         if (data && Array.isArray(data)) {
+            alert('RELEASES DETECTED: Found ' + data.length + ' tracks in archive.');
             if (data[0] && data[0]._isEmpty) {
                 releasesArray = [];
             } else {
@@ -302,17 +359,17 @@ function loadReleases() {
             }
             renderReleases();
         } else {
-            // Fallback default so details are pre-filled the very first time
+            alert('NOTICE: Release archive is empty or using defaults.');
             releasesArray = [
                 { id: "OS-992 <span class='badge'>NEW</span>", title: "STARLIGHT SYNDROME", producers: "SVYUXU & OBSCURA", type: "SINGLE", image: "assets/cover.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=A0FZIwabctw", preview: "" },
                 { id: "OS-991", title: "NEUTRON PULSE", producers: "RANGA", type: "EP", image: "assets/releases/cover_1.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=jfKfPfyJRdk", preview: "" },
                 { id: "OS-990", title: "VOID WALKER", producers: "FL4ME", type: "ALBUM", image: "assets/releases/cover_2.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=21X5lGlDOfg", preview: "" },
                 { id: "OS-989", title: "SOLAR FLARE", producers: "SVYUXU & RANGA", type: "SINGLE", image: "assets/releases/cover_3.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=kJQP7kiw5Fk", preview: "" }
             ];
-            // Automatically sync defaults back to database so main site maintains 1-to- Parity
-            db.ref('siteData/releases').set(releasesArray);
             renderReleases();
         }
+    }).catch(err => {
+        alert('RELEASES ERROR: ' + err.message);
     });
 }
 
@@ -495,5 +552,177 @@ if (clearBtn) {
     });
 }
 
-// Initial load - REMOVED for Gating
+// --- STAFF PROFILES PANEL ---
+function createStaffEditor(staff, discordId) {
+    const div = document.createElement('div');
+    div.className = 'release-editor-item staff-editor-item';
+    div.style.marginBottom = '2.5rem';
+    div.style.background = 'rgba(255,255,255,0.02)';
+    div.style.padding = '2.5rem';
+    div.style.borderRadius = '24px';
+    div.style.border = '1px solid rgba(255,255,255,0.05)';
+    div.dataset.discordId = discordId;
+    
+    // Socials section
+    const socials = staff.socials || {};
+    const platforms = ['instagram', 'spotify', 'apple', 'facebook', 'youtube', 'tiktok', 'twitter'];
+    let socialsHtml = '';
+    platforms.forEach(p => {
+        socialsHtml += `
+            <div class="input-group">
+                <label>${p.toUpperCase()} LINK</label>
+                <input type="text" class="s-social-${p}" value="${socials[p] || ''}" placeholder="https://...">
+            </div>
+        `;
+    });
+
+    div.innerHTML = `
+        <button class="delete-btn" onclick="removeStaff('${discordId}')"><i class="fas fa-trash"></i></button>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 2rem;">
+                <div style="width: 70px; height: 70px; border-radius: 50%; background-image: url(${staff.avatar_url || 'assets/staff/default.png'}); background-position: center; background-size: cover; border: 2px solid var(--accent-blue); background-color: #000;"></div>
+                <div>
+                    <h3 style="margin:0; color:var(--accent-blue); font-size: 1.4rem;">${staff.name || 'UNKNOWN'}</h3>
+                    <small style="opacity:0.5; letter-spacing: 0.1rem;">ACCESS KEY: ${discordId}</small>
+                </div>
+            </div>
+            <button class="save-btn" style="padding: 0.8rem 1.5rem; font-size: 0.7rem; border-radius: 10px;" onclick="saveIndividualStaff('${discordId}')"><i class="fas fa-save"></i> SYNC INDIVIDUAL TRANSMISSION</button>
+        </div>
+        <div class="form-grid">
+            <div class="input-group full">
+                <label>AVATAR SOURCE URL (IMAGE LINK)</label>
+                <input type="text" class="s-avatar" value="${staff.avatar_url || ''}" placeholder="Paste image link here (PNG/JPG)...">
+            </div>
+            <div class="input-group full">
+                <label>PERSONNEL BIOGRAPHY (HTML ALLOWED)</label>
+                <textarea class="s-bio" style="height: 100px; font-family:'Inter', sans-serif;">${staff.bio || ''}</textarea>
+            </div>
+            <h4 style="grid-column: 1 / -1; color: var(--primary); font-size: 0.7rem; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem; font-family:'Syncopate', sans-serif; opacity: 0.8;">BROADCAST CHANNELS</h4>
+            ${socialsHtml}
+        </div>
+    `;
+    return div;
+}
+
+window.removeStaff = function(discordId) {
+    if (confirm('SYSTEM OVERRIDE: Purge this personnel record from the transmission?')) {
+        db.ref('staff_status/' + discordId).remove().then(() => {
+            loadStaff(); // Refresh view
+        });
+    }
+};
+
+function loadStaff() {
+    const staffContainer = document.getElementById('staff-container');
+    if (!staffContainer) return;
+
+    db.ref('staff_status').once('value').then(snapshot => {
+        const data = snapshot.val();
+        staffContainer.innerHTML = '';
+        
+        if (!data) {
+            staffContainer.innerHTML = '<p style="opacity:0.5; padding:2rem; font-style:italic; color:var(--accent-magenta);">Personnel node not found. Please click INITIALIZE button above once.</p>';
+            return;
+        }
+        
+        Object.entries(data).forEach(([id, staff]) => {
+            staffContainer.appendChild(createStaffEditor(staff, id));
+        });
+    });
+}
+
+function saveStaff() {
+    const items = document.querySelectorAll('.staff-editor-item');
+    if (items.length === 0) {
+        alert('NO PERSONNEL RECORDS FOUND TO SYNC.');
+        return;
+    }
+    const updates = {};
+    items.forEach(item => {
+        const id = item.dataset.discordId;
+        const bio = item.querySelector('.s-bio').value;
+        const avatar = item.querySelector('.s-avatar') ? item.querySelector('.s-avatar').value : '';
+        const socials = {};
+        item.querySelectorAll('input[class^="s-social-"]').forEach(input => {
+            const platform = input.className.replace('s-social-', '');
+            if (input.value.trim() !== '') {
+                socials[platform] = input.value.trim();
+            }
+        });
+        updates[id + '/bio'] = bio;
+        updates[id + '/avatar_url'] = avatar;
+        updates[id + '/socials'] = socials;
+    });
+    db.ref('staff_status').update(updates).then(() => {
+        alert('SUCCESS: All personnel frequencies updated.');
+        showSaveMsg('save-msg-staff');
+        bumpSiteVersion();
+        loadStaff();
+    }).catch(err => {
+        alert('CRITICAL SYNC ERROR: ' + err.message);
+    });
+}
+
+// Individual save function moved to top for scope safety
+
+const saveReleasesBtn = document.getElementById('save-releases');
+if (saveReleasesBtn) {
+    saveReleasesBtn.addEventListener('click', () => {
+        const items = document.querySelectorAll('#releases-container .release-editor-item');
+        if (items.length === 0) {
+            alert('NO RELEASES FOUND TO SYNC.');
+            return;
+        }
+        
+        let updates = [];
+        items.forEach(item => {
+            const id = item.querySelector('.r-id').value;
+            const title = item.querySelector('.r-title').value;
+            const producers = item.querySelector('.r-producers').value;
+            const type = item.querySelector('.r-type').value;
+            const image = item.querySelector('.r-image').value;
+            const spotify = item.querySelector('.r-spotify').value;
+            const apple = item.querySelector('.r-apple').value;
+            const youtube = item.querySelector('.r-youtube').value;
+            const preview = item.querySelector('.r-preview').value;
+
+            updates.push({ id, title, producers, type, image, spotify, apple, youtube, preview });
+        });
+
+        db.ref('siteData/releases').set(updates).then(() => {
+            alert('SUCCESS: Release archive successfully updated.');
+            bumpSiteVersion();
+            loadReleases();
+        }).catch(err => {
+            alert('CRITICAL SYNC ERROR: ' + err.message);
+        });
+    });
+}
+
+const initStaffBtn = document.getElementById('init-staff-btn');
+if (initStaffBtn) {
+    initStaffBtn.addEventListener('click', () => {
+        if (confirm('Initialize base staff records? This will only add missing entries and WON\'T overwrite existing avatars.')) {
+            const baseStaff = {
+                "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                "459345097373515777": { name: "IRANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                "1296819349885161472": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                "1296813876364705792": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" }
+            };
+            
+            Object.entries(baseStaff).forEach(([id, staff]) => {
+                db.ref('staff_status/' + id).once('value').then(snap => {
+                    if (!snap.exists()) {
+                        db.ref('staff_status/' + id).set(staff);
+                    }
+                });
+            });
+            
+            alert('Safe initialization sequence initiated. Reloading in 1s...');
+            setTimeout(() => window.location.reload(), 1000);
+        }
+    });
+}
+
+// Initial load
 initializeSecurity();
