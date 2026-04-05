@@ -485,6 +485,7 @@ const initPortal = () => {
     setupModal('open-privacy', 'privacy-modal');
     setupModal('open-demo', 'demo-modal');
     setupModal('open-form', 'submission-modal');
+    setupModal('open-form-sidebar', 'submission-modal'); // New: Sidebar trigger
     setupModal('open-contact', 'contact-modal');
 
     // --- ARTIST MODAL CLOSE LOGIC ---
@@ -612,6 +613,16 @@ const initPortal = () => {
             // Only intercept internal section links
             if (target && target.startsWith('#')) {
                 e.preventDefault();
+
+                // --- MOBILE SIDEBAR AUTO-CLOSE LOGIC ---
+                const sidebar = document.getElementById('social-sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
+                if (sidebar && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    if (overlay) overlay.classList.remove('active');
+                    document.body.style.overflow = 'auto'; // Restore scroll
+                }
+
                 const targetId = target.substring(1);
                 const targetElement = document.getElementById(targetId);
                 
