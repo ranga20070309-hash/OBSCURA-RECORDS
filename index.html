@@ -64,6 +64,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body class="no-scroll">
+    <div class="sonic-aura"></div>
     <!-- Cinematic Portal Loader -->
     <div id="portal-loader" class="portal-loader">
         <div class="loader-content">
@@ -603,6 +604,32 @@
                     </p>
                 </form>
                 <div id="submission-status" class="form-status">TRANSMISSION DEPLOYED SUCCESSFULLY.</div>
+            </div>
+        </div>
+
+        <!-- Artist Detail Popup Modal -->
+        <div id="artist-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content glass artist-modal-content">
+                <button class="close-modal">&times;</button>
+                <div class="artist-modal-inner">
+                    <div class="artist-modal-header">
+                        <div class="artist-modal-img-wrapper" style="width: 120px; height: 120px; position: relative;">
+                            <div id="artist-modal-img" class="artist-img" style="width: 100%; height: 100%; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 2px solid var(--accent-blue); box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);"></div>
+                            <img src="" id="artist-modal-decoration" class="avatar-decoration" style="display: none; position: absolute; top: 50%; left: 50%; width: 145px; height: 145px; transform: translate(-50%, -50%); z-index: 2; pointer-events: none;">
+                        </div>
+                        <div class="artist-modal-title" style="text-align: left;">
+                            <h2 id="artist-modal-name" class="section-title" style="margin: 0; font-size: 2.2rem; letter-spacing: 0.1rem;">ARTIST NAME</h2>
+                            <p id="artist-modal-status" class="status-indicator" style="display: inline-block; margin-top: 0.5rem;">OFFLINE</p>
+                        </div>
+                    </div>
+                    <div class="artist-modal-body" style="margin-top: 2rem;">
+                        <p id="artist-modal-bio" class="artist-bio" style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary);">Accessing encrypted artist profile... no secondary transmission found.</p>
+                        <div id="artist-modal-links" class="artist-modal-links" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                            <!-- Dynamic Links -->
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
