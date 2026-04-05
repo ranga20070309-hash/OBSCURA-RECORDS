@@ -12,18 +12,65 @@ window.onload = () => {
     window.scrollTo(0, 0);
 };
 
-// --- YouTube Background Audio Controller (Global Scope for Callback Security) ---
+// --- THE CORE SONIC PLAYER ---
 let ytPlayer = null;
 let isYTApiReady = false;
 let currentPlayingBtn = null;
 let audioTimer = null;
 let previewAudio = new Audio();
 let playbackStartOffset = 0; 
-let autoScrollInterval = null; // Restore Auto-Scroll Global
-const PREVIEW_LIMIT = 30; 
+let autoScrollInterval = null;
+const PREVIEW_LIMIT = 30;
 
 // --- UI SOUND SYNTHESIZER (Clean Web Audio API) ---
 let audioCtx = null;
+
+// --- DYNAMIC SONIC AURA (AUDIO PULSE ENGINE) ---
+let audioAnalyser = null;
+let audioDataArray = null;
+let audioSourceNode = null;
+let isPulseActive = false;
+
+function initPulseEngine(audioElement) {
+    if (audioAnalyser) return; // Prevent double init
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        audioAnalyser = audioCtx.createAnalyser();
+        audioAnalyser.fftSize = 256;
+        
+        audioSourceNode = audioCtx.createMediaElementSource(audioElement);
+        audioSourceNode.connect(audioAnalyser);
+        audioAnalyser.connect(audioCtx.destination);
+        
+        audioDataArray = new Uint8Array(audioAnalyser.frequencyBinCount);
+        updateSonicPulse();
+    } catch(e) { console.warn("Pulse Engine Init Blocked:", e); }
+}
+
+function updateSonicPulse() {
+    if (!audioAnalyser) return;
+    requestAnimationFrame(updateSonicPulse);
+    
+    let intensity = 0.15; // Baseline
+
+    if (isPulseActive) {
+        audioAnalyser.getByteFrequencyData(audioDataArray);
+        // Focus on Bass frequencies (0-10)
+        let sum = 0;
+        for(let i=0; i<10; i++) sum += audioDataArray[i];
+        let bass = sum / 10;
+        intensity = 0.15 + (bass / 255) * 0.4;
+    } else if (ytPlayer && ytPlayer.getPlayerState && ytPlayer.getPlayerState() === 1) {
+        // Fallback for YouTube: Subtle sine-wave pulse
+        intensity = 0.15 + (Math.sin(Date.now() / 400) + 1) * 0.1;
+    }
+
+    document.documentElement.style.setProperty('--bg-pulse-intensity', intensity.toFixed(3));
+}
+
+// UI SOUND SYNTHESIZER (Clean Web Audio API) ---
 const playBleep = (freq = 600, type = 'sine', duration = 0.08) => {
     try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -190,6 +237,7 @@ function getYouTubeID(url) {
 
 function startUIPlayback(btn, row, img) {
     if (!btn) return;
+    isPulseActive = true; // Activate pulse
     playBleep(800, 'square', 0.1); 
     btn.innerHTML = '<i class="fas fa-pause"></i>';
     row.classList.add('active-track');
@@ -199,6 +247,7 @@ function startUIPlayback(btn, row, img) {
 }
 
 function stopPlayback(btn) {
+    isPulseActive = false; // Deactivate pulse
     if (!btn) return;
     playBleep(400, 'sine', 0.1); 
     const parentRow = btn.closest('.release-card-large');
@@ -235,24 +284,31 @@ const initPortal = () => {
     const cursorGlow = document.querySelector('.cursor-glow');
 
     // --- CUSTOM CURSOR LOGIC ---
-    document.addEventListener('mousemove', (e) => {
-        if (cursor && cursorGlow) {
-            gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
-            gsap.to(cursorGlow, { x: e.clientX, y: e.clientY, duration: 0.6 });
-        }
-    });
+    const isMobile = window.matchMedia("(hover: none) and (pointer: coarse)").matches || window.innerWidth <= 1024;
+    
+    if (!isMobile) {
+        document.addEventListener('mousemove', (e) => {
+            if (cursor && cursorGlow) {
+                gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
+                gsap.to(cursorGlow, { x: e.clientX, y: e.clientY, duration: 0.6 });
+            }
+        });
 
-    document.addEventListener('mouseleave', () => {
-        if (cursor && cursorGlow) {
-            gsap.to([cursor, cursorGlow], { opacity: 0, duration: 0.3 });
-        }
-    });
+        document.addEventListener('mouseleave', () => {
+            if (cursor && cursorGlow) {
+                gsap.to([cursor, cursorGlow], { opacity: 0, duration: 0.3 });
+            }
+        });
 
-    document.addEventListener('mouseenter', () => {
-        if (cursor && cursorGlow) {
-            gsap.to([cursor, cursorGlow], { opacity: 1, duration: 0.3 });
-        }
-    });
+        document.addEventListener('mouseenter', () => {
+            if (cursor && cursorGlow) {
+                gsap.to([cursor, cursorGlow], { opacity: 1, duration: 0.3 });
+            }
+        });
+    } else if (cursor && cursorGlow) {
+        cursor.style.display = 'none';
+        cursorGlow.style.display = 'none';
+    }
 
     // --- THE AUTOMATIC SPLASH SEQUENCE (ENARMA STYLE) ---
     const runIgnition = () => {
@@ -423,6 +479,21 @@ const initPortal = () => {
     setupModal('open-demo', 'demo-modal');
     setupModal('open-form', 'submission-modal');
     setupModal('open-contact', 'contact-modal');
+
+    // --- ARTIST MODAL CLOSE LOGIC ---
+    const artistModal = document.getElementById('artist-modal');
+    if (artistModal) {
+        const closeBtn = artistModal.querySelector('.close-modal');
+        const overlay = artistModal.querySelector('.modal-overlay');
+        [closeBtn, overlay].forEach(btn => {
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    artistModal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                });
+            }
+        });
+    }
 
     // --- SUBMISSION FORM LOGIC ---
     const subForm = document.getElementById('submission-form');
@@ -650,6 +721,62 @@ const initPortal = () => {
                     } else {
                         decoration.style.display = 'none';
                     }
+
+                    // --- MODAL CLICK HANDLER (INTEGRATED) ---
+                    item.style.cursor = 'pointer';
+                    item.onclick = () => {
+                        const modal = document.getElementById('artist-modal');
+                        const mName = document.getElementById('artist-modal-name');
+                        const mStatus = document.getElementById('artist-modal-status');
+                        const mBio = document.getElementById('artist-modal-bio');
+                        const mImg = document.getElementById('artist-modal-img');
+                        const mDecor = document.getElementById('artist-modal-decoration');
+                        const mLinks = document.getElementById('artist-modal-links');
+
+                        if (!modal) return;
+
+                        playBleep(700, 'sine', 0.1);
+                        mName.textContent = data.name || nameLabel;
+                        mStatus.textContent = (data.status || 'OFFLINE').toUpperCase();
+                        mStatus.className = `status-indicator ${(data.status || 'offline').toLowerCase()}`;
+                        mBio.textContent = data.bio || "Accessing encrypted artist profile... no secondary transmission found.";
+                        
+                        if (data.avatar_url) {
+                            mImg.style.backgroundImage = `url(${data.avatar_url})`;
+                            mImg.style.backgroundSize = 'cover';
+                        }
+                        
+                        if (data.decoration_url) {
+                            mDecor.src = data.decoration_url;
+                            mDecor.style.display = 'block';
+                        } else {
+                            mDecor.style.display = 'none';
+                        }
+
+                        // Populate Social Links
+                        mLinks.innerHTML = '';
+                        if (data.socials) {
+                            Object.entries(data.socials).forEach(([platform, url]) => {
+                                let icon = 'link';
+                                if (platform === 'instagram') icon = 'fab fa-instagram';
+                                else if (platform === 'spotify') icon = 'fab fa-spotify';
+                                else if (platform === 'apple') icon = 'fa-brands fa-apple';
+                                else if (platform === 'facebook') icon = 'fa-brands fa-facebook-f';
+                                else if (platform === 'youtube') icon = 'fab fa-youtube';
+                                else if (platform === 'tiktok') icon = 'fab fa-tiktok';
+                                else if (platform === 'twitter' || platform === 'x') icon = 'fab fa-x-twitter';
+
+                                mLinks.insertAdjacentHTML('beforeend', `
+                                    <a href="${url}" target="_blank" class="platform-link">
+                                        <i class="${icon}"></i>
+                                    </a>
+                                `);
+                            });
+                        }
+
+                        modal.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    };
                 } else {
                     console.warn(`No status data found for ${nameLabel}`);
                     statusIndicator.textContent = "OFFLINE";
@@ -854,6 +981,8 @@ const initPortal = () => {
                                 try {
                                     previewAudio.src = mp3Url;
                                     previewAudio.play().then(() => {
+                                        initPulseEngine(previewAudio); // Force visual link
+                                        isPulseActive = true;
                                         startUIPlayback(playBtn, row, coverImg);
                                         if (timeDisplay) {
                                             timeDisplay.style.display = 'block';
@@ -868,6 +997,12 @@ const initPortal = () => {
                             // PRIORITY 2: YouTube Fallback (Check if youtube field OR preview field has YT link)
                             else if (ytId) {
                                 if (!isYTApiReady || !ytPlayer) initYTPlayer();
+                                isPulseActive = false; // YouTube uses steady fallback in engine
+                                if (!audioAnalyser) {
+                                    // Use dummy element to start loop for YT steady pulse
+                                    const dummy = new Audio();
+                                    initPulseEngine(dummy);
+                                }
 
                                 try {
                                     if (ytPlayer && ytPlayer.playVideo) {
