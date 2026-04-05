@@ -675,7 +675,7 @@ const initPortal = () => {
 
     // --- FIREBASE DISCORD SYNC (REALTIME DATABASE) ---
     const firebaseConfig = {
-        apiKey: "AI8SjFSqSJ6DYAcBJrNGN76hEhcij5vtyJK5G819CvV7Fm",
+        apiKey: "AIzaSyCHf_R1n2Qn-q4NHAjfJt6xD_TWIRjiN1o",
         authDomain: "obscura-records.firebaseapp.com",
         databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "obscura-records",
