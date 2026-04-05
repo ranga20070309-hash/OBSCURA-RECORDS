@@ -25,6 +25,9 @@
     <meta property="twitter:title" content="OBSCURA RECORD | Into the Sonic Void">
     <meta property="twitter:description" content="Discover high-energy Phonk and futuristic vibrations. Official label archive.">
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Security Layer: Google reCAPTCHA v3 -->
+    <script src="https://www.google.com/recaptcha/api.js?render=6LcFNKgsAAAAAEEdRhYJrwgeWzaRyMmzbgNy3swn"></script>
     <!-- Google Fonts: Space Grotesk for Tech, Outfit for Luxury -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
@@ -39,7 +42,7 @@
     
     <script>
         const firebaseConfig = {
-            apiKey: "AI8SjFSqSJ6DYAcBJrNGN76hEhcij5vtyJK5G819CvV7Fm",
+            apiKey: "AIzaSyAA2h1Ht6TLmpMc3xhN5euPZo5ecC4RJtfJrJu8",
             authDomain: "obscura-records.firebaseapp.com",
             databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "obscura-records",
@@ -630,6 +633,35 @@
                     </p>
                 </form>
                 <div id="submission-status" class="form-status">TRANSMISSION DEPLOYED SUCCESSFULLY.</div>
+            </div>
+        </div>
+
+        <!-- Secure Contact Portal (New) -->
+        <div id="contact-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content glass no-tilt" style="max-width: 500px;">
+                <button class="close-modal">&times;</button>
+                <div class="modal-header">
+                    <h2 class="section-title">CONTACT <span class="accent">VOID</span></h2>
+                    <p style="margin-top:-1rem; margin-bottom: 1.5rem; color: var(--text-secondary); opacity: 0.8; font-size: 0.8rem;">Establish a direct frequency with the Obscura Record command center.</p>
+                </div>
+                <form id="contact-form" class="cyber-form">
+                    <div class="form-group">
+                        <label>NAME / IDENTIFIER</label>
+                        <input type="text" name="name" placeholder="Entity Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>RETURN EMAIL</label>
+                        <input type="email" name="email" placeholder="freq@void.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>MESSAGE PAYLOAD</label>
+                        <textarea name="message" placeholder="Type your transmission here..." required></textarea>
+                    </div>
+                    <button type="submit" class="cta-primary-small" style="width: 100%;">SEND TRANSMISSION</button>
+                    <p style="font-size: 0.6rem; color: var(--text-secondary); opacity: 0.5; margin-top: 1rem; text-align: center;">This frequency is guarded by Google reCAPTCHA and sonic encryption.</p>
+                </form>
+                <div id="contact-status" class="form-status">MESSAGE LOGGED SUCCESSFULLY.</div>
             </div>
         </div>
 
