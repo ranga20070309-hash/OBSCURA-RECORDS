@@ -53,21 +53,28 @@ function updateSonicPulse() {
     if (!audioAnalyser) return;
     requestAnimationFrame(updateSonicPulse);
     
-    let intensity = 0.15; // Baseline
+    let intensity = 0.15; // Baseline Opacity
+    let scale = 1.0;     // Baseline Scale
+
+    // Check if YouTube is playing (1 is Playing state)
+    const isYTPlaying = ytPlayer && typeof ytPlayer.getPlayerState === 'function' && ytPlayer.getPlayerState() === 1;
 
     if (isPulseActive) {
         audioAnalyser.getByteFrequencyData(audioDataArray);
-        // Focus on Bass frequencies (0-10)
         let sum = 0;
         for(let i=0; i<10; i++) sum += audioDataArray[i];
         let bass = sum / 10;
-        intensity = 0.15 + (bass / 255) * 0.4;
-    } else if (ytPlayer && ytPlayer.getPlayerState && ytPlayer.getPlayerState() === 1) {
-        // Fallback for YouTube: Subtle sine-wave pulse
-        intensity = 0.15 + (Math.sin(Date.now() / 400) + 1) * 0.1;
+        intensity = 0.15 + (bass / 255) * 0.45;
+        scale = 1.0 + (bass / 255) * 0.15;
+    } else if (isYTPlaying) {
+        // Fallback for YouTube: Rhythmic Sine Pulse
+        const wave = (Math.sin(Date.now() / 450) + 1) / 2; // 0 to 1
+        intensity = 0.15 + wave * 0.35;
+        scale = 1.0 + wave * 0.1;
     }
 
     document.documentElement.style.setProperty('--bg-pulse-intensity', intensity.toFixed(3));
+    document.documentElement.style.setProperty('--bg-pulse-scale', scale.toFixed(3));
 }
 
 // UI SOUND SYNTHESIZER (Clean Web Audio API) ---
