@@ -590,23 +590,29 @@ const initPortal = () => {
                 if (SERVICE_ID !== "service_xxxxxxx") {
                     emailjs.init(PUBLIC_KEY);
                     emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-                        // Labels (Questions)
-                        label_name: labelName,
-                        label_artist: labelArtist,
-                        label_email: labelEmail,
-                        label_genre: labelGenre,
-                        label_link: labelLink,
-                        label_message: labelMessage,
-                        label_rule1: rule1Title,
-                        label_rule2: rule2Title,
-                        // Values (Answers)
+                        // Labels (Matches {{LABEL_NAME}} in template)
+                        LABEL_NAME: labelName,
+                        LABEL_ARTIST: labelArtist,
+                        LABEL_EMAIL: labelEmail,
+                        LABEL_GENRE: labelGenre,
+                        LABEL_LINK: labelLink,
+                        LABEL_MESSAGE: labelMessage,
+                        LABEL_RULE1: rule1Title,
+                        LABEL_RULE2: rule2Title,
+                        LABEL_DATE: submission.date,
+                        
+                        // Values (Matches {{val_name}} in template)
                         val_name: submission.name,
                         val_artist: submission.artist,
                         val_email: submission.email,
                         val_genre: submission.genre,
                         val_link: submission.link,
                         val_message: submission.message,
-                        val_date: submission.date
+                        val_date: submission.date,
+                        
+                        // Sidebar Values (Matches {{artist}} aliases in template headers)
+                        artist: submission.artist,
+                        email: submission.email
                     }).then(() => console.log("SIGNAL BROADCAST SUCCESSFUL")).catch(err => console.warn("Email notify error:", err));
                 }
 
