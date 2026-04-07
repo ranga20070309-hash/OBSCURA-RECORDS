@@ -24,7 +24,7 @@
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:title" content="OBSCURA RECORD | Into the Sonic Void">
     <meta property="twitter:description" content="Discover high-energy Phonk and futuristic vibrations. Official label archive.">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=60.1">
     
     <!-- Security Layer: Google reCAPTCHA v3 -->
     <script src="https://www.google.com/recaptcha/api.js?render=6LcFNKgsAAAAAEEdRhYJrwgeWzaRyMmzbgNy3swn"></script>
@@ -558,45 +558,45 @@
             <div class="modal-content glass demo-grid-wide no-tilt">
                 <button class="close-modal">&times;</button>
                 <div class="modal-header">
-                    <h2 class="section-title">SECURE <span class="accent">FORM SUBMISSION</span></h2>
-                    <p style="margin-top:-1rem; margin-bottom: 1.5rem; color: var(--text-secondary); opacity: 0.8; font-size: 0.8rem;">Transmit your audio frequency to the Obscura A&R department for priority review.</p>
+                    <h2 class="section-title" data-sync="formTitle" data-sync-target="html">SECURE <span class="accent">FORM SUBMISSION</span></h2>
+                    <p data-sync="formDesc" data-sync-target="text" style="margin-top:-1rem; margin-bottom: 1.5rem; color: var(--text-secondary); opacity: 0.8; font-size: 0.8rem;">Transmit your audio frequency to the Obscura A&R department for priority review.</p>
                 </div>
                 <form id="submission-form" class="cyber-form">
-                    <div class="form-row">
+                    <div class="form-row mobile-stack-row">
                         <div class="form-group">
-                            <label>REAL NAME</label>
-                            <input type="text" name="name" placeholder="John Doe" required>
+                            <label data-sync="formLabelName" data-sync-target="text">REAL NAME</label>
+                            <input type="text" name="name" placeholder="John Doe" data-sync="formPlaceholderName" data-sync-target="placeholder" required>
                         </div>
                         <div class="form-group">
-                            <label>ARTIST ALIAS / PROJECT</label>
-                            <input type="text" name="artist" placeholder="VOX-99" required>
+                            <label data-sync="formLabelArtist" data-sync-target="text">ARTIST ALIAS / PROJECT</label>
+                            <input type="text" name="artist" placeholder="VOX-99" data-sync="formPlaceholderArtist" data-sync-target="placeholder" required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>EMAIL ADDRESS</label>
-                            <input type="email" name="email" placeholder="official@artist.com" required>
+                            <label data-sync="formLabelEmail" data-sync-target="text">EMAIL ADDRESS</label>
+                            <input type="email" name="email" placeholder="official@artist.com" data-sync="formPlaceholderEmail" data-sync-target="placeholder" required>
                         </div>
                         <div class="form-group">
-                            <label>PRIMARY GENRE</label>
-                            <input type="text" name="genre" placeholder="CYBER PHONK / FUTURISTIC" required>
+                            <label data-sync="formLabelGenre" data-sync-target="text">PRIMARY GENRE</label>
+                            <input type="text" name="genre" placeholder="CYBER PHONK / FUTURISTIC" data-sync="formPlaceholderGenre" data-sync-target="placeholder" required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>PRIVATE STREAMING LINK (SoundCloud / Dropbox / Drive)</label>
-                        <input type="url" name="link" placeholder="https://soundcloud.com/..." required>
+                        <label data-sync="formLabelLink" data-sync-target="text">PRIVATE STREAMING LINK (SoundCloud / Dropbox / Drive)</label>
+                        <input type="url" name="link" placeholder="https://soundcloud.com/..." data-sync="formPlaceholderLink" data-sync-target="placeholder" required>
                     </div>
                     <div class="form-group">
-                        <label>MESSAGE / BIOGRAPHY (Optional)</label>
-                        <textarea name="message" placeholder="A brief transmission regarding your sound..."></textarea>
+                        <label data-sync="formLabelMessage" data-sync-target="text">MESSAGE / BIOGRAPHY (Optional)</label>
+                        <textarea name="message" placeholder="A brief transmission regarding your sound..." data-sync="formPlaceholderMessage" data-sync-target="placeholder"></textarea>
                     </div>
                     <div class="form-actions" style="margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <button type="submit" class="cta-primary-small">INITIATE SUBMISSION</button>
-                        <a href="https://discord.gg/x7Tr99zdWU" target="_blank" class="discord-btn">
-                            <i class="fab fa-discord"></i> JOIN DISCORD
+                        <button type="submit" class="cta-primary-small" data-sync="formSubmitBtn" data-sync-target="text">INITIATE SUBMISSION</button>
+                        <a href="https://discord.gg/x7Tr99zdWU" target="_blank" class="discord-btn" data-sync="formDiscordLink" data-sync-target="href">
+                            <i class="fab fa-discord"></i> <span data-sync="formDiscordBtn" data-sync-target="text">JOIN DISCORD</span>
                         </a>
                     </div>
-                    <p style="font-size: 0.65rem; color: var(--accent-blue); opacity: 0.8; margin-top: 1.2rem; text-align: center; letter-spacing: 0.1rem; text-transform: uppercase; font-family: var(--font-heading); font-weight: 700;">
+                    <p data-sync="formFooterRec" data-sync-target="text" style="font-size: 0.65rem; color: var(--accent-blue); opacity: 0.8; margin-top: 1.2rem; text-align: center; letter-spacing: 0.1rem; text-transform: uppercase; font-family: var(--font-heading); font-weight: 700;">
                         [ HIGHLY RECOMMENDED: JOIN THE SERVER FOR REAL-TIME FREQUENCY TRACKING ]
                     </p>
                     <p style="font-size: 0.55rem; color: var(--text-secondary); opacity: 0.4; margin-top: 0.5rem; text-align: center;">This portal is protected by reCAPTCHA and Subject to Google Privacy Policy and Terms of Service.</p>
