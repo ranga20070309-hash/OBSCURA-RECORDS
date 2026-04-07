@@ -827,6 +827,10 @@ const initPortal = () => {
                             el.innerHTML = data[key];
                         } else if (syncTarget === 'text') {
                             el.textContent = data[key];
+                        } else if (syncTarget === 'placeholder') {
+                            el.placeholder = data[key];
+                        } else if (syncTarget === 'style') {
+                            el.style.cssText = data[key];
                         } else if (syncTarget === 'href') {
                             let value = data[key];
                             // Auto-redirect for Email links if prefix is missing
@@ -1182,10 +1186,12 @@ const initPortal = () => {
                 socialSidebar.classList.remove('active');
                 if (sidebarOverlay) sidebarOverlay.classList.remove('active');
                 document.body.classList.remove('no-scroll');
+                document.documentElement.classList.remove('no-scroll');
             } else {
                 socialSidebar.classList.toggle('active');
                 if (sidebarOverlay) sidebarOverlay.classList.toggle('active');
                 document.body.classList.toggle('no-scroll');
+                document.documentElement.classList.toggle('no-scroll');
             }
         };
 
