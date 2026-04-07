@@ -441,7 +441,22 @@
         </main>
     </div>
 
-    <script src="admin.js?v=4.7"></script>
+    <!-- CUSTOM ADMINISTRATIVE OVERRIDE MODAL -->
+    <div id="admin-confirm-modal" class="login-screen" style="display: none; z-index: 1000001; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);">
+        <div class="login-glass" style="max-width: 450px; border-color: var(--accent-magenta);">
+            <div class="login-header">
+                <i class="fas fa-exclamation-triangle" style="color: var(--accent-magenta); font-size: 2.5rem; margin-bottom: 1.5rem;"></i>
+                <h2 style="color: var(--accent-magenta);">KERNEL OVERRIDE</h2>
+                <p>Are you sure you want to permanently purge this transmission record?</p>
+            </div>
+            <div class="login-body" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button id="confirm-purge-btn" style="flex: 1; background: var(--accent-magenta); color: #fff; padding: 1rem; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-family:inherit;"><i class="fas fa-trash"></i> PURGE</button>
+                <button id="cancel-purge-btn" style="flex: 1; background: rgba(255,255,255,0.05); color: #fff; padding: 1rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; font-weight: 700; cursor: pointer; font-family:inherit;">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js?v=4.8"></script>
     <script>
         // Emergency Cache-Bypass for Staff Management
         function removeStaff(discordId) {
