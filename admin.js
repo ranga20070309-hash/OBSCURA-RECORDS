@@ -668,20 +668,22 @@ if (document.getElementById('save-upcoming')) {
     });
 }
 
-// --- DEMO INBOX LOGIC (STABILIZED v2) ---
+// --- DEMO INBOX LOGIC (STABILIZED v3 - EVENT DELEGATION) ---
 const inboxContainer = document.getElementById('demo-inbox-container');
 const refreshBtn = document.getElementById('refresh-inbox');
 const clearBtn = document.getElementById('clear-inbox');
 
+let pendingDeleteId = null;
+
 function loadSubmissions() {
     if (!inboxContainer) return;
-    inboxContainer.innerHTML = '<div style="padding:2rem; opacity:0.5; font-family:monospace;">SCANNING FREQUENCIES...</div>';
+    inboxContainer.innerHTML = '<div style="padding:4rem; text-align:center; opacity:0.5; font-family:monospace; letter-spacing:0.2rem;">SCANNING FREQUENCIES...</div>';
     
     db.ref('siteData/submissions/demo').once('value').then(snapshot => {
         const data = snapshot.val();
         inboxContainer.innerHTML = '';
         if (!data) {
-            inboxContainer.innerHTML = '<p style="opacity:0.5; font-style:italic; padding:2rem;">No active transmissions detected.</p>';
+            inboxContainer.innerHTML = '<p style="opacity:0.5; font-style:italic; padding:4rem; text-align:center;">No active transmissions detected in the vault.</p>';
             return;
         }
 
@@ -689,42 +691,66 @@ function loadSubmissions() {
         subs.forEach(sub => {
             const card = document.createElement('div');
             card.className = 'demo-card';
-            card.dataset.id = sub.id; // Store ID for listener
             card.innerHTML = `
-                <button class="delete-demo-record" data-pid="${sub.id}" style="position:absolute; top:1rem; right:1rem; width:28px; height:28px; background:rgba(255,0,0,0.1); border:1px solid rgba(255,0,0,0.2); color:#ff4444; border-radius:4px; cursor:pointer; z-index:100; display:flex; align-items:center; justify-content:center; transition:0.3s;"><i class="fas fa-times"></i></button>
+                <button class="delete-demo-record" data-pid="${sub.id}" style="position:absolute; top:1.2rem; right:1.2rem; width:32px; height:32px; background:rgba(255,0,0,0.15); border:1px solid rgba(255,0,0,0.3); color:#ff4444; border-radius:6px; cursor:pointer; z-index:100; display:flex; align-items:center; justify-content:center; transition:0.3s;" title="PURGE RECORD"><i class="fas fa-times"></i></button>
                 <div class="demo-header">
                     <div class="demo-title">
-                        <h3 style="color:var(--accent-blue);">${sub.artist || 'ANONYMOUS'}</h3>
-                        <p style="font-size:0.7rem; opacity:0.6;">RECEIVED: ${sub.date || 'SIGNAL TIME MISSING'}</p>
+                        <h3 style="color:var(--accent-blue); font-size:1.1rem;">${sub.artist || 'ANONYMOUS'}</h3>
+                        <p style="font-size:0.65rem; opacity:0.5; font-family:monospace;">SIGNAL RECEIVED: ${sub.date || 'UNKNOWN TIME'}</p>
                     </div>
                 </div>
-                <div class="demo-meta">
-                    <div class="meta-item"><label>Real Name</label><span>${sub.name || 'N/A'}</span></div>
-                    <div class="meta-item"><label>Contact</label><span>${sub.email || 'N/A'}</span></div>
-                    <div class="meta-item"><label>Genre</label><span>${sub.genre || 'N/A'}</span></div>
+                <div class="demo-meta" style="margin-top:1.5rem; display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div class="meta-item"><label style="font-size:0.6rem; opacity:0.5; display:block; margin-bottom:0.3rem;">REAL NAME</label><span style="font-size:0.85rem;">${sub.name || 'N/A'}</span></div>
+                    <div class="meta-item"><label style="font-size:0.6rem; opacity:0.5; display:block; margin-bottom:0.3rem;">PRIMARY GENRE</label><span style="font-size:0.85rem; color:var(--accent-blue);">${sub.genre || 'N/A'}</span></div>
+                    <div class="meta-item" style="grid-column: span 2;"><label style="font-size:0.6rem; opacity:0.5; display:block; margin-bottom:0.3rem;">CONTACT</label><span style="font-size:0.85rem;">${sub.email || 'N/A'}</span></div>
                 </div>
-                <div class="demo-message" style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; font-size: 0.85rem; margin-top: 1rem; border: 1px solid rgba(255,255,255,0.05);">${sub.message || 'No additional bio.'}</div>
-                <a href="${sub.link}" target="_blank" class="demo-link-btn" style="display:inline-block; margin-top:1.5rem; padding: 0.8rem 1.5rem; background: var(--accent-blue); color: #000; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.75rem;"><i class="fas fa-external-link-alt"></i> ACCESS TRANSMISSION</a>
+                <div class="demo-message" style="background: rgba(255,255,255,0.02); padding: 1.2rem; border-radius: 10px; font-size: 0.8rem; margin-top: 1.5rem; border: 1px solid rgba(255,255,255,0.05); color: #ccc; line-height:1.5;">${sub.message || 'No additional biography transmitted.'}</div>
+                <a href="${sub.link}" target="_blank" class="demo-link-btn" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; margin-top:2rem; padding: 1rem; background: var(--accent-blue); color: #000; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.7rem; letter-spacing:0.1rem; text-transform:uppercase; transition:0.3s;"><i class="fas fa-play-circle"></i> ACCESS TRANSMISSION</a>
             `;
-            
-            // Add click listener directly to the button
-            card.querySelector('.delete-demo-record').addEventListener('click', (e) => {
-                e.stopPropagation();
-                const pid = e.currentTarget.dataset.pid;
-                if (confirm('SYSTEM OVERRIDE: Purge this record from the vault?')) {
-                    db.ref('siteData/submissions/demo/' + pid).remove().then(() => {
-                        console.log("Record wiped.");
-                        loadSubmissions();
-                    }).catch(err => alert("SYNC FAILURE: " + err.message));
-                }
-            });
-            
             inboxContainer.appendChild(card);
         });
     }).catch(err => {
         console.error("Inbox Error:", err);
-        inboxContainer.innerHTML = '<p style="color:var(--accent-magenta); font-style:italic; padding:2rem;">LINK FAILURE: Check your galactic connection.</p>';
+        inboxContainer.innerHTML = '<p style="color:var(--accent-magenta); font-style:italic; padding:4rem; text-align:center;">VAULT CONNECTION FAILURE: CHECK KERNEL LINK.</p>';
     });
+}
+
+// Robust Event Delegation for Deletion
+if (inboxContainer) {
+    inboxContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.delete-demo-record');
+        if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
+            pendingDeleteId = btn.dataset.pid;
+            const modal = document.getElementById('admin-confirm-modal');
+            if (modal) modal.style.display = 'flex';
+        }
+    });
+}
+
+// Modal Controls
+const confirmPurgeBtn = document.getElementById('confirm-purge-btn');
+const cancelPurgeBtn = document.getElementById('cancel-purge-btn');
+const adminConfirmModal = document.getElementById('admin-confirm-modal');
+
+if (confirmPurgeBtn) {
+    confirmPurgeBtn.onclick = () => {
+        if (pendingDeleteId) {
+            db.ref('siteData/submissions/demo/' + pendingDeleteId).remove().then(() => {
+                if (adminConfirmModal) adminConfirmModal.style.display = 'none';
+                pendingDeleteId = null;
+                loadSubmissions();
+            }).catch(err => alert("PURGE FAILURE: " + err.message));
+        }
+    };
+}
+
+if (cancelPurgeBtn) {
+    cancelPurgeBtn.onclick = () => {
+        if (adminConfirmModal) adminConfirmModal.style.display = 'none';
+        pendingDeleteId = null;
+    };
 }
 
 if (refreshBtn) refreshBtn.addEventListener('click', loadSubmissions);
