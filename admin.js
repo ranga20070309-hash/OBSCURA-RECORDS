@@ -677,7 +677,7 @@ function loadSubmissions() {
     if (!inboxContainer) return;
     inboxContainer.innerHTML = '<p style="opacity:0.5">Scanning frequencies...</p>';
     
-    db.ref('siteData/submissions').once('value').then(snapshot => {
+    db.ref('siteData/submissions/demo').once('value').then(snapshot => {
         const data = snapshot.val();
         inboxContainer.innerHTML = '';
         if (!data) {
@@ -715,7 +715,7 @@ function loadSubmissions() {
 
 window.deleteSub = function(id) {
     if (confirm('Permanently wipe this transmission record?')) {
-        db.ref('siteData/submissions/' + id).remove().then(loadSubmissions);
+        db.ref('siteData/submissions/demo/' + id).remove().then(loadSubmissions);
     }
 };
 
@@ -723,7 +723,7 @@ if (refreshBtn) refreshBtn.addEventListener('click', loadSubmissions);
 if (clearBtn) {
     clearBtn.addEventListener('click', () => {
         if (confirm('SYSTEM OVERRIDE: Purge ALL transmission records in the vault?')) {
-            db.ref('siteData/submissions').remove().then(loadSubmissions);
+            db.ref('siteData/submissions/demo').remove().then(loadSubmissions);
         }
     });
 }
