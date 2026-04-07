@@ -540,7 +540,21 @@ const initPortal = () => {
                 const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, {action: 'demo_submission'});
                 if (!token) throw new Error("Security verification failed.");
 
-                const formData = new FormData(subForm);
+                // --- SONIC-LOCK DATA CAPTURE (ULTRA RELIABLE) ---
+                const artistInput = document.querySelector('#submission-form input[name="artist"]');
+                const nameInput = document.querySelector('#submission-form input[name="name"]');
+                const emailInput = document.querySelector('#submission-form input[name="email"]');
+                const genreInput = document.querySelector('#submission-form input[name="genre"]');
+                const linkInput = document.querySelector('#submission-form input[name="link"]');
+                const messageInput = document.querySelector('#submission-form textarea[name="message"]');
+
+                const valArtist = artistInput ? artistInput.value : "";
+                const valName = nameInput ? nameInput.value : "";
+                const valEmail = emailInput ? emailInput.value : "";
+                const valGenre = genreInput ? genreInput.value : "";
+                const valLink = linkInput ? linkInput.value : "";
+                const valMessage = messageInput ? messageInput.value : "";
+
                 // --- CAPTURE ALL FORM LABELS (QUESTIONS) ---
                 const labelName = subForm.querySelector('label[data-sync="formLabelName"]')?.textContent || "Real Name";
                 const labelArtist = subForm.querySelector('label[data-sync="formLabelArtist"]')?.textContent || "Artist Name(s)";
@@ -556,12 +570,12 @@ const initPortal = () => {
                 const submission = {
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
                     date: new Date().toLocaleString(),
-                    name: formData.get('name'),
-                    artist: formData.get('artist'),
-                    email: formData.get('email'),
-                    genre: formData.get('genre'),
-                    link: formData.get('link'),
-                    message: formData.get('message'),
+                    name: valName,
+                    artist: valArtist,
+                    email: valEmail,
+                    genre: valGenre,
+                    link: valLink,
+                    message: valMessage,
                     rule1: rule1Title,
                     rule2: rule2Title,
                     guidelines: "VERIFIED & ACCEPTED",
@@ -593,7 +607,7 @@ const initPortal = () => {
                         val_link: submission.link,
                         val_message: submission.message,
                         val_date: submission.date
-                    }).catch(err => console.warn("Email notify error:", err));
+                    }).then(() => console.log("SIGNAL BROADCAST SUCCESSFUL")).catch(err => console.warn("Email notify error:", err));
                 }
 
                 // Push to Firebase Realtime Database
@@ -612,6 +626,9 @@ const initPortal = () => {
                         subForm.style.display = 'flex';
                         if (subStatus) subStatus.style.display = 'none';
                         subForm.reset();
+                        // --- CLEAR MIRROR DISPLAYS ---
+                        subForm.querySelectorAll('.mirror-display').forEach(d => d.innerHTML = '');
+                        
                         btn.textContent = originalBtnText;
                         btn.disabled = false;
                     }, 500);
