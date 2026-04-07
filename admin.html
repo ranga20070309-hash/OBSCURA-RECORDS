@@ -1,476 +1,904 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Obscura Records - Core Directive Panel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="admin.css">
+const firebaseConfig = {
+    apiKey: "AIzaSyCHf_R1n2Qn-q4NHAjfJt6xD_TWIRjiN1o",
+    authDomain: "obscura-records.firebaseapp.com",
+    databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "obscura-records",
+    storageBucket: "obscura-records.firebasestorage.app",
+    messagingSenderId: "831882873428",
+    appId: "1:831882873428:web:3cf009875e160a9f8efbc1"
+};
+
+// Ensure Firebase is initialized only once (compatible with v10-compat)
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+// Debug Initialization
+alert("CORE SYSTEM ONLINE: PERSONNEL SYNC READY (v4.4)");
+console.log("Transmission link established.");
+
+window.saveIndividualStaff = function(discordId) {
+    alert("SYNC ATTEMPT STARTED FOR: " + discordId);
+    const item = document.querySelector(`.staff-editor-item[data-discord-id="${discordId}"]`);
+    if (!item) {
+        alert("CRITICAL ERROR: Editor item not found for " + discordId);
+        return;
+    }
+    const bio = item.querySelector('.s-bio').value;
+    const avatar = item.querySelector('.s-avatar') ? item.querySelector('.s-avatar').value : '';
+    const socials = {};
+    item.querySelectorAll('input[class^="s-social-"]').forEach(input => {
+        const platform = input.className.replace('s-social-', '');
+        if (input.value.trim() !== '') {
+            socials[platform] = input.value.trim();
+        }
+    });
+    const data = { bio: bio, avatar_url: avatar, socials: socials };
+    db.ref('staff_status/' + discordId).update(data).then(() => {
+        alert('SUCCESS: Personnel frequency synced for ID ' + discordId);
+        bumpSiteVersion();
+        loadStaff(); 
+    }).catch(err => {
+        alert('SYNC ERROR: ' + err.message);
+    });
+};
+
+// UI Elements
+const navBtns = document.querySelectorAll('.nav-btn');
+const panels = document.querySelectorAll('.panel');
+
+// Auto-Versioning (Cache Buster)
+function bumpSiteVersion() {
+    db.ref('siteData/globals/v').transaction((v) => {
+        const nextV = (parseFloat(v || 1.0) + 0.1).toFixed(1);
+        const display = document.getElementById('display-v');
+        if (display) display.textContent = nextV;
+        return nextV;
+    });
+}
+
+// Navigation
+navBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        navBtns.forEach(b => b.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        
+        btn.classList.add('active');
+        const target = btn.dataset.target;
+        const panel = document.getElementById(target);
+        if (panel) panel.classList.add('active');
+        
+        // Auto-refresh and trace panel data on navigation
+        console.log("Navigating to:", target);
+        if (target === 'staff-panel') {
+            loadStaff();
+        } else if (target === 'demo-inbox-panel') {
+            loadSubmissions();
+        } else if (target === 'releases-panel') {
+            alert("NAV: SWITCHING TO RELEASES PANEL...");
+            loadReleases();
+        }
+    });
+});
+
+// Show Save Msg function
+function showSaveMsg(id) {
+    const msg = document.getElementById(id);
+    if (msg) {
+        msg.classList.add('show');
+        setTimeout(() => { msg.classList.remove('show'); }, 3000);
+    }
+}
+
+// --- MOBILE ACCESS CONTROL ---
+const mobileBlockOverlay = document.getElementById('mobile-block-overlay');
+
+function checkDevice() {
+    if (window.innerWidth < 1024) {
+        if (mobileBlockOverlay) {
+            mobileBlockOverlay.style.display = 'flex';
+            initMobileVibe(); // Start secondary engine
+        }
+        document.body.style.overflow = 'hidden';
+    } else {
+        if (mobileBlockOverlay) mobileBlockOverlay.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Secondary Engine for Mobile Block Screen
+let mobileEngineRunning = false;
+function initMobileVibe() {
+    if (mobileEngineRunning) return;
+    const canvas = document.getElementById('mobile-vibe-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let pArray = [];
     
-    <!-- Firebase Infrastructure (v10.7.1-compat) -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
-    <style>
-        /* Emergency Security Overlay (Global Admin Sync) */
-        #global-security-alarm {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(255, 0, 0, 0.12);
-            backdrop-filter: blur(12px);
-            z-index: 1000000;
-            display: none;
-            flex-direction: column;
-            align-items: center; justify-content: center;
-            color: #fff;
-            pointer-events: none;
-            border: 8px solid #ff0055;
-            animation: alarm-border-pulse 0.4s infinite alternate;
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    
+    class P {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.s = Math.random() * 2;
+            this.sx = (Math.random() - 0.5) * 1;
+            this.sy = (Math.random() - 0.5) * 1;
+            this.o = Math.random();
         }
-        .alarm-box {
-            text-align: center;
-            background: #000;
-            padding: 4rem 6rem;
-            border-radius: 40px;
-            border: 3px solid #ff0055;
-            box-shadow: 0 0 100px rgba(255, 0, 85, 0.6);
-            animation: alarm-shake 0.1s infinite;
+        update() {
+            this.x += this.sx;
+            this.y += this.sy;
+            if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
         }
-        .danger-icon { font-size: 5rem; color: #ff0055; margin-bottom: 2rem; filter: drop-shadow(0 0 20px #ff0055); }
-        .alarm-box h1 { font-family: 'Syncopate', sans-serif; font-size: 2.2rem; color: #ff0055; letter-spacing: 0.6rem; margin: 1.5rem 0; text-shadow: 0 0 20px #ff0055; }
-        .alarm-box p { font-size: 0.85rem; letter-spacing: 0.15rem; color: #fff; opacity: 0.9; margin-bottom: 2rem; }
-        #alarm-type { font-family: monospace; font-size: 0.75rem; color: #ff0055; font-weight: 700; background: rgba(255, 0, 85, 0.1); padding: 0.5rem 1.5rem; border-radius: 10px; }
-
-        @keyframes alarm-border-pulse { from { border-color: #ff0055; } to { border-color: transparent; } }
-        @keyframes alarm-shake {
-            0% { transform: translate(0,0); }
-            25% { transform: translate(-2px, 1px); }
-            50% { transform: translate(2px, -1px); }
-            75% { transform: translate(-1px, -2px); }
-            100% { transform: translate(1px, 2px); }
+        draw() {
+            ctx.fillStyle = `rgba(255, 62, 62, ${this.o * 0.3})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.s, 0, Math.PI * 2);
+            ctx.fill();
         }
-    </style>
-</head>
-<body>
-    <!-- REAL-TIME GLOBAL SECURITY ALARM OVERLAY -->
-    <div id="global-security-alarm">
-        <div class="alarm-box">
-            <i class="fas fa-biohazard danger-icon"></i>
-            <h1>KERNEL VIOLATION</h1>
-            <p>CRITICAL INTEGRITY BREACH DETECTED IN MAIN TRANSMISSION</p>
-            <div id="alarm-type">SCANNING FREQUENCY...</div>
-        </div>
-    </div>
+    }
+    
+    function loop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pArray.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(loop);
+    }
+    
+    window.addEventListener('resize', resize);
+    resize();
+    for(let i=0; i<80; i++) pArray.push(new P());
+    mobileEngineRunning = true;
+    loop();
+}
 
-    <!-- Secure Login Overlay -->
-    <div id="login-overlay" class="login-screen">
-        <canvas id="vibe-canvas"></canvas>
-        <div class="login-glass">
-            <div class="login-header">
-                <i class="fas fa-shield-alt login-shield"></i>
-                <h2>ROOT AUTHENTICATION</h2>
-                <p>ACCESS TO LABELS PORTAL IS RESTRICTED</p>
-            </div>
-            <div class="login-body">
-                <div class="login-input-group">
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" id="root-email-input" placeholder="ADMIN EMAIL...">
-                </div>
-                <div class="login-input-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="root-pass-input" placeholder="PORTAL KEY...">
-                </div>
-                <button id="login-btn"><i class="fas fa-unlock"></i> INITIATE ACCESS</button>
-                <p id="login-error" class="error-msg">INVALID ROOT FREQUENCY.</p>
-            </div>
-        </div>
-    </div>
+// --- SECURE AUTHENTICATION SYSTEM ---
+const loginOverlay = document.getElementById('login-overlay');
+const loginBtn = document.getElementById('login-btn');
+const emailInput = document.getElementById('root-email-input');
+const passInput = document.getElementById('root-pass-input');
+const loginError = document.getElementById('login-error');
+const adminWrapper = document.querySelector('.admin-wrapper');
 
-    <!-- Mobile Access Blocked Overlay -->
-    <div id="mobile-block-overlay" class="mobile-block-screen" style="display: none;">
-        <canvas id="mobile-vibe-canvas"></canvas>
-        <div class="block-glass">
-            <div class="block-header">
-                <i class="fas fa-desktop block-icon"></i>
-                <h2>DESKTOP ACCESS REQUIRED</h2>
-                <p>CORE DIRECTIVE: THE ADMIN PORTAL IS RESTRICTED TO HIGH-RESOLUTION DISPLAYS ONLY.</p>
-            </div>
-            <div class="block-body">
-                <div class="status-box">
-                    <p class="warning-text">MOBILE TRANSMISSION SCAN: <span class="status-fail">FAILED</span></p>
-                    <p class="instruction">PLEASE SWITCH TO A WORKSTATION TO ACCESS CORE CONTROLS.</p>
-                </div>
-                <a href="index.html" class="return-btn"><i class="fas fa-arrow-left"></i> RETURN TO MAIN TRANSMISSION</a>
-            </div>
-        </div>
-    </div>
+function initializeSecurity() {
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
 
-    <div class="admin-wrapper" style="display: none;">
-        <aside class="sidebar">
-            <div class="logo">
-                <h2>OBSCURA <span class="accent">CORE</span></h2>
-                <div class="status-badge"><span class="status-dot"></span> ROOT ACCESS SECURED</div>
-                <div class="version-pill" style="font-size:0.7rem; color:var(--text-secondary); margin-top:0.5rem; opacity:0.7;">ENGINE v<span id="display-v">1.0</span></div>
-            </div>
-            <nav>
-                <a href="#" class="nav-btn active" data-target="settings-panel"><i class="fas fa-sliders-h"></i> GLOBALS</a>
-                <a href="#" class="nav-btn" data-target="links-panel"><i class="fas fa-link"></i> SITE LINKS</a>
-                <a href="#" class="nav-btn" data-target="modals-panel"><i class="fas fa-window-restore"></i> MODALS & FAQ</a>
-                <a href="#" class="nav-btn" data-target="demo-inbox-panel"><i class="fas fa-inbox"></i> DEMO INBOX</a>
-                <a href="#" class="nav-btn" data-target="upcoming-panel"><i class="fas fa-calendar-alt"></i> UPCOMING</a>
-                <a href="#" class="nav-btn" data-target="releases-panel"><i class="fas fa-compact-disc"></i> RELEASE ARCHIVE</a>
-                <a href="#" class="nav-btn" data-target="staff-panel"><i class="fas fa-users-cog"></i> STAFF PROFILES</a>
-            </nav>
-            <div class="sidebar-footer">
-                <a href="index.html" class="return-site" target="_blank"><i class="fas fa-external-link-alt"></i> VIEW PORTAL</a>
-            </div>
-        </aside>
+    // Track real auth state via Firebase
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            console.log("Transmission link secured for:", user.email);
+            unlockDashboard();
+        } else {
+            console.log("Portal locked. Awaiting valid authorization.");
+            if (loginOverlay) loginOverlay.style.display = 'flex';
+            if (adminWrapper) adminWrapper.style.display = 'none';
+        }
+    });
+}
 
-        <main class="content-area">
-            
-            <!-- Kernel Security Monitor (Administrative Grade) -->
-            <div class="kernel-monitor-admin">
-                <div class="kernel-node">
-                    <i class="fas fa-microchip"></i>
-                    <span class="kernel-label">SYSTEM INTEGRITY:</span>
-                    <span class="kernel-status" id="km-integrity">SCANNING...</span>
-                </div>
-                <div class="kernel-node">
-                    <i class="fas fa-network-wired"></i>
-                    <span class="kernel-label">NETWORK FREQ:</span>
-                    <span class="kernel-status" id="km-network">CALIBRATING...</span>
-                </div>
-                <div class="kernel-node">
-                    <i class="fas fa-fingerprint"></i>
-                    <span class="kernel-label">AUTH PROTOCOL:</span>
-                    <span class="kernel-status">ROOT-LEVEL L4</span>
-                </div>
-                <div class="kernel-node">
-                    <i class="fas fa-user-secret"></i>
-                    <span class="kernel-label">TAMPER SHIELD:</span>
-                    <span class="kernel-status" id="km-shield">SHIELD ARMED</span>
-                </div>
-            </div>
+function unlockDashboard() {
+    if (loginOverlay) loginOverlay.style.display = 'none';
+    if (adminWrapper) adminWrapper.style.display = 'flex';
+    sessionStorage.setItem('rootAuth', 'granted');
+    
+    // DELAYED DATA GATING (Fully Isolated for Stability)
+    try { loadGlobals(); } catch(e) { console.error("Globals fail:", e); }
+    try { loadSubmissions(); } catch(e) { console.error("Submissions fail:", e); }
+    try { loadReleases(); } catch(e) { console.error("Releases fail:", e); }
+    try { loadUpcoming(); } catch(e) { console.error("Upcoming fail:", e); }
+    try { loadStaff(); } catch(e) { console.error("Staff fail:", e); }
+    
+    // START KERNEL SECURITY MONITOR
+    initKernelSecurity();
+}
 
-            <!-- Global Settings Panel -->
-            <section id="settings-panel" class="panel active">
-                <div class="panel-header">
-                    <h2><i class="fas fa-satellite-dish"></i> GLOBAL DIRECTIVES</h2>
-                    <p>Modify main portal string payloads in real-time.</p>
-                </div>
-                
-                <div class="form-grid">
-                    <div class="input-group">
-                        <label>SITE LOGO TITLE (HTML Allowed)</label>
-                        <input type="text" id="site_siteTitle" value="OBSCURA <span>RECORD</span>">
-                    </div>
-                    <div class="input-group">
-                        <label>HERO TITLE (HTML Allowed)</label>
-                        <input type="text" id="site_heroTitle" value="WELCOME TO <span class='accent'>OBSCURA RECORD</span>">
-                    </div>
-                    <div class="input-group full">
-                        <label>HERO DESCRIPTION</label>
-                        <textarea id="site_heroDesc">OBSCURA RECORD is an independent music label focused on artist development, music production, and official releases. Our mission is to support talented artists and create high-quality music through collaboration and innovation.</textarea>
-                    </div>
-                    <div class="input-group">
-                        <label>ARCHIVE TITLE (HTML Allowed)</label>
-                        <input type="text" id="site_archiveTitle" value="TRANSMISSION <span class='accent'>ARCHIVE</span>">
-                    </div>
-                    <div class="input-group full">
-                        <label>ARCHIVE DESCRIPTION</label>
-                        <input type="text" id="site_archiveDesc" value="Accessing encrypted audio logs and deep space frequencies.">
-                    </div>
-                    <div class="input-group full" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem; margin-top: 2rem;">
-                         <label><i class="fas fa-key"></i> ADMIN ACCESS KEY (REPROGRAMMABLE)</label>
-                         <input type="text" id="security_rootKey" value="ORC ADMINS PASS 2026">
-                         <p style="font-size:0.6rem; color:var(--text-secret); margin-top:0.3rem;">Changing this will immediately update the portal's firewall passphrase.</p>
-                    </div>
-                </div>
+function initKernelSecurity() {
+    console.log("INITIALIZING ADMINISTRATIVE KERNEL MONITOR...");
+    const kmIntegrity = document.getElementById('km-integrity');
+    const kmNetwork = document.getElementById('km-network');
+    const kmShield = document.getElementById('km-shield');
 
-                <div class="btn-group">
-                    <button class="save-btn" id="save-globals"><i class="fas fa-save"></i> DEPLOY GLOBALS</button>
-                    <span id="save-msg-globals" class="save-msg">Deploy successful.</span>
-                </div>
-            </section>
-            <!-- Site Links Panel -->
-            <section id="links-panel" class="panel">
-                <div class="panel-header">
-                    <h2><i class="fas fa-link"></i> NAVIGATION & SOCIAL LINKS</h2>
-                    <p>Modify header dropdowns, social grids, and routing links.</p>
-                </div>
-                
-                <h3 style="color: #00f0ff; font-size: 0.9rem; margin-bottom: 1rem; font-family: 'Syncopate', sans-serif;">NAV TEXT</h3>
-                <div class="form-grid">
-                    <div class="input-group"><label>HOME</label><input type="text" id="site_navHome" value="HOME"></div>
-                    <div class="input-group"><label>RELEASES</label><input type="text" id="site_navReleases" value="RELEASES"></div>
-                    <div class="input-group"><label>STAFF</label><input type="text" id="site_navStaff" value="STAFF"></div>
-                    <div class="input-group"><label>CONTACT</label><input type="text" id="site_navContact" value="CONTACT"></div>
-                    <div class="input-group"><label>MENU BUTTON</label><input type="text" id="site_navMenuBtn" value="MENU"></div>
-                </div>
+    setInterval(() => {
+        if (kmNetwork) {
+            const lat = Math.floor(Math.random() * 20) + 5; // Admin connection usually faster
+            kmNetwork.textContent = `${lat}MS / ENCRYPTED`;
+        }
+        if (kmIntegrity) {
+            kmIntegrity.textContent = "CORE SECURE";
+            kmIntegrity.style.color = "var(--primary)";
+        }
+    }, 2000);
 
-                <h3 style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">SOCIAL URLS & CONTACT LABELS</h3>
-                <div class="form-grid">
-                    <div class="input-group full"><label>Contact Title (HTML)</label><input type="text" id="site_contactTitle" value="CONNECT WITH <span class='accent'>US</span>"></div>
-                    <div class="input-group full"><label>Contact Subtext</label><input type="text" id="site_contactDesc" value="Follow our transmissions across the digital landscape."></div>
-                    
-                    <div class="input-group"><label>Instagram URL</label><input type="text" id="site_socialInstaUrl" value="https://www.instagram.com/recordsobscura?igsh=MXFvdzFvOWg2azBmdw=="></div>
-                    <div class="input-group"><label>YouTube URL</label><input type="text" id="site_socialYoutubeUrl" value="https://www.youtube.com/channel/UC0A5L7DUgls-AkYaQ4ZwxhA"></div>
-                    <div class="input-group"><label>Discord URL</label><input type="text" id="site_socialDiscordUrl" value="https://discord.gg/E3Sn72cpBR"></div>
-                    <div class="input-group"><label>TikTok URL</label><input type="text" id="site_socialTiktokUrl" value="https://www.tiktok.com/@obscura.records"></div>
-                    <div class="input-group"><label>Spotify URL</label><input type="text" id="site_socialSpotifyUrl" value="#"></div>
-                    <div class="input-group"><label>E-mail Address</label><input type="text" id="site_socialEmailUrl" value="info@obscurarecords.com"></div>
-                    
-                    <div class="input-group"><label>Instagram Label</label><input type="text" id="site_socialInstaText" value="INSTAGRAM"></div>
-                    <div class="input-group"><label>YouTube Label</label><input type="text" id="site_socialYoutubeText" value="YOUTUBE"></div>
-                    <div class="input-group"><label>Discord Label</label><input type="text" id="site_socialDiscordText" value="DISCORD"></div>
-                    <div class="input-group"><label>TikTok Label</label><input type="text" id="site_socialTiktokText" value="TIKTOK"></div>
-                    <div class="input-group"><label>Email Label</label><input type="text" id="site_socialEmailText" value="DIRECT EMAIL"></div>
-                </div>
-                
-                <h3 style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">FOOTER MENUS & COPYRIGHT</h3>
-                <div class="form-grid">
-                    <div class="input-group full"><label>Copyright Text</label><input type="text" id="site_footerCopyright" value="&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED."></div>
-                    <div class="input-group"><label>FAQ text</label><input type="text" id="site_footerFaqText" value="FAQ"></div>
-                    <div class="input-group"><label>DEMO text</label><input type="text" id="site_footerDemoText" value="DEMO SUBMISSION"></div>
-                    <div class="input-group"><label>CONTACT text</label><input type="text" id="site_footerContactText" value="CONTACT US"></div>
-                    <div class="input-group"><label>PRIVACY text</label><input type="text" id="site_footerPrivacyText" value="PRIVACY"></div>
-                </div>
-
-                <div class="btn-group" style="margin-top: 2rem;">
-                    <button class="save-btn" id="save-links"><i class="fas fa-save"></i> DEPLOY LINKS</button>
-                    <span id="save-msg-links" class="save-msg">Deploy successful.</span>
-                </div>
-            </section>
-
-            <!-- Modals & FAQ Panel -->
-            <section id="modals-panel" class="panel">
-                <div class="panel-header">
-                    <h2><i class="fas fa-window-restore"></i> MODALS, DEMO & FAQ</h2>
-                    <p>Modify popup content and dynamic accordion answers.</p>
-                </div>
-                
-                <h3 style="color: #00f0ff; font-size: 0.9rem; margin-bottom: 1rem; font-family: 'Syncopate', sans-serif;">POPUP TITLES & DESCRIPTIONS</h3>
-                <div class="form-grid">
-                    <div class="input-group"><label>FAQ Modal Title</label><input type="text" id="site_modalFaqTitle" value="FREQUENCY ASKED QUESTIONS"></div>
-                    <div class="input-group"><label>Privacy Modal Title</label><input type="text" id="site_modalPrivacyTitle" value="PRIVACY POLICY"></div>
-                    <div class="input-group full"><label>Contact Modal Subtext</label><textarea id="site_contactModalSubtext">For partnerships, general questions, or portal feedback, reach out via the channels above.</textarea></div>
-                    
-                    <div class="input-group full"><label>Demo Description (HTML)</label><textarea id="site_demoDesc">We are searching for high-energy Phonk, Funk, and Futuristic vibrations to join the void. Submit your best work to our sonic reviewers.</textarea></div>
-                    <div class="input-group"><label>Demo Discord Subtext</label><input type="text" id="site_demoDiscordSub" value="Faster review & community vibes."></div>
-                    <div class="input-group"><label>Demo Email Subtext</label><input type="text" id="site_demoEmailSub" value="artists@obscurarecord.com"></div>
-                </div>
-
-                <h3 style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">SEND DEMO FORM CUSTOMIZATION (MAIN PORTAL)</h3>
-                <div class="form-grid">
-                    <div class="input-group full"><label>Form Title (HTML allowed)</label><input type="text" id="site_formTitle" value="SECURE <span class='accent'>FORM SUBMISSION</span>"></div>
-                    <div class="input-group full"><label>Form Description</label><textarea id="site_formDesc">Transmit your audio frequency to the Obscura A&R department for priority review.</textarea></div>
-                    
-                    <div class="input-group"><label>Label: Real Name</label><input type="text" id="site_formLabelName" value="REAL NAME"></div>
-                    <div class="input-group"><label>Placeholder: Real Name</label><input type="text" id="site_formPlaceholderName" value="John Doe"></div>
-                    
-                    <div class="input-group"><label>Label: Alias/Project</label><input type="text" id="site_formLabelArtist" value="ARTIST ALIAS / PROJECT"></div>
-                    <div class="input-group"><label>Placeholder: Alias/Project</label><input type="text" id="site_formPlaceholderArtist" value="VOX-99"></div>
-                    
-                    <div class="input-group"><label>Label: Email</label><input type="text" id="site_formLabelEmail" value="EMAIL ADDRESS"></div>
-                    <div class="input-group"><label>Placeholder: Email</label><input type="text" id="site_formPlaceholderEmail" value="official@artist.com"></div>
-                    
-                    <div class="input-group"><label>Label: Genre</label><input type="text" id="site_formLabelGenre" value="PRIMARY GENRE"></div>
-                    <div class="input-group"><label>Placeholder: Genre</label><input type="text" id="site_formPlaceholderGenre" value="CYBER PHONK / FUTURISTIC"></div>
-                    
-                    <div class="input-group"><label>Label: Link</label><input type="text" id="site_formLabelLink" value="PRIVATE STREAMING LINK (SoundCloud / Dropbox / Drive)"></div>
-                    <div class="input-group"><label>Placeholder: Link</label><input type="text" id="site_formPlaceholderLink" value="https://soundcloud.com/..."></div>
-                    
-                    <div class="input-group"><label>Label: Message</label><input type="text" id="site_formLabelMessage" value="MESSAGE / BIOGRAPHY (Optional)"></div>
-                    <div class="input-group"><label>Placeholder: Message</label><input type="text" id="site_formPlaceholderMessage" value="A brief transmission regarding your sound..."></div>
-
-                    <div class="input-group"><label>Submit Button Text</label><input type="text" id="site_formSubmitBtn" value="INITIATE SUBMISSION"></div>
-                    <div class="input-group"><label>Discord Button Text</label><input type="text" id="site_formDiscordBtn" value="JOIN DISCORD"></div>
-                    <div class="input-group full"><label>Discord Invitation Link (HREF)</label><input type="text" id="site_formDiscordLink" value="https://discord.gg/x7Tr99zdWU"></div>
-                    
-                    <div class="input-group full"><label>Footer Recommendation text</label><textarea id="site_formFooterRec">[ HIGHLY RECOMMENDED: JOIN THE SERVER FOR REAL-TIME FREQUENCY TRACKING ]</textarea></div>
-                </div>
-
-                <div class="btn-group" style="margin-top: 2rem; margin-bottom: 3rem;">
-                    <button class="save-btn" id="save-modals-text"><i class="fas fa-save"></i> DEPLOY MODAL TEXTS</button>
-                    <span id="save-msg-modals-text" class="save-msg">Deploy successful.</span>
-                </div>
-                
-                <h3 style="color: #00f0ff; font-size: 0.9rem; margin-bottom: 1rem; font-family: 'Syncopate', sans-serif;">FAQ CONTENT (DASHBOARD)</h3>
-                <div class="form-grid">
-                    <div class="input-group"><label>FAQ 1: Question</label><input type="text" id="site_faq1_q" value="HOW DO I SUBMIT A DEMO?"></div>
-                    <div class="input-group"><label>FAQ 1: Answer</label><textarea id="site_faq1_a">We highly recommend sending demos through our <strong>Discord Server</strong> for faster review. Alternatively, you can send an email message to artists@obscurarecord.com.</textarea></div>
-                    
-                    <div class="input-group"><label>FAQ 2: Question</label><input type="text" id="site_faq2_q" value="WHAT GENRES ARE YOU LOOKING FOR?"></div>
-                    <div class="input-group"><label>FAQ 2: Answer</label><textarea id="site_faq2_a">Our dimension primarily focuses on <strong>Phonk, Funk, and Futuristic Electronic</strong> music. We are looking for high-energy vibrations that push the boundaries of sound.</textarea></div>
-                    
-                    <div class="input-group"><label>FAQ 3: Question</label><input type="text" id="site_faq3_q" value="WHERE CAN I JOIN THE COMMUNITY?"></div>
-                    <div class="input-group"><label>FAQ 3: Answer</label><textarea id="site_faq3_a">Join our galactic community on Discord to connect with other artists, share ideas, and participate in exclusive portal events.</textarea></div>
-                    
-                    <div class="input-group"><label>FAQ 4: Question</label><input type="text" id="site_faq4_q" value="HOW LONG DOES A RESPONSE TAKE?"></div>
-                    <div class="input-group"><label>FAQ 4: Answer</label><textarea id="site_faq4_a">Our sonic reviewers aim to respond within a few galactic cycles. If your sound resonates with our frequency, we will reach out via Discord or email.</textarea></div>
-                </div>
-
-                <h3 style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">PRIVACY POLICY CONTENT</h3>
-                <div class="form-grid">
-                    <div class="input-group"><label>P1: Title</label><input type="text" id="site_p1_q" value="INTELLECTUAL PROPERTY"></div>
-                    <div class="input-group"><label>P1: Text</label><textarea id="site_p1_a">All content in this dimension—including audio, graphics, logos, and visual art—is the property of Obscura Record or its licensors.</textarea></div>
-                    
-                    <div class="input-group"><label>P2: Title</label><input type="text" id="site_p2_q" value="DATA SECURITY"></div>
-                    <div class="input-group"><label>P2: Text</label><textarea id="site_p2_a">Your portal data is encrypted and secure. We only collect what is necessary to maintain your connection.</textarea></div>
-                    
-                    <div class="input-group"><label>P3: Title</label><input type="text" id="site_p3_q" value="PROMOTIONAL CONTENT"></div>
-                    <div class="input-group"><label>P3: Text</label><textarea id="site_p3_a">By connecting to our portal, you may receive updates on new releases, talent discoveries, and galactic events.</textarea></div>
-                    
-                    <div class="input-group"><label>P4: Title</label><input type="text" id="site_p4_q" value="EXTERNAL EMBEDS"></div>
-                    <div class="input-group"><label>P4: Text</label><textarea id="site_p4_a">We use third-party players (SoundCloud/YouTube). Their respective privacy policies apply to your interactions on those platforms.</textarea></div>
-                    
-                    <div class="input-group"><label>P5: Title</label><input type="text" id="site_p5_q" value="DATA RETENTION"></div>
-                    <div class="input-group"><label>P5: Text</label><textarea id="site_p5_a">We retain connection data only as long as necessary for community support and galactic record-keeping.</textarea></div>
-                    
-                    <div class="input-group"><label>P6: Title</label><input type="text" id="site_p6_q" value="GOVERNING LAW"></div>
-                    <div class="input-group"><label>P6: Text</label><textarea id="site_p6_a">All legal matters are governed by the laws of our primary operational frequency. Disputes are resolved via cosmic mediation.</textarea></div>
-                    
-                    <div class="input-group"><label>P7: Title</label><input type="text" id="site_p7_q" value="LEGAL CONTACT"></div>
-                    <div class="input-group"><label>P7: Text</label><textarea id="site_p7_a">For all legal inquiries, copyright complaints (DMCA), or licensing requests, please send an email message to our Legal Counsel at artists@obscurarecord.com. Our team is available at this address for any direct communications.</textarea></div>
-                </div>
-
-                <div class="btn-group" style="margin-top: 2rem; margin-bottom: 3rem;">
-                    <button class="save-btn" id="save-modals-all-data"><i class="fas fa-save"></i> DEPLOY ALL MODAL DATA</button>
-                    <span id="save-msg-modals-all-data" class="save-msg">Deploy successful.</span>
-                </div>
-            </section>
-
-            <!-- Release Archive Panel -->
-            <section id="releases-panel" class="panel">
-                <div class="panel-header">
-                    <h2><i class="fas fa-compact-disc"></i> RELEASE ARCHIVE</h2>
-                    <p>Manage the label's back-catalog frequencies and streaming transmissions.</p>
-                </div>
-                
-                <div class="btn-group mb-2">
-                    <button class="action-btn" id="add-release-btn"><i class="fas fa-plus"></i> INITIALIZE NEW FREQUENCY</button>
-                    <button class="save-btn" id="save-staff" style="display:none;"><i class="fas fa-upload"></i> SYNC ALL TO SERVER</button>
-                    <button class="save-btn" id="save-releases" style="background:var(--accent-magenta); border-color:var(--accent-magenta);"><i class="fas fa-cloud-upload-alt"></i> DEPLOY ALL RELEASES</button>
-                    <span id="save-msg-staff" class="save-msg">Sync successful.</span>
-                </div>
-
-                <div id="releases-container" class="releases-list">
-                    <!-- Dynamic release forms will compile here -->
-                    <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Accessing encrypted release frequency archive...</p>
-                </div>
-            </section>
-
-            <!-- Demo Inbox Panel -->
-            <section id="demo-inbox-panel" class="panel">
-                <div class="panel-header">
-                    <h2><i class="fas fa-inbox"></i> DEMO INBOX (A&R VAULT)</h2>
-                    <p>Live transmissions from artists seeking portal access.</p>
-                </div>
-                
-                <div class="inbox-controls" style="margin-bottom: 1.5rem;">
-                    <button class="action-btn" id="refresh-inbox"><i class="fas fa-sync"></i> SCAN FOR NEW FREQUENCIES</button>
-                    <button class="save-btn" id="clear-inbox" style="background: rgba(255, 0, 0, 0.2); border-color: rgba(255, 0, 0, 0.3);"><i class="fas fa-trash"></i> PURGE ALL RECORDS</button>
-                </div>
-
-                <div id="demo-inbox-container" class="demo-list">
-                    <!-- Dynamic demo entries will load here -->
-                    <p style="opacity: 0.5; font-style: italic;">Standby... scanning frequencies...</p>
-                </div>
-            </section>
-
-            <!-- Upcoming Releases Panel -->
-            <section id="upcoming-panel" class="panel">
-                <div class="panel-header">
-                    <h2><i class="fas fa-calendar-alt"></i> UPCOMING TRANSMISSIONS</h2>
-                    <p>Manage cards with future release signals (No streaming links required).</p>
-                </div>
-
-                <div class="form-grid" style="margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2rem;">
-                    <div class="input-group">
-                        <label>CATEGORY VISIBILITY</label>
-                        <select id="site_showUpcoming" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem; border-radius: 4px; font-family: 'Inter', sans-serif;">
-                            <option value="Visible">Visible</option>
-                            <option value="Hidden">Hidden</option>
-                        </select>
-                        <p style="font-size:0.6rem; color:var(--text-secondary); margin-top:0.3rem;">Total override: Hide the entire "Upcoming Releases" section from the portal.</p>
-                    </div>
-                </div>
-                
-                <div class="btn-group mb-2">
-                    <button class="action-btn" id="add-upcoming-btn"><i class="fas fa-plus"></i> INITIALIZE UPCOMING</button>
-                    <button class="save-btn" id="save-upcoming"><i class="fas fa-upload"></i> SYNC UPCOMING TO SERVER</button>
-                    <span id="save-msg-upcoming" class="save-msg">Sync successful.</span>
-                </div>
-
-                <div id="upcoming-container" class="releases-list">
-                    <!-- Dynamic upcoming forms will compile here -->
-                </div>
-            </section>
-
-            <!-- Staff Profiles Panel -->
-            <section id="staff-panel" class="panel">
-                <div class="panel-header">
-                    <h2><i class="fas fa-users-cog"></i> STAFF & ARTIST PROFILES</h2>
-                    <p>Edit bios, social links, and profile details for label staff. Data is synced with Discord IDs.</p>
-                </div>
-                
-                <div class="btn-group mb-2" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2.5rem;">
-                    <button class="save-btn" id="save-staff"><i class="fas fa-upload"></i> SYNC ALL PROFILES TO SERVER</button>
-                    <button class="action-btn" id="init-staff-btn" style="background: rgba(0, 240, 255, 0.05); border: 1.5px solid var(--primary); color: var(--primary); padding: 1.25rem 2rem; border-radius: 14px; cursor: pointer; font-family: inherit; font-size: 0.8rem; letter-spacing: 0.1rem; font-weight: 700; transition: 0.4s;">
-                        <i class="fas fa-seedling"></i> INITIALIZE BASE PERSONNEL
-                    </button>
-                    <span id="save-msg-staff" class="save-msg">Profiles synced successfully.</span>
-                </div>
-
-                <div id="staff-container" class="releases-list">
-                    <!-- Dynamic staff forms will compile here -->
-                    <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Initializing neural link to staff database...</p>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <script src="admin.js?v=4.7"></script>
-    <script>
-        // Emergency Cache-Bypass for Staff Management
-        function removeStaff(discordId) {
-            if (confirm('SYSTEM OVERRIDE: Purge this personnel record from the transmission?')) {
-                if (typeof firebase !== 'undefined') {
-                    const db = firebase.database();
-                    db.ref('staff_status/' + discordId).remove().then(() => {
-                        alert('Personnel record purged successfully.');
-                        if (typeof loadStaff === 'function') loadStaff();
-                        else window.location.reload();
-                    });
-                }
+    // Console detection for Admin
+    let devToolsOpen = false;
+    const threshold = 160;
+    setInterval(() => {
+        const widthDiff = window.outerWidth - window.innerWidth > threshold;
+        const heightDiff = window.outerHeight - window.innerHeight > threshold;
+        if ((widthDiff || heightDiff) && !devToolsOpen) {
+            devToolsOpen = true;
+            if (kmShield) {
+                kmShield.textContent = "INTERNAL VIOLATION";
+                kmShield.style.color = "#ff0080";
+                kmShield.classList.add('scanning');
+            }
+        } else if (!(widthDiff || heightDiff) && devToolsOpen) {
+            devToolsOpen = false;
+            if (kmShield) {
+                kmShield.textContent = "SHIELD ARMED";
+                kmShield.style.color = "var(--primary)";
+                kmShield.classList.remove('scanning');
             }
         }
+    }, 1000);
+}
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const btn = document.getElementById('init-staff-btn');
-            if (btn) {
-                btn.onclick = () => {
-                    if (confirm('Initialize base staff records? This is only needed once.')) {
-                        const baseStaff = {
-                            "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                            "459345097373515777": { name: "IRANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                            "1296819349885161472": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                            "1296813876364705792": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" }
-                        };
-                        
-                        if (typeof firebase !== 'undefined') {
-                            const db = firebase.database();
-                            db.ref('staff_status').update(baseStaff).then(() => {
-                                alert('SUCCESS: Personnel synced! RELOADING...');
-                                window.location.reload();
-                            });
-                        }
-                    }
-                };
+// --- GLOBAL SITE-WIDE ALARM SYNC ENGINE ---
+function initGlobalAlarmSync() {
+    const alarmOverlay = document.getElementById('global-security-alarm');
+    const alarmTypeText = document.getElementById('alarm-type');
+    
+    db.ref('siteData/security/globalAlarm').on('value', (snapshot) => {
+        const alarm = snapshot.val();
+        if (alarm && alarm.active === true) {
+            console.warn("!!! GLOBAL SECURITY ALARM ACTIVE !!!");
+            if (alarmOverlay) alarmOverlay.style.display = 'none'; // OVERRIDE FOR ROOT ACCESS
+            if (alarmTypeText) alarmTypeText.textContent = `TYPE: ${alarm.type || 'UNKNOWN'} | TRACE: ${new Date(alarm.time).toLocaleTimeString()}`;
+            
+            // Highlight the security monitor in admin
+            const kmShield = document.getElementById('km-shield');
+            if (kmShield) {
+                kmShield.textContent = "EXTERNAL THREAT";
+                kmShield.style.color = "#ff0080";
+                kmShield.classList.add('scanning');
+            }
+        } else {
+            if (alarmOverlay) alarmOverlay.style.display = 'none';
+            const kmShield = document.getElementById('km-shield');
+            if (kmShield) {
+                kmShield.textContent = "SHIELD ARMED";
+                kmShield.style.color = "var(--primary)";
+                kmShield.classList.remove('scanning');
+            }
+        }
+    });
+}
+
+// Attach to startup sequence
+(function() {
+    // Check for auth state and start sync once ready
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) initGlobalAlarmSync();
+    });
+})();
+
+if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
+        const email = emailInput.value.trim();
+        const pass = passInput.value;
+        
+        if (!email || !pass) {
+            alert("SECURITY ALERT: Empty credentials detected.");
+            return;
+        }
+
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AUTHORIZING...';
+        loginBtn.disabled = true;
+
+        firebase.auth().signInWithEmailAndPassword(email, pass)
+            .then((userCredential) => {
+                alert("ACCESS GRANTED: Root frequency synced.");
+            })
+            .catch((error) => {
+                loginError.textContent = "AUTH FAILURE: " + error.message;
+                loginError.style.display = 'block';
+                passInput.value = '';
+                loginBtn.innerHTML = '<i class="fas fa-unlock"></i> INITIATE ACCESS';
+                loginBtn.disabled = false;
+                setTimeout(() => { loginError.style.display = 'none'; }, 5000);
+            });
+    });
+}
+
+// Support for Enter key on both inputs
+const authInputs = [emailInput, passInput];
+authInputs.forEach(input => {
+    if (input) {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loginBtn.click();
+        });
+    }
+});
+
+// --- SPACE VIBE PARTICLES ENGINE ---
+(function() {
+    const canvas = document.getElementById('vibe-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    class Particle {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2;
+            this.speedX = (Math.random() - 0.5) * 0.5;
+            this.speedY = (Math.random() - 0.5) * 0.5;
+            this.opacity = Math.random() * 0.5;
+        }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+        }
+        draw() {
+            ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    function init() {
+        resize();
+        particles = [];
+        for (let i = 0; i < 150; i++) particles.push(new Particle());
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', resize);
+    init();
+    animate();
+})();
+
+// --- UNIVERSAL GLOBALS PANEL (Settings, Links, Modal Texts) ---
+function loadGlobals() {
+    db.ref('siteData/globals').once('value').then(snapshot => {
+        const data = snapshot.val();
+        
+        // Update version display (Hard-sync to 60.0 baseline)
+        if (data && data.v && parseFloat(data.v) >= 60.0) {
+            const display = document.getElementById('display-v');
+            if (display) display.textContent = data.v;
+        } else {
+            // Re-align to 60.0 to match main site's latest engine deployment
+            const display = document.getElementById('display-v');
+            if (display) display.textContent = "60.0";
+            db.ref('siteData/globals/v').set("60.0");
+        }
+
+        let needsSync = false;
+        let updates = {};
+
+        document.querySelectorAll('input[id^="site_"], textarea[id^="site_"], select[id^="site_"]').forEach(el => {
+            const key = el.id.replace('site_', '');
+            if (data && data[key] !== undefined) {
+                el.value = data[key];
+            } else {
+                needsSync = true;
+                updates[key] = el.value;
             }
         });
-    </script>
-</body>
-</html>
+
+        if (needsSync) {
+            db.ref('siteData/globals').update(updates);
+        }
+
+        // --- Load Security Key ---
+        db.ref('siteData/security/rootKey').once('value').then(snap => {
+            if (snap.exists()) {
+                const keyInput = document.getElementById('security_rootKey');
+                if (keyInput) keyInput.value = snap.val();
+            }
+        });
+    });
+}
+
+function saveGlobals(msgId) {
+    let updates = {};
+    document.querySelectorAll('input[id^="site_"], textarea[id^="site_"], select[id^="site_"]').forEach(el => {
+        updates[el.id.replace('site_', '')] = el.value;
+    });
+    db.ref('siteData/globals').update(updates).then(() => {
+        // Handle Security Key update separately if modified
+        const keyInput = document.getElementById('security_rootKey');
+        if (keyInput) {
+            db.ref('siteData/security/rootKey').set(keyInput.value);
+        }
+        bumpSiteVersion();
+        showSaveMsg(msgId);
+    });
+}
+
+document.getElementById('save-globals').addEventListener('click', () => saveGlobals('save-msg-globals'));
+document.getElementById('save-links').addEventListener('click', () => saveGlobals('save-msg-links'));
+document.getElementById('save-modals-text').addEventListener('click', () => saveGlobals('save-msg-modals-text'));
+if(document.getElementById('save-modals-all-data')) {
+    document.getElementById('save-modals-all-data').addEventListener('click', () => saveGlobals('save-msg-modals-all-data'));
+}
+if(document.getElementById('save-staff')) {
+    document.getElementById('save-staff').addEventListener('click', saveStaff);
+}
+
+// --- RELEASES PANEL ---
+const releasesContainer = document.getElementById('releases-container');
+let releasesArray = [];
+
+
+// Template for a release item
+function createReleaseEditor(release, index) {
+    const div = document.createElement('div');
+    div.className = 'release-editor-item';
+    div.innerHTML = `
+        <button class="delete-btn" onclick="removeRelease(${index})"><i class="fas fa-trash"></i></button>
+        <div class="form-grid">
+            <div class="input-group">
+                <label>Track ID / Badge (e.g. OS-992 <span class='badge'>NEW</span>)</label>
+                <input type="text" class="r-id" value="${release.id || ''}">
+            </div>
+            <div class="input-group">
+                <label>Title</label>
+                <input type="text" class="r-title" value="${release.title || ''}">
+            </div>
+            <div class="input-group">
+                <label>Producers</label>
+                <input type="text" class="r-producers" value="${release.producers || ''}">
+            </div>
+            <div class="input-group">
+                <label>Release Type (SINGLE / EP / ALBUM)</label>
+                <input type="text" class="r-type" value="${release.type || 'SINGLE'}">
+            </div>
+            <div class="input-group">
+                <label>Cover Image Source</label>
+                <input type="text" class="r-image" value="${release.image || 'assets/cover.png'}">
+            </div>
+            <div class="input-group full" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                <div><label><i class="fab fa-spotify" style="color:#1DB954"></i> Spotify Link</label>
+                <input type="text" class="r-spotify" value="${release.spotify || '#'}"></div>
+                <div><label><i class="fab fa-apple" style="color:#fa243c"></i> Apple Link</label>
+                <input type="text" class="r-apple" value="${release.apple || '#'}"></div>
+                <div><label><i class="fab fa-youtube" style="color:#FF0000"></i> YouTube Link</label>
+                <input type="text" class="r-youtube" value="${release.youtube || '#'}"></div>
+            </div>
+            <div class="input-group full">
+                <label><i class="fas fa-play-circle" style="color:var(--accent-blue)"></i> Preview Audio URL (MP3/Snippet)</label>
+                <input type="text" class="r-preview" value="${release.preview || ''}" placeholder="Paste direct MP3/WAV link here...">
+            </div>
+        </div>
+    `;
+    return div;
+}
+
+function renderReleases() {
+    const releasesContainer = document.getElementById('releases-container');
+    if (!releasesContainer) return;
+    
+    releasesContainer.innerHTML = '';
+    releasesArray.forEach((r, i) => {
+        releasesContainer.appendChild(createReleaseEditor(r, i));
+    });
+}
+
+window.removeRelease = function(index) {
+    gatherReleasesData(); // Save current state before removing
+    releasesArray.splice(index, 1);
+    renderReleases();
+};
+
+const addRelBtn = document.getElementById('add-release-btn');
+if (addRelBtn) {
+    addRelBtn.onclick = () => {
+        gatherReleasesData();
+        releasesArray.unshift({
+            id: "OS-NEW", title: "NEW TRACK", producers: "UNKNOWN", type: "SINGLE", 
+            image: "assets/cover.png", spotify: "#", apple: "#", youtube: "#"
+        });
+        renderReleases();
+    };
+}
+
+function loadReleases() {
+    const releasesContainer = document.getElementById('releases-container');
+    if (!releasesContainer) {
+        console.error("Release container not found!");
+        return;
+    }
+    
+    releasesContainer.innerHTML = '<p style="opacity:0.5; padding:2rem;">Synchronizing release archive...</p>';
+    
+    db.ref('siteData/releases').once('value').then(snapshot => {
+        let data = snapshot.val();
+        
+        if (data && Array.isArray(data)) {
+            alert('RELEASES DETECTED: Found ' + data.length + ' tracks in archive.');
+            if (data[0] && data[0]._isEmpty) {
+                releasesArray = [];
+            } else {
+                releasesArray = data;
+            }
+            renderReleases();
+        } else {
+            alert('NOTICE: Release archive is empty or using defaults.');
+            releasesArray = [
+                { id: "OS-992 <span class='badge'>NEW</span>", title: "STARLIGHT SYNDROME", producers: "SVYUXU & OBSCURA", type: "SINGLE", image: "assets/cover.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=A0FZIwabctw", preview: "" },
+                { id: "OS-991", title: "NEUTRON PULSE", producers: "RANGA", type: "EP", image: "assets/releases/cover_1.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=jfKfPfyJRdk", preview: "" },
+                { id: "OS-990", title: "VOID WALKER", producers: "FL4ME", type: "ALBUM", image: "assets/releases/cover_2.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=21X5lGlDOfg", preview: "" },
+                { id: "OS-989", title: "SOLAR FLARE", producers: "SVYUXU & RANGA", type: "SINGLE", image: "assets/releases/cover_3.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=kJQP7kiw5Fk", preview: "" }
+            ];
+            renderReleases();
+        }
+    }).catch(err => {
+        alert('RELEASES ERROR: ' + err.message);
+    });
+}
+
+function gatherReleasesData() {
+    const editors = document.querySelectorAll('#releases-container .release-editor-item');
+    releasesArray = [];
+    editors.forEach(ed => {
+        releasesArray.push({
+            id: ed.querySelector('.r-id').value,
+            title: ed.querySelector('.r-title').value,
+            producers: ed.querySelector('.r-producers').value,
+            type: ed.querySelector('.r-type').value,
+            image: ed.querySelector('.r-image').value,
+            spotify: ed.querySelector('.r-spotify').value,
+            apple: ed.querySelector('.r-apple').value,
+            youtube: ed.querySelector('.r-youtube').value,
+            preview: ed.querySelector('.r-preview').value,
+        });
+    });
+}
+
+document.getElementById('save-releases').addEventListener('click', () => {
+    gatherReleasesData();
+    db.ref('siteData/releases').set(releasesArray).then(() => {
+        bumpSiteVersion();
+        showSaveMsg('save-msg-releases');
+    });
+});
+
+// --- UPCOMING RELEASES PANEL ---
+const upcomingContainer = document.getElementById('upcoming-container');
+let upcomingArray = [];
+
+function createUpcomingEditor(item, index) {
+    const div = document.createElement('div');
+    div.className = 'release-editor-item';
+    div.innerHTML = `
+        <button class="delete-btn" onclick="removeUpcoming(${index})"><i class="fas fa-trash"></i></button>
+        <div class="form-grid">
+            <div class="input-group">
+                <label>Track ID / Badge (e.g. OS-NEW <span class='badge'>COMING SOON</span>)</label>
+                <input type="text" class="u-id" value="${item.id || ''}">
+            </div>
+            <div class="input-group">
+                <label>Title</label>
+                <input type="text" class="u-title" value="${item.title || ''}">
+            </div>
+            <div class="input-group">
+                <label>Producers</label>
+                <input type="text" class="u-producers" value="${item.producers || ''}">
+            </div>
+            <div class="input-group">
+                <label>Cover Image Source</label>
+                <input type="text" class="u-image" value="${item.image || 'assets/cover.png'}">
+            </div>
+        </div>
+    `;
+    return div;
+}
+
+function renderUpcoming() {
+    if (!upcomingContainer) return;
+    upcomingContainer.innerHTML = '';
+    upcomingArray.forEach((item, i) => {
+        upcomingContainer.appendChild(createUpcomingEditor(item, i));
+    });
+}
+
+window.removeUpcoming = function(index) {
+    gatherUpcomingData();
+    upcomingArray.splice(index, 1);
+    renderUpcoming();
+};
+
+if (document.getElementById('add-upcoming-btn')) {
+    document.getElementById('add-upcoming-btn').addEventListener('click', () => {
+        gatherUpcomingData();
+        upcomingArray.unshift({ id: "OS-NEW", title: "FUTURE TRACK", producers: "UNKNOWN", image: "assets/cover.png" });
+        renderUpcoming();
+    });
+}
+
+function loadUpcoming() {
+    db.ref('siteData/upcoming').once('value').then(snapshot => {
+        let data = snapshot.val();
+        if (data && Array.isArray(data)) {
+            upcomingArray = data;
+            renderUpcoming();
+        }
+    });
+}
+
+function gatherUpcomingData() {
+    const editors = document.querySelectorAll('#upcoming-container .release-editor-item');
+    upcomingArray = [];
+    editors.forEach(ed => {
+        upcomingArray.push({
+            id: ed.querySelector('.u-id').value,
+            title: ed.querySelector('.u-title').value,
+            producers: ed.querySelector('.u-producers').value,
+            image: ed.querySelector('.u-image').value
+        });
+    });
+}
+
+if (document.getElementById('save-upcoming')) {
+    document.getElementById('save-upcoming').addEventListener('click', () => {
+        gatherUpcomingData();
+
+        // Also save the category visibility setting
+        const visibilityEl = document.getElementById('site_showUpcoming');
+        if (visibilityEl) {
+            db.ref('siteData/globals/showUpcoming').set(visibilityEl.value);
+        }
+
+        db.ref('siteData/upcoming').set(upcomingArray).then(() => {
+            bumpSiteVersion();
+            showSaveMsg('save-msg-upcoming');
+        });
+    });
+}
+
+// --- DEMO INBOX LOGIC ---
+const inboxContainer = document.getElementById('demo-inbox-container');
+const refreshBtn = document.getElementById('refresh-inbox');
+const clearBtn = document.getElementById('clear-inbox');
+
+function loadSubmissions() {
+    if (!inboxContainer) return;
+    inboxContainer.innerHTML = '<p style="opacity:0.5">Scanning frequencies...</p>';
+    
+    db.ref('siteData/submissions/demo').once('value').then(snapshot => {
+        const data = snapshot.val();
+        inboxContainer.innerHTML = '';
+        if (!data) {
+            inboxContainer.innerHTML = '<p style="opacity:0.5; font-style:italic;">No active transmissions detected.</p>';
+            return;
+        }
+
+        const subs = Object.keys(data).map(key => ({ id: key, ...data[key] })).reverse();
+        subs.forEach(sub => {
+            const card = document.createElement('div');
+            card.className = 'demo-card';
+            card.innerHTML = `
+                <div class="demo-header">
+                    <div class="demo-title">
+                        <h3>${sub.artist || 'UNKNOWN'}</h3>
+                        <p>${sub.date || 'DATETIME MISSING'}</p>
+                    </div>
+                    <button class="delete-btn" onclick="deleteSub('${sub.id}')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="demo-meta">
+                    <div class="meta-item"><label>Real Name</label><span>${sub.name || 'N/A'}</span></div>
+                    <div class="meta-item"><label>Contact</label><span>${sub.email || 'N/A'}</span></div>
+                    <div class="meta-item"><label>Genre</label><span>${sub.genre || 'N/A'}</span></div>
+                </div>
+                ${sub.message ? '<div class="demo-message">' + sub.message + '</div>' : ''}
+                <a href="${sub.link}" target="_blank" class="demo-link-btn" style="background: rgba(255, 255, 255, 0.05); color: var(--text-primary);"><i class="fas fa-external-link-alt"></i> ACCESS STORED SONG (Cloud Link)</a>
+            `;
+            inboxContainer.appendChild(card);
+        });
+    }).catch(err => {
+        console.error("Inbox Error:", err);
+        inboxContainer.innerHTML = '<p style="color:var(--accent-magenta); font-style:italic;">LINK FAILURE: Check your galactic connection.</p>';
+    });
+}
+
+window.deleteSub = function(id) {
+    if (confirm('Permanently wipe this transmission record?')) {
+        db.ref('siteData/submissions/demo/' + id).remove().then(loadSubmissions);
+    }
+};
+
+if (refreshBtn) refreshBtn.addEventListener('click', loadSubmissions);
+if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+        if (confirm('SYSTEM OVERRIDE: Purge ALL transmission records in the vault?')) {
+            db.ref('siteData/submissions/demo').remove().then(loadSubmissions);
+        }
+    });
+}
+
+// --- STAFF PROFILES PANEL ---
+function createStaffEditor(staff, discordId) {
+    const div = document.createElement('div');
+    div.className = 'release-editor-item staff-editor-item';
+    div.style.marginBottom = '2.5rem';
+    div.style.background = 'rgba(255,255,255,0.02)';
+    div.style.padding = '2.5rem';
+    div.style.borderRadius = '24px';
+    div.style.border = '1px solid rgba(255,255,255,0.05)';
+    div.dataset.discordId = discordId;
+    
+    // Socials section
+    const socials = staff.socials || {};
+    const platforms = ['instagram', 'spotify', 'apple', 'facebook', 'youtube', 'tiktok', 'twitter'];
+    let socialsHtml = '';
+    platforms.forEach(p => {
+        socialsHtml += `
+            <div class="input-group">
+                <label>${p.toUpperCase()} LINK</label>
+                <input type="text" class="s-social-${p}" value="${socials[p] || ''}" placeholder="https://...">
+            </div>
+        `;
+    });
+
+    div.innerHTML = `
+        <button class="delete-btn" onclick="removeStaff('${discordId}')"><i class="fas fa-trash"></i></button>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 2rem;">
+                <div style="width: 70px; height: 70px; border-radius: 50%; background-image: url(${staff.avatar_url || 'assets/staff/default.png'}); background-position: center; background-size: cover; border: 2px solid var(--accent-blue); background-color: #000;"></div>
+                <div>
+                    <h3 style="margin:0; color:var(--accent-blue); font-size: 1.4rem;">${staff.name || 'UNKNOWN'}</h3>
+                    <small style="opacity:0.5; letter-spacing: 0.1rem;">ACCESS KEY: ${discordId}</small>
+                </div>
+            </div>
+            <button class="save-btn" style="padding: 0.8rem 1.5rem; font-size: 0.7rem; border-radius: 10px;" onclick="saveIndividualStaff('${discordId}')"><i class="fas fa-save"></i> SYNC INDIVIDUAL TRANSMISSION</button>
+        </div>
+        <div class="form-grid">
+            <div class="input-group full">
+                <label>AVATAR SOURCE URL (IMAGE LINK)</label>
+                <input type="text" class="s-avatar" value="${staff.avatar_url || ''}" placeholder="Paste image link here (PNG/JPG)...">
+            </div>
+            <div class="input-group full">
+                <label>PERSONNEL BIOGRAPHY (HTML ALLOWED)</label>
+                <textarea class="s-bio" style="height: 100px; font-family:'Inter', sans-serif;">${staff.bio || ''}</textarea>
+            </div>
+            <h4 style="grid-column: 1 / -1; color: var(--primary); font-size: 0.7rem; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem; font-family:'Syncopate', sans-serif; opacity: 0.8;">BROADCAST CHANNELS</h4>
+            ${socialsHtml}
+        </div>
+    `;
+    return div;
+}
+
+window.removeStaff = function(discordId) {
+    if (confirm('SYSTEM OVERRIDE: Purge this personnel record from the transmission?')) {
+        db.ref('staff_status/' + discordId).remove().then(() => {
+            loadStaff(); // Refresh view
+        });
+    }
+};
+
+function loadStaff() {
+    const staffContainer = document.getElementById('staff-container');
+    if (!staffContainer) return;
+
+    db.ref('staff_status').once('value').then(snapshot => {
+        const data = snapshot.val();
+        staffContainer.innerHTML = '';
+        
+        if (!data) {
+            staffContainer.innerHTML = '<p style="opacity:0.5; padding:2rem; font-style:italic; color:var(--accent-magenta);">Personnel node not found. Please click INITIALIZE button above once.</p>';
+            return;
+        }
+        
+        Object.entries(data).forEach(([id, staff]) => {
+            staffContainer.appendChild(createStaffEditor(staff, id));
+        });
+    });
+}
+
+function saveStaff() {
+    const items = document.querySelectorAll('.staff-editor-item');
+    if (items.length === 0) {
+        alert('NO PERSONNEL RECORDS FOUND TO SYNC.');
+        return;
+    }
+    const updates = {};
+    items.forEach(item => {
+        const id = item.dataset.discordId;
+        const bio = item.querySelector('.s-bio').value;
+        const avatar = item.querySelector('.s-avatar') ? item.querySelector('.s-avatar').value : '';
+        const socials = {};
+        item.querySelectorAll('input[class^="s-social-"]').forEach(input => {
+            const platform = input.className.replace('s-social-', '');
+            if (input.value.trim() !== '') {
+                socials[platform] = input.value.trim();
+            }
+        });
+        updates[id + '/bio'] = bio;
+        updates[id + '/avatar_url'] = avatar;
+        updates[id + '/socials'] = socials;
+    });
+    db.ref('staff_status').update(updates).then(() => {
+        alert('SUCCESS: All personnel frequencies updated.');
+        showSaveMsg('save-msg-staff');
+        bumpSiteVersion();
+        loadStaff();
+    }).catch(err => {
+        alert('CRITICAL SYNC ERROR: ' + err.message);
+    });
+}
+
+// Individual save function moved to top for scope safety
+
+const saveReleasesBtn = document.getElementById('save-releases');
+if (saveReleasesBtn) {
+    saveReleasesBtn.addEventListener('click', () => {
+        const items = document.querySelectorAll('#releases-container .release-editor-item');
+        if (items.length === 0) {
+            alert('NO RELEASES FOUND TO SYNC.');
+            return;
+        }
+        
+        let updates = [];
+        items.forEach(item => {
+            const id = item.querySelector('.r-id').value;
+            const title = item.querySelector('.r-title').value;
+            const producers = item.querySelector('.r-producers').value;
+            const type = item.querySelector('.r-type').value;
+            const image = item.querySelector('.r-image').value;
+            const spotify = item.querySelector('.r-spotify').value;
+            const apple = item.querySelector('.r-apple').value;
+            const youtube = item.querySelector('.r-youtube').value;
+            const preview = item.querySelector('.r-preview').value;
+
+            updates.push({ id, title, producers, type, image, spotify, apple, youtube, preview });
+        });
+
+        db.ref('siteData/releases').set(updates).then(() => {
+            alert('SUCCESS: Release archive successfully updated.');
+            bumpSiteVersion();
+            loadReleases();
+        }).catch(err => {
+            alert('CRITICAL SYNC ERROR: ' + err.message);
+        });
+    });
+}
+
+const initStaffBtn = document.getElementById('init-staff-btn');
+if (initStaffBtn) {
+    initStaffBtn.addEventListener('click', () => {
+        if (confirm('Initialize base staff records? This will only add missing entries and WON\'T overwrite existing avatars.')) {
+            const baseStaff = {
+                "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                "459345097373515777": { name: "IRANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                "1296819349885161472": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                "1296813876364705792": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" }
+            };
+            
+            Object.entries(baseStaff).forEach(([id, staff]) => {
+                db.ref('staff_status/' + id).once('value').then(snap => {
+                    if (!snap.exists()) {
+                        db.ref('staff_status/' + id).set(staff);
+                    }
+                });
+            });
+            
+            alert('Safe initialization sequence initiated. Reloading in 1s...');
+            setTimeout(() => window.location.reload(), 1000);
+        }
+    });
+}
+
+// Initial load
+initializeSecurity();
