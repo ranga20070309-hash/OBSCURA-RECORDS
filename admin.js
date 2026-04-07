@@ -668,20 +668,20 @@ if (document.getElementById('save-upcoming')) {
     });
 }
 
-// --- DEMO INBOX LOGIC ---
+// --- DEMO INBOX LOGIC (STABILIZED v2) ---
 const inboxContainer = document.getElementById('demo-inbox-container');
 const refreshBtn = document.getElementById('refresh-inbox');
 const clearBtn = document.getElementById('clear-inbox');
 
 function loadSubmissions() {
     if (!inboxContainer) return;
-    inboxContainer.innerHTML = '<p style="opacity:0.5">Scanning frequencies...</p>';
+    inboxContainer.innerHTML = '<div style="padding:2rem; opacity:0.5; font-family:monospace;">SCANNING FREQUENCIES...</div>';
     
     db.ref('siteData/submissions/demo').once('value').then(snapshot => {
         const data = snapshot.val();
         inboxContainer.innerHTML = '';
         if (!data) {
-            inboxContainer.innerHTML = '<p style="opacity:0.5; font-style:italic;">No active transmissions detected.</p>';
+            inboxContainer.innerHTML = '<p style="opacity:0.5; font-style:italic; padding:2rem;">No active transmissions detected.</p>';
             return;
         }
 
@@ -689,35 +689,43 @@ function loadSubmissions() {
         subs.forEach(sub => {
             const card = document.createElement('div');
             card.className = 'demo-card';
+            card.dataset.id = sub.id; // Store ID for listener
             card.innerHTML = `
+                <button class="delete-demo-record" data-pid="${sub.id}" style="position:absolute; top:1rem; right:1rem; width:28px; height:28px; background:rgba(255,0,0,0.1); border:1px solid rgba(255,0,0,0.2); color:#ff4444; border-radius:4px; cursor:pointer; z-index:100; display:flex; align-items:center; justify-content:center; transition:0.3s;"><i class="fas fa-times"></i></button>
                 <div class="demo-header">
                     <div class="demo-title">
-                        <h3>${sub.artist || 'UNKNOWN'}</h3>
-                        <p>${sub.date || 'DATETIME MISSING'}</p>
+                        <h3 style="color:var(--accent-blue);">${sub.artist || 'ANONYMOUS'}</h3>
+                        <p style="font-size:0.7rem; opacity:0.6;">RECEIVED: ${sub.date || 'SIGNAL TIME MISSING'}</p>
                     </div>
-                    <button class="delete-btn" onclick="deleteSub('${sub.id}')"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="demo-meta">
                     <div class="meta-item"><label>Real Name</label><span>${sub.name || 'N/A'}</span></div>
                     <div class="meta-item"><label>Contact</label><span>${sub.email || 'N/A'}</span></div>
                     <div class="meta-item"><label>Genre</label><span>${sub.genre || 'N/A'}</span></div>
                 </div>
-                ${sub.message ? '<div class="demo-message">' + sub.message + '</div>' : ''}
-                <a href="${sub.link}" target="_blank" class="demo-link-btn" style="background: rgba(255, 255, 255, 0.05); color: var(--text-primary);"><i class="fas fa-external-link-alt"></i> ACCESS STORED SONG (Cloud Link)</a>
+                <div class="demo-message" style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; font-size: 0.85rem; margin-top: 1rem; border: 1px solid rgba(255,255,255,0.05);">${sub.message || 'No additional bio.'}</div>
+                <a href="${sub.link}" target="_blank" class="demo-link-btn" style="display:inline-block; margin-top:1.5rem; padding: 0.8rem 1.5rem; background: var(--accent-blue); color: #000; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.75rem;"><i class="fas fa-external-link-alt"></i> ACCESS TRANSMISSION</a>
             `;
+            
+            // Add click listener directly to the button
+            card.querySelector('.delete-demo-record').addEventListener('click', (e) => {
+                e.stopPropagation();
+                const pid = e.currentTarget.dataset.pid;
+                if (confirm('SYSTEM OVERRIDE: Purge this record from the vault?')) {
+                    db.ref('siteData/submissions/demo/' + pid).remove().then(() => {
+                        console.log("Record wiped.");
+                        loadSubmissions();
+                    }).catch(err => alert("SYNC FAILURE: " + err.message));
+                }
+            });
+            
             inboxContainer.appendChild(card);
         });
     }).catch(err => {
         console.error("Inbox Error:", err);
-        inboxContainer.innerHTML = '<p style="color:var(--accent-magenta); font-style:italic;">LINK FAILURE: Check your galactic connection.</p>';
+        inboxContainer.innerHTML = '<p style="color:var(--accent-magenta); font-style:italic; padding:2rem;">LINK FAILURE: Check your galactic connection.</p>';
     });
 }
-
-window.deleteSub = function(id) {
-    if (confirm('Permanently wipe this transmission record?')) {
-        db.ref('siteData/submissions/demo/' + id).remove().then(loadSubmissions);
-    }
-};
 
 if (refreshBtn) refreshBtn.addEventListener('click', loadSubmissions);
 if (clearBtn) {
