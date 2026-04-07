@@ -256,10 +256,13 @@ const runIgnition = () => {
         filter: "blur(20px)",
         ease: "expo.inOut",
         onStart: () => {
-            document.body.classList.remove('no-scroll'); // UNLOCK SCROLL IMMEDIATELY ON EXIT
             gsap.set(mainSite, { visibility: 'visible', opacity: 1 });
             // CINEMATIC SCROLLBAR FADE-IN
             gsap.to("html", { "--sb-opacity": 0.2, duration: 1.5, ease: "power2.out" });
+        },
+        onComplete: () => {
+            document.body.classList.remove('no-scroll');
+            document.documentElement.classList.remove('no-scroll'); // UNLOCK BOTH
         }
     }, "-=0.2");
 
@@ -400,14 +403,67 @@ const initPortal = () => {
         trigger.addEventListener('click', () => {
             playBleep(700, 'sine', 0.1);
             modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            document.body.classList.add('no-scroll');
+            document.documentElement.classList.add('no-scroll');
+
+            // --- SMOOTH "TYPE-SIGNAL" EFFECT FOR MODAL --
+            if (modal.id === 'submission-modal') {
+                const modalTitle = modal.querySelector('.section-title');
+                const modalDesc = modal.querySelector('.section-desc');
+                
+                if(modalTitle) {
+                    const originalTitle = modalTitle.getAttribute('data-original') || modalTitle.textContent;
+                    if(!modalTitle.getAttribute('data-original')) modalTitle.setAttribute('data-original', originalTitle);
+                    modalTitle.textContent = "";
+                    typeSignal(modalTitle, originalTitle, 40);
+                }
+                
+                if(modalDesc) {
+                    const originalDesc = modalDesc.getAttribute('data-original') || modalDesc.textContent;
+                    if(!modalDesc.getAttribute('data-original')) modalDesc.setAttribute('data-original', originalDesc);
+                    modalDesc.textContent = "";
+                    setTimeout(() => typeSignal(modalDesc, originalDesc, 15), 500);
+                }
+            }
+        });
+
+        function typeSignal(element, text, speed) {
+            let i = 0;
+            const timer = setInterval(() => {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(timer);
+                }
+            }, speed);
+        }
+
+        // --- MIRROR SIGNAL INPUT ENGINE ---
+        const mirrorInputs = document.querySelectorAll('.mirror-container .real-input');
+        mirrorInputs.forEach(input => {
+            const display = input.parentElement.querySelector('.mirror-display');
+            if(!display) return;
+            
+            input.addEventListener('input', () => {
+                const text = input.value;
+                display.innerHTML = '';
+                
+                text.split('').forEach((char) => {
+                    const span = document.createElement('span');
+                    span.className = 'mirror-glyph';
+                    span.textContent = char === ' ' ? '\u00A0' : char; 
+                    display.appendChild(span);
+                });
+            });
         });
 
         [closeBtn, overlay].forEach(btn => {
             if (btn) {
                 btn.addEventListener('click', () => {
                     modal.classList.remove('active');
-                    document.body.style.overflow = 'auto';
+                    document.body.classList.remove('no-scroll');
+                    document.documentElement.classList.remove('no-scroll');
                 });
             }
         });
@@ -429,7 +485,8 @@ const initPortal = () => {
             if (btn) {
                 btn.addEventListener('click', () => {
                     artistModal.classList.remove('active');
-                    document.body.style.overflow = 'auto';
+                    document.body.classList.remove('no-scroll');
+                    document.documentElement.classList.remove('no-scroll');
                 });
             }
         });
@@ -441,6 +498,34 @@ const initPortal = () => {
     const RECAPTCHA_SITE_KEY = "6LcFNKgsAAAAAEEdRhYJrwgeWzaRyMmzbgNy3swn";
 
     if (subForm) {
+        const checkBoxes = subForm.querySelectorAll('.cyber-check-input');
+        const submitBtn = subForm.querySelector('button[type="submit"]');
+
+        const updateSubmitLock = () => {
+            const allBoxesChecked = Array.from(checkBoxes).every(cb => cb.checked);
+            submitBtn.disabled = !allBoxesChecked;
+            submitBtn.style.opacity = allBoxesChecked ? "1" : "0.3";
+            submitBtn.style.cursor = allBoxesChecked ? "pointer" : "not-allowed";
+            if (!allBoxesChecked) {
+                submitBtn.title = "Please acknowledge all guidelines to proceed.";
+            } else {
+                submitBtn.title = "";
+            }
+        };
+
+        checkBoxes.forEach(cb => cb.addEventListener('change', updateSubmitLock));
+        updateSubmitLock(); // Initial lock state
+
+        // --- TYPING "SYSTEM PULSE" EFFECT ---
+        const typingInputs = subForm.querySelectorAll('input, textarea');
+        typingInputs.forEach(input => {
+            input.addEventListener('keydown', () => {
+                input.classList.add('pulse');
+                // Remove class after 100ms to allow re-trigger on next key
+                setTimeout(() => input.classList.remove('pulse'), 100);
+            });
+        });
+
         subForm.addEventListener('submit', async (e) => {
             const db = firebase.database(); // DEFINING DB SCOPE
             e.preventDefault();
@@ -456,6 +541,18 @@ const initPortal = () => {
                 if (!token) throw new Error("Security verification failed.");
 
                 const formData = new FormData(subForm);
+                // --- CAPTURE ALL FORM LABELS (QUESTIONS) ---
+                const labelName = subForm.querySelector('label[data-sync="formLabelName"]')?.textContent || "Real Name";
+                const labelArtist = subForm.querySelector('label[data-sync="formLabelArtist"]')?.textContent || "Artist Name(s)";
+                const labelEmail = subForm.querySelector('label[data-sync="formLabelEmail"]')?.textContent || "Email Address";
+                const labelGenre = subForm.querySelector('label[data-sync="formLabelGenre"]')?.textContent || "Primary Genre";
+                const labelLink = subForm.querySelector('label[data-sync="formLabelLink"]')?.textContent || "Private Link";
+                const labelMessage = subForm.querySelector('label[data-sync="formLabelMessage"]')?.textContent || "Message/Bio";
+
+                // --- CAPTURE RULE TITLES ---
+                const rule1Title = subForm.querySelector('strong[data-sync="formRule1Title"]')?.textContent || "Rule 1";
+                const rule2Title = subForm.querySelector('strong[data-sync="formRule2Title"]')?.textContent || "Rule 2";
+
                 const submission = {
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
                     date: new Date().toLocaleString(),
@@ -465,6 +562,9 @@ const initPortal = () => {
                     genre: formData.get('genre'),
                     link: formData.get('link'),
                     message: formData.get('message'),
+                    rule1: rule1Title,
+                    rule2: rule2Title,
+                    guidelines: "VERIFIED & ACCEPTED",
                     recaptcha_token: token
                 };
 
@@ -476,13 +576,23 @@ const initPortal = () => {
                 if (SERVICE_ID !== "service_xxxxxxx") {
                     emailjs.init(PUBLIC_KEY);
                     emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-                        artist: submission.artist,
-                        name: submission.name,
-                        email: submission.email,
-                        genre: submission.genre,
-                        link: submission.link,
-                        message: submission.message,
-                        date: submission.date
+                        // Labels (Questions)
+                        label_name: labelName,
+                        label_artist: labelArtist,
+                        label_email: labelEmail,
+                        label_genre: labelGenre,
+                        label_link: labelLink,
+                        label_message: labelMessage,
+                        label_rule1: rule1Title,
+                        label_rule2: rule2Title,
+                        // Values (Answers)
+                        val_name: submission.name,
+                        val_artist: submission.artist,
+                        val_email: submission.email,
+                        val_genre: submission.genre,
+                        val_link: submission.link,
+                        val_message: submission.message,
+                        val_date: submission.date
                     }).catch(err => console.warn("Email notify error:", err));
                 }
 
@@ -495,7 +605,8 @@ const initPortal = () => {
                 setTimeout(() => {
                     const subModal = document.getElementById('submission-modal');
                     if (subModal) subModal.classList.remove('active');
-                    document.body.style.overflow = 'auto';
+                    document.body.classList.remove('no-scroll');
+                    document.documentElement.classList.remove('no-scroll');
                     
                     setTimeout(() => {
                         subForm.style.display = 'flex';
@@ -549,6 +660,8 @@ const initPortal = () => {
                 setTimeout(() => {
                     const contactModal = document.getElementById('contact-modal');
                     if (contactModal) contactModal.classList.remove('active');
+                    document.body.classList.remove('no-scroll');
+                    document.documentElement.classList.remove('no-scroll');
                     
                     setTimeout(() => {
                         contactForm.style.display = 'block';
@@ -611,7 +724,8 @@ const initPortal = () => {
                 if (sidebar && sidebar.classList.contains('active')) {
                     sidebar.classList.remove('active');
                     if (overlay) overlay.classList.remove('active');
-                    document.body.style.overflow = 'auto'; // Restore scroll
+                    document.body.classList.remove('no-scroll');
+                    document.documentElement.classList.remove('no-scroll'); // Restore scroll
                 }
 
                 const targetId = target.substring(1);
@@ -784,7 +898,8 @@ const initPortal = () => {
                         }
 
                         modal.classList.add('active');
-                        document.body.style.overflow = 'hidden';
+                        document.body.classList.add('no-scroll');
+                        document.documentElement.classList.add('no-scroll');
                     };
                 } else {
                     console.warn(`No status data found for ${nameLabel}`);
