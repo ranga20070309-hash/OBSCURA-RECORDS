@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-scroll">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -564,31 +564,67 @@
                 <form id="submission-form" class="cyber-form">
                     <div class="form-row mobile-stack-row">
                         <div class="form-group">
-                            <label data-sync="formLabelName" data-sync-target="text">REAL NAME</label>
-                            <input type="text" name="name" placeholder="John Doe" data-sync="formPlaceholderName" data-sync-target="placeholder" required>
+                            <label data-sync="formLabelName" data-sync-target="text">Real Name</label>
+                            <div class="mirror-container">
+                                <input type="text" name="name" class="real-input" placeholder="Name" data-sync="formPlaceholderName" data-sync-target="placeholder" required>
+                                <div class="mirror-display"></div>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label data-sync="formLabelArtist" data-sync-target="text">ARTIST ALIAS / PROJECT</label>
-                            <input type="text" name="artist" placeholder="VOX-99" data-sync="formPlaceholderArtist" data-sync-target="placeholder" required>
+                            <label data-sync="formLabelArtist" data-sync-target="text">Artist Name(s)</label>
+                            <div class="mirror-container">
+                                <input type="text" name="artist" class="real-input" placeholder="Names" data-sync="formPlaceholderArtist" data-sync-target="placeholder" required>
+                                <div class="mirror-display"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label data-sync="formLabelEmail" data-sync-target="text">EMAIL ADDRESS</label>
-                            <input type="email" name="email" placeholder="official@artist.com" data-sync="formPlaceholderEmail" data-sync-target="placeholder" required>
+                            <label data-sync="formLabelEmail" data-sync-target="text">Email Address</label>
+                            <div class="mirror-container">
+                                <input type="email" name="email" class="real-input" placeholder="official@artist.com" data-sync="formPlaceholderEmail" data-sync-target="placeholder" required>
+                                <div class="mirror-display"></div>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label data-sync="formLabelGenre" data-sync-target="text">PRIMARY GENRE</label>
-                            <input type="text" name="genre" placeholder="CYBER PHONK / FUTURISTIC" data-sync="formPlaceholderGenre" data-sync-target="placeholder" required>
+                            <label data-sync="formLabelGenre" data-sync-target="text">Primary Genre</label>
+                            <div class="mirror-container">
+                                <input type="text" name="genre" class="real-input" placeholder="Funk / EDM / Hip Hop" data-sync="formPlaceholderGenre" data-sync-target="placeholder" required>
+                                <div class="mirror-display"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <label data-sync="formLabelLink" data-sync-target="text">PRIVATE STREAMING LINK (SoundCloud / Dropbox / Drive)</label>
-                        <input type="url" name="link" placeholder="https://soundcloud.com/..." data-sync="formPlaceholderLink" data-sync-target="placeholder" required>
+                        <div class="mirror-container">
+                            <input type="url" name="link" class="real-input" placeholder="https://soundcloud.com/..." data-sync="formPlaceholderLink" data-sync-target="placeholder" required>
+                            <div class="mirror-display"></div>
+                        </div>
                     </div>
+
                     <div class="form-group">
-                        <label data-sync="formLabelMessage" data-sync-target="text">MESSAGE / BIOGRAPHY (Optional)</label>
-                        <textarea name="message" placeholder="A brief transmission regarding your sound..." data-sync="formPlaceholderMessage" data-sync-target="placeholder"></textarea>
+                        <label data-sync="formLabelMessage" data-sync-target="text">Message / Biography (Optional)</label>
+                        <textarea name="message" class="real-input" placeholder="A brief transmission regarding your sound..." data-sync="formPlaceholderMessage" data-sync-target="placeholder"></textarea>
+                    </div>
+
+                    <!-- Submission Guidelines Checklist (Final Step) -->
+                    <div class="demo-guidelines" style="margin-top: 1rem; margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                        <label class="cyber-check-item glass">
+                            <input type="checkbox" class="cyber-check-input" required>
+                            <span class="cyber-tick"></span>
+                            <div class="check-text">
+                                <strong data-sync="formRule1Title" data-sync-target="text">IS THIS TRACK UNRELEASED?</strong>
+                                <p data-sync="formRule1Desc" data-sync-target="text">We do NOT accept already-released tracks. Any submissions that have already been published will be automatically declined.</p>
+                            </div>
+                        </label>
+                        <label class="cyber-check-item glass">
+                            <input type="checkbox" class="cyber-check-input" required>
+                            <span class="cyber-tick"></span>
+                            <div class="check-text">
+                                <strong data-sync="formRule2Title" data-sync-target="text">TRACK IDENTIFICATION</strong>
+                                <p data-sync="formRule2Desc" data-sync-target="text">Please provide the title for your track. If you haven't decided on a name yet, a reference title is sufficient so we can identify your submission.</p>
+                            </div>
+                        </label>
                     </div>
                     <div class="form-actions" style="margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         <button type="submit" class="cta-primary-small" data-sync="formSubmitBtn" data-sync-target="text">INITIATE SUBMISSION</button>
@@ -712,6 +748,11 @@
                 <div id="visitor-connection-node" class="visitor-node">
                     [ ACCESSING CONNECTION FREQUENCY... ]
                 </div>
+                
+                <!-- Development Status Node -->
+                <div class="dev-status-tag">
+                    SYSTEM OPTIMIZATION IN PROGRESS // ENHANCING USER INTERFACE
+                </div>
             </div>
         </footer>
     </main>
@@ -736,6 +777,7 @@
 
     <!-- Invisible YT Player Housing -->
     <div id="yt-player-container" style="position: fixed; left: -9999px; top: -9999px; width: 320px; height: 180px; pointer-events: none; opacity: 0;"></div>
+
 
     <script src="https://www.youtube.com/iframe_api"></script>
 </body>
