@@ -627,16 +627,19 @@ function renderReleases() {
 
 window.removeRelease = function (index) {
     if(confirm("PURGE ARCHIVE ENTRY: Are you sure? This action is permanent.")) {
-        gatherReleasesData(); 
+        // Remove from local array first
         releasesArray.splice(index, 1);
         
-        // Auto-save to Firebase
+        // Immediate UI feedback
+        renderReleases();
+
+        // Sync to Firebase
         db.ref('siteData/releases').set(releasesArray).then(() => {
-            renderReleases();
             showToast("ARCHIVE ENTRY PURGED FROM SERVER.", "error");
             bumpSiteVersion();
         }).catch(err => {
             showToast("SYNC FAILURE: " + err.message, "error");
+            loadReleases();
         });
     }
 };
@@ -856,16 +859,20 @@ function renderUpcoming() {
 
 window.removeUpcoming = function (index) {
     if(confirm("PURGE UPCOMING ENTRY: Are you sure? This action is permanent.")) {
-        gatherUpcomingData();
+        // Remove from local array first
         upcomingArray.splice(index, 1);
         
-        // Auto-save to Firebase
+        // Immediate UI feedback
+        renderUpcoming();
+
+        // Sync to Firebase
         db.ref('siteData/upcoming').set(upcomingArray).then(() => {
-            renderUpcoming();
             showToast("UPCOMING ENTRY PURGED FROM SERVER.", "error");
             bumpSiteVersion();
         }).catch(err => {
             showToast("SYNC FAILURE: " + err.message, "error");
+            // If sync fails, we might want to reload to show actual state
+            loadUpcoming();
         });
     }
 };
