@@ -442,9 +442,7 @@ const initPortal = () => {
             }, speed);
         }
 
-        // --- MIRROR SIGNAL INPUT ENGINE ---
-        const mirrorInputs = document.querySelectorAll('.mirror-container .real-input');
-        mirrorInputs.forEach(input => {
+        function initMirrorEffect(input) {
             const display = input.parentElement.querySelector('.mirror-display');
             if (!display) return;
 
@@ -459,7 +457,10 @@ const initPortal = () => {
                     display.appendChild(span);
                 });
             });
-        });
+        }
+
+        const mirrorInputs = document.querySelectorAll('.mirror-container .real-input');
+        mirrorInputs.forEach(input => initMirrorEffect(input));
 
         [closeBtn, overlay].forEach(btn => {
             if (btn) {
@@ -503,6 +504,60 @@ const initPortal = () => {
 
     // Using the stabilized reCAPTCHA key
     const RECAPTCHA_SITE_KEY = "6Ldwaa0sAAAAAPKd4-a3CL7DQVUHjVG-yD4sQeEZ";
+
+    // --- MULTI-LINK DYNAMIC ENGINE ---
+    const addLinkBtn = document.getElementById('add-link-btn');
+    const dynamicLinksContainer = document.getElementById('dynamic-links-container');
+
+    if (addLinkBtn && dynamicLinksContainer) {
+        addLinkBtn.addEventListener('click', () => {
+            const row = document.createElement('div');
+            row.className = 'dynamic-row';
+            row.innerHTML = `
+                <div class="mirror-container">
+                    <input type="url" name="spotify[]" class="real-input" placeholder="https://open.spotify.com/artist/...">
+                    <div class="mirror-display"></div>
+                </div>
+                <button type="button" class="remove-link-btn" title="Remove Link">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            dynamicLinksContainer.appendChild(row);
+
+            // Re-init specialized effects for NEW elements
+            const newInput = row.querySelector('input');
+            
+            // Mirror logic
+            if (typeof initMirrorEffect === 'function') {
+                initMirrorEffect(newInput);
+            } else {
+                // Fallback if defined inside closure
+                const disp = row.querySelector('.mirror-display');
+                newInput.addEventListener('input', () => {
+                    disp.innerHTML = '';
+                    newInput.value.split('').forEach(char => {
+                        const span = document.createElement('span');
+                        span.className = 'mirror-glyph';
+                        span.textContent = char === ' ' ? '\u00A0' : char;
+                        disp.appendChild(span);
+                    });
+                });
+            }
+
+            // Pulse effect
+            newInput.addEventListener('keydown', () => newInput.classList.add('pulse'));
+            newInput.addEventListener('keyup', () => setTimeout(() => newInput.classList.remove('pulse'), 500));
+        });
+
+        dynamicLinksContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-link-btn')) {
+                const row = e.target.closest('.dynamic-row');
+                row.style.transform = 'scale(0.9) translateX(20px)';
+                row.style.opacity = '0';
+                setTimeout(() => row.remove(), 300);
+            }
+        });
+    }
 
     if (subForm) {
         const checkBoxes = subForm.querySelectorAll('.cyber-check-input');
@@ -559,8 +614,13 @@ const initPortal = () => {
                 const emailInput = subForm.querySelector('input[name="email"]');
                 const genreInput = subForm.querySelector('input[name="genre"]');
                 const linkInput = subForm.querySelector('input[name="link"]');
-                const spotifyInput = subForm.querySelector('input[name="spotify"]');
                 const messageInput = subForm.querySelector('textarea[name="message"]');
+
+                // Dynamic Multi-Link Collection
+                const spotifyLinks = Array.from(subForm.querySelectorAll('input[name="spotify[]"]'))
+                    .map(input => input.value.trim())
+                    .filter(val => val !== "");
+                const spotifyData = spotifyLinks.length > 0 ? spotifyLinks.join(' | ') : "N/A";
 
                 const submission = {
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
@@ -570,7 +630,7 @@ const initPortal = () => {
                     email: emailInput?.value || "N/A",
                     genre: genreInput?.value || "N/A",
                     link: linkInput?.value || "#",
-                    spotify: spotifyInput?.value || "N/A",
+                    spotify: spotifyData,
                     message: messageInput?.value || "No additional bio.",
                     recaptcha_token: token
                 };
@@ -624,6 +684,15 @@ const initPortal = () => {
                         subForm.style.display = 'flex';
                         if (subStatus) subStatus.style.display = 'none';
                         subForm.reset();
+                        
+                        // Clear extra dynamic links but keep the first one baseline
+                        const rows = dynamicLinksContainer?.querySelectorAll('.dynamic-row');
+                        if (rows) {
+                            rows.forEach((row, index) => {
+                                if (index > 0) row.remove();
+                            });
+                        }
+
                         subForm.querySelectorAll('.mirror-display').forEach(d => d.innerHTML = '');
                         btn.textContent = originalBtnText;
                         btn.disabled = false;
