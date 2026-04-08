@@ -616,11 +616,18 @@ const initPortal = () => {
                 const linkInput = subForm.querySelector('input[name="link"]');
                 const messageInput = subForm.querySelector('textarea[name="message"]');
 
-                // Dynamic Multi-Link Collection
+                // Dynamic Multi-Link Collection Logic
                 const spotifyLinks = Array.from(subForm.querySelectorAll('input[name="spotify[]"]'))
                     .map(input => input.value.trim())
                     .filter(val => val !== "");
+                
+                // Formatted for Firebase (Plain string)
                 const spotifyData = spotifyLinks.length > 0 ? spotifyLinks.join(' | ') : "N/A";
+
+                // Formatted for EmailJS (Labeled list for a cleaner look)
+                const formattedLinksForEmail = spotifyLinks.length > 0 
+                    ? spotifyLinks.map((link, i) => `🔗 [ VIEW PROFILE ${i+1} ]: ${link}`).join('\n')
+                    : "Not Provided";
 
                 const submission = {
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
@@ -640,7 +647,7 @@ const initPortal = () => {
                     LABEL_ARTIST: subForm.querySelector('label[data-sync="formLabelArtist"]')?.textContent || "Artist Name(s)",
                     LABEL_EMAIL: subForm.querySelector('label[data-sync="formLabelEmail"]')?.textContent || "Email Address",
                     LABEL_GENRE: subForm.querySelector('label[data-sync="formLabelGenre"]')?.textContent || "Primary Genre",
-                    LABEL_SPOTIFY: subForm.querySelector('label[data-sync="formLabelSpotify"]')?.textContent || "Spotify Profile",
+                    LABEL_SPOTIFY: subForm.querySelector('label[data-sync="formLabelSpotify"]')?.textContent || "Artist Presence Links",
                     LABEL_MESSAGE: subForm.querySelector('label[data-sync="formLabelMessage"]')?.textContent || "Message/Bio",
                     LABEL_DATE: submission.date
                 };
@@ -660,7 +667,7 @@ const initPortal = () => {
                             val_email: submission.email,
                             val_genre: submission.genre,
                             val_link: submission.link,
-                            val_spotify: submission.spotify,
+                            val_spotify: formattedLinksForEmail, // Sending the labeled list here
                             val_message: submission.message,
                             val_date: submission.date,
                             artist: submission.artist,
