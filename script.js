@@ -1362,6 +1362,8 @@ const initPortal = () => {
 
         // 3. Sync Upcoming Releases
         const upcomingGrid = document.getElementById('upcoming-grid');
+        let upcomingAutoScroll = null;
+
         function renderUpcoming(items) {
             if (!upcomingGrid) return;
             upcomingGrid.innerHTML = '';
@@ -1388,6 +1390,36 @@ const initPortal = () => {
                 `;
                 upcomingGrid.insertAdjacentHTML('beforeend', cardHtml);
             });
+
+            bindUpcomingControls();
+            startUpcomingAutoScroll();
+        }
+
+        function bindUpcomingControls() {
+            const btnPrev = document.querySelector('.upcoming-prev');
+            const btnNext = document.querySelector('.upcoming-next');
+            if (btnPrev && btnNext && upcomingGrid) {
+                btnPrev.onclick = () => {
+                    upcomingGrid.scrollBy({ left: -390, behavior: 'smooth' });
+                    startUpcomingAutoScroll();
+                };
+                btnNext.onclick = () => {
+                    upcomingGrid.scrollBy({ left: 390, behavior: 'smooth' });
+                    startUpcomingAutoScroll();
+                };
+            }
+        }
+
+        function startUpcomingAutoScroll() {
+            if (upcomingAutoScroll) clearInterval(upcomingAutoScroll);
+            upcomingAutoScroll = setInterval(() => {
+                if (upcomingGrid) {
+                    upcomingGrid.scrollLeft += 1;
+                    if (upcomingGrid.scrollLeft >= (upcomingGrid.scrollWidth - upcomingGrid.clientWidth - 5)) {
+                        gsap.to(upcomingGrid, { scrollLeft: 0, duration: 1.5, ease: "power2.inOut" });
+                    }
+                }
+            }, 35);
         }
 
         db.ref('siteData/upcoming').on('value', (snapshot) => {
