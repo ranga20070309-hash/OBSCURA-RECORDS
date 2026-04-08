@@ -17,7 +17,7 @@ const db = firebase.database();
 alert("CORE SYSTEM ONLINE: PERSONNEL SYNC READY (v4.4)");
 console.log("Transmission link established.");
 
-window.saveIndividualStaff = function(discordId) {
+window.saveIndividualStaff = function (discordId) {
     alert("SYNC ATTEMPT STARTED FOR: " + discordId);
     const item = document.querySelector(`.staff-editor-item[data-discord-id="${discordId}"]`);
     if (!item) {
@@ -37,7 +37,7 @@ window.saveIndividualStaff = function(discordId) {
     db.ref('staff_status/' + discordId).update(data).then(() => {
         alert('SUCCESS: Personnel frequency synced for ID ' + discordId);
         bumpSiteVersion();
-        loadStaff(); 
+        loadStaff();
     }).catch(err => {
         alert('SYNC ERROR: ' + err.message);
     });
@@ -63,12 +63,12 @@ navBtns.forEach(btn => {
         e.preventDefault();
         navBtns.forEach(b => b.classList.remove('active'));
         panels.forEach(p => p.classList.remove('active'));
-        
+
         btn.classList.add('active');
         const target = btn.dataset.target;
         const panel = document.getElementById(target);
         if (panel) panel.classList.add('active');
-        
+
         // Auto-refresh and trace panel data on navigation
         console.log("Navigating to:", target);
         if (target === 'staff-panel') {
@@ -115,12 +115,12 @@ function initMobileVibe() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let pArray = [];
-    
+
     function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     }
-    
+
     class P {
         constructor() { this.reset(); }
         reset() {
@@ -143,16 +143,16 @@ function initMobileVibe() {
             ctx.fill();
         }
     }
-    
+
     function loop() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         pArray.forEach(p => { p.update(); p.draw(); });
         requestAnimationFrame(loop);
     }
-    
+
     window.addEventListener('resize', resize);
     resize();
-    for(let i=0; i<80; i++) pArray.push(new P());
+    for (let i = 0; i < 80; i++) pArray.push(new P());
     mobileEngineRunning = true;
     loop();
 }
@@ -186,14 +186,14 @@ function unlockDashboard() {
     if (loginOverlay) loginOverlay.style.display = 'none';
     if (adminWrapper) adminWrapper.style.display = 'flex';
     sessionStorage.setItem('rootAuth', 'granted');
-    
+
     // DELAYED DATA GATING (Fully Isolated for Stability)
-    try { loadGlobals(); } catch(e) { console.error("Globals fail:", e); }
-    try { loadSubmissions(); } catch(e) { console.error("Submissions fail:", e); }
-    try { loadReleases(); } catch(e) { console.error("Releases fail:", e); }
-    try { loadUpcoming(); } catch(e) { console.error("Upcoming fail:", e); }
-    try { loadStaff(); } catch(e) { console.error("Staff fail:", e); }
-    
+    try { loadGlobals(); } catch (e) { console.error("Globals fail:", e); }
+    try { loadSubmissions(); } catch (e) { console.error("Submissions fail:", e); }
+    try { loadReleases(); } catch (e) { console.error("Releases fail:", e); }
+    try { loadUpcoming(); } catch (e) { console.error("Upcoming fail:", e); }
+    try { loadStaff(); } catch (e) { console.error("Staff fail:", e); }
+
     // START KERNEL SECURITY MONITOR
     initKernelSecurity();
 }
@@ -243,14 +243,14 @@ function initKernelSecurity() {
 function initGlobalAlarmSync() {
     const alarmOverlay = document.getElementById('global-security-alarm');
     const alarmTypeText = document.getElementById('alarm-type');
-    
+
     db.ref('siteData/security/globalAlarm').on('value', (snapshot) => {
         const alarm = snapshot.val();
         if (alarm && alarm.active === true) {
             console.warn("!!! GLOBAL SECURITY ALARM ACTIVE !!!");
             if (alarmOverlay) alarmOverlay.style.display = 'none'; // OVERRIDE FOR ROOT ACCESS
             if (alarmTypeText) alarmTypeText.textContent = `TYPE: ${alarm.type || 'UNKNOWN'} | TRACE: ${new Date(alarm.time).toLocaleTimeString()}`;
-            
+
             // Highlight the security monitor in admin
             const kmShield = document.getElementById('km-shield');
             if (kmShield) {
@@ -271,7 +271,7 @@ function initGlobalAlarmSync() {
 }
 
 // Attach to startup sequence
-(function() {
+(function () {
     // Check for auth state and start sync once ready
     firebase.auth().onAuthStateChanged((user) => {
         if (user) initGlobalAlarmSync();
@@ -282,7 +282,7 @@ if (loginBtn) {
     loginBtn.addEventListener('click', () => {
         const email = emailInput.value.trim();
         const pass = passInput.value;
-        
+
         if (!email || !pass) {
             alert("SECURITY ALERT: Empty credentials detected.");
             return;
@@ -317,7 +317,7 @@ authInputs.forEach(input => {
 });
 
 // --- SPACE VIBE PARTICLES ENGINE ---
-(function() {
+(function () {
     const canvas = document.getElementById('vibe-canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -372,7 +372,7 @@ authInputs.forEach(input => {
 function loadGlobals() {
     db.ref('siteData/globals').once('value').then(snapshot => {
         const data = snapshot.val();
-        
+
         // Update version display (Hard-sync to 60.0 baseline)
         if (data && data.v && parseFloat(data.v) >= 60.0) {
             const display = document.getElementById('display-v');
@@ -430,10 +430,10 @@ function saveGlobals(msgId) {
 document.getElementById('save-globals').addEventListener('click', () => saveGlobals('save-msg-globals'));
 document.getElementById('save-links').addEventListener('click', () => saveGlobals('save-msg-links'));
 document.getElementById('save-modals-text').addEventListener('click', () => saveGlobals('save-msg-modals-text'));
-if(document.getElementById('save-modals-all-data')) {
+if (document.getElementById('save-modals-all-data')) {
     document.getElementById('save-modals-all-data').addEventListener('click', () => saveGlobals('save-msg-modals-all-data'));
 }
-if(document.getElementById('save-staff')) {
+if (document.getElementById('save-staff')) {
     document.getElementById('save-staff').addEventListener('click', saveStaff);
 }
 
@@ -489,14 +489,14 @@ function createReleaseEditor(release, index) {
 function renderReleases() {
     const releasesContainer = document.getElementById('releases-container');
     if (!releasesContainer) return;
-    
+
     releasesContainer.innerHTML = '';
     releasesArray.forEach((r, i) => {
         releasesContainer.appendChild(createReleaseEditor(r, i));
     });
 }
 
-window.removeRelease = function(index) {
+window.removeRelease = function (index) {
     gatherReleasesData(); // Save current state before removing
     releasesArray.splice(index, 1);
     renderReleases();
@@ -507,7 +507,7 @@ if (addRelBtn) {
     addRelBtn.onclick = () => {
         gatherReleasesData();
         releasesArray.unshift({
-            id: "OS-NEW", title: "NEW TRACK", producers: "UNKNOWN", type: "SINGLE", 
+            id: "OS-NEW", title: "NEW TRACK", producers: "UNKNOWN", type: "SINGLE",
             image: "assets/cover.png", spotify: "#", apple: "#", youtube: "#"
         });
         renderReleases();
@@ -520,12 +520,12 @@ function loadReleases() {
         console.error("Release container not found!");
         return;
     }
-    
+
     releasesContainer.innerHTML = '<p style="opacity:0.5; padding:2rem;">Synchronizing release archive...</p>';
-    
+
     db.ref('siteData/releases').once('value').then(snapshot => {
         let data = snapshot.val();
-        
+
         if (data && Array.isArray(data)) {
             alert('RELEASES DETECTED: Found ' + data.length + ' tracks in archive.');
             if (data[0] && data[0]._isEmpty) {
@@ -614,7 +614,7 @@ function renderUpcoming() {
     });
 }
 
-window.removeUpcoming = function(index) {
+window.removeUpcoming = function (index) {
     gatherUpcomingData();
     upcomingArray.splice(index, 1);
     renderUpcoming();
@@ -678,7 +678,7 @@ let pendingDeleteId = null;
 function loadSubmissions() {
     if (!inboxContainer) return;
     inboxContainer.innerHTML = '<div style="padding:4rem; text-align:center; opacity:0.5; font-family:monospace; letter-spacing:0.2rem;">SCANNING FREQUENCIES...</div>';
-    
+
     db.ref('siteData/submissions/demo').once('value').then(snapshot => {
         const data = snapshot.val();
         inboxContainer.innerHTML = '';
@@ -772,7 +772,7 @@ function createStaffEditor(staff, discordId) {
     div.style.borderRadius = '24px';
     div.style.border = '1px solid rgba(255,255,255,0.05)';
     div.dataset.discordId = discordId;
-    
+
     // Socials section
     const socials = staff.socials || {};
     const platforms = ['instagram', 'spotify', 'apple', 'facebook', 'youtube', 'tiktok', 'twitter'];
@@ -814,7 +814,7 @@ function createStaffEditor(staff, discordId) {
     return div;
 }
 
-window.removeStaff = function(discordId) {
+window.removeStaff = function (discordId) {
     if (confirm('SYSTEM OVERRIDE: Purge this personnel record from the transmission?')) {
         db.ref('staff_status/' + discordId).remove().then(() => {
             loadStaff(); // Refresh view
@@ -829,12 +829,12 @@ function loadStaff() {
     db.ref('staff_status').once('value').then(snapshot => {
         const data = snapshot.val();
         staffContainer.innerHTML = '';
-        
+
         if (!data) {
             staffContainer.innerHTML = '<p style="opacity:0.5; padding:2rem; font-style:italic; color:var(--accent-magenta);">Personnel node not found. Please click INITIALIZE button above once.</p>';
             return;
         }
-        
+
         Object.entries(data).forEach(([id, staff]) => {
             staffContainer.appendChild(createStaffEditor(staff, id));
         });
@@ -883,7 +883,7 @@ if (saveReleasesBtn) {
             alert('NO RELEASES FOUND TO SYNC.');
             return;
         }
-        
+
         let updates = [];
         items.forEach(item => {
             const id = item.querySelector('.r-id').value;
@@ -919,7 +919,7 @@ if (initStaffBtn) {
                 "1296819349885161472": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
                 "1296813876364705792": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" }
             };
-            
+
             Object.entries(baseStaff).forEach(([id, staff]) => {
                 db.ref('staff_status/' + id).once('value').then(snap => {
                     if (!snap.exists()) {
@@ -927,7 +927,7 @@ if (initStaffBtn) {
                     }
                 });
             });
-            
+
             alert('Safe initialization sequence initiated. Reloading in 1s...');
             setTimeout(() => window.location.reload(), 1000);
         }
