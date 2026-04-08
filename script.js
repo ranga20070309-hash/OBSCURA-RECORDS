@@ -22,6 +22,9 @@ let playbackStartOffset = 0;
 let autoScrollInterval = null;
 const PREVIEW_LIMIT = 30;
 
+// --- INITIALIZE GSAP CONFIG (Silence Warnings) ---
+gsap.config({ nullTargetWarn: false });
+
 // --- UI SOUND SYNTHESIZER (Clean Web Audio API) ---
 let audioCtx = null;
 
