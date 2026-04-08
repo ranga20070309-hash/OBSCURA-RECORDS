@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Obscura Records - Core Directive Panel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="admin.css">
-    
+
     <!-- Firebase Infrastructure (v10.7.1-compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -17,18 +20,23 @@
         /* Emergency Security Overlay (Global Admin Sync) */
         #global-security-alarm {
             position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             background: rgba(255, 0, 0, 0.12);
             backdrop-filter: blur(12px);
             z-index: 1000000;
             display: none;
             flex-direction: column;
-            align-items: center; justify-content: center;
+            align-items: center;
+            justify-content: center;
             color: #fff;
             pointer-events: none;
             border: 8px solid #ff0055;
             animation: alarm-border-pulse 0.4s infinite alternate;
         }
+
         .alarm-box {
             text-align: center;
             background: #000;
@@ -38,21 +46,75 @@
             box-shadow: 0 0 100px rgba(255, 0, 85, 0.6);
             animation: alarm-shake 0.1s infinite;
         }
-        .danger-icon { font-size: 5rem; color: #ff0055; margin-bottom: 2rem; filter: drop-shadow(0 0 20px #ff0055); }
-        .alarm-box h1 { font-family: 'Syncopate', sans-serif; font-size: 2.2rem; color: #ff0055; letter-spacing: 0.6rem; margin: 1.5rem 0; text-shadow: 0 0 20px #ff0055; }
-        .alarm-box p { font-size: 0.85rem; letter-spacing: 0.15rem; color: #fff; opacity: 0.9; margin-bottom: 2rem; }
-        #alarm-type { font-family: monospace; font-size: 0.75rem; color: #ff0055; font-weight: 700; background: rgba(255, 0, 85, 0.1); padding: 0.5rem 1.5rem; border-radius: 10px; }
 
-        @keyframes alarm-border-pulse { from { border-color: #ff0055; } to { border-color: transparent; } }
+        .danger-icon {
+            font-size: 5rem;
+            color: #ff0055;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 0 20px #ff0055);
+        }
+
+        .alarm-box h1 {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 2.2rem;
+            color: #ff0055;
+            letter-spacing: 0.6rem;
+            margin: 1.5rem 0;
+            text-shadow: 0 0 20px #ff0055;
+        }
+
+        .alarm-box p {
+            font-size: 0.85rem;
+            letter-spacing: 0.15rem;
+            color: #fff;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        #alarm-type {
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #ff0055;
+            font-weight: 700;
+            background: rgba(255, 0, 85, 0.1);
+            padding: 0.5rem 1.5rem;
+            border-radius: 10px;
+        }
+
+        @keyframes alarm-border-pulse {
+            from {
+                border-color: #ff0055;
+            }
+
+            to {
+                border-color: transparent;
+            }
+        }
+
         @keyframes alarm-shake {
-            0% { transform: translate(0,0); }
-            25% { transform: translate(-2px, 1px); }
-            50% { transform: translate(2px, -1px); }
-            75% { transform: translate(-1px, -2px); }
-            100% { transform: translate(1px, 2px); }
+            0% {
+                transform: translate(0, 0);
+            }
+
+            25% {
+                transform: translate(-2px, 1px);
+            }
+
+            50% {
+                transform: translate(2px, -1px);
+            }
+
+            75% {
+                transform: translate(-1px, -2px);
+            }
+
+            100% {
+                transform: translate(1px, 2px);
+            }
         }
     </style>
 </head>
+
 <body>
     <!-- REAL-TIME GLOBAL SECURITY ALARM OVERLAY -->
     <div id="global-security-alarm">
@@ -102,7 +164,8 @@
                     <p class="warning-text">MOBILE TRANSMISSION SCAN: <span class="status-fail">FAILED</span></p>
                     <p class="instruction">PLEASE SWITCH TO A WORKSTATION TO ACCESS CORE CONTROLS.</p>
                 </div>
-                <a href="index.html" class="return-btn"><i class="fas fa-arrow-left"></i> RETURN TO MAIN TRANSMISSION</a>
+                <a href="index.html" class="return-btn"><i class="fas fa-arrow-left"></i> RETURN TO MAIN
+                    TRANSMISSION</a>
             </div>
         </div>
     </div>
@@ -112,24 +175,32 @@
             <div class="logo">
                 <h2>OBSCURA <span class="accent">CORE</span></h2>
                 <div class="status-badge"><span class="status-dot"></span> ROOT ACCESS SECURED</div>
-                <div class="version-pill" style="font-size:0.7rem; color:var(--text-secondary); margin-top:0.5rem; opacity:0.7;">ENGINE v<span id="display-v">1.0</span></div>
+                <div class="version-pill"
+                    style="font-size:0.7rem; color:var(--text-secondary); margin-top:0.5rem; opacity:0.7;">ENGINE v<span
+                        id="display-v">1.0</span></div>
             </div>
             <nav>
-                <a href="#" class="nav-btn active" data-target="settings-panel"><i class="fas fa-sliders-h"></i> GLOBALS</a>
+                <a href="#" class="nav-btn active" data-target="settings-panel"><i class="fas fa-sliders-h"></i>
+                    GLOBALS</a>
                 <a href="#" class="nav-btn" data-target="links-panel"><i class="fas fa-link"></i> SITE LINKS</a>
-                <a href="#" class="nav-btn" data-target="modals-panel"><i class="fas fa-window-restore"></i> MODALS & FAQ</a>
+                <a href="#" class="nav-btn" data-target="modals-panel"><i class="fas fa-window-restore"></i> MODALS &
+                    FAQ</a>
                 <a href="#" class="nav-btn" data-target="demo-inbox-panel"><i class="fas fa-inbox"></i> DEMO INBOX</a>
-                <a href="#" class="nav-btn" data-target="upcoming-panel"><i class="fas fa-calendar-alt"></i> UPCOMING</a>
-                <a href="#" class="nav-btn" data-target="releases-panel"><i class="fas fa-compact-disc"></i> RELEASE ARCHIVE</a>
-                <a href="#" class="nav-btn" data-target="staff-panel"><i class="fas fa-users-cog"></i> STAFF PROFILES</a>
+                <a href="#" class="nav-btn" data-target="upcoming-panel"><i class="fas fa-calendar-alt"></i>
+                    UPCOMING</a>
+                <a href="#" class="nav-btn" data-target="releases-panel"><i class="fas fa-compact-disc"></i> RELEASE
+                    ARCHIVE</a>
+                <a href="#" class="nav-btn" data-target="staff-panel"><i class="fas fa-users-cog"></i> STAFF
+                    PROFILES</a>
             </nav>
             <div class="sidebar-footer">
-                <a href="index.html" class="return-site" target="_blank"><i class="fas fa-external-link-alt"></i> VIEW PORTAL</a>
+                <a href="index.html" class="return-site" target="_blank"><i class="fas fa-external-link-alt"></i> VIEW
+                    PORTAL</a>
             </div>
         </aside>
 
         <main class="content-area">
-            
+
             <!-- Kernel Security Monitor (Administrative Grade) -->
             <div class="kernel-monitor-admin">
                 <div class="kernel-node">
@@ -160,7 +231,7 @@
                     <h2><i class="fas fa-satellite-dish"></i> GLOBAL DIRECTIVES</h2>
                     <p>Modify main portal string payloads in real-time.</p>
                 </div>
-                
+
                 <div class="form-grid">
                     <div class="input-group">
                         <label>SITE LOGO TITLE (HTML Allowed)</label>
@@ -168,11 +239,13 @@
                     </div>
                     <div class="input-group">
                         <label>HERO TITLE (HTML Allowed)</label>
-                        <input type="text" id="site_heroTitle" value="WELCOME TO <span class='accent'>OBSCURA RECORD</span>">
+                        <input type="text" id="site_heroTitle"
+                            value="WELCOME TO <span class='accent'>OBSCURA RECORD</span>">
                     </div>
                     <div class="input-group full">
                         <label>HERO DESCRIPTION</label>
-                        <textarea id="site_heroDesc">OBSCURA RECORD is an independent music label focused on artist development, music production, and official releases. Our mission is to support talented artists and create high-quality music through collaboration and innovation.</textarea>
+                        <textarea
+                            id="site_heroDesc">OBSCURA RECORD is an independent music label focused on artist development, music production, and official releases. Our mission is to support talented artists and create high-quality music through collaboration and innovation.</textarea>
                     </div>
                     <div class="input-group">
                         <label>ARCHIVE TITLE (HTML Allowed)</label>
@@ -180,12 +253,15 @@
                     </div>
                     <div class="input-group full">
                         <label>ARCHIVE DESCRIPTION</label>
-                        <input type="text" id="site_archiveDesc" value="THESE ARE THE RELEASES THAT IS PUBLISHED THROUGH OUR LABEL">
+                        <input type="text" id="site_archiveDesc"
+                            value="THESE ARE THE RELEASES THAT IS PUBLISHED THROUGH OUR LABEL">
                     </div>
-                    <div class="input-group full" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem; margin-top: 2rem;">
-                         <label><i class="fas fa-key"></i> ADMIN ACCESS KEY (REPROGRAMMABLE)</label>
-                         <input type="text" id="security_rootKey" value="ORC ADMINS PASS 2026">
-                         <p style="font-size:0.6rem; color:var(--text-secret); margin-top:0.3rem;">Changing this will immediately update the portal's firewall passphrase.</p>
+                    <div class="input-group full"
+                        style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem; margin-top: 2rem;">
+                        <label><i class="fas fa-key"></i> ADMIN ACCESS KEY (REPROGRAMMABLE)</label>
+                        <input type="text" id="security_rootKey" value="ORC ADMINS PASS 2026">
+                        <p style="font-size:0.6rem; color:var(--text-secret); margin-top:0.3rem;">Changing this will
+                            immediately update the portal's firewall passphrase.</p>
                     </div>
                 </div>
 
@@ -200,42 +276,70 @@
                     <h2><i class="fas fa-link"></i> NAVIGATION & SOCIAL LINKS</h2>
                     <p>Modify header dropdowns, social grids, and routing links.</p>
                 </div>
-                
-                <h3 style="color: #00f0ff; font-size: 0.9rem; margin-bottom: 1rem; font-family: 'Syncopate', sans-serif;">NAV TEXT</h3>
+
+                <h3
+                    style="color: #00f0ff; font-size: 0.9rem; margin-bottom: 1rem; font-family: 'Syncopate', sans-serif;">
+                    NAV TEXT</h3>
                 <div class="form-grid">
                     <div class="input-group"><label>HOME</label><input type="text" id="site_navHome" value="HOME"></div>
-                    <div class="input-group"><label>RELEASES</label><input type="text" id="site_navReleases" value="RELEASES"></div>
-                    <div class="input-group"><label>STAFF</label><input type="text" id="site_navStaff" value="STAFF"></div>
-                    <div class="input-group"><label>CONTACT</label><input type="text" id="site_navContact" value="CONTACT"></div>
-                    <div class="input-group"><label>MENU BUTTON</label><input type="text" id="site_navMenuBtn" value="MENU"></div>
+                    <div class="input-group"><label>RELEASES</label><input type="text" id="site_navReleases"
+                            value="RELEASES"></div>
+                    <div class="input-group"><label>STAFF</label><input type="text" id="site_navStaff" value="STAFF">
+                    </div>
+                    <div class="input-group"><label>CONTACT</label><input type="text" id="site_navContact"
+                            value="CONTACT"></div>
+                    <div class="input-group"><label>MENU BUTTON</label><input type="text" id="site_navMenuBtn"
+                            value="MENU"></div>
                 </div>
 
-                <h3 style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">SOCIAL URLS & CONTACT LABELS</h3>
+                <h3
+                    style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">
+                    SOCIAL URLS & CONTACT LABELS</h3>
                 <div class="form-grid">
-                    <div class="input-group full"><label>Contact Title (HTML)</label><input type="text" id="site_contactTitle" value="CONNECT WITH <span class='accent'>US</span>"></div>
-                    <div class="input-group full"><label>Contact Subtext</label><input type="text" id="site_contactDesc" value="Follow our transmissions across the digital landscape."></div>
-                    
-                    <div class="input-group"><label>Instagram URL</label><input type="text" id="site_socialInstaUrl" value="https://www.instagram.com/recordsobscura?igsh=MXFvdzFvOWg2azBmdw=="></div>
-                    <div class="input-group"><label>YouTube URL</label><input type="text" id="site_socialYoutubeUrl" value="https://www.youtube.com/channel/UC0A5L7DUgls-AkYaQ4ZwxhA"></div>
-                    <div class="input-group"><label>Discord URL</label><input type="text" id="site_socialDiscordUrl" value="https://discord.gg/E3Sn72cpBR"></div>
-                    <div class="input-group"><label>TikTok URL</label><input type="text" id="site_socialTiktokUrl" value="https://www.tiktok.com/@obscura.records"></div>
-                    <div class="input-group"><label>Spotify URL</label><input type="text" id="site_socialSpotifyUrl" value="#"></div>
-                    <div class="input-group"><label>E-mail Address</label><input type="text" id="site_socialEmailUrl" value="info@obscurarecords.com"></div>
-                    
-                    <div class="input-group"><label>Instagram Label</label><input type="text" id="site_socialInstaText" value="INSTAGRAM"></div>
-                    <div class="input-group"><label>YouTube Label</label><input type="text" id="site_socialYoutubeText" value="YOUTUBE"></div>
-                    <div class="input-group"><label>Discord Label</label><input type="text" id="site_socialDiscordText" value="DISCORD"></div>
-                    <div class="input-group"><label>TikTok Label</label><input type="text" id="site_socialTiktokText" value="TIKTOK"></div>
-                    <div class="input-group"><label>Email Label</label><input type="text" id="site_socialEmailText" value="DIRECT EMAIL"></div>
+                    <div class="input-group full"><label>Contact Title (HTML)</label><input type="text"
+                            id="site_contactTitle" value="CONNECT WITH <span class='accent'>US</span>"></div>
+                    <div class="input-group full"><label>Contact Subtext</label><input type="text" id="site_contactDesc"
+                            value="Follow our transmissions across the digital landscape."></div>
+
+                    <div class="input-group"><label>Instagram URL</label><input type="text" id="site_socialInstaUrl"
+                            value="https://www.instagram.com/recordsobscura?igsh=MXFvdzFvOWg2azBmdw=="></div>
+                    <div class="input-group"><label>YouTube URL</label><input type="text" id="site_socialYoutubeUrl"
+                            value="https://www.youtube.com/channel/UC0A5L7DUgls-AkYaQ4ZwxhA"></div>
+                    <div class="input-group"><label>Discord URL</label><input type="text" id="site_socialDiscordUrl"
+                            value="https://discord.gg/E3Sn72cpBR"></div>
+                    <div class="input-group"><label>TikTok URL</label><input type="text" id="site_socialTiktokUrl"
+                            value="https://www.tiktok.com/@obscura.records"></div>
+                    <div class="input-group"><label>Spotify URL</label><input type="text" id="site_socialSpotifyUrl"
+                            value="#"></div>
+                    <div class="input-group"><label>E-mail Address</label><input type="text" id="site_socialEmailUrl"
+                            value="info@obscurarecords.com"></div>
+
+                    <div class="input-group"><label>Instagram Label</label><input type="text" id="site_socialInstaText"
+                            value="INSTAGRAM"></div>
+                    <div class="input-group"><label>YouTube Label</label><input type="text" id="site_socialYoutubeText"
+                            value="YOUTUBE"></div>
+                    <div class="input-group"><label>Discord Label</label><input type="text" id="site_socialDiscordText"
+                            value="DISCORD"></div>
+                    <div class="input-group"><label>TikTok Label</label><input type="text" id="site_socialTiktokText"
+                            value="TIKTOK"></div>
+                    <div class="input-group"><label>Email Label</label><input type="text" id="site_socialEmailText"
+                            value="DIRECT EMAIL"></div>
                 </div>
-                
-                <h3 style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">FOOTER MENUS & COPYRIGHT</h3>
+
+                <h3
+                    style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">
+                    FOOTER MENUS & COPYRIGHT</h3>
                 <div class="form-grid">
-                    <div class="input-group full"><label>Copyright Text</label><input type="text" id="site_footerCopyright" value="&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED."></div>
-                    <div class="input-group"><label>FAQ text</label><input type="text" id="site_footerFaqText" value="FAQ"></div>
-                    <div class="input-group"><label>DEMO text</label><input type="text" id="site_footerDemoText" value="DEMO SUBMISSION"></div>
-                    <div class="input-group"><label>CONTACT text</label><input type="text" id="site_footerContactText" value="CONTACT US"></div>
-                    <div class="input-group"><label>PRIVACY text</label><input type="text" id="site_footerPrivacyText" value="PRIVACY"></div>
+                    <div class="input-group full"><label>Copyright Text</label><input type="text"
+                            id="site_footerCopyright" value="&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED."></div>
+                    <div class="input-group"><label>FAQ text</label><input type="text" id="site_footerFaqText"
+                            value="FAQ"></div>
+                    <div class="input-group"><label>DEMO text</label><input type="text" id="site_footerDemoText"
+                            value="DEMO SUBMISSION"></div>
+                    <div class="input-group"><label>CONTACT text</label><input type="text" id="site_footerContactText"
+                            value="CONTACT US"></div>
+                    <div class="input-group"><label>PRIVACY text</label><input type="text" id="site_footerPrivacyText"
+                            value="PRIVACY"></div>
                 </div>
 
                 <div class="btn-group" style="margin-top: 2rem;">
@@ -250,103 +354,183 @@
                     <h2><i class="fas fa-window-restore"></i> MODALS, DEMO & FAQ</h2>
                     <p>Modify popup content and dynamic accordion answers.</p>
                 </div>
-                
-                <h3 style="color: #00f0ff; font-size: 0.9rem; margin-bottom: 1rem; font-family: 'Syncopate', sans-serif;">POPUP TITLES & DESCRIPTIONS</h3>
+
+                <h3
+                    style="color: #00f0ff; font-size: 0.9rem; margin-bottom: 1rem; font-family: 'Syncopate', sans-serif;">
+                    POPUP TITLES & DESCRIPTIONS</h3>
                 <div class="form-grid">
-                    <div class="input-group"><label>FAQ Modal Title</label><input type="text" id="site_modalFaqTitle" value="FREQUENCY ASKED QUESTIONS"></div>
-                    <div class="input-group"><label>Privacy Modal Title</label><input type="text" id="site_modalPrivacyTitle" value="PRIVACY POLICY"></div>
-                    <div class="input-group full"><label>Contact Modal Subtext</label><textarea id="site_contactModalSubtext">For partnerships, general questions, or portal feedback, reach out via the channels above.</textarea></div>
-                    
-                    <div class="input-group full"><label>Demo Description (HTML)</label><textarea id="site_demoDesc">We are looking for the next evolution of sound. If your music pushes the boundaries of Funk, Phonk, or Futuristic Electronic music, our portal is open for your transmissions.</textarea></div>
-                    <div class="input-group"><label>Demo Discord Subtext</label><input type="text" id="site_demoDiscordSub" value="Faster review & community vibes."></div>
-                    <div class="input-group"><label>Demo Email Subtext</label><input type="text" id="site_demoEmailSub" value="artists@obscurarecord.com"></div>
+                    <div class="input-group"><label>FAQ Modal Title</label><input type="text" id="site_modalFaqTitle"
+                            value="FREQUENCY ASKED QUESTIONS"></div>
+                    <div class="input-group"><label>Privacy Modal Title</label><input type="text"
+                            id="site_modalPrivacyTitle" value="PRIVACY POLICY"></div>
+                    <div class="input-group full"><label>Contact Modal Subtext</label><textarea
+                            id="site_contactModalSubtext">For partnerships, general questions, or portal feedback, reach out via the channels above.</textarea>
+                    </div>
+
+                    <div class="input-group full"><label>Demo Description (HTML)</label><textarea
+                            id="site_demoDesc">We are looking for the next evolution of sound. If your music pushes the boundaries of Funk, Phonk, or Futuristic Electronic music, our portal is open for your transmissions.</textarea>
+                    </div>
+                    <div class="input-group"><label>Demo Discord Subtext</label><input type="text"
+                            id="site_demoDiscordSub" value="Faster review & community vibes."></div>
+                    <div class="input-group"><label>Demo Email Subtext</label><input type="text" id="site_demoEmailSub"
+                            value="artists@obscurarecord.com"></div>
                 </div>
 
-                <h3 style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">SEND DEMO FORM CUSTOMIZATION (MAIN PORTAL)</h3>
+                <h3
+                    style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">
+                    SEND DEMO FORM CUSTOMIZATION (MAIN PORTAL)</h3>
                 <div class="form-grid">
-                    <div class="input-group full"><label>Form Title (HTML allowed)</label><input type="text" id="site_formTitle" value="SECURE <span class='accent'>FORM SUBMISSION</span>"></div>
-                    <div class="input-group full"><label>Form Description</label><textarea id="site_formDesc">Transmit your audio frequency to the Obscura A&R department for priority review.</textarea></div>
-                    
-                    <div class="input-group"><label>Label: Real Name</label><input type="text" id="site_formLabelName" value="Real Name"></div>
-                    <div class="input-group"><label>Placeholder: Real Name</label><input type="text" id="site_formPlaceholderName" value="Name"></div>
-                    
-                    <div class="input-group"><label>Label: Alias/Project</label><input type="text" id="site_formLabelArtist" value="Artist Name(s)"></div>
-                    <div class="input-group"><label>Placeholder: Alias/Project</label><input type="text" id="site_formPlaceholderArtist" value="Names"></div>
-                    
-                    <div class="input-group"><label>Label: Email</label><input type="text" id="site_formLabelEmail" value="Email Address"></div>
-                    <div class="input-group"><label>Placeholder: Email</label><input type="text" id="site_formPlaceholderEmail" value="official@artist.com"></div>
-                    
-                    <div class="input-group"><label>Label: Genre</label><input type="text" id="site_formLabelGenre" value="Primary Genre"></div>
-                    <div class="input-group"><label>Placeholder: Genre</label><input type="text" id="site_formPlaceholderGenre" value="Funk / EDM / Hip Hop"></div>
-                    
-                    <div class="input-group"><label>Label: Link</label><input type="text" id="site_formLabelLink" value="PRIVATE STREAMING LINK (SoundCloud / Dropbox / Drive)"></div>
-                    <div class="input-group"><label>Placeholder: Link</label><input type="text" id="site_formPlaceholderLink" value="https://soundcloud.com/..."></div>
-                    
-                    <div class="input-group"><label>Label: Message</label><input type="text" id="site_formLabelMessage" value="Message / Biography (Optional)"></div>
-                    <div class="input-group"><label>Placeholder: Message</label><input type="text" id="site_formPlaceholderMessage" value="A brief transmission regarding your sound..."></div>
+                    <div class="input-group full"><label>Form Title (HTML allowed)</label><input type="text"
+                            id="site_formTitle" value="SECURE <span class='accent'>FORM SUBMISSION</span>"></div>
+                    <div class="input-group full"><label>Form Description</label><textarea
+                            id="site_formDesc">Transmit your audio frequency to the Obscura A&R department for priority review.</textarea>
+                    </div>
 
-                    <div class="input-group"><label>Submit Button Text</label><input type="text" id="site_formSubmitBtn" value="INITIATE SUBMISSION"></div>
-                    <div class="input-group"><label>Discord Button Text</label><input type="text" id="site_formDiscordBtn" value="JOIN DISCORD"></div>
-                    <div class="input-group full"><label>Discord Invitation Link (HREF)</label><input type="text" id="site_formDiscordLink" value="https://discord.gg/x7Tr99zdWU"></div>
-                    
-                    <div class="input-group full"><label>Footer Recommendation text</label><textarea id="site_formFooterRec">[ HIGHLY RECOMMENDED: JOIN THE SERVER FOR REAL-TIME FREQUENCY TRACKING ]</textarea></div>
+                    <div class="input-group"><label>Label: Real Name</label><input type="text" id="site_formLabelName"
+                            value="Real Name"></div>
+                    <div class="input-group"><label>Placeholder: Real Name</label><input type="text"
+                            id="site_formPlaceholderName" value="Name"></div>
 
-                    <h4 style="grid-column: 1 / -1; color: var(--primary); font-size: 0.7rem; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem; font-family:'Syncopate', sans-serif; opacity: 0.8;">SUBMISSION CHECKLIST (AGREEMENT TICKS)</h4>
-                    <div class="input-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; grid-column: 1 / -1;">
-                        <div class="input-group"><label>Rule 1: Title</label><input type="text" id="site_formRule1Title" value="IS THIS TRACK UNRELEASED?"></div>
-                        <div class="input-group"><label>Rule 1: Description</label><textarea id="site_formRule1Desc">We do NOT accept already-released tracks. Any submissions that have already been published will be automatically declined.</textarea></div>
-                        
-                        <div class="input-group"><label>Rule 2: Title</label><input type="text" id="site_formRule2Title" value="TRACK IDENTIFICATION"></div>
-                        <div class="input-group"><label>Rule 2: Description</label><textarea id="site_formRule2Desc">Please provide the title for your track. If you haven't decided on a name yet, a reference title is sufficient so we can identify your submission.</textarea></div>
+                    <div class="input-group"><label>Label: Alias/Project</label><input type="text"
+                            id="site_formLabelArtist" value="Artist Name(s)"></div>
+                    <div class="input-group"><label>Placeholder: Alias/Project</label><input type="text"
+                            id="site_formPlaceholderArtist" value="Names"></div>
+
+                    <div class="input-group"><label>Label: Email</label><input type="text" id="site_formLabelEmail"
+                            value="Email Address"></div>
+                    <div class="input-group"><label>Placeholder: Email</label><input type="text"
+                            id="site_formPlaceholderEmail" value="official@artist.com"></div>
+
+                    <div class="input-group"><label>Label: Genre</label><input type="text" id="site_formLabelGenre"
+                            value="Primary Genre"></div>
+                    <div class="input-group"><label>Placeholder: Genre</label><input type="text"
+                            id="site_formPlaceholderGenre" value="Funk / EDM / Hip Hop"></div>
+
+                    <div class="input-group"><label>Label: Link</label><input type="text" id="site_formLabelLink"
+                            value="PRIVATE STREAMING LINK (SoundCloud / Dropbox / Drive)"></div>
+                    <div class="input-group"><label>Placeholder: Link</label><input type="text"
+                            id="site_formPlaceholderLink" value="https://soundcloud.com/..."></div>
+
+                    <div class="input-group"><label>Label: Message</label><input type="text" id="site_formLabelMessage"
+                            value="Message / Biography (Optional)"></div>
+                    <div class="input-group"><label>Placeholder: Message</label><input type="text"
+                            id="site_formPlaceholderMessage" value="A brief transmission regarding your sound..."></div>
+
+                    <div class="input-group"><label>Submit Button Text</label><input type="text" id="site_formSubmitBtn"
+                            value="INITIATE SUBMISSION"></div>
+                    <div class="input-group"><label>Discord Button Text</label><input type="text"
+                            id="site_formDiscordBtn" value="JOIN DISCORD"></div>
+                    <div class="input-group full"><label>Discord Invitation Link (HREF)</label><input type="text"
+                            id="site_formDiscordLink" value="https://discord.gg/x7Tr99zdWU"></div>
+
+                    <div class="input-group full"><label>Footer Recommendation text</label><textarea
+                            id="site_formFooterRec">[ HIGHLY RECOMMENDED: JOIN THE SERVER FOR REAL-TIME FREQUENCY TRACKING ]</textarea>
+                    </div>
+
+                    <h4
+                        style="grid-column: 1 / -1; color: var(--primary); font-size: 0.7rem; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem; font-family:'Syncopate', sans-serif; opacity: 0.8;">
+                        SUBMISSION CHECKLIST (AGREEMENT TICKS)</h4>
+                    <div class="input-grid"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; grid-column: 1 / -1;">
+                        <div class="input-group"><label>Rule 1: Title</label><input type="text" id="site_formRule1Title"
+                                value="IS THIS TRACK UNRELEASED?"></div>
+                        <div class="input-group"><label>Rule 1: Description</label><textarea
+                                id="site_formRule1Desc">We do NOT accept already-released tracks. Any submissions that have already been published will be automatically declined.</textarea>
+                        </div>
+
+                        <div class="input-group"><label>Rule 2: Title</label><input type="text" id="site_formRule2Title"
+                                value="TRACK IDENTIFICATION"></div>
+                        <div class="input-group"><label>Rule 2: Description</label><textarea
+                                id="site_formRule2Desc">Please provide the title for your track. If you haven't decided on a name yet, a reference title is sufficient so we can identify your submission.</textarea>
+                        </div>
                     </div>
                 </div>
 
                 <div class="btn-group" style="margin-top: 2rem; margin-bottom: 3rem;">
-                    <button class="save-btn" id="save-modals-text"><i class="fas fa-save"></i> DEPLOY MODAL TEXTS</button>
+                    <button class="save-btn" id="save-modals-text"><i class="fas fa-save"></i> DEPLOY MODAL
+                        TEXTS</button>
                     <span id="save-msg-modals-text" class="save-msg">Deploy successful.</span>
                 </div>
-                
-                <h3 style="color: #00f0ff; font-size: 0.9rem; margin-bottom: 1rem; font-family: 'Syncopate', sans-serif;">FAQ CONTENT (DASHBOARD)</h3>
+
+                <h3
+                    style="color: #00f0ff; font-size: 0.9rem; margin-bottom: 1rem; font-family: 'Syncopate', sans-serif;">
+                    FAQ CONTENT (DASHBOARD)</h3>
                 <div class="form-grid">
-                    <div class="input-group"><label>FAQ 1: Question</label><input type="text" id="site_faq1_q" value="HOW DO I SUBMIT A DEMO?"></div>
-                    <div class="input-group"><label>FAQ 1: Answer</label><textarea id="site_faq1_a">We highly recommend sending demos through our <strong>Discord Server</strong> for faster review. Alternatively, you can send an email message to artists@obscurarecord.com.</textarea></div>
-                    
-                    <div class="input-group"><label>FAQ 2: Question</label><input type="text" id="site_faq2_q" value="WHAT GENRES ARE YOU LOOKING FOR?"></div>
-                    <div class="input-group"><label>FAQ 2: Answer</label><textarea id="site_faq2_a">Our dimension primarily focuses on <strong>Phonk, Funk, and Futuristic Electronic</strong> music. We are looking for high-energy vibrations that push the boundaries of sound.</textarea></div>
-                    
-                    <div class="input-group"><label>FAQ 3: Question</label><input type="text" id="site_faq3_q" value="WHERE CAN I JOIN THE COMMUNITY?"></div>
-                    <div class="input-group"><label>FAQ 3: Answer</label><textarea id="site_faq3_a">Join our galactic community on Discord to connect with other artists, share ideas, and participate in exclusive portal events.</textarea></div>
-                    
-                    <div class="input-group"><label>FAQ 4: Question</label><input type="text" id="site_faq4_q" value="HOW LONG DOES A RESPONSE TAKE?"></div>
-                    <div class="input-group"><label>FAQ 4: Answer</label><textarea id="site_faq4_a">Our sonic reviewers aim to respond within a few galactic cycles. If your sound resonates with our frequency, we will reach out via Discord or email.</textarea></div>
+                    <div class="input-group"><label>FAQ 1: Question</label><input type="text" id="site_faq1_q"
+                            value="HOW DO I SUBMIT A DEMO?"></div>
+                    <div class="input-group"><label>FAQ 1: Answer</label><textarea
+                            id="site_faq1_a">We highly recommend sending demos through our <strong>Discord Server</strong> for faster review. Alternatively, you can send an email message to artists@obscurarecord.com.</textarea>
+                    </div>
+
+                    <div class="input-group"><label>FAQ 2: Question</label><input type="text" id="site_faq2_q"
+                            value="WHAT GENRES ARE YOU LOOKING FOR?"></div>
+                    <div class="input-group"><label>FAQ 2: Answer</label><textarea
+                            id="site_faq2_a">Our dimension primarily focuses on <strong>Phonk, Funk, and Futuristic Electronic</strong> music. We are looking for high-energy vibrations that push the boundaries of sound.</textarea>
+                    </div>
+
+                    <div class="input-group"><label>FAQ 3: Question</label><input type="text" id="site_faq3_q"
+                            value="WHERE CAN I JOIN THE COMMUNITY?"></div>
+                    <div class="input-group"><label>FAQ 3: Answer</label><textarea
+                            id="site_faq3_a">Join our galactic community on Discord to connect with other artists, share ideas, and participate in exclusive portal events.</textarea>
+                    </div>
+
+                    <div class="input-group"><label>FAQ 4: Question</label><input type="text" id="site_faq4_q"
+                            value="HOW LONG DOES A RESPONSE TAKE?"></div>
+                    <div class="input-group"><label>FAQ 4: Answer</label><textarea
+                            id="site_faq4_a">Our sonic reviewers aim to respond within a few galactic cycles. If your sound resonates with our frequency, we will reach out via Discord or email.</textarea>
+                    </div>
                 </div>
 
-                <h3 style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">PRIVACY POLICY CONTENT</h3>
+                <h3
+                    style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">
+                    PRIVACY POLICY CONTENT</h3>
                 <div class="form-grid">
-                    <div class="input-group"><label>P1: Title</label><input type="text" id="site_p1_q" value="INTELLECTUAL PROPERTY"></div>
-                    <div class="input-group"><label>P1: Text</label><textarea id="site_p1_a">All content in this dimension—including audio, graphics, logos, and visual art—is the property of Obscura Record or its licensors.</textarea></div>
-                    
-                    <div class="input-group"><label>P2: Title</label><input type="text" id="site_p2_q" value="DATA SECURITY"></div>
-                    <div class="input-group"><label>P2: Text</label><textarea id="site_p2_a">Your portal data is encrypted and secure. We only collect what is necessary to maintain your connection.</textarea></div>
-                    
-                    <div class="input-group"><label>P3: Title</label><input type="text" id="site_p3_q" value="PROMOTIONAL CONTENT"></div>
-                    <div class="input-group"><label>P3: Text</label><textarea id="site_p3_a">By connecting to our portal, you may receive updates on new releases, talent discoveries, and galactic events.</textarea></div>
-                    
-                    <div class="input-group"><label>P4: Title</label><input type="text" id="site_p4_q" value="EXTERNAL EMBEDS"></div>
-                    <div class="input-group"><label>P4: Text</label><textarea id="site_p4_a">We use third-party players (SoundCloud/YouTube). Their respective privacy policies apply to your interactions on those platforms.</textarea></div>
-                    
-                    <div class="input-group"><label>P5: Title</label><input type="text" id="site_p5_q" value="DATA RETENTION"></div>
-                    <div class="input-group"><label>P5: Text</label><textarea id="site_p5_a">We retain connection data only as long as necessary for community support and galactic record-keeping.</textarea></div>
-                    
-                    <div class="input-group"><label>P6: Title</label><input type="text" id="site_p6_q" value="GOVERNING LAW"></div>
-                    <div class="input-group"><label>P6: Text</label><textarea id="site_p6_a">All legal matters are governed by the laws of our primary operational frequency. Disputes are resolved via cosmic mediation.</textarea></div>
-                    
-                    <div class="input-group"><label>P7: Title</label><input type="text" id="site_p7_q" value="LEGAL CONTACT"></div>
-                    <div class="input-group"><label>P7: Text</label><textarea id="site_p7_a">For all legal inquiries, copyright complaints (DMCA), or licensing requests, please send an email message to our Legal Counsel at artists@obscurarecord.com. Our team is available at this address for any direct communications.</textarea></div>
+                    <div class="input-group"><label>P1: Title</label><input type="text" id="site_p1_q"
+                            value="INTELLECTUAL PROPERTY"></div>
+                    <div class="input-group"><label>P1: Text</label><textarea
+                            id="site_p1_a">All content in this dimension—including audio, graphics, logos, and visual art—is the property of Obscura Record or its licensors.</textarea>
+                    </div>
+
+                    <div class="input-group"><label>P2: Title</label><input type="text" id="site_p2_q"
+                            value="DATA SECURITY"></div>
+                    <div class="input-group"><label>P2: Text</label><textarea
+                            id="site_p2_a">Your portal data is encrypted and secure. We only collect what is necessary to maintain your connection.</textarea>
+                    </div>
+
+                    <div class="input-group"><label>P3: Title</label><input type="text" id="site_p3_q"
+                            value="PROMOTIONAL CONTENT"></div>
+                    <div class="input-group"><label>P3: Text</label><textarea
+                            id="site_p3_a">By connecting to our portal, you may receive updates on new releases, talent discoveries, and galactic events.</textarea>
+                    </div>
+
+                    <div class="input-group"><label>P4: Title</label><input type="text" id="site_p4_q"
+                            value="EXTERNAL EMBEDS"></div>
+                    <div class="input-group"><label>P4: Text</label><textarea
+                            id="site_p4_a">We use third-party players (SoundCloud/YouTube). Their respective privacy policies apply to your interactions on those platforms.</textarea>
+                    </div>
+
+                    <div class="input-group"><label>P5: Title</label><input type="text" id="site_p5_q"
+                            value="DATA RETENTION"></div>
+                    <div class="input-group"><label>P5: Text</label><textarea
+                            id="site_p5_a">We retain connection data only as long as necessary for community support and galactic record-keeping.</textarea>
+                    </div>
+
+                    <div class="input-group"><label>P6: Title</label><input type="text" id="site_p6_q"
+                            value="GOVERNING LAW"></div>
+                    <div class="input-group"><label>P6: Text</label><textarea
+                            id="site_p6_a">All legal matters are governed by the laws of our primary operational frequency. Disputes are resolved via cosmic mediation.</textarea>
+                    </div>
+
+                    <div class="input-group"><label>P7: Title</label><input type="text" id="site_p7_q"
+                            value="LEGAL CONTACT"></div>
+                    <div class="input-group"><label>P7: Text</label><textarea
+                            id="site_p7_a">For all legal inquiries, copyright complaints (DMCA), or licensing requests, please send an email message to our Legal Counsel at artists@obscurarecord.com. Our team is available at this address for any direct communications.</textarea>
+                    </div>
                 </div>
 
                 <div class="btn-group" style="margin-top: 2rem; margin-bottom: 3rem;">
-                    <button class="save-btn" id="save-modals-all-data"><i class="fas fa-save"></i> DEPLOY ALL MODAL DATA</button>
+                    <button class="save-btn" id="save-modals-all-data"><i class="fas fa-save"></i> DEPLOY ALL MODAL
+                        DATA</button>
                     <span id="save-msg-modals-all-data" class="save-msg">Deploy successful.</span>
                 </div>
             </section>
@@ -357,17 +541,22 @@
                     <h2><i class="fas fa-compact-disc"></i> RELEASE ARCHIVE</h2>
                     <p>Manage the label's back-catalog frequencies and streaming transmissions.</p>
                 </div>
-                
+
                 <div class="btn-group mb-2">
-                    <button class="action-btn" id="add-release-btn"><i class="fas fa-plus"></i> INITIALIZE NEW FREQUENCY</button>
-                    <button class="save-btn" id="save-staff" style="display:none;"><i class="fas fa-upload"></i> SYNC ALL TO SERVER</button>
-                    <button class="save-btn" id="save-releases" style="background:var(--accent-magenta); border-color:var(--accent-magenta);"><i class="fas fa-cloud-upload-alt"></i> DEPLOY ALL RELEASES</button>
+                    <button class="action-btn" id="add-release-btn"><i class="fas fa-plus"></i> INITIALIZE NEW
+                        FREQUENCY</button>
+                    <button class="save-btn" id="save-staff" style="display:none;"><i class="fas fa-upload"></i> SYNC
+                        ALL TO SERVER</button>
+                    <button class="save-btn" id="save-releases"
+                        style="background:var(--accent-magenta); border-color:var(--accent-magenta);"><i
+                            class="fas fa-cloud-upload-alt"></i> DEPLOY ALL RELEASES</button>
                     <span id="save-msg-staff" class="save-msg">Sync successful.</span>
                 </div>
 
                 <div id="releases-container" class="releases-list">
                     <!-- Dynamic release forms will compile here -->
-                    <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Accessing encrypted release frequency archive...</p>
+                    <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Accessing encrypted release frequency
+                        archive...</p>
                 </div>
             </section>
 
@@ -377,10 +566,13 @@
                     <h2><i class="fas fa-inbox"></i> DEMO INBOX (A&R VAULT)</h2>
                     <p>Live transmissions from artists seeking portal access.</p>
                 </div>
-                
+
                 <div class="inbox-controls" style="margin-bottom: 1.5rem;">
-                    <button class="action-btn" id="refresh-inbox"><i class="fas fa-sync"></i> SCAN FOR NEW FREQUENCIES</button>
-                    <button class="save-btn" id="clear-inbox" style="background: rgba(255, 0, 0, 0.2); border-color: rgba(255, 0, 0, 0.3);"><i class="fas fa-trash"></i> PURGE ALL RECORDS</button>
+                    <button class="action-btn" id="refresh-inbox"><i class="fas fa-sync"></i> SCAN FOR NEW
+                        FREQUENCIES</button>
+                    <button class="save-btn" id="clear-inbox"
+                        style="background: rgba(255, 0, 0, 0.2); border-color: rgba(255, 0, 0, 0.3);"><i
+                            class="fas fa-trash"></i> PURGE ALL RECORDS</button>
                 </div>
 
                 <div id="demo-inbox-container" class="demo-list">
@@ -396,20 +588,25 @@
                     <p>Manage cards with future release signals (No streaming links required).</p>
                 </div>
 
-                <div class="form-grid" style="margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2rem;">
+                <div class="form-grid"
+                    style="margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2rem;">
                     <div class="input-group">
                         <label>CATEGORY VISIBILITY</label>
-                        <select id="site_showUpcoming" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem; border-radius: 4px; font-family: 'Inter', sans-serif;">
+                        <select id="site_showUpcoming"
+                            style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem; border-radius: 4px; font-family: 'Inter', sans-serif;">
                             <option value="Visible">Visible</option>
                             <option value="Hidden">Hidden</option>
                         </select>
-                        <p style="font-size:0.6rem; color:var(--text-secondary); margin-top:0.3rem;">Total override: Hide the entire "Upcoming Releases" section from the portal.</p>
+                        <p style="font-size:0.6rem; color:var(--text-secondary); margin-top:0.3rem;">Total override:
+                            Hide the entire "Upcoming Releases" section from the portal.</p>
                     </div>
                 </div>
-                
+
                 <div class="btn-group mb-2">
-                    <button class="action-btn" id="add-upcoming-btn"><i class="fas fa-plus"></i> INITIALIZE UPCOMING</button>
-                    <button class="save-btn" id="save-upcoming"><i class="fas fa-upload"></i> SYNC UPCOMING TO SERVER</button>
+                    <button class="action-btn" id="add-upcoming-btn"><i class="fas fa-plus"></i> INITIALIZE
+                        UPCOMING</button>
+                    <button class="save-btn" id="save-upcoming"><i class="fas fa-upload"></i> SYNC UPCOMING TO
+                        SERVER</button>
                     <span id="save-msg-upcoming" class="save-msg">Sync successful.</span>
                 </div>
 
@@ -422,12 +619,16 @@
             <section id="staff-panel" class="panel">
                 <div class="panel-header">
                     <h2><i class="fas fa-users-cog"></i> STAFF & ARTIST PROFILES</h2>
-                    <p>Edit bios, social links, and profile details for label staff. Data is synced with Discord IDs.</p>
+                    <p>Edit bios, social links, and profile details for label staff. Data is synced with Discord IDs.
+                    </p>
                 </div>
-                
-                <div class="btn-group mb-2" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2.5rem;">
-                    <button class="save-btn" id="save-staff"><i class="fas fa-upload"></i> SYNC ALL PROFILES TO SERVER</button>
-                    <button class="action-btn" id="init-staff-btn" style="background: rgba(0, 240, 255, 0.05); border: 1.5px solid var(--primary); color: var(--primary); padding: 1.25rem 2rem; border-radius: 14px; cursor: pointer; font-family: inherit; font-size: 0.8rem; letter-spacing: 0.1rem; font-weight: 700; transition: 0.4s;">
+
+                <div class="btn-group mb-2"
+                    style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2.5rem;">
+                    <button class="save-btn" id="save-staff"><i class="fas fa-upload"></i> SYNC ALL PROFILES TO
+                        SERVER</button>
+                    <button class="action-btn" id="init-staff-btn"
+                        style="background: rgba(0, 240, 255, 0.05); border: 1.5px solid var(--primary); color: var(--primary); padding: 1.25rem 2rem; border-radius: 14px; cursor: pointer; font-family: inherit; font-size: 0.8rem; letter-spacing: 0.1rem; font-weight: 700; transition: 0.4s;">
                         <i class="fas fa-seedling"></i> INITIALIZE BASE PERSONNEL
                     </button>
                     <span id="save-msg-staff" class="save-msg">Profiles synced successfully.</span>
@@ -435,23 +636,29 @@
 
                 <div id="staff-container" class="releases-list">
                     <!-- Dynamic staff forms will compile here -->
-                    <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Initializing neural link to staff database...</p>
+                    <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Initializing neural link to staff
+                        database...</p>
                 </div>
             </section>
         </main>
     </div>
 
     <!-- CUSTOM ADMINISTRATIVE OVERRIDE MODAL -->
-    <div id="admin-confirm-modal" class="login-screen" style="display: none; z-index: 1000001; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);">
+    <div id="admin-confirm-modal" class="login-screen"
+        style="display: none; z-index: 1000001; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);">
         <div class="login-glass" style="max-width: 450px; border-color: var(--accent-magenta);">
             <div class="login-header">
-                <i class="fas fa-exclamation-triangle" style="color: var(--accent-magenta); font-size: 2.5rem; margin-bottom: 1.5rem;"></i>
+                <i class="fas fa-exclamation-triangle"
+                    style="color: var(--accent-magenta); font-size: 2.5rem; margin-bottom: 1.5rem;"></i>
                 <h2 style="color: var(--accent-magenta);">KERNEL OVERRIDE</h2>
                 <p>Are you sure you want to permanently purge this transmission record?</p>
             </div>
             <div class="login-body" style="display: flex; gap: 1rem; margin-top: 2rem;">
-                <button id="confirm-purge-btn" style="flex: 1; background: var(--accent-magenta); color: #fff; padding: 1rem; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-family:inherit;"><i class="fas fa-trash"></i> PURGE</button>
-                <button id="cancel-purge-btn" style="flex: 1; background: rgba(255,255,255,0.05); color: #fff; padding: 1rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; font-weight: 700; cursor: pointer; font-family:inherit;">CANCEL</button>
+                <button id="confirm-purge-btn"
+                    style="flex: 1; background: var(--accent-magenta); color: #fff; padding: 1rem; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-family:inherit;"><i
+                        class="fas fa-trash"></i> PURGE</button>
+                <button id="cancel-purge-btn"
+                    style="flex: 1; background: rgba(255,255,255,0.05); color: #fff; padding: 1rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; font-weight: 700; cursor: pointer; font-family:inherit;">CANCEL</button>
             </div>
         </div>
     </div>
@@ -483,7 +690,7 @@
                             "1296819349885161472": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
                             "1296813876364705792": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" }
                         };
-                        
+
                         if (typeof firebase !== 'undefined') {
                             const db = firebase.database();
                             db.ref('staff_status').update(baseStaff).then(() => {
@@ -497,4 +704,5 @@
         });
     </script>
 </body>
+
 </html>
