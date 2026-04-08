@@ -701,12 +701,19 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label data-sync="formLabelSpotify" data-sync-target="text">Your Spotify profile link</label>
-                        <div class="mirror-container">
-                            <input type="url" name="spotify" class="real-input"
-                                placeholder="https://open.spotify.com/artist/..." data-sync="formPlaceholderSpotify"
-                                data-sync-target="placeholder">
-                            <div class="mirror-display"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <label data-sync="formLabelSpotify" data-sync-target="text">Artist Profile / Social Links</label>
+                            <button type="button" id="add-link-btn" class="cyber-mini-btn" title="Add Link"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <div id="dynamic-links-container" class="dynamic-inputs">
+                            <div class="dynamic-row">
+                                <div class="mirror-container">
+                                    <input type="url" name="spotify[]" class="real-input"
+                                        placeholder="https://open.spotify.com/artist/..." data-sync="formPlaceholderSpotify"
+                                        data-sync-target="placeholder">
+                                    <div class="mirror-display"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
