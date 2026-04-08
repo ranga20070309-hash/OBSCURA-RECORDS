@@ -17,13 +17,33 @@ const db = firebase.database();
 alert("CORE SYSTEM ONLINE: PERSONNEL SYNC READY (v4.4)");
 console.log("Transmission link established.");
 
+// Toast Notification System (Administrative Grade)
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notif ${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 100);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 500);
+    }, 4000);
+}
+
 window.saveIndividualStaff = function (discordId) {
-    alert("SYNC ATTEMPT STARTED FOR: " + discordId);
     const item = document.querySelector(`.staff-editor-item[data-discord-id="${discordId}"]`);
     if (!item) {
-        alert("CRITICAL ERROR: Editor item not found for " + discordId);
+        showToast("CRITICAL ERROR: Editor entry missing.", 'error');
         return;
     }
+    
+    const saveBtn = item.querySelector('.save-btn-staff');
+    if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SYNCING...';
     const bio = item.querySelector('.s-bio').value;
     const avatar = item.querySelector('.s-avatar') ? item.querySelector('.s-avatar').value : '';
     const socials = {};
@@ -35,11 +55,13 @@ window.saveIndividualStaff = function (discordId) {
     });
     const data = { bio: bio, avatar_url: avatar, socials: socials };
     db.ref('staff_status/' + discordId).update(data).then(() => {
-        alert('SUCCESS: Personnel frequency synced for ID ' + discordId);
+        showToast(`PERSONNEL SYNC SUCCESSFUL: ${discordId}`);
+        if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> SYNC INDIVIDUAL';
         bumpSiteVersion();
         loadStaff();
     }).catch(err => {
-        alert('SYNC ERROR: ' + err.message);
+        showToast('SYNC ERROR: ' + err.message, 'error');
+        if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> RETRY SYNC';
     });
 };
 
@@ -76,7 +98,6 @@ navBtns.forEach(btn => {
         } else if (target === 'demo-inbox-panel') {
             loadSubmissions();
         } else if (target === 'releases-panel') {
-            alert("NAV: SWITCHING TO RELEASES PANEL...");
             loadReleases();
         }
     });
@@ -305,14 +326,15 @@ if (loginBtn) {
 
         firebase.auth().signInWithEmailAndPassword(email, pass)
             .then((userCredential) => {
-                alert("ACCESS GRANTED: Root frequency synced.");
+                showToast("ACCESS GRANTED: ROOT FREQUENCY SYNCED.");
             })
             .catch((error) => {
-                loginError.textContent = "AUTH FAILURE: " + error.message;
+                loginError.textContent = "AUTH FAILURE: CONTACT KERNEL ADMIN";
                 loginError.style.display = 'block';
                 passInput.value = '';
                 loginBtn.innerHTML = '<i class="fas fa-unlock"></i> INITIATE ACCESS';
                 loginBtn.disabled = false;
+                showToast("AUTH FAILURE: PIN FREQUENCY DISCREPANCY", "error");
                 setTimeout(() => { loginError.style.display = 'none'; }, 5000);
             });
     });
@@ -429,17 +451,16 @@ function saveGlobals(msgId) {
         updates[el.id.replace('site_', '')] = el.value;
     });
     db.ref('siteData/globals').update(updates).then(() => {
-        // Handle Security Key update separately if modified
         const keyInput = document.getElementById('security_rootKey');
         if (keyInput) {
             db.ref('siteData/security/rootKey').set(keyInput.value);
         }
         bumpSiteVersion();
         showSaveMsg(msgId);
+        showToast("GLOBAL DIRECTIVES DEPLOYED SUCCESSFULLY.");
     }).catch(err => {
         console.error("Save Globals Error:", err);
-        const protocolAdvice = window.location.protocol === 'file:' ? "\n\nADVICE: Use 'Live Server' (http) to enable writes locally." : "";
-        alert("DEPLOY FAILURE: " + err.message + protocolAdvice);
+        showToast("DEPLOY FAILURE: CHECK CONSOLE", "error");
     });
 }
 
@@ -466,36 +487,39 @@ function createReleaseEditor(release, index) {
         <button class="delete-btn" onclick="removeRelease(${index})"><i class="fas fa-trash"></i></button>
         <div class="form-grid">
             <div class="input-group">
-                <label>Track ID / Badge (e.g. OS-992 <span class='badge'>NEW</span>)</label>
+                <label>Track ID / Badge</label>
+                <p class="field-desc">The catalog identifier. (e.g. OS-992 <span class='badge'>NEW</span>)</p>
                 <input type="text" class="r-id" value="${release.id || ''}">
             </div>
             <div class="input-group">
                 <label>Title</label>
+                <p class="field-desc">Official track name as displayed in the transmission grid.</p>
                 <input type="text" class="r-title" value="${release.title || ''}">
             </div>
             <div class="input-group">
                 <label>Producers</label>
+                <p class="field-desc">Artist or entity responsible for the audio frequency.</p>
                 <input type="text" class="r-producers" value="${release.producers || ''}">
             </div>
             <div class="input-group">
-                <label>Release Type (SINGLE / EP / ALBUM)</label>
+                <label>Release Type</label>
+                <p class="field-desc">The binary classification of the release (SINGLE/EP/ALBUM).</p>
                 <input type="text" class="r-type" value="${release.type || 'SINGLE'}">
             </div>
             <div class="input-group">
                 <label>Cover Image Source</label>
+                <p class="field-desc">Direct asset link for the frequency visualization.</p>
                 <input type="text" class="r-image" value="${release.image || 'assets/cover.png'}">
             </div>
             <div class="input-group full" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
-                <div><label><i class="fab fa-spotify" style="color:#1DB954"></i> Spotify Link</label>
-                <input type="text" class="r-spotify" value="${release.spotify || '#'}"></div>
-                <div><label><i class="fab fa-apple" style="color:#fa243c"></i> Apple Link</label>
-                <input type="text" class="r-apple" value="${release.apple || '#'}"></div>
-                <div><label><i class="fab fa-youtube" style="color:#FF0000"></i> YouTube Link</label>
-                <input type="text" class="r-youtube" value="${release.youtube || '#'}"></div>
+                <div><label>Spotify Link</label><p class="field-desc">Direct route to Spotify URI.</p><input type="text" class="r-spotify" value="${release.spotify || '#'}"></div>
+                <div><label>Apple Link</label><p class="field-desc">Direct route to Apple Music.</p><input type="text" class="r-apple" value="${release.apple || '#'}"></div>
+                <div><label>YouTube Link</label><p class="field-desc">Direct route to YT Video.</p><input type="text" class="r-youtube" value="${release.youtube || '#'}"></div>
             </div>
             <div class="input-group full">
-                <label><i class="fas fa-play-circle" style="color:var(--accent-blue)"></i> Preview Audio URL (MP3/Snippet)</label>
-                <input type="text" class="r-preview" value="${release.preview || ''}" placeholder="Paste direct MP3/WAV link here...">
+                <label>Preview Audio URL</label>
+                <p class="field-desc">Secure direct MP3 link for the portal's audio player stream.</p>
+                <input type="text" class="r-preview" value="${release.preview || ''}" placeholder="MP3 Link...">
             </div>
         </div>
     `;
@@ -543,25 +567,20 @@ function loadReleases() {
         let data = snapshot.val();
 
         if (data && Array.isArray(data)) {
-            alert('RELEASES DETECTED: Found ' + data.length + ' tracks in archive.');
             if (data[0] && data[0]._isEmpty) {
                 releasesArray = [];
             } else {
                 releasesArray = data;
+                showToast(`ARCHIVE SYNCED: ${data.length} TRACKS LOADED.`);
             }
             renderReleases();
         } else {
-            alert('NOTICE: Release archive is empty or using defaults.');
-            releasesArray = [
-                { id: "OS-992 <span class='badge'>NEW</span>", title: "STARLIGHT SYNDROME", producers: "SVYUXU & OBSCURA", type: "SINGLE", image: "assets/cover.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=A0FZIwabctw", preview: "" },
-                { id: "OS-991", title: "NEUTRON PULSE", producers: "RANGA", type: "EP", image: "assets/releases/cover_1.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=jfKfPfyJRdk", preview: "" },
-                { id: "OS-990", title: "VOID WALKER", producers: "FL4ME", type: "ALBUM", image: "assets/releases/cover_2.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=21X5lGlDOfg", preview: "" },
-                { id: "OS-989", title: "SOLAR FLARE", producers: "SVYUXU & RANGA", type: "SINGLE", image: "assets/releases/cover_3.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=kJQP7kiw5Fk", preview: "" }
-            ];
+            showToast('NOTICE: ARCHIVE EMPTY. SYSTEM STANDBY.', 'error');
+            releasesArray = [];
             renderReleases();
         }
     }).catch(err => {
-        alert('RELEASES ERROR: ' + err.message);
+        showToast('RELEASES ERROR: ' + err.message, 'error');
     });
 }
 
@@ -601,29 +620,78 @@ let upcomingArray = [];
 function createUpcomingEditor(item, index) {
     const div = document.createElement('div');
     div.className = 'release-editor-item';
+    const previewImg = item.image || 'assets/cover.png';
+    
     div.innerHTML = `
         <button class="delete-btn" onclick="removeUpcoming(${index})"><i class="fas fa-trash"></i></button>
         <div class="form-grid">
             <div class="input-group">
-                <label>Track ID / Badge (e.g. OS-NEW <span class='badge'>COMING SOON</span>)</label>
+                <label>Upcoming Track ID</label>
+                <p class="field-desc">The scheduled identifier for the future frequency.</p>
                 <input type="text" class="u-id" value="${item.id || ''}">
             </div>
             <div class="input-group">
-                <label>Title</label>
+                <label>Expected Title</label>
+                <p class="field-desc">The designated title for the unreleased transmission.</p>
                 <input type="text" class="u-title" value="${item.title || ''}">
             </div>
             <div class="input-group">
-                <label>Producers</label>
+                <label>Personnel</label>
+                <p class="field-desc">Participating artists for this upcoming signal.</p>
                 <input type="text" class="u-producers" value="${item.producers || ''}">
             </div>
             <div class="input-group">
-                <label>Cover Image Source</label>
-                <input type="text" class="u-image" value="${item.image || 'assets/cover.png'}">
+                <label>Visual Asset Management</label>
+                <p class="field-desc">Browse local storage (💾) or capture YouTube cover (🪄).</p>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <div class="image-preview-mini">
+                        <img src="${previewImg}" id="prev-u-${index}">
+                    </div>
+                    <input type="text" class="u-image" value="${item.image || 'assets/cover.png'}" id="input-u-${index}">
+                    <button class="action-btn-mini" onclick="triggerUpcomingUpload(${index})"><i class="fas fa-folder-open"></i></button>
+                    <button class="action-btn-mini" onclick="autoDetectUpcoming(${index})"><i class="fas fa-wand-magic-sparkles"></i></button>
+                    <input type="file" id="file-u-${index}" style="display:none" onchange="handleUpcomingFile(this, ${index})" accept="image/*">
+                </div>
             </div>
         </div>
     `;
     return div;
 }
+
+window.triggerUpcomingUpload = function(index) {
+    document.getElementById(`file-u-${index}`).click();
+};
+
+window.handleUpcomingFile = function(input, index) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64 = e.target.result;
+            document.getElementById(`input-u-${index}`).value = base64;
+            document.getElementById(`prev-u-${index}`).src = base64;
+            showToast("COVER ASSET ENCODED (BASE64)");
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+};
+
+window.autoDetectUpcoming = function(index) {
+    // We attempt to detect from links if they are present in other fields, 
+    // but usually user pastes link in the image field first? 
+    // Let's check for YouTube specifically.
+    const input = document.getElementById(`input-u-${index}`);
+    const url = input.value;
+    
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        const id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop();
+        const imgUrl = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+        input.value = imgUrl;
+        document.getElementById(`prev-u-${index}`).src = imgUrl;
+        showToast("YT COVER CAPTURED FROM LINK.");
+    } else {
+        showToast("AUTO-DETECT: Paste YT Link into Image field first.", "error");
+    }
+};
 
 function renderUpcoming() {
     if (!upcomingContainer) return;
@@ -683,9 +751,9 @@ if (document.getElementById('save-upcoming')) {
         db.ref('siteData/upcoming').set(upcomingArray).then(() => {
             bumpSiteVersion();
             showSaveMsg('save-msg-upcoming');
+            showToast("UPCOMING ARCHIVE DEPLOYED.");
         }).catch(err => {
-            const advice = window.location.protocol === 'file:' ? "\n\nADVICE: Use 'Live Server' (http) to enable writes locally." : "";
-            alert("SAVE FAILURE: " + err.message + advice);
+            showToast("SAVE FAILURE: " + err.message, "error");
         });
     });
 }
@@ -796,11 +864,11 @@ if (confirmPurgeBtn) {
 const clearInboxBtn = document.getElementById('clear-inbox');
 if (clearInboxBtn) {
     clearInboxBtn.onclick = () => {
-        if (confirm("CRITICAL WARNING: This will permanently wipe ALL Demos and Contact Mails from the server. Are you prepared to execute the purge?")) {
+        if (confirm("CRITICAL WARNING: This will permanently wipe ALL Demos and Contact Mails. Proceed?")) {
             db.ref('siteData/submissions').remove().then(() => {
-                alert("VAULT PURGED: All transmissions deleted.");
+                showToast("VAULT PURGED: ALL RECORDS DELETED.");
                 loadSubmissions();
-            }).catch(err => alert("PURGE ERROR: " + err.message));
+            }).catch(err => showToast("PURGE ERROR: " + err.message, "error"));
         }
     };
 }
@@ -847,26 +915,26 @@ function createStaffEditor(staff, discordId) {
 
     div.innerHTML = `
         <button class="delete-btn" onclick="removeStaff('${discordId}')"><i class="fas fa-trash"></i></button>
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1.5rem;">
-            <div style="display: flex; align-items: center; gap: 2rem;">
-                <div style="width: 70px; height: 70px; border-radius: 50%; background-image: url(${staff.avatar_url || 'assets/staff/default.png'}); background-position: center; background-size: cover; border: 2px solid var(--accent-blue); background-color: #000;"></div>
+        <div class="staff-header-row">
+            <div class="staff-meta-main">
+                <div class="staff-avatar-circle" style="background-image: url(${staff.avatar_url || 'assets/staff/default.png'})"></div>
                 <div>
-                    <h3 style="margin:0; color:var(--accent-blue); font-size: 1.4rem;">${staff.name || 'UNKNOWN'}</h3>
-                    <small style="opacity:0.5; letter-spacing: 0.1rem;">ACCESS KEY: ${discordId}</small>
+                    <h3>${staff.name || 'UNKNOWN'}</h3>
+                    <small>SEC_ID: ${discordId}</small>
                 </div>
             </div>
-            <button class="save-btn" style="padding: 0.8rem 1.5rem; font-size: 0.7rem; border-radius: 10px;" onclick="saveIndividualStaff('${discordId}')"><i class="fas fa-save"></i> SYNC INDIVIDUAL TRANSMISSION</button>
+            <button class="save-btn save-btn-staff" onclick="saveIndividualStaff('${discordId}')"><i class="fas fa-save"></i> SYNC INDIVIDUAL</button>
         </div>
         <div class="form-grid">
             <div class="input-group full">
-                <label>AVATAR SOURCE URL (IMAGE LINK)</label>
-                <input type="text" class="s-avatar" value="${staff.avatar_url || ''}" placeholder="Paste image link here (PNG/JPG)...">
+                <label>AVATAR SOURCE URL</label>
+                <input type="text" class="s-avatar" value="${staff.avatar_url || ''}" placeholder="Image Link...">
             </div>
             <div class="input-group full">
-                <label>PERSONNEL BIOGRAPHY (HTML ALLOWED)</label>
-                <textarea class="s-bio" style="height: 100px; font-family:'Inter', sans-serif;">${staff.bio || ''}</textarea>
+                <label>PERSONNEL BIOGRAPHY</label>
+                <textarea class="s-bio">${staff.bio || ''}</textarea>
             </div>
-            <h4 style="grid-column: 1 / -1; color: var(--primary); font-size: 0.7rem; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem; font-family:'Syncopate', sans-serif; opacity: 0.8;">BROADCAST CHANNELS</h4>
+            <h4 class="form-sub-header">BROADCAST CHANNELS</h4>
             ${socialsHtml}
         </div>
     `;
@@ -923,13 +991,12 @@ function saveStaff() {
         updates[id + '/socials'] = socials;
     });
     db.ref('staff_status').update(updates).then(() => {
-        alert('SUCCESS: All personnel frequencies updated.');
+        showToast('STAFF DIRECTORY DEPLOYED SUCCESSFULLY.');
         showSaveMsg('save-msg-staff');
         bumpSiteVersion();
         loadStaff();
     }).catch(err => {
-        const advice = window.location.protocol === 'file:' ? "\n\nADVICE: Use 'Live Server' (http) to enable writes locally." : "";
-        alert('CRITICAL SYNC ERROR: ' + err.message + advice);
+        showToast('CRITICAL SYNC ERROR: CHECK CONNECTION', 'error');
     });
 }
 
@@ -960,12 +1027,11 @@ if (saveReleasesBtn) {
         });
 
         db.ref('siteData/releases').set(updates).then(() => {
-            alert('SUCCESS: Release archive successfully updated.');
+            showToast('RELEASE ARCHIVE DEPLOYED.');
             bumpSiteVersion();
             loadReleases();
         }).catch(err => {
-            const advice = window.location.protocol === 'file:' ? "\n\nADVICE: Use 'Live Server' (http) to enable writes locally." : "";
-            alert('CRITICAL SYNC ERROR: ' + err.message + advice);
+            showToast('DEPLOY FAILURE: VAULT LOCKED', 'error');
         });
     });
 }
