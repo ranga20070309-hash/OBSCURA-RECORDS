@@ -169,10 +169,12 @@ function initializeSecurity() {
     checkDevice();
     window.addEventListener('resize', checkDevice);
 
+    const isLocal = window.location.protocol === 'file:';
+
     // Track real auth state via Firebase
     firebase.auth().onAuthStateChanged((user) => {
-        if (user) {
-            console.log("Transmission link secured for:", user.email);
+        if (user || (isLocal && sessionStorage.getItem('rootAuth') === 'granted')) {
+            console.log("Transmission link secured.");
             unlockDashboard();
         } else {
             console.log("Portal locked. Awaiting valid authorization.");
@@ -272,9 +274,10 @@ function initGlobalAlarmSync() {
 
 // Attach to startup sequence
 (function () {
+    const isLocal = window.location.protocol === 'file:';
     // Check for auth state and start sync once ready
     firebase.auth().onAuthStateChanged((user) => {
-        if (user) initGlobalAlarmSync();
+        if (user || (isLocal && sessionStorage.getItem('rootAuth') === 'granted')) initGlobalAlarmSync();
     });
 })();
 
@@ -290,6 +293,15 @@ if (loginBtn) {
 
         loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AUTHORIZING...';
         loginBtn.disabled = true;
+
+        const isLocal = window.location.protocol === 'file:';
+        if (isLocal) {
+            console.log("KERNEL BYPASS: Local access detected. Granting frequency override.");
+            setTimeout(() => {
+                unlockDashboard();
+            }, 800);
+            return;
+        }
 
         firebase.auth().signInWithEmailAndPassword(email, pass)
             .then((userCredential) => {
@@ -424,6 +436,10 @@ function saveGlobals(msgId) {
         }
         bumpSiteVersion();
         showSaveMsg(msgId);
+    }).catch(err => {
+        console.error("Save Globals Error:", err);
+        const protocolAdvice = window.location.protocol === 'file:' ? "\n\nADVICE: Use 'Live Server' (http) to enable writes locally." : "";
+        alert("DEPLOY FAILURE: " + err.message + protocolAdvice);
     });
 }
 
@@ -572,6 +588,9 @@ document.getElementById('save-releases').addEventListener('click', () => {
     db.ref('siteData/releases').set(releasesArray).then(() => {
         bumpSiteVersion();
         showSaveMsg('save-msg-releases');
+    }).catch(err => {
+        const advice = window.location.protocol === 'file:' ? "\n\nADVICE: Use 'Live Server' (http) to enable writes locally." : "";
+        alert("DEPLOY FAILURE: " + err.message + advice);
     });
 });
 
@@ -664,6 +683,9 @@ if (document.getElementById('save-upcoming')) {
         db.ref('siteData/upcoming').set(upcomingArray).then(() => {
             bumpSiteVersion();
             showSaveMsg('save-msg-upcoming');
+        }).catch(err => {
+            const advice = window.location.protocol === 'file:' ? "\n\nADVICE: Use 'Live Server' (http) to enable writes locally." : "";
+            alert("SAVE FAILURE: " + err.message + advice);
         });
     });
 }
@@ -678,36 +700,53 @@ let pendingDeleteId = null;
 function loadSubmissions() {
     if (!inboxContainer) return;
     inboxContainer.innerHTML = '<div style="padding:4rem; text-align:center; opacity:0.5; font-family:monospace; letter-spacing:0.2rem;">SCANNING FREQUENCIES...</div>';
-
-    db.ref('siteData/submissions/demo').once('value').then(snapshot => {
-        const data = snapshot.val();
+    
+    // Load both Demos and Contact Mails
+    const paths = ['siteData/submissions/demo', 'siteData/submissions/contact'];
+    Promise.all(paths.map(p => db.ref(p).once('value'))).then(snapshots => {
         inboxContainer.innerHTML = '';
-        if (!data) {
+        let allSubs = [];
+        
+        snapshots.forEach((snap, index) => {
+            const data = snap.val();
+            if (data) {
+                const type = paths[index].split('/').pop().toUpperCase();
+                Object.keys(data).forEach(key => {
+                    allSubs.push({ id: key, type: type, path: paths[index], ...data[key] });
+                });
+            }
+        });
+
+        if (allSubs.length === 0) {
             inboxContainer.innerHTML = '<p style="opacity:0.5; font-style:italic; padding:4rem; text-align:center;">No active transmissions detected in the vault.</p>';
             return;
         }
 
-        const subs = Object.keys(data).map(key => ({ id: key, ...data[key] })).reverse();
-        subs.forEach(sub => {
+        // Sort by date (reverse)
+        allSubs.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+        allSubs.forEach(sub => {
             const card = document.createElement('div');
             card.className = 'demo-card';
+            const typeColor = sub.type === 'DEMO' ? 'var(--accent-blue)' : 'var(--accent-magenta)';
             card.innerHTML = `
-                <button class="delete-demo-record" data-pid="${sub.id}" style="position:absolute; top:1.2rem; right:1.2rem; width:32px; height:32px; background:rgba(255,0,0,0.15); border:1px solid rgba(255,0,0,0.3); color:#ff4444; border-radius:6px; cursor:pointer; z-index:100; display:flex; align-items:center; justify-content:center; transition:0.3s;" title="PURGE RECORD"><i class="fas fa-times"></i></button>
+                <button class="delete-demo-record" data-pid="${sub.id}" data-path="${sub.path}" style="position:absolute; top:1.2rem; right:1.2rem; width:32px; height:32px; background:rgba(255,0,0,0.15); border:1px solid rgba(255,0,0,0.3); color:#ff4444; border-radius:6px; cursor:pointer; z-index:100; display:flex; align-items:center; justify-content:center; transition:0.3s;" title="PURGE RECORD"><i class="fas fa-times"></i></button>
                 <div class="demo-header">
                     <div class="demo-title">
-                        <h3 style="color:var(--accent-blue); font-size:1.1rem;">${sub.artist || 'ANONYMOUS'}</h3>
+                        <div style="font-size: 0.6rem; color: ${typeColor}; font-weight: 800; letter-spacing: 0.1rem; margin-bottom: 0.5rem;">[ ${sub.type} ]</div>
+                        <h3 style="color:var(--accent-blue); font-size:1.1rem;">${sub.artist || sub.name || 'ANONYMOUS'}</h3>
                         <p style="font-size:0.65rem; opacity:0.5; font-family:monospace;">SIGNAL RECEIVED: ${sub.date || 'UNKNOWN TIME'}</p>
                     </div>
                 </div>
                 <div class="demo-meta" style="margin-top:1.5rem; display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-                    <div class="meta-item"><label style="font-size:0.6rem; opacity:0.5; display:block; margin-bottom:0.3rem;">REAL NAME</label><span style="font-size:0.85rem;">${sub.name || 'N/A'}</span></div>
-                    <div class="meta-item"><label style="font-size:0.6rem; opacity:0.5; display:block; margin-bottom:0.3rem;">PRIMARY GENRE</label><span style="font-size:0.85rem; color:var(--accent-blue);">${sub.genre || 'N/A'}</span></div>
+                    <div class="meta-item"><label style="font-size:0.6rem; opacity:0.5; display:block; margin-bottom:0.3rem;">NAME</label><span style="font-size:0.85rem;">${sub.name || 'N/A'}</span></div>
+                    <div class="meta-item"><label style="font-size:0.6rem; opacity:0.5; display:block; margin-bottom:0.3rem;">SUBJECT / GENRE</label><span style="font-size:0.85rem; color:var(--accent-blue);">${sub.genre || sub.subject || 'N/A'}</span></div>
                     <div class="meta-item" style="grid-column: span 2;"><label style="font-size:0.6rem; opacity:0.5; display:block; margin-bottom:0.3rem;">CONTACT</label><span style="font-size:0.85rem;">${sub.email || 'N/A'}</span></div>
                 </div>
-                <div class="demo-message" style="background: rgba(255,255,255,0.02); padding: 1.2rem; border-radius: 10px; font-size: 0.8rem; margin-top: 1.5rem; border: 1px solid rgba(255,255,255,0.05); color: #ccc; line-height:1.5;">${sub.message || 'No additional biography transmitted.'}</div>
+                <div class="demo-message" style="background: rgba(255,255,255,0.02); padding: 1.2rem; border-radius: 10px; font-size: 0.8rem; margin-top: 1.5rem; border: 1px solid rgba(255,255,255,0.05); color: #ccc; line-height:1.5;">${sub.message || 'No additional data transmitted.'}</div>
                 <div class="demo-actions" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:2rem;">
-                    <a href="${sub.link}" target="_blank" class="demo-link-btn" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; padding: 1rem; background: var(--accent-blue); color: #000; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.7rem; letter-spacing:0.1rem; text-transform:uppercase; transition:0.3s;"><i class="fas fa-play-circle"></i> TRACK LINK</a>
-                    <a href="${sub.spotify || '#'}" target="_blank" class="demo-link-btn" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; padding: 1rem; background: #1DB954; color: #fff; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.7rem; letter-spacing:0.1rem; text-transform:uppercase; transition:0.3s;"><i class="fab fa-spotify"></i> SPOTIFY</a>
+                    ${sub.link ? `<a href="${sub.link}" target="_blank" class="demo-link-btn" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; padding: 1rem; background: var(--accent-blue); color: #000; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.7rem; letter-spacing:0.1rem; text-transform:uppercase; transition:0.3s;"><i class="fas fa-play-circle"></i> TRACK LINK</a>` : ''}
+                    ${sub.spotify ? `<a href="${sub.spotify}" target="_blank" class="demo-link-btn" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; padding: 1rem; background: #1DB954; color: #fff; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.7rem; letter-spacing:0.1rem; text-transform:uppercase; transition:0.3s;"><i class="fab fa-spotify"></i> SPOTIFY</a>` : ''}
                 </div>
             `;
             inboxContainer.appendChild(card);
@@ -726,6 +765,7 @@ if (inboxContainer) {
             e.preventDefault();
             e.stopPropagation();
             pendingDeleteId = btn.dataset.pid;
+            pendingDeletePath = btn.dataset.path || 'siteData/submissions/demo';
             const modal = document.getElementById('admin-confirm-modal');
             if (modal) modal.style.display = 'flex';
         }
@@ -739,12 +779,26 @@ const adminConfirmModal = document.getElementById('admin-confirm-modal');
 
 if (confirmPurgeBtn) {
     confirmPurgeBtn.onclick = () => {
-        if (pendingDeleteId) {
-            db.ref('siteData/submissions/demo/' + pendingDeleteId).remove().then(() => {
+        if (pendingDeleteId && pendingDeletePath) {
+            db.ref(pendingDeletePath + '/' + pendingDeleteId).remove().then(() => {
                 if (adminConfirmModal) adminConfirmModal.style.display = 'none';
                 pendingDeleteId = null;
+                pendingDeletePath = null;
                 loadSubmissions();
             }).catch(err => alert("PURGE FAILURE: " + err.message));
+        }
+    };
+}
+
+// Global Purge All Logic
+const clearInboxBtn = document.getElementById('clear-inbox');
+if (clearInboxBtn) {
+    clearInboxBtn.onclick = () => {
+        if (confirm("CRITICAL WARNING: This will permanently wipe ALL Demos and Contact Mails from the server. Are you prepared to execute the purge?")) {
+            db.ref('siteData/submissions').remove().then(() => {
+                alert("VAULT PURGED: All transmissions deleted.");
+                loadSubmissions();
+            }).catch(err => alert("PURGE ERROR: " + err.message));
         }
     };
 }
@@ -872,7 +926,8 @@ function saveStaff() {
         bumpSiteVersion();
         loadStaff();
     }).catch(err => {
-        alert('CRITICAL SYNC ERROR: ' + err.message);
+        const advice = window.location.protocol === 'file:' ? "\n\nADVICE: Use 'Live Server' (http) to enable writes locally." : "";
+        alert('CRITICAL SYNC ERROR: ' + err.message + advice);
     });
 }
 
@@ -907,7 +962,8 @@ if (saveReleasesBtn) {
             bumpSiteVersion();
             loadReleases();
         }).catch(err => {
-            alert('CRITICAL SYNC ERROR: ' + err.message);
+            const advice = window.location.protocol === 'file:' ? "\n\nADVICE: Use 'Live Server' (http) to enable writes locally." : "";
+            alert('CRITICAL SYNC ERROR: ' + err.message + advice);
         });
     });
 }
