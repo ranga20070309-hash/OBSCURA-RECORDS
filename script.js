@@ -1398,28 +1398,36 @@ const initPortal = () => {
         function bindUpcomingControls() {
             const btnPrev = document.querySelector('.upcoming-prev');
             const btnNext = document.querySelector('.upcoming-next');
-            if (btnPrev && btnNext && upcomingGrid) {
+            if (btnPrev && btnNext) {
                 btnPrev.onclick = () => {
-                    upcomingGrid.scrollBy({ left: -390, behavior: 'smooth' });
-                    startUpcomingAutoScroll();
+                    const grid = document.getElementById('upcoming-grid');
+                    if (grid) {
+                        gsap.to(grid, { scrollLeft: grid.scrollLeft - 390, duration: 0.8, ease: "power2.out" });
+                        startUpcomingAutoScroll();
+                    }
                 };
                 btnNext.onclick = () => {
-                    upcomingGrid.scrollBy({ left: 390, behavior: 'smooth' });
-                    startUpcomingAutoScroll();
+                    const grid = document.getElementById('upcoming-grid');
+                    if (grid) {
+                        gsap.to(grid, { scrollLeft: grid.scrollLeft + 390, duration: 0.8, ease: "power2.out" });
+                        startUpcomingAutoScroll();
+                    }
                 };
             }
         }
 
         function startUpcomingAutoScroll() {
             if (upcomingAutoScroll) clearInterval(upcomingAutoScroll);
+            const grid = document.getElementById('upcoming-grid');
+            if (!grid) return;
+
             upcomingAutoScroll = setInterval(() => {
-                if (upcomingGrid) {
-                    upcomingGrid.scrollLeft += 1;
-                    if (upcomingGrid.scrollLeft >= (upcomingGrid.scrollWidth - upcomingGrid.clientWidth - 5)) {
-                        gsap.to(upcomingGrid, { scrollLeft: 0, duration: 1.5, ease: "power2.inOut" });
-                    }
+                grid.scrollLeft += 1;
+                // Infinite loop reset
+                if (grid.scrollLeft >= (grid.scrollWidth - grid.clientWidth - 10)) {
+                    gsap.to(grid, { scrollLeft: 0, duration: 1.5, ease: "power2.inOut" });
                 }
-            }, 35);
+            }, 25);
         }
 
         db.ref('siteData/upcoming').on('value', (snapshot) => {
