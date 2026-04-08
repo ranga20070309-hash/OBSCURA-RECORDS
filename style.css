@@ -2546,6 +2546,74 @@ textarea.real-input:focus {
     font-size: 0.8rem;
 }
 
+/* --- DYNAMIC MULTI-LINK PORTAL STYLES --- */
+.cyber-mini-btn {
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid var(--accent-blue);
+    color: var(--accent-blue);
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.75rem;
+    margin-right: 0.5rem;
+}
+
+.cyber-mini-btn:hover {
+    background: var(--accent-blue);
+    color: #000;
+    box-shadow: 0 0 15px var(--accent-blue);
+    transform: translateY(-2px);
+}
+
+.dynamic-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.dynamic-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    width: 100%;
+    animation: row-entry 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.dynamic-row .mirror-container {
+    flex-grow: 1;
+}
+
+@keyframes row-entry {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.remove-link-btn {
+    background: rgba(255, 0, 128, 0.1);
+    border: 1px solid #ff0080;
+    color: #ff0080;
+    width: 32px;
+    height: 52px; /* Matches input height */
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.remove-link-btn:hover {
+    background: #ff0080;
+    color: #fff;
+    box-shadow: 0 0 15px rgba(255, 0, 128, 0.5);
+}
+
 
 
 
