@@ -1135,7 +1135,7 @@ const initPortal = () => {
                             </div>
                         </div>
                         <div class="release-info-large">
-                            <span class="track-id">${cleanId} ${badge}</span>
+                            ${(cleanId || badge) ? `<span class="track-id">${cleanId} ${badge}</span>` : ''}
                             <h4>${release.title || 'UNKNOWN'}</h4>
                             <div class="producers-text">Produced by: <span>${release.producers || ''}</span></div>
                             <div class="release-actions">
@@ -1379,9 +1379,10 @@ const initPortal = () => {
                             <img src="${item.image || 'assets/cover.png'}" alt="${item.title}">
                         </div>
                         <div class="release-info-large">
-                            <span class="track-id">${item.id || 'OS-NEW'}</span>
+                            ${item.id ? `<span class="track-id">${item.id}</span>` : ''}
                             <h4>${item.title || 'FUTURE TRACK'}</h4>
                             <div class="producers-text">Produced by: <span>${item.producers || 'UNKNOWN'}</span></div>
+                            ${item.date ? `<div class="upcoming-date-badge"><i class="far fa-calendar-alt"></i> ${item.date}</div>` : ''}
                         </div>
                     </div>
                 `;
