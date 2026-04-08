@@ -502,7 +502,7 @@ const initPortal = () => {
     const contactStatus = document.getElementById('contact-status');
 
     // Using the stabilized reCAPTCHA key
-    const RECAPTCHA_SITE_KEY = "6LeG7roqAAAAAFY1b_pYF0i_6633Ym-6B7s63-m5";
+    const RECAPTCHA_SITE_KEY = "6Ldwaa0sAAAAAPKd4-a3CL7DQVUHjVG-yD4sQeEZ";
 
     if (subForm) {
         const checkBoxes = subForm.querySelectorAll('.cyber-check-input');
