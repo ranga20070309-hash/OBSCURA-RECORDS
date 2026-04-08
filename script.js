@@ -22,6 +22,12 @@ let playbackStartOffset = 0;
 let autoScrollInterval = null;
 const PREVIEW_LIMIT = 30;
 
+// --- EMAILJS CONFIGURATION (Centralized) ---
+const EMAILJS_PUBLIC_KEY = "ZTB9xthISj6SlffAR";
+const EMAILJS_SERVICE_ID = "service_p1220kd";
+const EMAILJS_DEMO_TEMPLATE_ID = "template_wvju7pg";
+const EMAILJS_CONTACT_TEMPLATE_ID = "template_4s6ht2i";
+
 // --- INITIALIZE GSAP CONFIG (Silence Warnings) ---
 gsap.config({ nullTargetWarn: false });
 
@@ -653,27 +659,26 @@ const initPortal = () => {
                 };
 
                 // Initialize EmailJS notifying
-                const SERVICE_ID = "service_ft48ztn";
-                const TEMPLATE_ID = "template_3i1kqpt";
-                const PUBLIC_KEY = "ZTB9xthISj6SlffAR";
-
-                if (typeof emailjs !== 'undefined' && SERVICE_ID !== "service_xxxxxxx") {
-                    emailjs.init(PUBLIC_KEY);
+                if (typeof emailjs !== 'undefined' && EMAILJS_SERVICE_ID !== "service_xxxxxxx") {
+                    emailjs.init(EMAILJS_PUBLIC_KEY);
                     try {
-                        await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+                        const emailResult = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_DEMO_TEMPLATE_ID, {
                             ...labels,
                             val_name: submission.name,
                             val_artist: submission.artist,
                             val_email: submission.email,
                             val_genre: submission.genre,
                             val_link: submission.link,
-                            val_spotify: formattedLinksForEmail, // Sending the labeled list here
+                            val_spotify: formattedLinksForEmail,
                             val_message: submission.message,
                             val_date: submission.date,
                             artist: submission.artist,
                             email: submission.email
                         });
-                    } catch (eErr) { console.warn("Email notify error:", eErr); }
+                        console.log("✅ SYSTEM: Email Notification Dispatched", emailResult.status);
+                    } catch (eErr) { 
+                        console.error("❌ ERROR: Email Transmission Node Failure", eErr); 
+                    }
                 }
 
                 await firebase.database().ref('siteData/submissions/demo').push(submission);
@@ -739,6 +744,22 @@ const initPortal = () => {
                 };
 
                 await firebase.database().ref('siteData/submissions/contact').push(data);
+
+                // --- EMAILJS CONTACT NOTIFICATION ---
+                if (typeof emailjs !== 'undefined' && EMAILJS_SERVICE_ID !== "service_xxxxxxx") {
+                    emailjs.init(EMAILJS_PUBLIC_KEY);
+                    try {
+                        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_CONTACT_TEMPLATE_ID, {
+                            val_name: data.name,
+                            val_email: data.email,
+                            val_message: data.message,
+                            date_log: new Date().toLocaleString()
+                        });
+                        console.log("✅ SYSTEM: Contact Email Sent");
+                    } catch (eErr) { 
+                        console.error("❌ ERROR: Contact Email Failure", eErr); 
+                    }
+                }
 
                 contactForm.style.display = 'none';
                 if (contactStatus) contactStatus.style.display = 'block';
