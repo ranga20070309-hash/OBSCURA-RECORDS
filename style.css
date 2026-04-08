@@ -1846,13 +1846,13 @@ footer {
 .upcoming-grid {
     display: flex;
     overflow-x: auto;
-    scroll-snap-type: x mandatory;
     flex-wrap: nowrap !important;
     gap: 2.5rem;
-    padding: 1rem 2rem 4rem 2rem;
+    padding: 2rem 5%;
     scrollbar-width: none;
     -ms-overflow-style: none;
     min-height: 480px;
+    width: 100%;
 }
 
 .upcoming-grid::-webkit-scrollbar {
@@ -1861,17 +1861,12 @@ footer {
 
 .upcoming-card {
     flex: 0 0 360px;
-    scroll-snap-align: center;
     position: relative;
     border: 1px solid rgba(255, 255, 255, 0.03) !important;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
     background: rgba(255, 255, 255, 0.02);
 }
-
-/* Center items if few */
-.upcoming-card:first-child { margin-left: auto; }
-.upcoming-card:last-child { margin-right: auto; }
 
 @media (max-width: 768px) {
     .upcoming-card {
