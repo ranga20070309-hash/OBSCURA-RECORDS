@@ -816,10 +816,8 @@ const initPortal = () => {
     if (typeof firebase !== 'undefined') {
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        console.log("Firebase initialized successfully targeting Realtime Database.");
 
         const staffItems = document.querySelectorAll('.artist-item[data-discord-id]');
-        console.log(`Found ${staffItems.length} staff members to sync.`);
 
         staffItems.forEach(item => {
             const discordId = item.getAttribute('data-discord-id');
@@ -831,7 +829,6 @@ const initPortal = () => {
             const staffRef = db.ref('staff_status/' + discordId);
             staffRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                console.log(`Syncing update for ${nameLabel} (${discordId}):`, data);
 
                 if (data) {
                     // --- Update Name (Live) ---
