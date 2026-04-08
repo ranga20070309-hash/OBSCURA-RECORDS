@@ -18,7 +18,7 @@ let isYTApiReady = false;
 let currentPlayingBtn = null;
 let audioTimer = null;
 let previewAudio = new Audio();
-let playbackStartOffset = 0; 
+let playbackStartOffset = 0;
 let autoScrollInterval = null;
 const PREVIEW_LIMIT = 30;
 
@@ -41,7 +41,7 @@ const playBleep = (freq = 600, type = 'sine', duration = 0.08) => {
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + duration);
-    } catch(e) {}
+    } catch (e) { }
 };
 
 
@@ -50,19 +50,19 @@ let loaderDismissed = false; // Fixed: lowercase 'false'
 const dismissLoader = () => {
     if (loaderDismissed) return;
     loaderDismissed = true;
-    
+
     const portalLoader = document.getElementById('portal-loader');
     const loaderBar = document.getElementById('loader-bar');
     if (!portalLoader) return;
 
-    gsap.to(loaderBar, { 
-        width: '100%', 
-        duration: 0.2, 
+    gsap.to(loaderBar, {
+        width: '100%',
+        duration: 0.2,
         ease: "power2.out",
         onComplete: () => {
-            gsap.to(portalLoader, { 
-                opacity: 0, 
-                duration: 0.2, 
+            gsap.to(portalLoader, {
+                opacity: 0,
+                duration: 0.2,
                 ease: "power2.inOut",
                 onComplete: () => {
                     portalLoader.style.display = 'none';
@@ -78,7 +78,7 @@ const dismissLoader = () => {
 window.addEventListener('load', dismissLoader);
 setTimeout(dismissLoader, 1500); // Safety Override: Ultra-Snappy 1.5s
 
-window.onYouTubeIframeAPIReady = function() {
+window.onYouTubeIframeAPIReady = function () {
     initYTPlayer();
 };
 
@@ -98,8 +98,8 @@ function initYTPlayer() {
                 'origin': window.location.origin === 'null' ? '*' : window.location.origin
             },
             events: {
-                'onReady': () => { 
-                    isYTApiReady = true; 
+                'onReady': () => {
+                    isYTApiReady = true;
                     console.log('YT API Active');
                     if (ytPlayer.setVolume) ytPlayer.setVolume(100);
                 },
@@ -109,7 +109,7 @@ function initYTPlayer() {
                 }
             }
         });
-    } catch(e) { console.error("YT Setup Fail:", e); }
+    } catch (e) { console.error("YT Setup Fail:", e); }
 }
 
 function onPlayerStateChange(event) {
@@ -136,21 +136,21 @@ const runIgnition = () => {
     });
 
     // 1. Snappy Initial Pause (Faster than before)
-    tl.to({}, { duration: 0.1 }); 
+    tl.to({}, { duration: 0.1 });
 
     // 2. Mysterious Cinematic Reveal
-    tl.fromTo(".splash-logo", 
-        { 
-            opacity: 0, 
+    tl.fromTo(".splash-logo",
+        {
+            opacity: 0,
             scale: 1.05,
-            filter: "brightness(0) blur(6px)", 
-        }, 
-        { 
+            filter: "brightness(0) blur(6px)",
+        },
+        {
             duration: 1.5, // Slower mysterious reveal
-            opacity: 1, 
+            opacity: 1,
             scale: 1.02, // Gentle float forward
-            filter: "brightness(1) blur(0px)", 
-            ease: "sine.inOut", 
+            filter: "brightness(1) blur(0px)",
+            ease: "sine.inOut",
             onStart: () => {
                 const logo = document.querySelector('.splash-logo');
                 if (logo) logo.style.animation = "splashPulse 4s ease-in-out infinite, logoVibrate 3s infinite";
@@ -189,16 +189,16 @@ const runIgnition = () => {
 
     // Realistic Choreographed Sequence with Vibration Start
     tl.set(".splash-logo", { animation: "logoVibrate 0.1s infinite" }); // ACTIVATE VIBRATION
-    
-    addGlitchStep(40, "inset(12% 0 75% 0)", 10, 5);  
+
+    addGlitchStep(40, "inset(12% 0 75% 0)", 10, 5);
     addGlitchStep(60, "inset(45% 0 25% 0)", -15, -8);
-    addGlitchStep(0, "none", 0, 0); 
+    addGlitchStep(0, "none", 0, 0);
     tl.to({}, { duration: 0.04 });
     addGlitchStep(120, "inset(75% 0 5% 0)", 25, 12);
     addGlitchStep(30, "inset(15% 0 65% 0)", -8, -4);
     addGlitchStep(150, "none", 0, 20); // Heavier vibration stage
     addGlitchStep(10, "none", 4, 3);
-    
+
     // Final "Vibrate Line Dissolve" (SUPREME EXIT SEQUENCE)
     tl.to(".splash-logo", {
         duration: 0.1,
@@ -213,7 +213,7 @@ const runIgnition = () => {
         },
         onUpdate: () => {
             if (glitchDisp) glitchDisp.setAttribute('scale', 300); // MAX SHAKE
-            if (glitchRed) glitchRed.setAttribute('dx', 60); 
+            if (glitchRed) glitchRed.setAttribute('dx', 60);
             if (glitchBlue) glitchBlue.setAttribute('dx', -60);
             const logo = document.querySelector('.splash-logo');
             if (logo) logo.style.clipPath = "inset(49% 0 50% 0)"; // Perfect horizontal slice
@@ -249,7 +249,7 @@ const runIgnition = () => {
             }
         }
     });
-    
+
     tl.to(entranceScreen, {
         duration: 0.8,
         opacity: 0,
@@ -309,46 +309,46 @@ function getYouTubeID(url) {
             return { type: 'video', id: u.searchParams.get('v') };
         }
         return null;
-    } catch (e) { 
+    } catch (e) {
         // Fallback for raw IDs
         if (url.length === 11) return { type: 'video', id: url };
-        return null; 
+        return null;
     }
 }
 
 function startUIPlayback(btn, row, img) {
     if (!btn) return;
-    playBleep(800, 'square', 0.1); 
+    playBleep(800, 'square', 0.1);
     btn.innerHTML = '<i class="fas fa-pause"></i>';
     row.classList.add('active-track');
-    
+
     gsap.to(btn, { scale: 1.1, boxShadow: '0 0 20px #00f0ff', repeat: -1, yoyo: true, duration: 0.8 });
     if (img) gsap.to(img, { scale: 1.15, duration: 20, ease: "linear", repeat: -1, yoyo: true });
 }
 
 function stopPlayback(btn) {
     if (!btn) return;
-    playBleep(400, 'sine', 0.1); 
+    playBleep(400, 'sine', 0.1);
     const parentRow = btn.closest('.release-card-large');
     if (!parentRow) return;
     const parentImg = parentRow.querySelector('.release-cover-large img');
     const timeDisplay = parentRow.querySelector('.preview-time');
-    
+
     btn.innerHTML = '<i class="fas fa-play"></i>';
     parentRow.classList.remove('active-track');
     gsap.killTweensOf([btn, parentImg]);
     gsap.to(btn, { scale: 1, boxShadow: 'none' });
     if (parentImg) gsap.to(parentImg, { scale: 1, duration: 0.5 });
-    
+
     // Silence all sources
     previewAudio.pause();
     previewAudio.currentTime = 0;
     playbackStartOffset = 0;
 
     if (ytPlayer && ytPlayer.stopVideo) {
-        try { ytPlayer.stopVideo(); } catch(e){}
+        try { ytPlayer.stopVideo(); } catch (e) { }
     }
-    
+
     if (timeDisplay) {
         timeDisplay.style.display = 'none';
         if (audioTimer) clearInterval(audioTimer);
@@ -364,7 +364,7 @@ const initPortal = () => {
 
     // --- CUSTOM CURSOR LOGIC ---
     const isMobile = window.matchMedia("(hover: none) and (pointer: coarse)").matches || window.innerWidth <= 1024;
-    
+
     if (!isMobile) {
         document.addEventListener('mousemove', (e) => {
             if (cursor && cursorGlow) {
@@ -410,17 +410,17 @@ const initPortal = () => {
             if (modal.id === 'submission-modal') {
                 const modalTitle = modal.querySelector('.section-title');
                 const modalDesc = modal.querySelector('.section-desc');
-                
-                if(modalTitle) {
+
+                if (modalTitle) {
                     const originalTitle = modalTitle.getAttribute('data-original') || modalTitle.textContent;
-                    if(!modalTitle.getAttribute('data-original')) modalTitle.setAttribute('data-original', originalTitle);
+                    if (!modalTitle.getAttribute('data-original')) modalTitle.setAttribute('data-original', originalTitle);
                     modalTitle.textContent = "";
                     typeSignal(modalTitle, originalTitle, 40);
                 }
-                
-                if(modalDesc) {
+
+                if (modalDesc) {
                     const originalDesc = modalDesc.getAttribute('data-original') || modalDesc.textContent;
-                    if(!modalDesc.getAttribute('data-original')) modalDesc.setAttribute('data-original', originalDesc);
+                    if (!modalDesc.getAttribute('data-original')) modalDesc.setAttribute('data-original', originalDesc);
                     modalDesc.textContent = "";
                     setTimeout(() => typeSignal(modalDesc, originalDesc, 15), 500);
                 }
@@ -443,16 +443,16 @@ const initPortal = () => {
         const mirrorInputs = document.querySelectorAll('.mirror-container .real-input');
         mirrorInputs.forEach(input => {
             const display = input.parentElement.querySelector('.mirror-display');
-            if(!display) return;
-            
+            if (!display) return;
+
             input.addEventListener('input', () => {
                 const text = input.value;
                 display.innerHTML = '';
-                
+
                 text.split('').forEach((char) => {
                     const span = document.createElement('span');
                     span.className = 'mirror-glyph';
-                    span.textContent = char === ' ' ? '\u00A0' : char; 
+                    span.textContent = char === ' ' ? '\u00A0' : char;
                     display.appendChild(span);
                 });
             });
@@ -495,7 +495,11 @@ const initPortal = () => {
     // --- SUBMISSION FORM LOGIC (WITH RECAPTCHA v3) ---
     const subForm = document.getElementById('submission-form');
     const subStatus = document.getElementById('submission-status');
-    const RECAPTCHA_SITE_KEY = "6LcFNKgsAAAAAEEdRhYJrwgeWzaRyMmzbgNy3swn";
+    const contactForm = document.getElementById('contact-form');
+    const contactStatus = document.getElementById('contact-status');
+
+    // Using the stabilized reCAPTCHA key
+    const RECAPTCHA_SITE_KEY = "6LeG7roqAAAAAFY1b_pYF0i_6633Ym-6B7s63-m5";
 
     if (subForm) {
         const checkBoxes = subForm.querySelectorAll('.cyber-check-input');
@@ -521,151 +525,127 @@ const initPortal = () => {
         typingInputs.forEach(input => {
             input.addEventListener('keydown', () => {
                 input.classList.add('pulse');
-                // Remove class after 100ms to allow re-trigger on next key
-                setTimeout(() => input.classList.remove('pulse'), 100);
+            });
+            input.addEventListener('keyup', () => {
+                setTimeout(() => input.classList.remove('pulse'), 500);
             });
         });
 
+        // --- DEMO SUBMISSION HANDLER ---
         subForm.addEventListener('submit', async (e) => {
-            const db = firebase.database(); // DEFINING DB SCOPE
             e.preventDefault();
             const btn = subForm.querySelector('button');
             const originalBtnText = btn.textContent;
-            
-            btn.innerHTML = '<i class="fas fa-shield-alt fa-spin"></i> SECURING...';
+            btn.textContent = "VERIFYING SECURITY...";
             btn.disabled = true;
 
             try {
-                // reCAPTCHA v3 Token Generation
-                const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, {action: 'demo_submission'});
+                // Wait for reCAPTCHA v3 token
+                if (typeof grecaptcha === 'undefined') throw new Error("Security Engine Offline.");
+                const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'demo_submission' });
                 if (!token) throw new Error("Security verification failed.");
 
-                // --- SONIC-LOCK DATA CAPTURE (ULTRA RELIABLE) ---
-                const artistInput = document.querySelector('#submission-form input[name="artist"]');
-                const nameInput = document.querySelector('#submission-form input[name="name"]');
-                const emailInput = document.querySelector('#submission-form input[name="email"]');
-                const genreInput = document.querySelector('#submission-form input[name="genre"]');
-                const linkInput = document.querySelector('#submission-form input[name="link"]');
-                const messageInput = document.querySelector('#submission-form textarea[name="message"]');
+                btn.textContent = "SYNCHRONIZING VAULT...";
 
-                const valArtist = artistInput ? artistInput.value : "";
-                const valName = nameInput ? nameInput.value : "";
-                const valEmail = emailInput ? emailInput.value : "";
-                const valGenre = genreInput ? genreInput.value : "";
-                const valLink = linkInput ? linkInput.value : "";
-                const valMessage = messageInput ? messageInput.value : "";
-
-                // --- CAPTURE ALL FORM LABELS (QUESTIONS) ---
-                const labelName = subForm.querySelector('label[data-sync="formLabelName"]')?.textContent || "Real Name";
-                const labelArtist = subForm.querySelector('label[data-sync="formLabelArtist"]')?.textContent || "Artist Name(s)";
-                const labelEmail = subForm.querySelector('label[data-sync="formLabelEmail"]')?.textContent || "Email Address";
-                const labelGenre = subForm.querySelector('label[data-sync="formLabelGenre"]')?.textContent || "Primary Genre";
-                const labelLink = subForm.querySelector('label[data-sync="formLabelLink"]')?.textContent || "Private Link";
-                const labelMessage = subForm.querySelector('label[data-sync="formLabelMessage"]')?.textContent || "Message/Bio";
-
-                // --- CAPTURE RULE TITLES ---
-                const rule1Title = subForm.querySelector('strong[data-sync="formRule1Title"]')?.textContent || "Rule 1";
-                const rule2Title = subForm.querySelector('strong[data-sync="formRule2Title"]')?.textContent || "Rule 2";
+                // Capture data directly from elements
+                const artistInput = subForm.querySelector('input[name="artist"]');
+                const nameInput = subForm.querySelector('input[name="name"]');
+                const emailInput = subForm.querySelector('input[name="email"]');
+                const genreInput = subForm.querySelector('input[name="genre"]');
+                const linkInput = subForm.querySelector('input[name="link"]');
+                const spotifyInput = subForm.querySelector('input[name="spotify"]');
+                const messageInput = subForm.querySelector('textarea[name="message"]');
 
                 const submission = {
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
                     date: new Date().toLocaleString(),
-                    name: valName,
-                    artist: valArtist,
-                    email: valEmail,
-                    genre: valGenre,
-                    link: valLink,
-                    message: valMessage,
-                    rule1: rule1Title,
-                    rule2: rule2Title,
-                    guidelines: "VERIFIED & ACCEPTED",
+                    name: nameInput?.value || "N/A",
+                    artist: artistInput?.value || "N/A",
+                    email: emailInput?.value || "N/A",
+                    genre: genreInput?.value || "N/A",
+                    link: linkInput?.value || "#",
+                    spotify: spotifyInput?.value || "N/A",
+                    message: messageInput?.value || "No additional bio.",
                     recaptcha_token: token
                 };
 
-                // --- EMAIL BROADCAST (EmailJS Integration) ---
-                const SERVICE_ID = "service_ft48ztn"; 
+                const labels = {
+                    LABEL_NAME: subForm.querySelector('label[data-sync="formLabelName"]')?.textContent || "Real Name",
+                    LABEL_ARTIST: subForm.querySelector('label[data-sync="formLabelArtist"]')?.textContent || "Artist Name(s)",
+                    LABEL_EMAIL: subForm.querySelector('label[data-sync="formLabelEmail"]')?.textContent || "Email Address",
+                    LABEL_GENRE: subForm.querySelector('label[data-sync="formLabelGenre"]')?.textContent || "Primary Genre",
+                    LABEL_SPOTIFY: subForm.querySelector('label[data-sync="formLabelSpotify"]')?.textContent || "Spotify Profile",
+                    LABEL_MESSAGE: subForm.querySelector('label[data-sync="formLabelMessage"]')?.textContent || "Message/Bio",
+                    LABEL_DATE: submission.date
+                };
+
+                // Initialize EmailJS notifying
+                const SERVICE_ID = "service_ft48ztn";
                 const TEMPLATE_ID = "template_3i1kqpt";
                 const PUBLIC_KEY = "ZTB9xthISj6SlffAR";
 
-                if (SERVICE_ID !== "service_xxxxxxx") {
+                if (typeof emailjs !== 'undefined' && SERVICE_ID !== "service_xxxxxxx") {
                     emailjs.init(PUBLIC_KEY);
                     try {
                         await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-                            LABEL_NAME: labelName,
-                            LABEL_ARTIST: labelArtist,
-                            LABEL_EMAIL: labelEmail,
-                            LABEL_GENRE: labelGenre,
-                            LABEL_LINK: labelLink,
-                            LABEL_MESSAGE: labelMessage,
-                            LABEL_RULE1: rule1Title,
-                            LABEL_RULE2: rule2Title,
-                            LABEL_DATE: submission.date,
+                            ...labels,
                             val_name: submission.name,
                             val_artist: submission.artist,
                             val_email: submission.email,
                             val_genre: submission.genre,
                             val_link: submission.link,
+                            val_spotify: submission.spotify,
                             val_message: submission.message,
                             val_date: submission.date,
                             artist: submission.artist,
                             email: submission.email
                         });
-                        console.log("SIGNAL BROADCAST SUCCESSFUL");
-                    } catch (err) {
-                        console.warn("Email notify error:", err);
-                    }
+                    } catch (eErr) { console.warn("Email notify error:", eErr); }
                 }
 
-                // Push to Firebase Realtime Database
-                await db.ref('siteData/submissions/demo').push(submission);
-                
+                await firebase.database().ref('siteData/submissions/demo').push(submission);
+
                 subForm.style.display = 'none';
                 if (subStatus) subStatus.style.display = 'block';
-                
+
                 setTimeout(() => {
                     const subModal = document.getElementById('submission-modal');
                     if (subModal) subModal.classList.remove('active');
                     document.body.classList.remove('no-scroll');
                     document.documentElement.classList.remove('no-scroll');
-                    
+
                     setTimeout(() => {
                         subForm.style.display = 'flex';
                         if (subStatus) subStatus.style.display = 'none';
                         subForm.reset();
-                        // --- CLEAR MIRROR DISPLAYS ---
-                        const mirrorDisplays = subForm.querySelectorAll('.mirror-display');
-                        if (mirrorDisplays) mirrorDisplays.forEach(d => d.innerHTML = '');
-                        
+                        subForm.querySelectorAll('.mirror-display').forEach(d => d.innerHTML = '');
                         btn.textContent = originalBtnText;
                         btn.disabled = false;
+                        updateSubmitLock();
                     }, 500);
                 }, 3000);
 
             } catch (err) {
-                console.error("Submission Failure:", err);
-                alert("TRANSMISSION FAILURE: " + err.message);
-                btn.textContent = "TRANSMISSION ERROR";
+                console.error("System Failure:", err);
+                alert("TRANSMISSION ERROR: " + err.message);
+                btn.textContent = originalBtnText;
                 btn.disabled = false;
             }
         });
     }
 
-    // --- CONTACT FORM LOGIC (WITH RECAPTCHA v3) ---
-    const contactForm = document.getElementById('contact-form');
-    const contactStatus = document.getElementById('contact-status');
+    // --- CONTACT FORM HANDLER ---
     if (contactForm) {
         contactForm.addEventListener('submit', async (e) => {
-            const db = firebase.database(); // DEFINING DB SCOPE
             e.preventDefault();
             const btn = contactForm.querySelector('button');
             const originalBtnText = btn.innerHTML;
-            
-            btn.innerHTML = '<i class="fas fa-shield-alt fa-spin"></i> SECURING...';
+            btn.innerHTML = "TRANSMITTING...";
             btn.disabled = true;
 
             try {
-                const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, {action: 'contact_submit'});
-                if (!token) throw new Error("Security verification failed.");
+                if (typeof grecaptcha === 'undefined') throw new Error("Security Engine Offline.");
+                const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'contact_submission' });
 
                 const formData = new FormData(contactForm);
                 const data = {
@@ -676,17 +656,17 @@ const initPortal = () => {
                     recaptcha_token: token
                 };
 
-                await db.ref('siteData/submissions/contact').push(data);
-                
+                await firebase.database().ref('siteData/submissions/contact').push(data);
+
                 contactForm.style.display = 'none';
                 if (contactStatus) contactStatus.style.display = 'block';
-                
+
                 setTimeout(() => {
                     const contactModal = document.getElementById('contact-modal');
                     if (contactModal) contactModal.classList.remove('active');
                     document.body.classList.remove('no-scroll');
                     document.documentElement.classList.remove('no-scroll');
-                    
+
                     setTimeout(() => {
                         contactForm.style.display = 'block';
                         if (contactStatus) contactStatus.style.display = 'none';
@@ -697,6 +677,7 @@ const initPortal = () => {
                 }, 3000);
 
             } catch (err) {
+                console.error("Contact System Failure:", err);
                 alert("TRANSMISSION ERROR: " + err.message);
                 btn.innerHTML = originalBtnText;
                 btn.disabled = false;
@@ -704,16 +685,17 @@ const initPortal = () => {
         });
     }
 
+
     // --- FAQ ACCORDION (DYNAMIC) ---
-    window.bindAccordionListeners = function(containerId) {
+    window.bindAccordionListeners = function (containerId) {
         const container = document.getElementById(containerId);
-        if(!container) return;
+        if (!container) return;
         const faqItems = container.querySelectorAll('.faq-item');
         faqItems.forEach(item => {
             // Remove old listeners to prevent duplicates
             const newItem = item.cloneNode(true);
             item.parentNode.replaceChild(newItem, item);
-            
+
             newItem.addEventListener('click', (e) => {
                 e.stopPropagation();
                 container.querySelectorAll('.faq-item').forEach(other => {
@@ -732,7 +714,7 @@ const initPortal = () => {
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             const target = link.getAttribute('data-target') || link.getAttribute('href');
-            
+
             if (target === 'reload') {
                 window.location.reload();
                 return;
@@ -754,11 +736,11 @@ const initPortal = () => {
 
                 const targetId = target.substring(1);
                 const targetElement = document.getElementById(targetId);
-                
+
                 if (targetElement) {
                     const headerHeight = 80;
                     const targetPosition = targetElement.offsetTop - headerHeight;
-                    
+
                     window.scrollTo({
                         top: targetPosition,
                         behavior: 'smooth'
@@ -844,7 +826,7 @@ const initPortal = () => {
             staffRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 console.log(`Syncing update for ${nameLabel} (${discordId}):`, data);
-                
+
                 if (data) {
                     // --- Update Name (Live) ---
                     if (data.name) {
@@ -854,7 +836,7 @@ const initPortal = () => {
                     const status = (data.status || 'offline').toLowerCase();
                     statusIndicator.textContent = status.toUpperCase();
                     statusIndicator.className = `status-indicator ${status}`;
-                    
+
                     if (data.avatar_url) {
                         avatar.style.backgroundImage = `url(${data.avatar_url})`;
                         avatar.style.backgroundSize = 'cover';
@@ -887,12 +869,12 @@ const initPortal = () => {
                         mStatus.textContent = (data.status || 'OFFLINE').toUpperCase();
                         mStatus.className = `status-indicator ${(data.status || 'offline').toLowerCase()}`;
                         mBio.textContent = data.bio || "Accessing encrypted artist profile... no secondary transmission found.";
-                        
+
                         if (data.avatar_url) {
                             mImg.style.backgroundImage = `url(${data.avatar_url})`;
                             mImg.style.backgroundSize = 'cover';
                         }
-                        
+
                         if (data.decoration_url) {
                             mDecor.src = data.decoration_url;
                             mDecor.style.display = 'block';
@@ -960,7 +942,7 @@ const initPortal = () => {
                 elements.forEach(el => {
                     const key = el.getAttribute('data-sync');
                     const syncTarget = el.getAttribute('data-sync-target') || 'html';
-                    
+
                     if (data[key] !== undefined) {
                         if (syncTarget === 'html') {
                             el.innerHTML = data[key];
@@ -1021,22 +1003,22 @@ const initPortal = () => {
         const releaseSlider = document.querySelector('.releases-slider');
         function renderReleases(releases) {
             if (!releaseSlider) return;
-            releaseSlider.innerHTML = ''; 
-            
+            releaseSlider.innerHTML = '';
+
             releases.forEach(release => {
                 const badge = release.id && release.id.includes('NEW') ? "<span class='badge'>NEW</span>" : "";
                 const cleanId = release.id ? release.id.replace("<span class='badge'>NEW</span>", "").trim() : "";
-                
+
                 // Smart Detector: Check YouTube link field AND Preview Audio field
                 let ytData = getYouTubeID(release.youtube);
                 const previewYT = getYouTubeID(release.preview);
-                
+
                 // If Preview Audio field has a YT link, use THAT instead (it's more specific)
                 if (previewYT) ytData = previewYT;
 
                 const ytIdAttr = ytData ? ytData.id : '';
                 const ytTypeAttr = ytData ? ytData.type : 'video';
-                
+
                 const cardHtml = `
                     <div class="release-card-large glass">
                         <div class="release-cover-large">
@@ -1073,7 +1055,7 @@ const initPortal = () => {
 
         function bindReleaseInteractions() {
             const trackRows = document.querySelectorAll('.release-card-large');
-            currentPlayingBtn = null; 
+            currentPlayingBtn = null;
             if (audioTimer) clearInterval(audioTimer);
 
             trackRows.forEach(row => {
@@ -1142,8 +1124,8 @@ const initPortal = () => {
                                         console.warn("MP3 Blocked:", err);
                                         startUIPlayback(playBtn, row, coverImg);
                                     });
-                                } catch(e) { console.error("MP3 Fail:", e); }
-                            } 
+                                } catch (e) { console.error("MP3 Fail:", e); }
+                            }
                             // PRIORITY 2: YouTube Fallback (Check if youtube field OR preview field has YT link)
                             else if (ytId) {
                                 if (!isYTApiReady || !ytPlayer) initYTPlayer();
@@ -1152,7 +1134,7 @@ const initPortal = () => {
                                     if (ytPlayer && ytPlayer.playVideo) {
                                         ytPlayer.unMute();
                                         ytPlayer.setVolume(100);
-                                        
+
                                         if (ytType === 'playlist') {
                                             ytPlayer.loadPlaylist({
                                                 listType: 'playlist',
@@ -1168,7 +1150,7 @@ const initPortal = () => {
                                         }
                                         ytPlayer.playVideo();
                                     }
-                                } catch(e) { console.warn("YT Delay..."); }
+                                } catch (e) { console.warn("YT Delay..."); }
 
                                 startUIPlayback(playBtn, row, coverImg);
                                 if (timeDisplay) {
@@ -1214,7 +1196,7 @@ const initPortal = () => {
                         if (!isNaN(remaining) && remaining > 0) {
                             const secs = Math.ceil(remaining);
                             display.textContent = `0:${secs.toString().padStart(2, '0')}`;
-                            
+
                             if (remaining <= 0.1) {
                                 stopPlayback(currentPlayingBtn);
                                 currentPlayingBtn = null;
@@ -1226,7 +1208,7 @@ const initPortal = () => {
                     } else {
                         display.textContent = "...";
                     }
-                } catch(e) { console.warn("Timer issue:", e); }
+                } catch (e) { console.warn("Timer issue:", e); }
             }, 200); // Faster update for smoother countdown
         }
 
@@ -1268,7 +1250,7 @@ const initPortal = () => {
             if (!data) {
                 data = [];
             }
-            
+
             if (Array.isArray(data)) {
                 if (data[0] && data[0]._isEmpty) {
                     renderReleases([]);
@@ -1283,7 +1265,7 @@ const initPortal = () => {
         function renderUpcoming(items) {
             if (!upcomingGrid) return;
             upcomingGrid.innerHTML = '';
-            
+
             if (!items || items.length === 0) {
                 upcomingGrid.innerHTML = '<p style="opacity:0.3; font-style:italic; grid-column: 1/-1; text-align:center;">All signals currently decrypted. New transmissions pending.</p>';
                 return;
@@ -1359,28 +1341,28 @@ const initPortal = () => {
         const interactive = e.target.closest('a, button, [role="button"], .release-card, .faq-item, .nav-item, .social-icon');
         if (interactive) {
             // Randomize pitch slightly for a more "organic tech" feel
-            const freq = 600 + (Math.random() * 400); 
+            const freq = 600 + (Math.random() * 400);
             playBleep(freq, 'sine', 0.05);
         }
     });
 
     function startAutoScroll() {
         if (!releaseSlider) return;
-            if (autoScrollInterval) clearInterval(autoScrollInterval);
-            
-            autoScrollInterval = setInterval(() => {
-                // Only scroll if nothing is currently playing
-                if (!currentPlayingBtn) {
-                    releaseSlider.scrollLeft += 1;
-                    // Infinite loop reset
-                    if (releaseSlider.scrollLeft >= (releaseSlider.scrollWidth - releaseSlider.clientWidth - 5)) {
-                        gsap.to(releaseSlider, { scrollLeft: 0, duration: 1.5, ease: "power2.inOut" });
-                    }
-                }
-            }, 40); 
-        }
+        if (autoScrollInterval) clearInterval(autoScrollInterval);
 
-        // --- ADVANCED GALACTIC PARTICLES & INTERACTION ---
+        autoScrollInterval = setInterval(() => {
+            // Only scroll if nothing is currently playing
+            if (!currentPlayingBtn) {
+                releaseSlider.scrollLeft += 1;
+                // Infinite loop reset
+                if (releaseSlider.scrollLeft >= (releaseSlider.scrollWidth - releaseSlider.clientWidth - 5)) {
+                    gsap.to(releaseSlider, { scrollLeft: 0, duration: 1.5, ease: "power2.inOut" });
+                }
+            }
+        }, 40);
+    }
+
+    // --- ADVANCED GALACTIC PARTICLES & INTERACTION ---
     const pCanvas = document.getElementById('particle-bg');
     if (pCanvas) {
         const pCtx = pCanvas.getContext('2d');
@@ -1512,7 +1494,7 @@ const initPortal = () => {
 };
 
 /* --- DYNAMIC VISITOR CONNECTION NODE ENGINE --- */
-(function() {
+(function () {
     async function updateVisitorNode() {
         const node = document.getElementById("visitor-connection-node");
         if (!node) return;
@@ -1524,7 +1506,7 @@ const initPortal = () => {
                 const loc = ((data.city || "UNKNOWN") + ", " + (data.country_name || "UNKNOWN")).toUpperCase();
                 node.innerHTML = "CONNECTION FREQUENCY: " + data.ip + " (" + loc + ") | STATUS: ENCRYPTED ACCESS";
             }
-        } catch(e) { 
+        } catch (e) {
             node.innerHTML = "CONNECTION FREQUENCY: SECURE TRANSMISSION | STATUS: ENCRYPTED ACCESS";
         }
     }
@@ -1535,14 +1517,14 @@ const initPortal = () => {
 // --- KERNEL SECURITY & DATA FLOW UTILITY (VOID v3.0) ---
 const initKernelSecurity = () => {
     console.log("INITIALIZING KERNEL SECURITY ARCHITECTURE...");
-    
+
     const kmIntegrity = document.getElementById('km-integrity');
     const kmNetwork = document.getElementById('km-network');
     const kmShield = document.getElementById('km-shield');
     const canvas = document.getElementById('data-pulse-canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    
+
     // 1. Data Flow Animation Logic
     let flowLines = [];
     const resize = () => {
@@ -1550,7 +1532,7 @@ const initKernelSecurity = () => {
         canvas.height = window.innerHeight;
         flowLines = [];
         const lineCount = Math.floor(window.innerWidth / 150);
-        for(let i=0; i<lineCount; i++) {
+        for (let i = 0; i < lineCount; i++) {
             flowLines.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
@@ -1571,7 +1553,7 @@ const initKernelSecurity = () => {
         flowLines.forEach(l => {
             l.y -= l.speed;
             if (l.y < -l.len) l.y = canvas.height;
-            
+
             // Draw baseline line
             ctx.beginPath();
             ctx.moveTo(l.x, l.y);
@@ -1582,7 +1564,7 @@ const initKernelSecurity = () => {
             l.pulsePos += 1;
             if (l.pulsePos > 100) l.pulsePos = 0;
             const pulseY = l.y + (l.len * (l.pulsePos / 100));
-            
+
             ctx.shadowBlur = 0; // REMOVED AGGRESSIVE GLOW
             ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'; // SUBTLE WHITE
             ctx.fillRect(l.x - 1, pulseY, 2, 8);
@@ -1598,7 +1580,7 @@ const initKernelSecurity = () => {
             const lat = Math.floor(Math.random() * 30) + 10;
             kmNetwork.textContent = `${lat}MS / ${navigator.onLine ? 'ONLINE' : 'OFFLINE'}`;
         }
-        
+
         // DOM Integrity Audit (Scanning for manual changes)
         if (kmIntegrity) {
             kmIntegrity.textContent = "VERIFIED";
@@ -1673,13 +1655,13 @@ setTimeout(() => {
 if (typeof firebase !== 'undefined') {
     const connectionNode = document.getElementById('visitor-connection-node');
     const db = firebase.database();
-    
+
     // Push the current session to active connections
     const connRef = db.ref('siteData/activeConnections').push();
-    
+
     // Auto-remove record on browser close
     connRef.onDisconnect().remove();
-    
+
     // Set initial connection ping
     connRef.set({
         pingAt: firebase.database.ServerValue.TIMESTAMP
