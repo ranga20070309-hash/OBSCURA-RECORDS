@@ -234,34 +234,34 @@
 
                 <div class="form-grid">
                     <div class="input-group">
-                        <label>SITE LOGO TITLE (HTML Allowed)</label>
+                        <label><i class="fas fa-heading"></i> SITE LOGO TITLE</label>
+                        <p class="field-desc">The primary branding text displayed in the header navigation. (HTML tags like &lt;span&gt; allowed for accents)</p>
                         <input type="text" id="site_siteTitle" value="OBSCURA <span>RECORD</span>">
                     </div>
                     <div class="input-group">
-                        <label>HERO TITLE (HTML Allowed)</label>
-                        <input type="text" id="site_heroTitle"
-                            value="WELCOME TO <span class='accent'>OBSCURA RECORD</span>">
+                        <label><i class="fas fa-bolt"></i> HERO TITLE</label>
+                        <p class="field-desc">The main headline seen transitionally upon portal entry.</p>
+                        <input type="text" id="site_heroTitle" value="WELCOME TO <span class='accent'>OBSCURA RECORD</span>">
                     </div>
                     <div class="input-group full">
-                        <label>HERO DESCRIPTION</label>
-                        <textarea
-                            id="site_heroDesc">OBSCURA RECORD is an independent music label focused on artist development, music production, and official releases. Our mission is to support talented artists and create high-quality music through collaboration and innovation.</textarea>
+                        <label><i class="fas fa-align-left"></i> HERO DESCRIPTION</label>
+                        <p class="field-desc">A professional welcoming transmission describing the label's core mission.</p>
+                        <textarea id="site_heroDesc">OBSCURA RECORD is an independent music label focused on artist development...</textarea>
                     </div>
                     <div class="input-group">
-                        <label>ARCHIVE TITLE (HTML Allowed)</label>
+                        <label><i class="fas fa-archive"></i> ARCHIVE TITLE</label>
+                        <p class="field-desc">Header text for the main release catalog section.</p>
                         <input type="text" id="site_archiveTitle" value="LABEL <span class='accent'>RELEASES</span>">
                     </div>
                     <div class="input-group full">
-                        <label>ARCHIVE DESCRIPTION</label>
-                        <input type="text" id="site_archiveDesc"
-                            value="THESE ARE THE RELEASES THAT IS PUBLISHED THROUGH OUR LABEL">
+                        <label><i class="fas fa-info-circle"></i> ARCHIVE DESCRIPTION</label>
+                        <p class="field-desc">Supporting subtext for the release archive, outlining the frequency depth.</p>
+                        <input type="text" id="site_archiveDesc" value="THESE ARE THE RELEASES THAT IS PUBLISHED THROUGH OUR LABEL">
                     </div>
-                    <div class="input-group full"
-                        style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem; margin-top: 2rem;">
-                        <label><i class="fas fa-key"></i> ADMIN ACCESS KEY (REPROGRAMMABLE)</label>
+                    <div class="input-group full security-box">
+                        <label><i class="fas fa-key"></i> ADMINISTRATIVE KERNEL PASS</label>
+                        <p class="field-desc">CRITICAL: The master passphrase required to unlock this dashboard. Update with caution.</p>
                         <input type="text" id="security_rootKey" value="ORC ADMINS PASS 2026">
-                        <p style="font-size:0.6rem; color:var(--text-secret); margin-top:0.3rem;">Changing this will
-                            immediately update the portal's firewall passphrase.</p>
                     </div>
                 </div>
 
@@ -277,53 +277,24 @@
                     <p>Modify header dropdowns, social grids, and routing links.</p>
                 </div>
 
-                <h3
-                    style="color: #00f0ff; font-size: 0.9rem; margin-bottom: 1rem; font-family: 'Syncopate', sans-serif;">
-                    NAV TEXT</h3>
+                <h3 class="section-subheader">NAVIGATION COMMANDS</h3>
                 <div class="form-grid">
-                    <div class="input-group"><label>HOME</label><input type="text" id="site_navHome" value="HOME"></div>
-                    <div class="input-group"><label>RELEASES</label><input type="text" id="site_navReleases"
-                            value="RELEASES"></div>
-                    <div class="input-group"><label>STAFF</label><input type="text" id="site_navStaff" value="STAFF">
-                    </div>
-                    <div class="input-group"><label>CONTACT</label><input type="text" id="site_navContact"
-                            value="CONTACT"></div>
-                    <div class="input-group"><label>MENU BUTTON</label><input type="text" id="site_navMenuBtn"
-                            value="MENU"></div>
+                    <div class="input-group"><label>HOME TXT</label><p class="field-desc">Text for the Home link.</p><input type="text" id="site_navHome" value="HOME"></div>
+                    <div class="input-group"><label>RELEASES TXT</label><p class="field-desc">Text for Archive link.</p><input type="text" id="site_navReleases" value="RELEASES"></div>
+                    <div class="input-group"><label>STAFF TXT</label><p class="field-desc">Text for Personnel link.</p><input type="text" id="site_navStaff" value="STAFF"></div>
+                    <div class="input-group"><label>CONTACT TXT</label><p class="field-desc">Text for Contact link.</p><input type="text" id="site_navContact" value="CONTACT"></div>
+                    <div class="input-group"><label>MENU ACTUATOR</label><p class="field-desc">Label for the mobile menu toggle.</p><input type="text" id="site_navMenuBtn" value="MENU"></div>
                 </div>
 
-                <h3
-                    style="color: #00f0ff; font-size: 0.9rem; margin: 2rem 0 1rem; font-family: 'Syncopate', sans-serif;">
-                    SOCIAL URLS & CONTACT LABELS</h3>
+                <h3 class="section-subheader">SOCIAL FREQUENCIES & SOCIAL GRID</h3>
                 <div class="form-grid">
-                    <div class="input-group full"><label>Contact Title (HTML)</label><input type="text"
-                            id="site_contactTitle" value="CONNECT WITH <span class='accent'>US</span>"></div>
-                    <div class="input-group full"><label>Contact Subtext</label><input type="text" id="site_contactDesc"
-                            value="Follow our transmissions across the digital landscape."></div>
+                    <div class="input-group full"><label>Social Header (HTML)</label><p class="field-desc">The headline displayed above the social icon grid.</p><input type="text" id="site_contactTitle" value="CONNECT WITH <span class='accent'>US</span>"></div>
+                    <div class="input-group full"><label>Social Directive Subtext</label><p class="field-desc">Supporting directive text below the social header.</p><input type="text" id="site_contactDesc" value="Follow our transmissions across the digital landscape."></div>
 
-                    <div class="input-group"><label>Instagram URL</label><input type="text" id="site_socialInstaUrl"
-                            value="https://www.instagram.com/recordsobscura?igsh=MXFvdzFvOWg2azBmdw=="></div>
-                    <div class="input-group"><label>YouTube URL</label><input type="text" id="site_socialYoutubeUrl"
-                            value="https://www.youtube.com/channel/UC0A5L7DUgls-AkYaQ4ZwxhA"></div>
-                    <div class="input-group"><label>Discord URL</label><input type="text" id="site_socialDiscordUrl"
-                            value="https://discord.gg/E3Sn72cpBR"></div>
-                    <div class="input-group"><label>TikTok URL</label><input type="text" id="site_socialTiktokUrl"
-                            value="https://www.tiktok.com/@obscura.records"></div>
-                    <div class="input-group"><label>Spotify URL</label><input type="text" id="site_socialSpotifyUrl"
-                            value="#"></div>
-                    <div class="input-group"><label>E-mail Address</label><input type="text" id="site_socialEmailUrl"
-                            value="info@obscurarecords.com"></div>
-
-                    <div class="input-group"><label>Instagram Label</label><input type="text" id="site_socialInstaText"
-                            value="INSTAGRAM"></div>
-                    <div class="input-group"><label>YouTube Label</label><input type="text" id="site_socialYoutubeText"
-                            value="YOUTUBE"></div>
-                    <div class="input-group"><label>Discord Label</label><input type="text" id="site_socialDiscordText"
-                            value="DISCORD"></div>
-                    <div class="input-group"><label>TikTok Label</label><input type="text" id="site_socialTiktokText"
-                            value="TIKTOK"></div>
-                    <div class="input-group"><label>Email Label</label><input type="text" id="site_socialEmailText"
-                            value="DIRECT EMAIL"></div>
+                    <div class="input-group"><label>Instagram URL</label><p class="field-desc">Full link to IG profile.</p><input type="text" id="site_socialInstaUrl" value="..."></div>
+                    <div class="input-group"><label>YouTube URL</label><p class="field-desc">Full link to YT channel.</p><input type="text" id="site_socialYoutubeUrl" value="..."></div>
+                    <div class="input-group"><label>Discord URL</label><p class="field-desc">Full link to Discord server.</p><input type="text" id="site_socialDiscordUrl" value="..."></div>
+                    <div class="input-group"><label>TikTok URL</label><p class="field-desc">Full link to TikTok profile.</p><input type="text" id="site_socialTiktokUrl" value="..."></div>
                 </div>
 
                 <h3
@@ -355,25 +326,14 @@
                     <p>Modify popup content and dynamic accordion answers.</p>
                 </div>
 
-                <h3
-                    style="color: #00f0ff; font-size: 0.9rem; margin-bottom: 1rem; font-family: 'Syncopate', sans-serif;">
-                    POPUP TITLES & DESCRIPTIONS</h3>
+                <h3 class="section-subheader">MODAL HEADERS & CORE SUBTEXT</h3>
                 <div class="form-grid">
-                    <div class="input-group"><label>FAQ Modal Title</label><input type="text" id="site_modalFaqTitle"
-                            value="FREQUENCY ASKED QUESTIONS"></div>
-                    <div class="input-group"><label>Privacy Modal Title</label><input type="text"
-                            id="site_modalPrivacyTitle" value="PRIVACY POLICY"></div>
-                    <div class="input-group full"><label>Contact Modal Subtext</label><textarea
-                            id="site_contactModalSubtext">For partnerships, general questions, or portal feedback, reach out via the channels above.</textarea>
-                    </div>
-
-                    <div class="input-group full"><label>Demo Description (HTML)</label><textarea
-                            id="site_demoDesc">We are looking for the next evolution of sound. If your music pushes the boundaries of Funk, Phonk, or Futuristic Electronic music, our portal is open for your transmissions.</textarea>
-                    </div>
-                    <div class="input-group"><label>Demo Discord Subtext</label><input type="text"
-                            id="site_demoDiscordSub" value="Faster review & community vibes."></div>
-                    <div class="input-group"><label>Demo Email Subtext</label><input type="text" id="site_demoEmailSub"
-                            value="artists@obscurarecord.com"></div>
+                    <div class="input-group"><label>FAQ Modal Title</label><p class="field-desc">Title displayed at the top of the FAQ popup.</p><input type="text" id="site_modalFaqTitle" value="..."></div>
+                    <div class="input-group"><label>Privacy Modal Title</label><p class="field-desc">Title for the legal/privacy policy popup.</p><input type="text" id="site_modalPrivacyTitle" value="..."></div>
+                    <div class="input-group full"><label>Contact Modal Subtext</label><p class="field-desc">Instructional text displayed within the contact modal.</p><textarea id="site_contactModalSubtext">...</textarea></div>
+                    <div class="input-group full"><label>Demo Requirements Description</label><p class="field-desc">A detailed brief for artists outlining what the label is looking for.</p><textarea id="site_demoDesc">...</textarea></div>
+                    <div class="input-group"><label>Demo Discord Sub</label><p class="field-desc">Small subtext below the Discord demo button.</p><input type="text" id="site_demoDiscordSub" value="..."></div>
+                    <div class="input-group"><label>Demo Email Sub</label><p class="field-desc">Small subtext below the Email demo button.</p><input type="text" id="site_demoEmailSub" value="..."></div>
                 </div>
 
                 <h3
@@ -588,17 +548,14 @@
                     <p>Manage cards with future release signals (No streaming links required).</p>
                 </div>
 
-                <div class="form-grid"
-                    style="margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2rem;">
+                <div class="form-grid info-block">
                     <div class="input-group">
-                        <label>CATEGORY VISIBILITY</label>
-                        <select id="site_showUpcoming"
-                            style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem; border-radius: 4px; font-family: 'Inter', sans-serif;">
+                        <label>UPCOMING FREQUENCY VISIBILITY</label>
+                        <p class="field-desc">Master switch to toggle the visibility of the entire Upcoming Releases section from the public portal.</p>
+                        <select id="site_showUpcoming">
                             <option value="Visible">Visible</option>
                             <option value="Hidden">Hidden</option>
                         </select>
-                        <p style="font-size:0.6rem; color:var(--text-secondary); margin-top:0.3rem;">Total override:
-                            Hide the entire "Upcoming Releases" section from the portal.</p>
                     </div>
                 </div>
 
