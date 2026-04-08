@@ -1378,7 +1378,7 @@ const initPortal = () => {
                     <div class="release-card-large glass upcoming-card">
                         <div class="upcoming-status-badge">COMING SOON</div>
                         <div class="release-cover-large">
-                            <img src="${item.image || 'assets/cover.png'}" alt="${item.title}">
+                            <img src="${item.image || 'assets/cover.png'}" alt="${item.title}" onerror="this.src='assets/cover.png'">
                         </div>
                         <div class="release-info-large">
                             ${item.id ? `<span class="track-id">${item.id}</span>` : ''}
