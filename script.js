@@ -540,10 +540,13 @@ const initPortal = () => {
             btn.disabled = true;
 
             try {
-                // Wait for reCAPTCHA v3 token
-                if (typeof grecaptcha === 'undefined') throw new Error("Security Engine Offline.");
-                const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'demo_submission' });
-                if (!token) throw new Error("Security verification failed.");
+                // Bypass reCAPTCHA on local file transmission to prevent protocol blockers
+                let token = "LOCAL_TRANSMISSION_BYPASS";
+                if (window.location.protocol !== 'file:') {
+                    if (typeof grecaptcha === 'undefined') throw new Error("Security Engine Offline.");
+                    token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'demo_submission' });
+                    if (!token) throw new Error("Security verification failed.");
+                }
 
                 btn.textContent = "SYNCHRONIZING VAULT...";
 
