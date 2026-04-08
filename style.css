@@ -1836,28 +1836,48 @@ footer {
     border-radius: 5px;
 }
 
-/* Upcoming Releases Grid */
+/* Upcoming Releases Slider (Updated for Horizontal) */
 .upcoming-archive {
-    max-width: 1400px;
+    max-width: 100%;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 10vh 0 5vh 0;
 }
 
 .upcoming-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    flex-wrap: nowrap !important;
     gap: 2.5rem;
-    margin-top: 2rem;
+    padding: 1rem 2rem 4rem 2rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+    min-height: 480px;
 }
 
-/* Specific styling for 'Coming Soon' variants */
+.upcoming-grid::-webkit-scrollbar {
+    display: none;
+}
+
 .upcoming-card {
+    flex: 0 0 360px;
+    scroll-snap-align: center;
     position: relative;
-    /* Fixed: Prevents badge from flying out */
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.03) !important;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
     background: rgba(255, 255, 255, 0.02);
+}
+
+/* Center items if few */
+.upcoming-card:first-child { margin-left: auto; }
+.upcoming-card:last-child { margin-right: auto; }
+
+@media (max-width: 768px) {
+    .upcoming-card {
+        flex: 0 0 280px;
+    }
 }
 
 .upcoming-card:hover {
