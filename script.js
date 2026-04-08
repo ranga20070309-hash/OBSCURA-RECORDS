@@ -1391,8 +1391,11 @@ const initPortal = () => {
                 upcomingGrid.insertAdjacentHTML('beforeend', cardHtml);
             });
 
-            bindUpcomingControls();
-            startUpcomingAutoScroll();
+            // Smooth Initial state
+            setTimeout(() => {
+                bindUpcomingControls();
+                startUpcomingAutoScroll();
+            }, 100);
         }
 
         function bindUpcomingControls() {
@@ -1402,15 +1405,23 @@ const initPortal = () => {
                 btnPrev.onclick = () => {
                     const grid = document.getElementById('upcoming-grid');
                     if (grid) {
-                        gsap.to(grid, { scrollLeft: grid.scrollLeft - 390, duration: 0.8, ease: "power2.out" });
-                        startUpcomingAutoScroll();
+                        gsap.to(grid, { scrollLeft: grid.scrollLeft - 400, duration: 0.5, ease: "power2.out" });
+                        // Brief pause auto-scroll on manual interaction
+                        if (upcomingAutoScroll) {
+                            clearInterval(upcomingAutoScroll);
+                            setTimeout(startUpcomingAutoScroll, 2000);
+                        }
                     }
                 };
                 btnNext.onclick = () => {
                     const grid = document.getElementById('upcoming-grid');
                     if (grid) {
-                        gsap.to(grid, { scrollLeft: grid.scrollLeft + 390, duration: 0.8, ease: "power2.out" });
-                        startUpcomingAutoScroll();
+                        gsap.to(grid, { scrollLeft: grid.scrollLeft + 400, duration: 0.5, ease: "power2.out" });
+                        // Brief pause auto-scroll on manual interaction
+                        if (upcomingAutoScroll) {
+                            clearInterval(upcomingAutoScroll);
+                            setTimeout(startUpcomingAutoScroll, 2000);
+                        }
                     }
                 };
             }
@@ -1421,13 +1432,20 @@ const initPortal = () => {
             const grid = document.getElementById('upcoming-grid');
             if (!grid) return;
 
+            // Center if few items, scroll if many
+            if (grid.scrollWidth <= grid.clientWidth + 10) {
+                grid.style.justifyContent = 'center';
+                return;
+            } else {
+                grid.style.justifyContent = 'flex-start';
+            }
+
             upcomingAutoScroll = setInterval(() => {
                 grid.scrollLeft += 1;
-                // Infinite loop reset
-                if (grid.scrollLeft >= (grid.scrollWidth - grid.clientWidth - 10)) {
-                    gsap.to(grid, { scrollLeft: 0, duration: 1.5, ease: "power2.inOut" });
+                if (grid.scrollLeft >= (grid.scrollWidth - grid.clientWidth - 1)) {
+                    grid.scrollLeft = 0; 
                 }
-            }, 25);
+            }, 30);
         }
 
         db.ref('siteData/upcoming').on('value', (snapshot) => {
