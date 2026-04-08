@@ -99,6 +99,8 @@ navBtns.forEach(btn => {
             loadSubmissions();
         } else if (target === 'releases-panel') {
             loadReleases();
+        } else if (target === 'upcoming-panel') {
+            loadUpcoming();
         }
     });
 });
@@ -116,15 +118,32 @@ function showSaveMsg(id) {
 const mobileBlockOverlay = document.getElementById('mobile-block-overlay');
 
 function checkDevice() {
-    if (window.innerWidth < 1024) {
+    const isSmall = window.innerWidth < 900; // Optimized for high-DPI scaled desktops
+
+    const wrapper = document.querySelector('.admin-wrapper');
+    const login = document.getElementById('login-overlay');
+
+    if (isSmall) {
         if (mobileBlockOverlay) {
             mobileBlockOverlay.style.display = 'flex';
-            initMobileVibe(); // Start secondary engine
+            initMobileVibe(); 
         }
+        if (wrapper) wrapper.style.display = 'none';
+        if (login) login.style.display = 'none';
         document.body.style.overflow = 'hidden';
     } else {
         if (mobileBlockOverlay) mobileBlockOverlay.style.display = 'none';
         document.body.style.overflow = 'auto';
+        
+        // RESTORATION LOGIC: Re-show dashboard based on auth state if it was hidden
+        const isAuth = sessionStorage.getItem('rootAuth') === 'granted' || firebase.auth().currentUser;
+        if (isAuth) {
+            if (wrapper) wrapper.style.display = 'flex';
+            if (login) login.style.display = 'none'; // HIDE LOGIN if authorized
+        } else {
+            if (login) login.style.display = 'flex';
+            if (wrapper) wrapper.style.display = 'none';
+        }
     }
 }
 
@@ -206,9 +225,14 @@ function initializeSecurity() {
 }
 
 function unlockDashboard() {
+    sessionStorage.setItem('rootAuth', 'granted');
+    
+    if (window.innerWidth < 1024) {
+        checkDevice();
+        return;
+    }
     if (loginOverlay) loginOverlay.style.display = 'none';
     if (adminWrapper) adminWrapper.style.display = 'flex';
-    sessionStorage.setItem('rootAuth', 'granted');
 
     // DELAYED DATA GATING (Fully Isolated for Stability)
     try { loadGlobals(); } catch (e) { console.error("Globals fail:", e); }
@@ -470,8 +494,8 @@ document.getElementById('save-modals-text').addEventListener('click', () => save
 if (document.getElementById('save-modals-all-data')) {
     document.getElementById('save-modals-all-data').addEventListener('click', () => saveGlobals('save-msg-modals-all-data'));
 }
-if (document.getElementById('save-staff')) {
-    document.getElementById('save-staff').addEventListener('click', saveStaff);
+if (document.getElementById('save-staff-main')) {
+    document.getElementById('save-staff-main').addEventListener('click', saveStaff);
 }
 
 // --- RELEASES PANEL ---
@@ -485,61 +509,136 @@ function createReleaseEditor(release, index) {
     div.className = 'release-editor-item';
     div.innerHTML = `
         <button class="delete-btn" onclick="removeRelease(${index})"><i class="fas fa-trash"></i></button>
-        <div class="form-grid">
-            <div class="input-group">
-                <label>Track ID / Badge</label>
-                <p class="field-desc">The catalog identifier. (e.g. OS-992 <span class='badge'>NEW</span>)</p>
-                <input type="text" class="r-id" value="${release.id || ''}">
+        <div class="editor-main-layout">
+            <div class="editor-controls">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Track ID / Badge</label>
+                        <p class="field-desc">The catalog identifier. (e.g. OS-992 <span class='badge'>NEW</span>)</p>
+                        <input type="text" class="r-id" value="${release.id || ''}" oninput="syncLiveReleaseCard(${index})">
+                    </div>
+                    <div class="input-group">
+                        <label>Title</label>
+                        <p class="field-desc">Official track name as displayed in the transmission grid.</p>
+                        <input type="text" class="r-title" value="${release.title || ''}" oninput="syncLiveReleaseCard(${index})">
+                    </div>
+                    <div class="input-group">
+                        <label>Producers</label>
+                        <p class="field-desc">Artist or entity responsible for the audio frequency.</p>
+                        <input type="text" class="r-producers" value="${release.producers || ''}" oninput="syncLiveReleaseCard(${index})">
+                    </div>
+                    <div class="input-group">
+                        <label>Release Type</label>
+                        <p class="field-desc">The binary classification of the release (SINGLE/EP/ALBUM).</p>
+                        <input type="text" class="r-type" value="${release.type || 'SINGLE'}" oninput="syncLiveReleaseCard(${index})">
+                    </div>
+                    <div class="input-group full">
+                        <label>Cover Image Source</label>
+                        <p class="field-desc">Direct asset link for the frequency visualization.</p>
+                        <div style="display: flex; gap: 0.5rem; align-items: center; position: relative;">
+                            <input type="text" class="r-image" value="${release.image || 'assets/cover.png'}" id="input-r-${index}" oninput="updateLivePreview(this, 'prev-r-${index}'); syncLiveReleaseCard(${index})">
+                            <button class="action-btn-mini" onclick="triggerReleaseUpload(${index})"><i class="fas fa-folder-open"></i></button>
+                            <button class="action-btn-mini" onclick="autoDetectRelease(${index})"><i class="fas fa-wand-magic-sparkles"></i></button>
+                            <div id="prev-r-${index}" class="floating-preview"></div>
+                            <input type="file" id="file-r-${index}" style="display:none" onchange="handleReleaseFile(this, ${index})" accept="image/*">
+                        </div>
+                    </div>
+                    <div class="input-group full" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem;">
+                        <div><label>Spotify Link</label><p class="field-desc">Direct route.</p><input type="text" class="r-spotify" value="${release.spotify || '#'}" oninput="autoDetectRelease(${index}); syncLiveReleaseCard(${index})"></div>
+                        <div><label>Apple Link</label><p class="field-desc">Direct route.</p><input type="text" class="r-apple" value="${release.apple || '#'}"></div>
+                        <div><label>YouTube Link</label><p class="field-desc">Direct route.</p><input type="text" class="r-youtube" value="${release.youtube || '#'}" oninput="autoDetectRelease(${index}); syncLiveReleaseCard(${index})"></div>
+                        <div><label>Preview Audio</label><p class="field-desc">Snippet URL.</p><input type="text" class="r-preview" value="${release.preview || '#'}"></div>
+                    </div>
+                </div>
             </div>
-            <div class="input-group">
-                <label>Title</label>
-                <p class="field-desc">Official track name as displayed in the transmission grid.</p>
-                <input type="text" class="r-title" value="${release.title || ''}">
-            </div>
-            <div class="input-group">
-                <label>Producers</label>
-                <p class="field-desc">Artist or entity responsible for the audio frequency.</p>
-                <input type="text" class="r-producers" value="${release.producers || ''}">
-            </div>
-            <div class="input-group">
-                <label>Release Type</label>
-                <p class="field-desc">The binary classification of the release (SINGLE/EP/ALBUM).</p>
-                <input type="text" class="r-type" value="${release.type || 'SINGLE'}">
-            </div>
-            <div class="input-group">
-                <label>Cover Image Source</label>
-                <p class="field-desc">Direct asset link for the frequency visualization.</p>
-                <input type="text" class="r-image" value="${release.image || 'assets/cover.png'}">
-            </div>
-            <div class="input-group full" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
-                <div><label>Spotify Link</label><p class="field-desc">Direct route to Spotify URI.</p><input type="text" class="r-spotify" value="${release.spotify || '#'}"></div>
-                <div><label>Apple Link</label><p class="field-desc">Direct route to Apple Music.</p><input type="text" class="r-apple" value="${release.apple || '#'}"></div>
-                <div><label>YouTube Link</label><p class="field-desc">Direct route to YT Video.</p><input type="text" class="r-youtube" value="${release.youtube || '#'}"></div>
-            </div>
-            <div class="input-group full">
-                <label>Preview Audio URL</label>
-                <p class="field-desc">Secure direct MP3 link for the portal's audio player stream.</p>
-                <input type="text" class="r-preview" value="${release.preview || ''}" placeholder="MP3 Link...">
+            <div class="card-preview-zone">
+                <label class="preview-label">LIVE PORTAL PREVIEW</label>
+                <div id="live-release-card-${index}" class="admin-live-mock">
+                    <!-- Preview card will be injected here -->
+                </div>
             </div>
         </div>
     `;
     return div;
 }
 
-function renderReleases() {
-    const releasesContainer = document.getElementById('releases-container');
-    if (!releasesContainer) return;
+window.triggerReleaseUpload = function(index) {
+    document.getElementById(`file-r-${index}`).click();
+};
 
-    releasesContainer.innerHTML = '';
+window.handleReleaseFile = function(input, index) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const rInput = document.getElementById(`input-r-${index}`);
+            rInput.value = e.target.result;
+            updateLivePreview(rInput, `prev-r-${index}`);
+            syncLiveReleaseCard(index);
+            showToast("LOCAL COVER ASSET ENCODED.");
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+};
+
+window.autoDetectRelease = function(index) {
+    const editor = document.querySelectorAll('#releases-container .release-editor-item')[index];
+    if (!editor) return;
+
+    const imgInput = editor.querySelector('.r-image');
+    const spInput = editor.querySelector('.r-spotify');
+    const ytInput = editor.querySelector('.r-youtube');
+
+    // Priority: 1. Image field itself, 2. Spotify field, 3. YouTube field
+    let url = imgInput.value;
+    if (url === 'assets/cover.png' || url === '' || url === '#') {
+        url = spInput.value !== '#' ? spInput.value : ytInput.value;
+    }
+
+    if (url && (url.includes('youtube.com') || url.includes('youtu.be'))) {
+        const id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop();
+        const detectedImg = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+        imgInput.value = detectedImg;
+        updateLivePreview(imgInput, `prev-r-${index}`);
+        syncLiveReleaseCard(index);
+        showToast("YT COVER CAPTURED.");
+    } else if (url && url.includes('spotify.com')) {
+        fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.thumbnail_url) {
+                    imgInput.value = data.thumbnail_url;
+                    updateLivePreview(imgInput, `prev-r-${index}`);
+                    syncLiveReleaseCard(index);
+                    showToast("SPOTIFY COVER DETECTED.");
+                }
+            }).catch(() => {});
+    }
+};
+
+function renderReleases() {
+    const container = document.getElementById('releases-container');
+    if (!container) return;
+    container.innerHTML = '';
     releasesArray.forEach((r, i) => {
-        releasesContainer.appendChild(createReleaseEditor(r, i));
+        container.appendChild(createReleaseEditor(r, i));
+        syncLiveReleaseCard(i); // Initial sync
     });
 }
 
 window.removeRelease = function (index) {
-    gatherReleasesData(); // Save current state before removing
-    releasesArray.splice(index, 1);
-    renderReleases();
+    if(confirm("PURGE ARCHIVE ENTRY: Are you sure? This action is permanent.")) {
+        gatherReleasesData(); 
+        releasesArray.splice(index, 1);
+        
+        // Auto-save to Firebase
+        db.ref('siteData/releases').set(releasesArray).then(() => {
+            renderReleases();
+            showToast("ARCHIVE ENTRY PURGED FROM SERVER.", "error");
+            bumpSiteVersion();
+        }).catch(err => {
+            showToast("SYNC FAILURE: " + err.message, "error");
+        });
+    }
 };
 
 const addRelBtn = document.getElementById('add-release-btn');
@@ -547,10 +646,17 @@ if (addRelBtn) {
     addRelBtn.onclick = () => {
         gatherReleasesData();
         releasesArray.unshift({
-            id: "OS-NEW", title: "NEW TRACK", producers: "UNKNOWN", type: "SINGLE",
-            image: "assets/cover.png", spotify: "#", apple: "#", youtube: "#"
+            id: "OS-NEW", 
+            title: "NEW TRACK", 
+            producers: "UNKNOWN", 
+            type: "SINGLE",
+            image: "assets/cover.png", 
+            spotify: "#", 
+            apple: "#", 
+            youtube: "#"
         });
         renderReleases();
+        showToast("ARCHIVE SLOT INITIALIZED.");
     };
 }
 
@@ -588,25 +694,40 @@ function gatherReleasesData() {
     const editors = document.querySelectorAll('#releases-container .release-editor-item');
     releasesArray = [];
     editors.forEach(ed => {
+        const idVal = ed.querySelector('.r-id') ? ed.querySelector('.r-id').value : '';
+        const titleVal = ed.querySelector('.r-title') ? ed.querySelector('.r-title').value : '';
+        const prodVal = ed.querySelector('.r-producers') ? ed.querySelector('.r-producers').value : '';
+        const typeVal = ed.querySelector('.r-type') ? ed.querySelector('.r-type').value : 'SINGLE';
+        const imgVal = ed.querySelector('.r-image') ? ed.querySelector('.r-image').value : '';
+        const spotVal = ed.querySelector('.r-spotify') ? ed.querySelector('.r-spotify').value : '#';
+        const appleVal = ed.querySelector('.r-apple') ? ed.querySelector('.r-apple').value : '#';
+        const ytVal = ed.querySelector('.r-youtube') ? ed.querySelector('.r-youtube').value : '#';
+        const prevVal = ed.querySelector('.r-preview') ? ed.querySelector('.r-preview').value : '#';
+        
         releasesArray.push({
-            id: ed.querySelector('.r-id').value,
-            title: ed.querySelector('.r-title').value,
-            producers: ed.querySelector('.r-producers').value,
-            type: ed.querySelector('.r-type').value,
-            image: ed.querySelector('.r-image').value,
-            spotify: ed.querySelector('.r-spotify').value,
-            apple: ed.querySelector('.r-apple').value,
-            youtube: ed.querySelector('.r-youtube').value,
-            preview: ed.querySelector('.r-preview').value,
+            id: idVal,
+            title: titleVal,
+            producers: prodVal,
+            type: typeVal,
+            image: imgVal,
+            spotify: spotVal,
+            apple: appleVal,
+            youtube: ytVal,
+            preview: prevVal
         });
     });
 }
 
 document.getElementById('save-releases').addEventListener('click', () => {
     gatherReleasesData();
+    if (releasesArray.length === 0) {
+        showToast("SIGNAL EMPTY: NO RELEASES TO DEPLOY.", "error");
+        return;
+    }
     db.ref('siteData/releases').set(releasesArray).then(() => {
         bumpSiteVersion();
         showSaveMsg('save-msg-releases');
+        showToast("ARCHIVE FREQUENCIES DEPLOYED SUCCESSFULLY.");
     }).catch(err => {
         const advice = window.location.protocol === 'file:' ? "\n\nADVICE: Use 'Live Server' (http) to enable writes locally." : "";
         alert("DEPLOY FAILURE: " + err.message + advice);
@@ -624,33 +745,46 @@ function createUpcomingEditor(item, index) {
     
     div.innerHTML = `
         <button class="delete-btn" onclick="removeUpcoming(${index})"><i class="fas fa-trash"></i></button>
-        <div class="form-grid">
-            <div class="input-group">
-                <label>Upcoming Track ID</label>
-                <p class="field-desc">The scheduled identifier for the future frequency.</p>
-                <input type="text" class="u-id" value="${item.id || ''}">
-            </div>
-            <div class="input-group">
-                <label>Expected Title</label>
-                <p class="field-desc">The designated title for the unreleased transmission.</p>
-                <input type="text" class="u-title" value="${item.title || ''}">
-            </div>
-            <div class="input-group">
-                <label>Personnel</label>
-                <p class="field-desc">Participating artists for this upcoming signal.</p>
-                <input type="text" class="u-producers" value="${item.producers || ''}">
-            </div>
-            <div class="input-group">
-                <label>Visual Asset Management</label>
-                <p class="field-desc">Browse local storage (💾) or capture YouTube cover (🪄).</p>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <div class="image-preview-mini">
-                        <img src="${previewImg}" id="prev-u-${index}">
+        <div class="editor-main-layout">
+            <div class="editor-controls">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Upcoming Track ID</label>
+                        <p class="field-desc">The scheduled identifier for the future frequency.</p>
+                        <input type="text" class="u-id" value="${item.id || ''}" oninput="syncLiveCard(${index})">
                     </div>
-                    <input type="text" class="u-image" value="${item.image || 'assets/cover.png'}" id="input-u-${index}">
-                    <button class="action-btn-mini" onclick="triggerUpcomingUpload(${index})"><i class="fas fa-folder-open"></i></button>
-                    <button class="action-btn-mini" onclick="autoDetectUpcoming(${index})"><i class="fas fa-wand-magic-sparkles"></i></button>
-                    <input type="file" id="file-u-${index}" style="display:none" onchange="handleUpcomingFile(this, ${index})" accept="image/*">
+                    <div class="input-group">
+                        <label>Expected Title</label>
+                        <p class="field-desc">The designated title for the unreleased transmission.</p>
+                        <input type="text" class="u-title" value="${item.title || ''}" oninput="syncLiveCard(${index})">
+                    </div>
+                    <div class="input-group">
+                        <label>Personnel</label>
+                        <p class="field-desc">Participating artists for this upcoming signal.</p>
+                        <input type="text" class="u-producers" value="${item.producers || ''}" oninput="syncLiveCard(${index})">
+                    </div>
+                    <div class="input-group">
+                        <label>Release Date</label>
+                        <p class="field-desc">The scheduled launch frequency (e.g. 2026.05.20 or COMING SOON).</p>
+                        <input type="text" class="u-date" value="${item.date || ''}" oninput="syncLiveCard(${index})">
+                    </div>
+                    <div class="input-group full">
+                        <label>Visual Asset Management</label>
+                        <p class="field-desc">Browse local storage (💾) or capture YouTube cover (🪄).</p>
+                        <div style="display: flex; gap: 0.5rem; align-items: center; position: relative;">
+                            <input type="text" class="u-image" value="${item.image || 'assets/cover.png'}" id="input-u-${index}" oninput="updateLivePreview(this, 'prev-u-${index}'); syncLiveCard(${index})">
+                            <button class="action-btn-mini" onclick="triggerUpcomingUpload(${index})"><i class="fas fa-folder-open"></i></button>
+                            <button class="action-btn-mini" onclick="autoDetectUpcoming(${index})"><i class="fas fa-wand-magic-sparkles"></i></button>
+                            <div id="prev-u-${index}" class="floating-preview"></div>
+                            <input type="file" id="file-u-${index}" style="display:none" onchange="handleUpcomingFile(this, ${index})" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-preview-zone">
+                <label class="preview-label">LIVE PORTAL PREVIEW</label>
+                <div id="live-card-${index}" class="admin-live-mock">
+                    <!-- Preview card will be injected here -->
                 </div>
             </div>
         </div>
@@ -667,8 +801,9 @@ window.handleUpcomingFile = function(input, index) {
         const reader = new FileReader();
         reader.onload = function(e) {
             const base64 = e.target.result;
-            document.getElementById(`input-u-${index}`).value = base64;
-            document.getElementById(`prev-u-${index}`).src = base64;
+            const input = document.getElementById(`input-u-${index}`);
+            input.value = base64;
+            updateLivePreview(input, `prev-u-${index}`);
             showToast("COVER ASSET ENCODED (BASE64)");
         };
         reader.readAsDataURL(input.files[0]);
@@ -686,32 +821,67 @@ window.autoDetectUpcoming = function(index) {
         const id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop();
         const imgUrl = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
         input.value = imgUrl;
-        document.getElementById(`prev-u-${index}`).src = imgUrl;
+        updateLivePreview(input, `prev-u-${index}`);
         showToast("YT COVER CAPTURED FROM LINK.");
+    } else if (url.includes('spotify.com')) {
+        showToast("INITIATING SPOTIFY COVER FETCH...");
+        fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.thumbnail_url) {
+                    input.value = data.thumbnail_url;
+                    updateLivePreview(input, `prev-u-${index}`);
+                    showToast("SPOTIFY COVER DETECTED.");
+                } else {
+                    showToast("METADATA MISSING. TRY YT LINK.", "error");
+                }
+            })
+            .catch(err => {
+                showToast("SYNC BLOCKED (CORS). PLEASE BROWSE MANUALLY.", "error");
+            });
     } else {
-        showToast("AUTO-DETECT: Paste YT Link into Image field first.", "error");
+        showToast("DETECTION: Paste YT or SPOTIFY Link into Image field first.", "error");
     }
 };
 
 function renderUpcoming() {
-    if (!upcomingContainer) return;
-    upcomingContainer.innerHTML = '';
+    const container = document.getElementById('upcoming-container');
+    if (!container) return;
+    container.innerHTML = '';
     upcomingArray.forEach((item, i) => {
-        upcomingContainer.appendChild(createUpcomingEditor(item, i));
+        container.appendChild(createUpcomingEditor(item, i));
+        syncLiveCard(i); // Initial mirror
     });
 }
 
 window.removeUpcoming = function (index) {
-    gatherUpcomingData();
-    upcomingArray.splice(index, 1);
-    renderUpcoming();
+    if(confirm("PURGE UPCOMING ENTRY: Are you sure? This action is permanent.")) {
+        gatherUpcomingData();
+        upcomingArray.splice(index, 1);
+        
+        // Auto-save to Firebase
+        db.ref('siteData/upcoming').set(upcomingArray).then(() => {
+            renderUpcoming();
+            showToast("UPCOMING ENTRY PURGED FROM SERVER.", "error");
+            bumpSiteVersion();
+        }).catch(err => {
+            showToast("SYNC FAILURE: " + err.message, "error");
+        });
+    }
 };
 
 if (document.getElementById('add-upcoming-btn')) {
     document.getElementById('add-upcoming-btn').addEventListener('click', () => {
         gatherUpcomingData();
-        upcomingArray.unshift({ id: "OS-NEW", title: "FUTURE TRACK", producers: "UNKNOWN", image: "assets/cover.png" });
+        upcomingArray.unshift({ 
+            id: "OS-NEW", 
+            title: "FUTURE TRACK", 
+            producers: "UNKNOWN", 
+            date: "COMING SOON",
+            image: "assets/cover.png" 
+        });
         renderUpcoming();
+        showToast("UPCOMING NODE INITIALIZED.");
     });
 }
 
@@ -726,14 +896,23 @@ function loadUpcoming() {
 }
 
 function gatherUpcomingData() {
-    const editors = document.querySelectorAll('#upcoming-container .release-editor-item');
+    const container = document.getElementById('upcoming-container');
+    if (!container) return;
+    const editors = container.querySelectorAll('.release-editor-item');
     upcomingArray = [];
     editors.forEach(ed => {
+        const idVal = ed.querySelector('.u-id') ? ed.querySelector('.u-id').value : '';
+        const titleVal = ed.querySelector('.u-title') ? ed.querySelector('.u-title').value : '';
+        const prodVal = ed.querySelector('.u-producers') ? ed.querySelector('.u-producers').value : '';
+        const dateVal = ed.querySelector('.u-date') ? ed.querySelector('.u-date').value : '';
+        const imgVal = ed.querySelector('.u-image') ? ed.querySelector('.u-image').value : 'assets/cover.png';
+
         upcomingArray.push({
-            id: ed.querySelector('.u-id').value,
-            title: ed.querySelector('.u-title').value,
-            producers: ed.querySelector('.u-producers').value,
-            image: ed.querySelector('.u-image').value
+            id: idVal,
+            title: titleVal,
+            producers: prodVal,
+            date: dateVal,
+            image: imgVal
         });
     });
 }
@@ -1003,38 +1182,7 @@ function saveStaff() {
 // Individual save function moved to top for scope safety
 
 const saveReleasesBtn = document.getElementById('save-releases');
-if (saveReleasesBtn) {
-    saveReleasesBtn.addEventListener('click', () => {
-        const items = document.querySelectorAll('#releases-container .release-editor-item');
-        if (items.length === 0) {
-            alert('NO RELEASES FOUND TO SYNC.');
-            return;
-        }
-
-        let updates = [];
-        items.forEach(item => {
-            const id = item.querySelector('.r-id').value;
-            const title = item.querySelector('.r-title').value;
-            const producers = item.querySelector('.r-producers').value;
-            const type = item.querySelector('.r-type').value;
-            const image = item.querySelector('.r-image').value;
-            const spotify = item.querySelector('.r-spotify').value;
-            const apple = item.querySelector('.r-apple').value;
-            const youtube = item.querySelector('.r-youtube').value;
-            const preview = item.querySelector('.r-preview').value;
-
-            updates.push({ id, title, producers, type, image, spotify, apple, youtube, preview });
-        });
-
-        db.ref('siteData/releases').set(updates).then(() => {
-            showToast('RELEASE ARCHIVE DEPLOYED.');
-            bumpSiteVersion();
-            loadReleases();
-        }).catch(err => {
-            showToast('DEPLOY FAILURE: VAULT LOCKED', 'error');
-        });
-    });
-}
+// Removed duplicate saveReleasesBtn listener to prevent multi-trigger
 
 const initStaffBtn = document.getElementById('init-staff-btn');
 if (initStaffBtn) {
@@ -1060,6 +1208,101 @@ if (initStaffBtn) {
         }
     });
 }
+
+// Dynamic Preview Logic (Global Spectrum - Now with Auto-Detection Intelligence)
+window.updateLivePreview = function(input, previewId) {
+    const previewDiv = document.getElementById(previewId);
+    if (!previewDiv) return;
+    
+    let url = input.value.trim();
+    if (!url || url === '#' || url === 'assets/cover.png') {
+        previewDiv.classList.remove('show');
+        return;
+    }
+
+    // Full-Auto Analysis: YouTube Spectrum
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        const id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop();
+        const imgUrl = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+        previewDiv.innerHTML = `<img src="${imgUrl}" onerror="this.parentElement.classList.remove('show')">`;
+        previewDiv.classList.add('show');
+        return;
+    }
+
+    // Full-Auto Analysis: Spotify Spectrum
+    if (url.includes('spotify.com')) {
+        fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.thumbnail_url) {
+                    previewDiv.innerHTML = `<img src="${data.thumbnail_url}" onerror="this.parentElement.classList.remove('show')">`;
+                    previewDiv.classList.add('show');
+                }
+            }).catch(() => {}); // Silent fail for auto-detect to avoid noise
+        return;
+    }
+
+    // Direct Image Link Analysis
+    previewDiv.innerHTML = `<img src="${url}" onerror="this.parentElement.classList.remove('show')">`;
+    previewDiv.classList.add('show');
+};
+
+// Live Card Sync Intelligence
+window.syncLiveCard = function(index) {
+    const editor = document.querySelectorAll('#upcoming-container .release-editor-item')[index];
+    const previewDiv = document.getElementById(`live-card-${index}`);
+    if (!editor || !previewDiv) return;
+
+    const id = editor.querySelector('.u-id').value;
+    const title = editor.querySelector('.u-title').value;
+    const producers = editor.querySelector('.u-producers').value;
+    const date = editor.querySelector('.u-date').value;
+    const image = editor.querySelector('.u-image').value;
+
+    previewDiv.innerHTML = `
+        <div class="release-card-large upcoming-card" style="margin: 0; pointer-events: none; transform: scale(0.85); transform-origin: top left;">
+            <div class="upcoming-status-badge">COMING SOON</div>
+            <div class="release-cover-large">
+                <img src="${image || 'assets/cover.png'}" alt="Preview" style="height: 320px; width: 100%; object-fit: cover;">
+            </div>
+            <div class="release-info-large" style="padding: 1.5rem;">
+                ${id ? `<span class="track-id">${id}</span>` : ''}
+                <h4 style="font-size: 1.2rem;">${title || 'FUTURE TRACK'}</h4>
+                <div class="producers-text" style="font-size: 0.75rem;">Produced by: <span>${producers || 'UNKNOWN'}</span></div>
+                ${date ? `<div class="upcoming-date-badge" style="margin-top: 0.8rem; font-size: 0.65rem; padding: 0.4rem 0.8rem;"><i class="far fa-calendar-alt"></i> ${date}</div>` : ''}
+            </div>
+        </div>
+    `;
+};
+
+window.syncLiveReleaseCard = function(index) {
+    const editor = document.querySelectorAll('#releases-container .release-editor-item')[index];
+    const previewDiv = document.getElementById(`live-release-card-${index}`);
+    if (!editor || !previewDiv) return;
+
+    const id = editor.querySelector('.r-id').value;
+    const title = editor.querySelector('.r-title').value;
+    const producers = editor.querySelector('.r-producers').value;
+    const type = editor.querySelector('.r-type').value;
+    const image = editor.querySelector('.r-image').value;
+
+    previewDiv.innerHTML = `
+        <div class="release-card-large" style="margin: 0; pointer-events: none; transform: scale(0.85); transform-origin: top left;">
+            <div class="release-type-badge">${type || 'SINGLE'}</div>
+            <div class="release-cover-large">
+                <img src="${image || 'assets/cover.png'}" alt="Preview" style="height: 320px; width: 100%; object-fit: cover;">
+                <div class="player-overlay" style="opacity: 1; background: rgba(0,0,0,0.3);">
+                    <div class="play-btn" style="width: 50px; height: 50px; font-size: 1rem;"><i class="fas fa-play"></i></div>
+                </div>
+            </div>
+            <div class="release-info-large" style="padding: 1.5rem;">
+                ${id ? `<span class="track-id">${id}</span>` : ''}
+                <h4 style="font-size: 1.2rem;">${title || 'TRACK TITLE'}</h4>
+                <div class="producers-text" style="font-size: 0.75rem;">Produced by: <span>${producers || 'UNKNOWN'}</span></div>
+            </div>
+        </div>
+    `;
+};
 
 // Initial load
 initializeSecurity();
