@@ -532,7 +532,7 @@ const initPortal = () => {
 
             // Re-init specialized effects for NEW elements
             const newInput = row.querySelector('input');
-            
+
             // Mirror logic
             if (typeof initMirrorEffect === 'function') {
                 initMirrorEffect(newInput);
@@ -626,13 +626,13 @@ const initPortal = () => {
                 const spotifyLinks = Array.from(subForm.querySelectorAll('input[name="spotify[]"]'))
                     .map(input => input.value.trim())
                     .filter(val => val !== "");
-                
+
                 // Formatted for Firebase (Plain string)
                 const spotifyData = spotifyLinks.length > 0 ? spotifyLinks.join(' | ') : "N/A";
 
                 // Formatted for EmailJS (Labeled list for a cleaner look)
-                const formattedLinksForEmail = spotifyLinks.length > 0 
-                    ? spotifyLinks.map((link, i) => `🔗 [ VIEW PROFILE ${i+1} ]: ${link}`).join('\n')
+                const formattedLinksForEmail = spotifyLinks.length > 0
+                    ? spotifyLinks.map((link, i) => `🔗 [ VIEW PROFILE ${i + 1} ]: ${link}`).join('\n')
                     : "Not Provided";
 
                 const submission = {
@@ -676,8 +676,8 @@ const initPortal = () => {
                             email: submission.email
                         });
                         console.log("✅ SYSTEM: Email Notification Dispatched", emailResult.status);
-                    } catch (eErr) { 
-                        console.error("❌ ERROR: Email Transmission Node Failure", eErr); 
+                    } catch (eErr) {
+                        console.error("❌ ERROR: Email Transmission Node Failure", eErr);
                     }
                 }
 
@@ -696,7 +696,7 @@ const initPortal = () => {
                         subForm.style.display = 'flex';
                         if (subStatus) subStatus.style.display = 'none';
                         subForm.reset();
-                        
+
                         // Clear extra dynamic links but keep the first one baseline
                         const rows = dynamicLinksContainer?.querySelectorAll('.dynamic-row');
                         if (rows) {
@@ -756,8 +756,8 @@ const initPortal = () => {
                             date_log: new Date().toLocaleString()
                         });
                         console.log("✅ SYSTEM: Contact Email Sent");
-                    } catch (eErr) { 
-                        console.error("❌ ERROR: Contact Email Failure", eErr); 
+                    } catch (eErr) {
+                        console.error("❌ ERROR: Contact Email Failure", eErr);
                     }
                 }
 
@@ -1443,7 +1443,7 @@ const initPortal = () => {
             upcomingAutoScroll = setInterval(() => {
                 grid.scrollLeft += 1;
                 if (grid.scrollLeft >= (grid.scrollWidth - grid.clientWidth - 1)) {
-                    grid.scrollLeft = 0; 
+                    grid.scrollLeft = 0;
                 }
             }, 30);
         }
@@ -1658,13 +1658,18 @@ const initPortal = () => {
         const node = document.getElementById("visitor-connection-node");
         if (!node) return;
         try {
-            const res = await fetch("https://ipapi.co/json/");
-            if (!res.ok) throw new Error();
-            const data = await res.json();
-            if (data && data.ip) {
-                const loc = ((data.city || "UNKNOWN") + ", " + (data.country_name || "UNKNOWN")).toUpperCase();
-                node.innerHTML = "CONNECTION FREQUENCY: " + data.ip + " (" + loc + ") | STATUS: ENCRYPTED ACCESS";
+            // Using a slightly more lenient backup strategy
+            const res = await fetch("https://ipapi.co/json/").catch(() => null);
+            if (res && res.ok) {
+                const data = await res.json();
+                if (data && data.ip) {
+                    const loc = ((data.city || "UNKNOWN") + ", " + (data.country_name || "UNKNOWN")).toUpperCase();
+                    node.innerHTML = "CONNECTION FREQUENCY: " + data.ip + " (" + loc + ") | STATUS: ENCRYPTED ACCESS";
+                    return;
+                }
             }
+            // Silent fallback if API fails
+            node.innerHTML = "CONNECTION FREQUENCY: SECURE TRANSMISSION | STATUS: ENCRYPTED ACCESS";
         } catch (e) {
             node.innerHTML = "CONNECTION FREQUENCY: SECURE TRANSMISSION | STATUS: ENCRYPTED ACCESS";
         }
