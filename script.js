@@ -1787,12 +1787,56 @@ const initKernelSecurity = () => {
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // 5. Console Violation Sync
+    // 5. Advanced Console Violation & Intrusion Tracking (PRO GRADE)
     let devToolsOpen = false;
     const threshold = 160;
+
+    const reportIntrusion = async (type) => {
+        let ipData = { ip: "UNKNOWN", loc: "UNKNOWN" };
+        try {
+            const res = await fetch("https://ipapi.co/json/").catch(() => null);
+            if (res && res.ok) {
+                const data = await res.json();
+                ipData.ip = data.ip || "UNKNOWN";
+                ipData.loc = ((data.city || "UNKNOWN") + ", " + (data.country_name || "UNKNOWN")).toUpperCase();
+            }
+        } catch (e) {}
+
+        const systemInfo = {
+            ua: navigator.userAgent,
+            platform: navigator.platform,
+            language: navigator.language,
+            screen: `${window.screen.width}x${window.screen.height}`
+        };
+
+        if (typeof firebase !== 'undefined') {
+            const db = firebase.database();
+            
+            // 1. Trigger the Global Red Alert for Admins
+            db.ref('siteData/security/globalAlarm').set({ 
+                active: true, 
+                type: type, 
+                time: Date.now(),
+                ip: ipData.ip,
+                location: ipData.loc
+            });
+
+            // 2. Log a Permanent Violation Record
+            db.ref('siteData/security/violations').push({
+                type: type,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                ip: ipData.ip,
+                location: ipData.loc,
+                system: systemInfo,
+                path: window.location.pathname
+            });
+        }
+    };
+
     setInterval(() => {
         const widthDiff = window.outerWidth - window.innerWidth > threshold;
         const heightDiff = window.outerHeight - window.innerHeight > threshold;
+        
         if ((widthDiff || heightDiff) && !devToolsOpen) {
             devToolsOpen = true;
             if (kmShield) {
@@ -1800,8 +1844,10 @@ const initKernelSecurity = () => {
                 kmShield.style.color = "#ff0080";
                 kmShield.classList.add('scanning');
             }
-            // DEPLOY GLOBAL ALARM TO Firebase
-            if (typeof firebase !== 'undefined') firebase.database().ref('siteData/security/globalAlarm').set({ active: true, type: 'CONSOLE_TAMPER', time: Date.now() });
+            
+            // DEPLOY INTELLIGENT TRACE
+            reportIntrusion('CONSOLE_TAMPER');
+            
             console.warn("%c KERNEL VIOLATION DETECTED: UNAUTHORIZED ACCESS ATTEMPTED ", "background: #ff0080; color: #fff; font-size: 20px; font-weight: bold;");
         } else if (!(widthDiff || heightDiff) && devToolsOpen) {
             devToolsOpen = false;
@@ -1812,7 +1858,9 @@ const initKernelSecurity = () => {
             }
             // AUTO-CLEAR ALARM AFTER 10 SECONDS OF PEACE
             setTimeout(() => {
-                if (!devToolsOpen && typeof firebase !== 'undefined') firebase.database().ref('siteData/security/globalAlarm/active').set(false);
+                if (!devToolsOpen && typeof firebase !== 'undefined') {
+                    firebase.database().ref('siteData/security/globalAlarm/active').set(false);
+                }
             }, 10000);
         }
     }, 1000);
