@@ -1044,6 +1044,7 @@ const refreshBtn = document.getElementById('refresh-inbox');
 const clearBtn = document.getElementById('clear-inbox');
 
 let pendingDeleteId = null;
+let pendingDeletePath = null;
 
 function loadSubmissions() {
     if (!inboxContainer) return;
@@ -1152,6 +1153,7 @@ if (confirmPurgeBtn) {
 }
 
 // Global Purge All Logic (Stabilized)
+const clearInboxBtn = document.getElementById('clear-inbox');
 if (clearInboxBtn) {
     clearInboxBtn.onclick = () => {
         if (confirm("CRITICAL WARNING: This will permanently wipe ALL Demos and Contact Mails from the vault. Proceed?")) {
