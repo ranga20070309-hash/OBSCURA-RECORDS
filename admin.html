@@ -192,6 +192,7 @@
                     ARCHIVE</a>
                 <a href="#" class="nav-btn" data-target="staff-panel"><i class="fas fa-users-cog"></i> STAFF
                     PROFILES</a>
+                <a href="#" class="nav-btn" data-target="security-panel" style="color: #ff0055;"><i class="fas fa-user-secret"></i> SECURITY LOGS</a>
             </nav>
             <div class="sidebar-footer">
                 <a href="index.html" class="return-site" target="_blank"><i class="fas fa-external-link-alt"></i> VIEW
@@ -595,6 +596,24 @@
                     <!-- Dynamic staff forms will compile here -->
                     <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Initializing neural link to staff
                         database...</p>
+                </div>
+            </section>
+
+            <!-- Security Monitor Panel -->
+            <section id="security-panel" class="panel">
+                <div class="panel-header">
+                    <h2 style="color: #ff0055;"><i class="fas fa-user-secret"></i> KERNEL INTRUSION MONITOR</h2>
+                    <p>Track real-time DevTools tampering and unauthorized frequency access.</p>
+                </div>
+
+                <div class="btn-group mb-2">
+                    <button class="action-btn" id="refresh-security" style="border-color: #ff0055; color: #ff0055;"><i class="fas fa-sync"></i> SCAN SECURITY LOGS</button>
+                    <button class="save-btn" id="clear-security" style="background: rgba(255, 0, 85, 0.1); border-color: #ff0055;"><i class="fas fa-skull-crossbones"></i> PURGE ALL VIOLATIONS</button>
+                </div>
+
+                <div id="security-logs-container" class="releases-list">
+                    <!-- Dynamic security logs will load here -->
+                    <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Accessing encrypted security vault...</p>
                 </div>
             </section>
         </main>
