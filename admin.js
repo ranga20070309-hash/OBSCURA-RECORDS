@@ -101,6 +101,8 @@ navBtns.forEach(btn => {
             loadReleases();
         } else if (target === 'upcoming-panel') {
             loadUpcoming();
+        } else if (target === 'security-panel') {
+            loadSecurityLogs();
         }
     });
 });
@@ -295,8 +297,16 @@ function initGlobalAlarmSync() {
         const alarm = snapshot.val();
         if (alarm && alarm.active === true) {
             console.warn("!!! GLOBAL SECURITY ALARM ACTIVE !!!");
-            if (alarmOverlay) alarmOverlay.style.display = 'none'; // OVERRIDE FOR ROOT ACCESS
-            if (alarmTypeText) alarmTypeText.textContent = `TYPE: ${alarm.type || 'UNKNOWN'} | TRACE: ${new Date(alarm.time).toLocaleTimeString()}`;
+            if (alarmOverlay) {
+                alarmOverlay.style.display = 'flex';
+                // Trigger audible alert if possible
+                try { if(typeof playBleep === 'function') playBleep(200, 'square', 0.5); } catch(e){}
+            }
+            if (alarmTypeText) {
+                const locStr = alarm.location ? ` | LOC: ${alarm.location}` : '';
+                const ipStr = alarm.ip ? ` | IP: ${alarm.ip}` : '';
+                alarmTypeText.textContent = `TYPE: ${alarm.type || 'UNKNOWN'}${ipStr}${locStr}`;
+            }
 
             // Highlight the security monitor in admin
             const kmShield = document.getElementById('km-shield');
@@ -325,6 +335,67 @@ function initGlobalAlarmSync() {
         if (user || (isLocal && sessionStorage.getItem('rootAuth') === 'granted')) initGlobalAlarmSync();
     });
 })();
+
+// --- SECURITY LOGS MANAGEMENT ---
+function loadSecurityLogs() {
+    const container = document.getElementById('security-logs-container');
+    if (!container) return;
+    container.innerHTML = '<p style="opacity:0.5; padding:2rem;">Scanning security vault for intrusions...</p>';
+
+    db.ref('siteData/security/violations').limitToLast(50).once('value', snapshot => {
+        container.innerHTML = '';
+        const data = snapshot.val();
+        if (!data) {
+            container.innerHTML = '<p style="opacity:0.3; padding:2rem; text-align:center;">ZERO VIOLATIONS DETECTED. SYSTEM INTEGRITY OPTIMAL.</p>';
+            return;
+        }
+
+        const logs = Object.keys(data).reverse().map(key => ({ id: key, ...data[key] }));
+        logs.forEach(log => {
+            const div = document.createElement('div');
+            div.className = 'release-editor-item security-log-item';
+            div.style.borderColor = '#ff0055';
+            div.style.background = 'rgba(255, 0, 85, 0.05)';
+            
+            const time = new Date(log.timestamp).toLocaleString();
+            const sys = log.system || {};
+            
+            div.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                            <span style="background: #ff0055; color: #fff; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.65rem; font-weight: 700;">${log.type}</span>
+                            <span style="font-family: monospace; font-size: 0.75rem; opacity: 0.6;">${time}</span>
+                        </div>
+                        <h4 style="color: #ff0055; margin-bottom: 0.5rem; letter-spacing: 0.1rem;">IP: ${log.ip || 'HIDDEN'} | LOCATION: ${log.location || 'UNKNOWN'}</h4>
+                        <div style="font-size: 0.7rem; color: var(--text-secondary); line-height: 1.4;">
+                            <p><strong>PATH:</strong> ${log.path || '/'}</p>
+                            <p><strong>BROWSER:</strong> ${sys.ua || 'UNKNOWN'}</p>
+                            <p><strong>SCREEN:</strong> ${sys.screen || 'N/A'} | <strong>LANG:</strong> ${sys.language || 'N/A'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        showToast("SECURITY LOGS SYNCED: " + logs.length + " ENTRIES FOUND.");
+    });
+}
+
+const refreshSecBtn = document.getElementById('refresh-security');
+if (refreshSecBtn) refreshSecBtn.onclick = loadSecurityLogs;
+
+const clearSecBtn = document.getElementById('clear-security');
+if (clearSecBtn) {
+    clearSecBtn.onclick = () => {
+        if (confirm("CRITICAL: Purge all security violation records from the vault?")) {
+            db.ref('siteData/security/violations').remove().then(() => {
+                showToast("SECURITY VAULT PURGED.", "success");
+                loadSecurityLogs();
+            });
+        }
+    };
+}
 
 if (loginBtn) {
     loginBtn.addEventListener('click', () => {
