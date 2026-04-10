@@ -1,6 +1,22 @@
 /* 
     OBSCURA RECORDS | THE IGNITION SEQUENCE (OS v2.0.6)
+    AUTHOR: RANGA | STRICTLY CUSTOM BUILT
 */
+
+// --- DEVELOPER AUTHENTICATION (FOR INSPECTORS) ---
+console.log(
+    '%c CORE PORTAL AUTHENTICATED %c \n%c DEVELOPER: RANGA %c \n%c PROJECT: OBSCURA RECORD %c \n%c STATUS: 100% CUSTOM BUILT %c',
+    'background: #00f0ff; color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
+    '',
+    'color: #00f0ff; font-weight: bold; margin-top: 5px;',
+    '',
+    'color: #fff; opacity: 0.8;',
+    '',
+    'color: #b700ff; font-style: italic;',
+    ''
+);
+console.log("%cWARNING: ACCESSING PROTECTED LOGIC. REVERSE ENGINEERING IS MONITORED.", "color: red; font-weight: bold; font-size: 8px;");
+
 
 // Force scroll to top on reload (Robust method)
 if ('scrollRestoration' in history) {
