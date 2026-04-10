@@ -324,21 +324,21 @@ function initGlobalAlarmSync() {
         const alarm = snapshot.val();
         if (alarm && alarm.active === true) {
             console.warn("!!! GLOBAL SECURITY ALARM ACTIVE !!!");
+            // [SILENT MONITORING] Suppressed the full-screen intrusive alarm overlay as per staff request
+            // If background logging is preferred over active blocking, we keep the status nodes updated.
             if (alarmOverlay) {
-                alarmOverlay.style.display = 'flex';
-                // Trigger audible alert if possible
-                try { if(typeof playBleep === 'function') playBleep(200, 'square', 0.5); } catch(e){}
+                alarmOverlay.style.display = 'none'; // Ensure it stays hidden
             }
             if (alarmTypeText) {
                 const locStr = alarm.location ? ` | LOC: ${alarm.location}` : '';
                 const ipStr = alarm.ip ? ` | IP: ${alarm.ip}` : '';
-                alarmTypeText.textContent = `TYPE: ${alarm.type || 'UNKNOWN'}${ipStr}${locStr}`;
+                alarmTypeText.textContent = `THREAT DETECTED: ${alarm.type || 'UNKNOWN'}${ipStr}${locStr}`;
             }
 
-            // Highlight the security monitor in admin
+            // Highlight the security monitor in admin (Small status indicator only)
             const kmShield = document.getElementById('km-shield');
             if (kmShield) {
-                kmShield.textContent = "EXTERNAL THREAT";
+                kmShield.textContent = "THREAT DETECTED";
                 kmShield.style.color = "#ff0080";
                 kmShield.classList.add('scanning');
             }
@@ -923,25 +923,21 @@ window.autoDetectUpcoming = function(index) {
         const imgUrl = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
         input.value = imgUrl;
         updateLivePreview(input, `prev-u-${index}`);
-        showToast("YT COVER CAPTURED FROM LINK.");
+        syncLiveCard(index);
+        showToast("YT COVER CAPTURED.");
     } else if (url.includes('spotify.com')) {
-        showToast("INITIATING SPOTIFY COVER FETCH...");
         fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`)
             .then(res => res.json())
             .then(data => {
                 if (data.thumbnail_url) {
                     input.value = data.thumbnail_url;
                     updateLivePreview(input, `prev-u-${index}`);
+                    syncLiveCard(index);
                     showToast("SPOTIFY COVER DETECTED.");
-                } else {
-                    showToast("METADATA MISSING. TRY YT LINK.", "error");
                 }
-            })
-            .catch(err => {
-                showToast("SYNC BLOCKED (CORS). PLEASE BROWSE MANUALLY.", "error");
-            });
+            }).catch(() => {});
     } else {
-        showToast("DETECTION: Paste YT or SPOTIFY Link into Image field first.", "error");
+        showToast("DETECTION: Paste YT or SPOTIFY Link into Image field first or browse locally.", "error");
     }
 };
 
@@ -1155,11 +1151,10 @@ if (confirmPurgeBtn) {
     };
 }
 
-// Global Purge All Logic
-const clearInboxBtn = document.getElementById('clear-inbox');
+// Global Purge All Logic (Stabilized)
 if (clearInboxBtn) {
     clearInboxBtn.onclick = () => {
-        if (confirm("CRITICAL WARNING: This will permanently wipe ALL Demos and Contact Mails. Proceed?")) {
+        if (confirm("CRITICAL WARNING: This will permanently wipe ALL Demos and Contact Mails from the vault. Proceed?")) {
             db.ref('siteData/submissions').remove().then(() => {
                 showToast("VAULT PURGED: ALL RECORDS DELETED.");
                 loadSubmissions();
@@ -1176,13 +1171,7 @@ if (cancelPurgeBtn) {
 }
 
 if (refreshBtn) refreshBtn.addEventListener('click', loadSubmissions);
-if (clearBtn) {
-    clearBtn.addEventListener('click', () => {
-        if (confirm('SYSTEM OVERRIDE: Purge ALL transmission records in the vault?')) {
-            db.ref('siteData/submissions/demo').remove().then(loadSubmissions);
-        }
-    });
-}
+
 
 // --- STAFF PROFILES PANEL ---
 function createStaffEditor(staff, discordId) {
