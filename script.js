@@ -1789,9 +1789,12 @@ const initKernelSecurity = () => {
 
     // 5. Advanced Console Violation & Intrusion Tracking (PRO GRADE)
     let devToolsOpen = false;
-    const threshold = 160;
+    const threshold = 200; // Increased threshold to avoid false positives (Sidebars, etc)
+    let detectionHold = true; // Temporary hold to prevent false triggers on load
 
     const reportIntrusion = async (type) => {
+        if (detectionHold) return; // Don't report during initial load cycles
+        
         let ipData = { ip: "UNKNOWN", loc: "UNKNOWN" };
         try {
             const res = await fetch("https://ipapi.co/json/").catch(() => null);
@@ -1833,6 +1836,9 @@ const initKernelSecurity = () => {
         }
     };
 
+    // Release detection hold after 3 seconds
+    setTimeout(() => { detectionHold = false; }, 3000);
+
     setInterval(() => {
         const widthDiff = window.outerWidth - window.innerWidth > threshold;
         const heightDiff = window.outerHeight - window.innerHeight > threshold;
@@ -1856,14 +1862,14 @@ const initKernelSecurity = () => {
                 kmShield.style.color = "var(--accent-blue)";
                 kmShield.classList.remove('scanning');
             }
-            // AUTO-CLEAR ALARM AFTER 10 SECONDS OF PEACE
+            // AUTO-CLEAR ALARM AFTER 5 SECONDS OF PEACE
             setTimeout(() => {
                 if (!devToolsOpen && typeof firebase !== 'undefined') {
                     firebase.database().ref('siteData/security/globalAlarm/active').set(false);
                 }
-            }, 10000);
+            }, 5000);
         }
-    }, 1000);
+    }, 1500); // Slightly slower polling frequency for stability
 };
 
 if (document.readyState === "loading") {
