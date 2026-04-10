@@ -35,6 +35,33 @@ function showToast(message, type = 'success') {
     }, 4000);
 }
 
+// --- LINK INTEGRITY GUARD: SECURITY ENGINE ---
+function analyzeLinkSafety(url) {
+    if (!url || url === '#' || url === '') return { status: 'n/a', color: '#888', icon: 'fa-minus' };
+
+    try {
+        const domain = new URL(url).hostname.toLowerCase();
+        
+        // Trusted Domains (Safe Zone)
+        const trusted = ['spotify.com', 'soundcloud.com', 'youtube.com', 'youtu.be', 'drive.google.com', 'dropbox.com', 'wetransfer.com', 'music.apple.com'];
+        if (trusted.some(t => domain.includes(t))) {
+            return { status: 'SAFE', color: '#00ff8c', icon: 'fa-shield-check' };
+        }
+
+        // Suspicious: Link Shorteners (Obscured destination)
+        const risky = ['bit.ly', 'tinyurl.com', 't.co', 'rb.gy', 'cutt.ly'];
+        if (risky.some(r => domain.includes(r))) {
+            return { status: 'RISKY (SHORTENED)', color: '#ffcc00', icon: 'fa-exclamation-triangle' };
+        }
+
+        // Default: Untrusted/Unknown
+        return { status: 'UNTRUSTED SOURCE', color: '#ff3e3e', icon: 'fa-biohazard' };
+    } catch (e) {
+        return { status: 'INVALID URL', color: '#ff3e3e', icon: 'fa-bug' };
+    }
+}
+
+
 window.saveIndividualStaff = function (discordId) {
     const item = document.querySelector(`.staff-editor-item[data-discord-id="${discordId}"]`);
     if (!item) {
@@ -1054,6 +1081,10 @@ function loadSubmissions() {
             const card = document.createElement('div');
             card.className = 'demo-card';
             const typeColor = sub.type === 'DEMO' ? 'var(--accent-blue)' : 'var(--accent-magenta)';
+            
+            // Analyze Link Integrity
+            const safety = analyzeLinkSafety(sub.link || sub.spotify);
+
             card.innerHTML = `
                 <button class="delete-demo-record" data-pid="${sub.id}" data-path="${sub.path}" style="position:absolute; top:1.2rem; right:1.2rem; width:32px; height:32px; background:rgba(255,0,0,0.15); border:1px solid rgba(255,0,0,0.3); color:#ff4444; border-radius:6px; cursor:pointer; z-index:100; display:flex; align-items:center; justify-content:center; transition:0.3s;" title="PURGE RECORD"><i class="fas fa-times"></i></button>
                 <div class="demo-header">
@@ -1069,13 +1100,20 @@ function loadSubmissions() {
                     <div class="meta-item" style="grid-column: span 2;"><label style="font-size:0.6rem; opacity:0.5; display:block; margin-bottom:0.3rem;">CONTACT</label><span style="font-size:0.85rem;">${sub.email || 'N/A'}</span></div>
                 </div>
                 <div class="demo-message" style="background: rgba(255,255,255,0.02); padding: 1.2rem; border-radius: 10px; font-size: 0.8rem; margin-top: 1.5rem; border: 1px solid rgba(255,255,255,0.05); color: #ccc; line-height:1.5;">${sub.message || 'No additional data transmitted.'}</div>
-                <div class="demo-actions" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:2rem;">
-                    ${sub.link ? `<a href="${sub.link}" target="_blank" class="demo-link-btn" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; padding: 1rem; background: var(--accent-blue); color: #000; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.7rem; letter-spacing:0.1rem; text-transform:uppercase; transition:0.3s;"><i class="fas fa-play-circle"></i> TRACK LINK</a>` : ''}
-                    ${sub.spotify ? (sub.spotify.includes(' | ') ? 
-                        sub.spotify.split(' | ').map((link, i) => `<a href="${link}" target="_blank" class="demo-link-btn" style="margin-bottom:0.5rem; grid-column: span 2; display:flex; align-items:center; justify-content:center; gap:0.5rem; padding: 1rem; background: #1DB954; color: #fff; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.7rem; letter-spacing:0.1rem; text-transform:uppercase; transition:0.3s;"><i class="fab fa-spotify"></i> LINK ${i+1}</a>`).join('') 
-                        : `<a href="${sub.spotify}" target="_blank" class="demo-link-btn" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; padding: 1rem; background: #1DB954; color: #fff; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.7rem; letter-spacing:0.1rem; text-transform:uppercase; transition:0.3s;"><i class="fab fa-spotify"></i> SPOTIFY</a>`) : ''}
+                <div class="demo-actions" style="margin-top:2rem;">
+                    <div class="link-safety-badge" style="color:${safety.color}; background: ${safety.color}15; border-color:${safety.color}30;">
+                        <i class="fas ${safety.icon}"></i> 
+                        INTEGRITY: ${safety.status}
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                        ${sub.link ? `<a href="${sub.link}" target="_blank" class="demo-link-btn" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; padding: 1rem; background: var(--accent-blue); color: #000; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.7rem; letter-spacing:0.1rem; text-transform:uppercase; transition:0.3s;"><i class="fas fa-play-circle"></i> TRACK LINK</a>` : ''}
+                        ${sub.spotify ? (sub.spotify.includes(' | ') ? 
+                            sub.spotify.split(' | ').map((link, i) => `<a href="${link}" target="_blank" class="demo-link-btn" style="margin-bottom:0.5rem; grid-column: span 2; display:flex; align-items:center; justify-content:center; gap:0.5rem; padding: 1rem; background: #1DB954; color: #fff; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.7rem; letter-spacing:0.1rem; text-transform:uppercase; transition:0.3s;"><i class="fab fa-spotify"></i> LINK ${i+1}</a>`).join('') 
+                            : `<a href="${sub.spotify}" target="_blank" class="demo-link-btn" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; padding: 1rem; background: #1DB954; color: #fff; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.7rem; letter-spacing:0.1rem; text-transform:uppercase; transition:0.3s;"><i class="fab fa-spotify"></i> SPOTIFY</a>`) : ''}
+                    </div>
                 </div>
             `;
+
             inboxContainer.appendChild(card);
         });
     }).catch(err => {
