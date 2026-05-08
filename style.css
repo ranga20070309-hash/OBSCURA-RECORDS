@@ -2665,3 +2665,64 @@ textarea.real-input:focus {
 .event-glow {
     animation: eventGlow 3s infinite ease-in-out;
 }
+
+/* --- GHOST PRODUCTION RESPONSIVENESS --- */
+@media (max-width: 768px) {
+    .ghost-production {
+        padding: 6vh 3% !important;
+    }
+    
+    .ghost-production .glass {
+        padding: 2rem 1.5rem !important;
+        border-radius: 20px !important;
+    }
+    
+    /* Adjusting the main flex container gap */
+    .ghost-production .glass > div:nth-child(2) {
+        gap: 2rem !important;
+    }
+    
+    /* Fixing min-width overflow */
+    .ghost-production [style*="min-width: 320px"],
+    .ghost-production [style*="min-width: 300px"] {
+        min-width: 100% !important;
+    }
+    
+    .ghost-production h3[style*="font-size: 2.2rem"] {
+        font-size: 1.6rem !important;
+    }
+    
+    .ghost-production .pricing-group {
+        width: 100%;
+    }
+    
+    .ghost-production .special-offer {
+        padding: 1.5rem !important;
+        gap: 1.5rem !important;
+        flex-direction: column;
+        text-align: center !important;
+    }
+    
+    .ghost-production .special-offer > div {
+        text-align: center !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .ghost-production .glass {
+        padding: 1.5rem 1rem !important;
+    }
+    
+    .ghost-production h3[style*="font-size: 2.2rem"] {
+        font-size: 1.4rem !important;
+    }
+    
+    .ghost-production .pricing-group ul li {
+        font-size: 0.8rem !important;
+    }
+    
+    .ghost-production .cta-primary {
+        padding: 1rem !important;
+        font-size: 0.9rem !important;
+    }
+}
