@@ -190,8 +190,8 @@
                     UPCOMING</a>
                 <a href="#" class="nav-btn" data-target="releases-panel"><i class="fas fa-compact-disc"></i> RELEASE
                     ARCHIVE</a>
-                <a href="#" class="nav-btn" data-target="staff-panel"><i class="fas fa-users-cog"></i> STAFF
-                    PROFILES</a>
+                <a href="#" class="nav-btn" data-target="staff-panel"><i class="fas fa-users-cog"></i> STAFF PROFILES</a>
+                <a href="#" class="nav-btn" data-target="ghost-production-panel"><i class="fas fa-ghost"></i> GHOST PRODUCTION</a>
                 <a href="#" class="nav-btn" data-target="security-panel" style="color: #ff0055;"><i class="fas fa-user-secret"></i> SECURITY LOGS</a>
             </nav>
             <div class="sidebar-footer">
@@ -614,6 +614,81 @@
                 <div id="security-logs-container" class="releases-list">
                     <!-- Dynamic security logs will load here -->
                     <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Accessing encrypted security vault...</p>
+                </div>
+            </section>
+
+            <!-- Ghost Production Management Panel | MADE BY ANTIGRAVITY -->
+            <section id="ghost-production-panel" class="panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-ghost"></i> GHOST PRODUCTION DIRECTIVES</h2>
+                    <p>Manage pricing tiers, service details, and special transmission offers.</p>
+                </div>
+
+                <h3 class="section-subheader">CORE HEADER & IDENTITY</h3>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>SECTION VISIBILITY</label>
+                        <p class="field-desc">Toggle whether the Ghost Production category is visible to the public.</p>
+                        <select id="site_showGhostProduction">
+                            <option value="Visible">Visible</option>
+                            <option value="Hidden">Hidden</option>
+                        </select>
+                    </div>
+                    <div class="input-group full">
+                        <label>SECTION DESCRIPTION</label>
+                        <p class="field-desc">Supporting subtext for the Ghost Production header.</p>
+                        <input type="text" id="site_ghostDesc" value="Request your custom sound in any style. Secure professional production for a flat fee.">
+                    </div>
+                    <div class="input-group">
+                        <label>SERVICE TITLE</label>
+                        <p class="field-desc">Main title inside the service card.</p>
+                        <input type="text" id="site_ghostServiceTitle" value="GHOST PRODUCTION">
+                    </div>
+                    <div class="input-group">
+                        <label>SERVICE TAGLINE</label>
+                        <p class="field-desc">Grammatically accurate event/tagline label.</p>
+                        <input type="text" id="site_ghostTagline" value="EXCLUSIVE EVENT">
+                    </div>
+                    <div class="input-group full">
+                        <label>SERVICE DESCRIPTION</label>
+                        <p class="field-desc">Main explanatory paragraph for the service.</p>
+                        <textarea id="site_ghostServiceDesc">Submit your preferred musical style and vision to our portal. Our elite producers will craft a bespoke, professional track tailored specifically to your requirements. Secure your unique sound today and own it forever.</textarea>
+                    </div>
+                </div>
+
+                <h3 class="section-subheader">PRODUCTION TIERS & PRICING</h3>
+                <div class="form-grid">
+                    <div class="input-group"><label>30S SNIPPET PRICE</label><input type="text" id="site_ghostPrice30s" value="$10"></div>
+                    <div class="input-group"><label>1M COMPOSITION PRICE</label><input type="text" id="site_ghostPrice1m" value="$30"></div>
+                    <div class="input-group"><label>1M + VOCALS PRICE</label><input type="text" id="site_ghostPriceVocals" value="$50"></div>
+                    <div class="input-group"><label>CUSTOM PKG STARTING</label><input type="text" id="site_ghostPriceCustom" value="From $100"></div>
+                    <div class="input-group full"><label>ADD-ON: PRO MIX PRICE</label><input type="text" id="site_ghostAddonMix" value="+ $20"></div>
+                </div>
+
+                <h3 class="section-subheader">FEATURES & REVISIONS</h3>
+                <div class="form-grid">
+                    <div class="input-group"><label>FEATURE 1</label><input type="text" id="site_ghostFeature1" value="High-Quality WAV Files"></div>
+                    <div class="input-group"><label>FEATURE 2</label><input type="text" id="site_ghostFeature2" value="24/7 Customer Service"></div>
+                    <div class="input-group"><label>FEATURE 3</label><input type="text" id="site_ghostFeature3" value="3 Project Revisions"></div>
+                    <div class="input-group"><label>ADD-ON: UNLIMITED REVISIONS</label><input type="text" id="site_ghostAddonRevisions" value="+ $20"></div>
+                </div>
+
+                <h3 class="section-subheader">DELIVERY PIPELINE</h3>
+                <div class="form-grid">
+                    <div class="input-group"><label>3 DAY EXPRESS ADD-ON</label><input type="text" id="site_ghostDelivery3d" value="+ $20"></div>
+                    <div class="input-group"><label>5 DAY PRIORITY ADD-ON</label><input type="text" id="site_ghostDelivery5d" value="+ $10"></div>
+                </div>
+
+                <h3 class="section-subheader" style="color: var(--accent-magenta);">ULTIMATE SPECIAL OFFER</h3>
+                <div class="form-grid">
+                    <div class="input-group full"><label>OFFER TITLE</label><input type="text" id="site_ghostSpecialTitle" value="SPECIAL OFFER: FULL TRACK"></div>
+                    <div class="input-group full"><label>OFFER DESCRIPTION</label><textarea id="site_ghostSpecialDesc">1 Full Track, Any Style, Mixed & Mastered. MP3 + WAV + MIDI + STEMS + PROJECT FILE</textarea></div>
+                    <div class="input-group"><label>OFFER PRICE</label><input type="text" id="site_ghostSpecialPrice" value="$300"></div>
+                </div>
+
+                <div class="btn-group" style="margin-top: 2rem; margin-bottom: 3rem;">
+                    <button class="save-btn" id="save-ghost"><i class="fas fa-save"></i> DEPLOY GHOST DIRECTIVES</button>
+                    <span id="save-msg-ghost" class="save-msg">Deploy successful.</span>
                 </div>
             </section>
         </main>
