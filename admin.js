@@ -589,6 +589,7 @@ function saveGlobals(msgId) {
 document.getElementById('save-globals').addEventListener('click', () => saveGlobals('save-msg-globals'));
 document.getElementById('save-links').addEventListener('click', () => saveGlobals('save-msg-links'));
 document.getElementById('save-modals-text').addEventListener('click', () => saveGlobals('save-msg-modals-text'));
+document.getElementById('save-ghost').addEventListener('click', () => saveGlobals('save-msg-ghost'));
 if (document.getElementById('save-modals-all-data')) {
     document.getElementById('save-modals-all-data').addEventListener('click', () => saveGlobals('save-msg-modals-all-data'));
 }
