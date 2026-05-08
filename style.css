@@ -2655,3 +2655,13 @@ textarea.real-input:focus {
     box-shadow: 0 0 15px rgba(255, 0, 128, 0.5);
 }
 
+/* --- GHOST PRODUCTION CUSTOM ANIMATIONS --- */
+@keyframes eventGlow {
+    0% { color: rgba(255, 255, 255, 0.6); text-shadow: none; }
+    50% { color: var(--accent-blue); text-shadow: 0 0 15px var(--accent-blue); }
+    100% { color: rgba(255, 255, 255, 0.6); text-shadow: none; }
+}
+
+.event-glow {
+    animation: eventGlow 3s infinite ease-in-out;
+}
