@@ -501,6 +501,8 @@ const initPortal = () => {
     setupModal('open-form', 'submission-modal');
     setupModal('open-form-sidebar', 'submission-modal'); // New: Sidebar trigger
     setupModal('open-contact', 'contact-modal');
+    setupModal('order-ghost', 'contact-modal');
+    setupModal('order-special', 'contact-modal');
 
     // --- ARTIST MODAL CLOSE LOGIC ---
     const artistModal = document.getElementById('artist-modal');
@@ -1052,6 +1054,21 @@ const initPortal = () => {
                     } else {
                         upcomingSection.style.setProperty('display', 'flex', 'important');
                     }
+                }
+
+                // GHOST PRODUCTION VISIBILITY GATING
+                const ghostSection = document.getElementById('ghost-production');
+                const navGhost = document.getElementById('nav-ghost');
+                const sideNavGhost = document.getElementById('side-nav-ghost');
+                
+                if (data.showGhostProduction === 'Hidden') {
+                    if (ghostSection) ghostSection.style.setProperty('display', 'none', 'important');
+                    if (navGhost) navGhost.style.setProperty('display', 'none', 'important');
+                    if (sideNavGhost) sideNavGhost.style.setProperty('display', 'none', 'important');
+                } else {
+                    if (ghostSection) ghostSection.style.setProperty('display', 'block', 'important');
+                    if (navGhost) navGhost.style.setProperty('display', 'inline-block', 'important');
+                    if (sideNavGhost) sideNavGhost.style.setProperty('display', 'flex', 'important');
                 }
 
                 const elements = document.querySelectorAll('[data-sync]');
