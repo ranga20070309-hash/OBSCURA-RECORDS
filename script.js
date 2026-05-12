@@ -5,7 +5,7 @@
 
 // --- DEVELOPER AUTHENTICATION (FOR INSPECTORS) ---
 console.log(
-    '%c CORE PORTAL AUTHENTICATED %c \n%c DEVELOPER: RANGA %c \n%c PROJECT: OBSCURA RECORD %c',
+    '%c CORE PORTAL AUTHENTICATED %c \n%c DEVELOPER: RANGA / SVYUXU %c \n%c PROJECT: OBSCURA RECORD %c',
     'background: #00f0ff; color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
     '',
     'color: #00f0ff; font-weight: bold; margin-top: 5px;',
