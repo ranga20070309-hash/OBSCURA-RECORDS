@@ -1042,118 +1042,130 @@ const initPortal = () => {
         // =====================================================
         const partnerItems = document.querySelectorAll('.artist-item[data-partner-id]');
 
-        partnerItems.forEach(item => {
-            const partnerId = item.getAttribute('data-partner-id');
-            const nameLabel = item.querySelector('h4') ? item.querySelector('h4').textContent : 'Partner';
-            const statusIndicator = item.querySelector('.status-indicator');
-            const avatar = item.querySelector('.artist-img');
+        if (partnerItems.length > 0) {
+            partnerItems.forEach(item => {
+                const partnerId = item.getAttribute('data-partner-id');
+                const statusIndicator = item.querySelector('.status-indicator');
+                const avatar = item.querySelector('.artist-img');
+                const nameHeader = item.querySelector('h4');
 
-            const partnerRef = db.ref('partner_status/' + partnerId);
-            partnerRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-
-                if (data) {
-                    // Update display name live
-                    if (data.name && item.querySelector('h4')) {
-                        item.querySelector('h4').textContent = data.name;
-                    }
-
-                    const status = (data.status || 'offline').toLowerCase();
-                    if (statusIndicator) {
-                        statusIndicator.textContent = status.toUpperCase();
-                        statusIndicator.className = `status-indicator ${status}`;
-                    }
-
-                    // Update avatar
-                    if (data.avatar_url && avatar) {
-                        avatar.style.backgroundImage = `url(${data.avatar_url})`;
-                        avatar.style.backgroundSize = 'cover';
-                    }
-
-                    // Avatar decoration
-                    const decoration = item.querySelector('.avatar-decoration');
-                    if (decoration) {
-                        if (data.decoration_url && data.decoration_url !== '') {
-                            decoration.src = data.decoration_url;
-                            decoration.style.display = 'block';
-                        } else {
-                            decoration.style.display = 'none';
-                        }
-                    }
-
-                    // Modal click handler
-                    item.style.cursor = 'pointer';
-                    item.onclick = () => {
-                        const modal = document.getElementById('artist-modal');
-                        const mName = document.getElementById('artist-modal-name');
-                        const mStatus = document.getElementById('artist-modal-status');
-                        const mBio = document.getElementById('artist-modal-bio');
-                        const mImg = document.getElementById('artist-modal-img');
-                        const mDecor = document.getElementById('artist-modal-decoration');
-                        const mLinks = document.getElementById('artist-modal-links');
-
-                        if (!modal) return;
-
-                        playBleep(700, 'sine', 0.1);
-                        if (mName) mName.textContent = data.name || nameLabel;
-                        if (mStatus) {
-                            mStatus.textContent = (data.status || 'OFFLINE').toUpperCase();
-                            mStatus.className = `status-indicator ${(data.status || 'offline').toLowerCase()}`;
-                        }
-                        if (mBio) mBio.textContent = data.bio || "Label partner profile — encrypted transmission.";
-
-                        if (data.avatar_url && mImg) {
-                            mImg.style.backgroundImage = `url(${data.avatar_url})`;
-                            mImg.style.backgroundSize = 'cover';
-                        }
-
-                        if (mDecor) {
-                            if (data.decoration_url) {
-                                mDecor.src = data.decoration_url;
-                                mDecor.style.display = 'block';
-                            } else {
-                                mDecor.style.display = 'none';
-                            }
-                        }
-
-                        if (mLinks) {
-                            mLinks.innerHTML = '';
-                            if (data.socials) {
-                                Object.entries(data.socials).forEach(([platform, url]) => {
-                                    let icon = 'link';
-                                    if (platform === 'instagram') icon = 'fab fa-instagram';
-                                    else if (platform === 'spotify') icon = 'fab fa-spotify';
-                                    else if (platform === 'apple') icon = 'fa-brands fa-apple';
-                                    else if (platform === 'facebook') icon = 'fa-brands fa-facebook-f';
-                                    else if (platform === 'youtube') icon = 'fab fa-youtube';
-                                    else if (platform === 'tiktok') icon = 'fab fa-tiktok';
-                                    else if (platform === 'twitter' || platform === 'x') icon = 'fab fa-x-twitter';
-
-                                    mLinks.insertAdjacentHTML('beforeend', `
-                                        <a href="${url}" target="_blank" class="platform-link">
-                                            <i class="${icon}"></i>
-                                        </a>
-                                    `);
-                                });
-                            }
-                        }
-
-                        modal.classList.add('active');
-                        document.body.classList.add('no-scroll');
-                        document.documentElement.classList.add('no-scroll');
-                    };
-
-                } else {
-                    console.warn(`[PARTNER] No status data for: ${nameLabel}`);
-                    if (statusIndicator) {
-                        statusIndicator.textContent = 'OFFLINE';
-                        statusIndicator.className = 'status-indicator offline';
-                    }
+                // Set initial fallback so it doesn't stay on LOADING forever
+                if (statusIndicator && statusIndicator.textContent === 'LOADING...') {
+                    statusIndicator.textContent = 'OFFLINE';
+                    statusIndicator.className = 'status-indicator offline';
                 }
-            }, (error) => {
-                console.error(`[PARTNER] Firebase Sync Error for ${nameLabel}:`, error);
+
+                const partnerRef = db.ref('partner_status/' + partnerId);
+                partnerRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+
+                    if (data) {
+                        // Update display name
+                        if (data.name && nameHeader) {
+                            nameHeader.textContent = data.name;
+                        }
+
+                        // Update Status
+                        const status = (data.status || 'offline').toLowerCase();
+                        if (statusIndicator) {
+                            statusIndicator.textContent = status.toUpperCase();
+                            statusIndicator.className = `status-indicator ${status}`;
+                        }
+
+                        // Update Avatar
+                        if (data.avatar_url && avatar) {
+                            avatar.style.backgroundImage = `url(${data.avatar_url})`;
+                            avatar.style.backgroundSize = 'cover';
+                        }
+
+                        // Update Decoration
+                        const decoration = item.querySelector('.avatar-decoration');
+                        if (decoration) {
+                            if (data.decoration_url && data.decoration_url !== '') {
+                                decoration.src = data.decoration_url;
+                                decoration.style.display = 'block';
+                            } else {
+                                decoration.style.display = 'none';
+                            }
+                        }
+
+                        // Modal Setup
+                        item.style.cursor = 'pointer';
+                        item.onclick = () => {
+                            const modal = document.getElementById('artist-modal');
+                            const mName = document.getElementById('artist-modal-name');
+                            const mStatus = document.getElementById('artist-modal-status');
+                            const mBio = document.getElementById('artist-modal-bio');
+                            const mImg = document.getElementById('artist-modal-img');
+                            const mDecor = document.getElementById('artist-modal-decoration');
+                            const mLinks = document.getElementById('artist-modal-links');
+
+                            if (!modal) return;
+
+                            if (typeof playBleep === 'function') playBleep(700, 'sine', 0.1);
+                            
+                            if (mName) mName.textContent = data.name || (nameHeader ? nameHeader.textContent : 'Partner');
+                            if (mStatus) {
+                                mStatus.textContent = (data.status || 'OFFLINE').toUpperCase();
+                                mStatus.className = `status-indicator ${(data.status || 'offline').toLowerCase()}`;
+                            }
+                            if (mBio) mBio.textContent = data.bio || "Label partner profile — encrypted transmission.";
+
+                            if (data.avatar_url && mImg) {
+                                mImg.style.backgroundImage = `url(${data.avatar_url})`;
+                                mImg.style.backgroundSize = 'cover';
+                            }
+
+                            if (mDecor) {
+                                if (data.decoration_url) {
+                                    mDecor.src = data.decoration_url;
+                                    mDecor.style.display = 'block';
+                                } else {
+                                    mDecor.style.display = 'none';
+                                }
+                            }
+
+                            if (mLinks) {
+                                mLinks.innerHTML = '';
+                                if (data.socials) {
+                                    Object.entries(data.socials).forEach(([platform, url]) => {
+                                        let icon = 'link';
+                                        const p = platform.toLowerCase();
+                                        if (p === 'instagram') icon = 'fab fa-instagram';
+                                        else if (p === 'spotify') icon = 'fab fa-spotify';
+                                        else if (p === 'apple') icon = 'fa-brands fa-apple';
+                                        else if (p === 'facebook') icon = 'fa-brands fa-facebook-f';
+                                        else if (p === 'youtube') icon = 'fab fa-youtube';
+                                        else if (p === 'tiktok') icon = 'fab fa-tiktok';
+                                        else if (p === 'twitter' || p === 'x') icon = 'fab fa-x-twitter';
+
+                                        mLinks.insertAdjacentHTML('beforeend', `
+                                            <a href="${url}" target="_blank" class="platform-link">
+                                                <i class="${icon}"></i>
+                                            </a>
+                                        `);
+                                    });
+                                }
+                            }
+
+                            modal.classList.add('active');
+                            document.body.classList.add('no-scroll');
+                            document.documentElement.classList.add('no-scroll');
+                        };
+
+                    } else {
+                        // Data is null, person might never have been online since bot update
+                        if (statusIndicator) {
+                            statusIndicator.textContent = 'OFFLINE';
+                            statusIndicator.className = 'status-indicator offline';
+                        }
+                    }
+                }, (error) => {
+                    console.error(`[PARTNER SYNC ERROR] ID: ${partnerId}`, error);
+                });
             });
-        });
+        }
+
 
     } else {
         console.error("Firebase SDK not loaded! Check index.html scripts.");
