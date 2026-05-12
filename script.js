@@ -5,14 +5,12 @@
 
 // --- DEVELOPER AUTHENTICATION (FOR INSPECTORS) ---
 console.log(
-    '%c CORE PORTAL AUTHENTICATED %c \n%c DEVELOPER: RANGA %c \n%c PROJECT: OBSCURA RECORD %c \n%c STATUS: 100% CUSTOM BUILT %c',
+    '%c CORE PORTAL AUTHENTICATED %c \n%c DEVELOPER: RANGA %c \n%c PROJECT: OBSCURA RECORD %c',
     'background: #00f0ff; color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
     '',
     'color: #00f0ff; font-weight: bold; margin-top: 5px;',
     '',
     'color: #fff; opacity: 0.8;',
-    '',
-    'color: #b700ff; font-style: italic;',
     ''
 );
 console.log("%cWARNING: ACCESSING PROTECTED LOGIC. REVERSE ENGINEERING IS MONITORED.", "color: red; font-weight: bold; font-size: 8px;");
@@ -159,6 +157,28 @@ const runIgnition = () => {
                 gsap.to(".cursor-glow", { opacity: 1, duration: 1.5 });
             }
             console.log("PORTAL IGNITION COMPLETE.");
+
+            // --- SYSTEM OPTIMIZATION PROGRESSION ENGINE ---
+            const devStatusTag = document.querySelector('.dev-status-tag');
+            if (devStatusTag) {
+                let progress = 0;
+                const duration = 4000; // 4 seconds to reach 100%
+                const interval = 40; // update every 40ms
+                const increment = 100 / (duration / interval);
+
+                const timer = setInterval(() => {
+                    progress += increment;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(timer);
+                        devStatusTag.innerHTML = `<i class="fas fa-check-circle" style="font-size: 0.5rem;"></i> SYSTEM OPTIMIZED`;
+                        devStatusTag.style.opacity = "0.6";
+                        devStatusTag.style.color = "var(--accent-blue)";
+                    } else {
+                        devStatusTag.innerHTML = `SYSTEM OPTIMIZATION IN PROGRESS: ${Math.floor(progress)}%`;
+                    }
+                }, interval);
+            }
         }
     });
 
