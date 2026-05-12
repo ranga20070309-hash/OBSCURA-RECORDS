@@ -155,7 +155,9 @@ const runIgnition = () => {
     const tl = gsap.timeline({
         onComplete: () => {
             // GENTLY REVEAL CURSOR GLOW AFTER EVERYTHING IS CLEAR
-            gsap.to(".cursor-glow", { opacity: 1, duration: 1.5 });
+            if (!window.matchMedia("(hover: none) and (pointer: coarse)").matches && window.innerWidth > 1024) {
+                gsap.to(".cursor-glow", { opacity: 1, duration: 1.5 });
+            }
             console.log("PORTAL IGNITION COMPLETE.");
         }
     });
@@ -1569,8 +1571,8 @@ const initPortal = () => {
                 this.init();
             }
             init() {
-                this.x = Math.random() * pCanvas.width;
-                this.y = Math.random() * pCanvas.height;
+                this.x = Math.random() * window.innerWidth;
+                this.y = Math.random() * window.innerHeight;
                 this.size = Math.random() * 2 + 0.5;
                 this.speedY = Math.random() * 0.5 + 0.1;
                 this.speedX = (Math.random() - 0.5) * 0.1;
@@ -1598,7 +1600,7 @@ const initPortal = () => {
                     this.y += this.speedY;
                     this.x += this.speedX;
                     // Reset if out of bounds
-                    if (this.y > pCanvas.height) this.y = -10;
+                    if (this.y > window.innerHeight) this.y = -10;
                 }
             }
             draw() {
@@ -1614,7 +1616,7 @@ const initPortal = () => {
                 this.init();
             }
             init() {
-                this.x = Math.random() * pCanvas.width;
+                this.x = Math.random() * window.innerWidth;
                 this.y = -10;
                 this.length = Math.random() * 100 + 50;
                 this.speedX = Math.random() * 10 + 5;
@@ -1637,8 +1639,13 @@ const initPortal = () => {
         }
 
         function pResize() {
-            pCanvas.width = window.innerWidth;
-            pCanvas.height = window.innerHeight;
+            const dpr = window.devicePixelRatio || 1;
+            pCanvas.width = window.innerWidth * dpr;
+            pCanvas.height = window.innerHeight * dpr;
+            pCanvas.style.width = window.innerWidth + 'px';
+            pCanvas.style.height = window.innerHeight + 'px';
+            pCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
             particles = [];
             for (let i = 0; i < particleCount; i++) {
                 particles.push(new Stardust());
@@ -1646,7 +1653,7 @@ const initPortal = () => {
         }
 
         function pAnimate() {
-            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+            pCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
             particles.forEach(p => {
                 p.update();
                 p.draw();
