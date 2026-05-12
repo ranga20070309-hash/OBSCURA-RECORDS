@@ -162,12 +162,12 @@ const runIgnition = () => {
             const devStatusTag = document.querySelector('.dev-status-tag');
             if (devStatusTag) {
                 let progress = 0;
-                const duration = 4000; // 4 seconds to reach 100%
-                const interval = 40; // update every 40ms
-                const increment = 100 / (duration / interval);
-
+                
                 const timer = setInterval(() => {
-                    progress += increment;
+                    // Random small increments to make it feel realistic
+                    const randomInc = Math.random() * 1.5 + 0.2; 
+                    progress += randomInc;
+
                     if (progress >= 100) {
                         progress = 100;
                         clearInterval(timer);
@@ -177,7 +177,7 @@ const runIgnition = () => {
                     } else {
                         devStatusTag.innerHTML = `SYSTEM OPTIMIZATION IN PROGRESS: ${Math.floor(progress)}%`;
                     }
-                }, interval);
+                }, 100); // Update every 100ms
             }
         }
     });
