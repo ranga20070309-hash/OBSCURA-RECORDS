@@ -80,9 +80,16 @@ window.saveIndividualStaff = function (discordId) {
             socials[platform] = input.value.trim();
         }
     });
+    
     const data = { bio: bio, avatar_url: avatar, socials: socials };
-    db.ref('staff_status/' + discordId).update(data).then(() => {
-        showToast(`PERSONNEL SYNC SUCCESSFUL: ${discordId}`);
+    
+    // SMART ROUTING: Determine if this is a partner or staff
+    const partnerIds = ["1466152706145128659"];
+    const isPartner = partnerIds.includes(discordId);
+    const path = isPartner ? 'partner_status/' : 'staff_status/';
+
+    db.ref(path + discordId).update(data).then(() => {
+        showToast(`${isPartner ? 'PARTNER' : 'PERSONNEL'} SYNC SUCCESSFUL: ${discordId}`);
         if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> SYNC INDIVIDUAL';
         bumpSiteVersion();
         loadStaff();
@@ -1241,25 +1248,38 @@ function loadStaff() {
     const partnersContainer = document.getElementById('partners-container');
     if (!staffContainer) return;
 
+    staffContainer.innerHTML = '<p style="opacity:0.5; padding:2rem;">Syncing personnel records...</p>';
+    if (partnersContainer) partnersContainer.innerHTML = '<p style="opacity:0.5; padding:2rem;">Syncing partner records...</p>';
+
+    const partnerIds = ["1466152706145128659"];
+
+    // 1. Load Staff
     db.ref('staff_status').once('value').then(snapshot => {
-        const data = snapshot.val();
-        staffContainer.innerHTML = '';
-        if (partnersContainer) partnersContainer.innerHTML = '';
+        const staffData = snapshot.val() || {};
+        
+        // 2. Load Partners
+        db.ref('partner_status').once('value').then(pSnapshot => {
+            const partnerData = pSnapshot.val() || {};
+            
+            staffContainer.innerHTML = '';
+            if (partnersContainer) partnersContainer.innerHTML = '';
 
-        if (!data) {
-            staffContainer.innerHTML = '<p style="opacity:0.5; padding:2rem; font-style:italic; color:var(--accent-magenta);">Personnel node not found. Please click INITIALIZE button above once.</p>';
-            return;
-        }
+            // Render Staff
+            Object.entries(staffData).forEach(([id, staff]) => {
+                if (!partnerIds.includes(id)) {
+                    staffContainer.appendChild(createStaffEditor(staff, id));
+                }
+            });
 
-        const partnerIds = ["1466152706145128659"];
-
-        Object.entries(data).forEach(([id, staff]) => {
-            const editor = createStaffEditor(staff, id);
-            if (partnerIds.includes(id) && partnersContainer) {
-                partnersContainer.appendChild(editor);
-            } else {
-                staffContainer.appendChild(editor);
-            }
+            // Render Partners
+            Object.entries(partnerData).forEach(([id, partner]) => {
+                if (partnerIds.includes(id) && partnersContainer) {
+                    partnersContainer.appendChild(createStaffEditor(partner, id));
+                }
+            });
+            
+            if (staffContainer.innerHTML === '') staffContainer.innerHTML = '<p style="opacity:0.3; padding:2rem;">No staff records.</p>';
+            if (partnersContainer && partnersContainer.innerHTML === '') partnersContainer.innerHTML = '<p style="opacity:0.3; padding:2rem;">No partner records.</p>';
         });
     });
 }
