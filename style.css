@@ -1080,14 +1080,16 @@ section {
 }
 
 .artists-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 3.5rem;
     /* Increased gap for better distance */
     width: 100%;
 }
 
 .artist-item {
+    flex: 0 1 320px;
     padding: 3rem 2.5rem;
     border-radius: 20px;
     background: var(--glass-bg);
@@ -1673,7 +1675,6 @@ footer {
     }
 
     .artists-grid {
-        grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
     }
 
@@ -1695,7 +1696,6 @@ footer {
 
 @media (max-width: 768px) {
     .artists-grid {
-        grid-template-columns: 1fr !important;
         gap: 2rem !important;
     }
     
@@ -1706,9 +1706,7 @@ footer {
 }
 
 @media (max-width: 480px) {
-    .artists-grid {
-        grid-template-columns: 1fr;
-    }
+
 
     .artist-item {
         padding: 1.5rem;
