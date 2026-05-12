@@ -1238,19 +1238,28 @@ window.removeStaff = function (discordId) {
 
 function loadStaff() {
     const staffContainer = document.getElementById('staff-container');
+    const partnersContainer = document.getElementById('partners-container');
     if (!staffContainer) return;
 
     db.ref('staff_status').once('value').then(snapshot => {
         const data = snapshot.val();
         staffContainer.innerHTML = '';
+        if (partnersContainer) partnersContainer.innerHTML = '';
 
         if (!data) {
             staffContainer.innerHTML = '<p style="opacity:0.5; padding:2rem; font-style:italic; color:var(--accent-magenta);">Personnel node not found. Please click INITIALIZE button above once.</p>';
             return;
         }
 
+        const partnerIds = ["1466152706145128659"];
+
         Object.entries(data).forEach(([id, staff]) => {
-            staffContainer.appendChild(createStaffEditor(staff, id));
+            const editor = createStaffEditor(staff, id);
+            if (partnerIds.includes(id) && partnersContainer) {
+                partnersContainer.appendChild(editor);
+            } else {
+                staffContainer.appendChild(editor);
+            }
         });
     });
 }
@@ -1300,7 +1309,8 @@ if (initStaffBtn) {
                 "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
                 "459345097373515777": { name: "IRANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
                 "1296819349885161472": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                "1296813876364705792": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" }
+                "1296813876364705792": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                "1466152706145128659": { name: "Itx Record Label", status: "offline", bio: "LABEL PARTNER", avatar_url: "assets/staff/default.png" }
             };
 
             Object.entries(baseStaff).forEach(([id, staff]) => {
