@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STREETX | ABSOLUTE CORE ADMIN</title>
+    <link rel="icon" type="image/png" href="../assets/STREETX.PNG">
+    <link rel="stylesheet" href="../admin-streetx-clothing.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="../config-streetx-clothing.js"></script>
+</head>
+<body class="admin-v1">
+    <!-- ... Sidebar and Main Content (Same as before) ... -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/STREETX.PNG" alt="STREETX">
+            <span>ABSOLUTE CORE</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="active" onclick="showTab('dashboard')"><i class="fas fa-chart-line"></i> DASHBOARD</a>
+            <a href="#" onclick="showTab('products')"><i class="fas fa-tshirt"></i> PRODUCTS</a>
+            <a href="#" onclick="showTab('settings')"><i class="fas fa-sliders-h"></i> CORE SETTINGS</a>
+            <a href="../streetx-clothing/" target="_blank"><i class="fas fa-external-link-alt"></i> VIEW PUBLIC SITE</a>
+            <a href="../preview-streetx-clothing/" target="_blank" style="color: var(--accent);"><i class="fas fa-eye"></i> PREVIEW (BYPASS)</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> LOGOUT</button>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <!-- Dashboard -->
+        <section id="dashboard-tab" class="admin-tab active">
+            <header class="tab-header">
+                <h1>COMMAND CENTER</h1>
+                <p>Monitor your digital streetwear empire.</p>
+            </header>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-eye"></i></div>
+                    <div class="stat-info"><span>SESSIONS</span><h2 id="total-visitors">0</h2></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-box"></i></div>
+                    <div class="stat-info"><span>SKUS</span><h2 id="live-products">0</h2></div>
+                </div>
+                <div class="stat-card highlight">
+                    <div class="stat-icon"><i class="fas fa-power-off"></i></div>
+                    <div class="stat-info">
+                        <span>SYSTEM STATUS</span>
+                        <div style="display: flex; align-items: center; gap: 15px; margin-top: 5px;">
+                            <h2 id="current-status" style="margin:0;">ACTIVE</h2>
+                            <input type="checkbox" id="dash-m-toggle" style="width: 20px; height: 20px; cursor: pointer;" onchange="toggleMaintenance(this.checked)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Products -->
+        <section id="products-tab" class="admin-tab">
+            <header class="tab-header">
+                <div class="header-split">
+                    <h1>COLLECTION MANAGER</h1>
+                    <button class="btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i> ADD NEW PRODUCT</button>
+                </div>
+            </header>
+            <div class="product-list-container">
+                <table class="admin-table">
+                    <thead><tr><th>PREVIEW</th><th>NAME</th><th>COLLECTION</th><th>PRICE</th><th>CONTROL</th></tr></thead>
+                    <tbody id="product-list"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Settings Tab -->
+        <section id="settings-tab" class="admin-tab">
+            <header class="tab-header">
+                <h1>CORE PARAMETERS</h1>
+                <p>Deep control over every visual and functional element.</p>
+            </header>
+            <div class="settings-grid">
+                <!-- Maintenance & System -->
+                <div class="settings-card highlight">
+                    <div class="card-head"><h3>MAINTENANCE CONTROL</h3></div>
+                    <div class="card-body">
+                        <div class="input-row">
+                            <div class="input-group"><label>Maintenance Mode</label><input type="checkbox" id="set-maintenance-mode"></div>
+                            <div class="input-group"><label>Anti-Copy Protection</label><input type="checkbox" id="set-protection" checked></div>
+                        </div>
+                        <div class="input-group"><label>Maintenance Title</label><input type="text" id="set-maintenance-title"></div>
+                        <div class="input-group"><label>Maintenance Message</label><input type="text" id="set-maintenance-msg"></div>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="settings-card">
+                    <div class="card-head"><h3>NAVIGATION</h3><input type="checkbox" id="set-show-nav" checked></div>
+                    <div class="card-body">
+                        <div class="input-group"><label>Header Logo</label><input type="checkbox" id="set-header-logo-show" checked></div>
+                        <div class="input-group"><label>Header Brand</label><input type="text" id="set-header-name-text"></div>
+                        <div class="input-row">
+                            <input type="text" id="set-nav-home-text" placeholder="HOME">
+                            <input type="text" id="set-nav-collection-text" placeholder="COLLECTION">
+                            <input type="text" id="set-nav-about-text" placeholder="IDENTITY">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Section -->
+                <div class="settings-card">
+                    <div class="card-head"><h3>HERO SECTION</h3><input type="checkbox" id="set-show-hero" checked></div>
+                    <div class="card-body">
+                        <div class="input-row">
+                            <div class="input-group"><label>Hero Title</label><input type="text" id="set-hero-title"></div>
+                            <div class="input-group"><label>Hero Accent</label><input type="text" id="set-hero-accent"></div>
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group"><label>Scroll Hint</label><input type="checkbox" id="set-show-scroll-hint" checked></div>
+                            <div class="input-group"><label>Scroll Text</label><input type="text" id="set-scroll-text"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Identity Section -->
+                <div class="settings-card">
+                    <div class="card-head"><h3>IDENTITY SECTION</h3><input type="checkbox" id="set-show-identity" checked></div>
+                    <div class="card-body">
+                        <div class="input-group"><label>Tagline</label><input type="text" id="set-id-tagline"></div>
+                        <div class="input-group"><label>Main Title</label><input type="text" id="set-id-title"></div>
+                        <div class="input-group"><label>Description</label><textarea id="set-id-desc" rows="4"></textarea></div>
+                        <div class="stats-inputs">
+                            <label>BRAND STATS</label>
+                            <div class="input-row"><input type="text" id="set-stat1-label"><input type="text" id="set-stat1-val"></div>
+                            <div class="input-row"><input type="text" id="set-stat2-label"><input type="text" id="set-stat2-val"></div>
+                            <div class="input-row"><input type="text" id="set-stat3-label"><input type="text" id="set-stat3-val"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aesthetics -->
+                <div class="settings-card">
+                    <div class="card-head"><h3>VISUALS</h3></div>
+                    <div class="card-body">
+                        <div class="input-group"><label>Brand Color</label><input type="color" id="set-accent-color"></div>
+                        <div class="input-row">
+                            <div class="input-group"><label>Grid</label><input type="checkbox" id="set-show-grid" checked></div>
+                            <div class="input-group"><label>Noise</label><input type="checkbox" id="set-show-noise" checked></div>
+                        </div>
+                        <div class="input-group"><label>Tape System</label><input type="checkbox" id="set-show-tapes" checked></div>
+                        <div class="input-group"><label>Tape Text</label><input type="text" id="set-tape-text"></div>
+                    </div>
+                </div>
+                <!-- Footer -->
+                <div class="settings-card">
+                    <div class="card-head"><h3>FOOTER</h3><input type="checkbox" id="set-show-footer" checked></div>
+                    <div class="card-body">
+                        <div class="input-group"><label>Footer Logo</label><input type="checkbox" id="set-footer-logo-show" checked></div>
+                        <div class="input-group"><label>Copyright</label><input type="text" id="set-footer-copy"></div>
+                    </div>
+                </div>
+                <!-- Analytics Purge -->
+                <div class="settings-card highlight" style="border-color: #ff4444;">
+                    <div class="card-head"><h3>ANALYTICS CONTROL</h3></div>
+                    <div class="card-body">
+                        <p style="font-size: 11px; opacity: 0.6; margin-bottom: 15px;">Purge current session data to start fresh with unique visitor tracking.</p>
+                        <button class="btn-cancel" onclick="resetStats()" style="width: 100%; background: #ff4444; color: #fff; border: none; padding: 12px; font-weight: bold;">RESET VISITOR STATS (PURGE)</button>
+                    </div>
+                </div>
+            </div>
+            <div class="sticky-actions">
+                <button class="btn-save-large" onclick="saveSettings()">DEPLOY CHANGES</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal -->
+    <div id="product-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title">ADD NEW PRODUCT</h2>
+            <input type="hidden" id="p-id">
+            <div class="form-grid">
+                <div class="input-group"><label>Name</label><input type="text" id="p-name"></div>
+                <div class="input-group"><label>Collection</label><input type="text" id="p-collection"></div>
+                <div class="input-group"><label>Price</label><input type="text" id="p-price"></div>
+                <div class="input-group">
+                    <label>Product Mockup (Free Upload)</label>
+                    <div class="upload-area">
+                        <input type="file" id="p-file" accept="image/*" style="display: none;">
+                        <button class="btn-cancel" onclick="document.getElementById('p-file').click()" style="width: 100%; margin:0;">SELECT PHOTO</button>
+                        <p id="file-status" style="font-size: 0.6rem; color: var(--accent); margin-top: 5px;"></p>
+                    </div>
+                    <input type="hidden" id="p-image">
+                </div>
+                <div class="input-group full"><label>Spec Details</label><textarea id="p-desc" rows="4"></textarea></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('product-modal')">CANCEL</button>
+                <button class="btn-primary" id="save-product-btn">SAVE PRODUCT</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProducts = {};
+        let db;
+
+        function showTab(tabId) {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+            document.getElementById(tabId + '-tab').classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function openProductModal(id = null) {
+            const title = document.getElementById('modal-title');
+            const pId = document.getElementById('p-id');
+            const name = document.getElementById('p-name');
+            const col = document.getElementById('p-collection');
+            const price = document.getElementById('p-price');
+            const img = document.getElementById('p-image');
+            const desc = document.getElementById('p-desc');
+            const fileStatus = document.getElementById('file-status');
+
+            if (id && currentProducts[id]) {
+                const p = currentProducts[id];
+                title.innerText = "EDIT PRODUCT";
+                pId.value = p.id;
+                name.value = p.name;
+                col.value = p.collection;
+                price.value = p.price;
+                img.value = p.image;
+                desc.value = p.desc || "";
+                fileStatus.innerText = "Current photo loaded.";
+            } else {
+                title.innerText = "ADD NEW PRODUCT";
+                pId.value = ""; name.value = ""; col.value = ""; price.value = ""; img.value = ""; desc.value = "";
+                fileStatus.innerText = "";
+            }
+            openModal('product-modal');
+        }
+
+        if (streatxFirebaseConfig.apiKey !== "YOUR_API_KEY") {
+            firebase.initializeApp(streatxFirebaseConfig);
+            db = firebase.database();
+
+            db.ref('settings').on('value', (snap) => {
+                const d = snap.val(); if(!d) return;
+                document.getElementById('set-show-nav').checked = d.showNav ?? true;
+                document.getElementById('set-header-logo-show').checked = d.headerLogoShow ?? true;
+                document.getElementById('set-header-name-text').value = d.headerNameText ?? "STREETX";
+                document.getElementById('set-nav-home-text').value = d.navHomeText ?? "HOME";
+                document.getElementById('set-nav-collection-text').value = d.navCollectionText ?? "COLLECTION";
+                document.getElementById('set-nav-about-text').value = d.navAboutText ?? "IDENTITY";
+                document.getElementById('set-show-hero').checked = d.showHero ?? true;
+                document.getElementById('set-hero-title').value = d.heroTitle ?? "STREETX";
+                document.getElementById('set-hero-accent').value = d.heroAccent ?? "CLOTHING";
+                document.getElementById('set-show-scroll-hint').checked = d.showScrollHint ?? true;
+                document.getElementById('set-scroll-text').value = d.scrollText ?? "SCROLL TO DISCOVER";
+                document.getElementById('set-show-identity').checked = d.showIdentity ?? true;
+                document.getElementById('set-id-tagline').value = d.idTagline ?? "IDENTITY";
+                document.getElementById('set-id-title').value = d.idTitle ?? "DEFINING THE X-DIMENSION";
+                document.getElementById('set-id-desc').value = d.idDesc ?? "";
+                document.getElementById('set-maintenance-mode').checked = d.maintenanceMode ?? false;
+                document.getElementById('dash-m-toggle').checked = d.maintenanceMode ?? false;
+                const statusEl = document.getElementById('current-status');
+                if(statusEl) {
+                    statusEl.innerText = d.maintenanceMode ? "OFFLINE" : "ACTIVE";
+                    statusEl.style.color = d.maintenanceMode ? "red" : "var(--accent)";
+                }
+                document.getElementById('set-maintenance-title').value = d.maintenanceTitle ?? "SITE UNDER RENOVATION";
+                document.getElementById('set-maintenance-msg').value = d.maintenanceMsg ?? "WE'RE REFINING THE EXPERIENCE. BE RIGHT BACK.";
+                document.getElementById('set-stat1-label').value = d.stat1Label ?? "EST";
+                document.getElementById('set-stat1-val').value = d.stat1Val ?? "2026";
+                document.getElementById('set-stat2-label').value = d.stat2Label ?? "HQ";
+                document.getElementById('set-stat2-val').value = d.stat2Val ?? "OBSCURA CORE";
+                document.getElementById('set-stat3-label').value = d.stat3Label ?? "STATUS";
+                document.getElementById('set-stat3-val').value = d.stat3Val ?? "ACTIVE";
+                document.getElementById('set-accent-color').value = d.accentColor ?? "#a6ff00";
+                document.getElementById('set-show-grid').checked = d.showGrid ?? true;
+                document.getElementById('set-show-noise').checked = d.showNoise ?? true;
+                document.getElementById('set-show-tapes').checked = d.showTapes ?? true;
+                document.getElementById('set-tape-text').value = d.tapeText ?? "STREETX CLOTHING // ";
+                document.getElementById('set-protection').checked = d.protection ?? true;
+                document.getElementById('set-show-footer').checked = d.showFooter ?? true;
+                document.getElementById('set-footer-logo-show').checked = d.footerLogoShow ?? true;
+                document.getElementById('set-footer-copy').value = d.footerCopy ?? "© 2026 STREETX CLOTHING";
+            });
+
+            window.saveSettings = () => {
+                const s = {
+                    showNav: document.getElementById('set-show-nav').checked,
+                    headerLogoShow: document.getElementById('set-header-logo-show').checked,
+                    headerNameText: document.getElementById('set-header-name-text').value,
+                    navHomeText: document.getElementById('set-nav-home-text').value,
+                    navCollectionText: document.getElementById('set-nav-collection-text').value,
+                    navAboutText: document.getElementById('set-nav-about-text').value,
+                    showHero: document.getElementById('set-show-hero').checked,
+                    heroTitle: document.getElementById('set-hero-title').value,
+                    heroAccent: document.getElementById('set-hero-accent').value,
+                    showScrollHint: document.getElementById('set-show-scroll-hint').checked,
+                    scrollText: document.getElementById('set-scroll-text').value,
+                    showIdentity: document.getElementById('set-show-identity').checked,
+                    idTagline: document.getElementById('set-id-tagline').value,
+                    idTitle: document.getElementById('set-id-title').value,
+                    idDesc: document.getElementById('set-id-desc').value,
+                    maintenanceMode: document.getElementById('set-maintenance-mode').checked,
+                    maintenanceTitle: document.getElementById('set-maintenance-title').value,
+                    maintenanceMsg: document.getElementById('set-maintenance-msg').value,
+                    stat1Label: document.getElementById('set-stat1-label').value,
+                    stat1Val: document.getElementById('set-stat1-val').value,
+                    stat2Label: document.getElementById('set-stat2-label').value,
+                    stat2Val: document.getElementById('set-stat2-val').value,
+                    stat3Label: document.getElementById('set-stat3-label').value,
+                    stat3Val: document.getElementById('set-stat3-val').value,
+                    accentColor: document.getElementById('set-accent-color').value,
+                    showGrid: document.getElementById('set-show-grid').checked,
+                    showNoise: document.getElementById('set-show-noise').checked,
+                    showTapes: document.getElementById('set-show-tapes').checked,
+                    tapeText: document.getElementById('set-tape-text').value,
+                    protection: document.getElementById('set-protection').checked,
+                    showFooter: document.getElementById('set-show-footer').checked,
+                    footerLogoShow: document.getElementById('set-footer-logo-show').checked,
+                    footerCopy: document.getElementById('set-footer-copy').value
+                };
+                db.ref('settings').set(s).then(() => alert("CORE DEPLOYED."));
+            };
+
+            window.toggleMaintenance = (val) => {
+                db.ref('settings/maintenanceMode').set(val);
+                document.getElementById('set-maintenance-mode').checked = val;
+            };
+
+            db.ref('products').on('value', (snap) => {
+                const list = document.getElementById('product-list');
+                const products = snap.val(); currentProducts = products || {};
+                list.innerHTML = ""; let count = 0;
+                if (products) {
+                    Object.values(products).forEach(p => {
+                        count++;
+                        list.innerHTML += `<tr>
+                            <td><img src="${p.image}" style="height:40px; border-radius:4px;"></td>
+                            <td>${p.name}</td><td>${p.collection}</td><td>${p.price}</td>
+                            <td>
+                                <button class="btn-cancel" style="padding: 5px 10px; margin-right: 5px;" onclick="openProductModal('${p.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn-cancel" style="padding: 5px 10px; color: #ff4444;" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                    });
+                }
+                document.getElementById('live-products').innerText = count;
+            });
+
+            // Free Image Handler (Base64 + Resizer)
+            document.getElementById('p-file').onchange = (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                document.getElementById('file-status').innerText = "Processing...";
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800;
+                        let width = img.width; let height = img.height;
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // Compressed
+                        document.getElementById('p-image').value = dataUrl;
+                        document.getElementById('file-status').innerText = "Ready to Save!";
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            };
+
+            document.getElementById('save-product-btn').onclick = () => {
+                const id = document.getElementById('p-id').value || Date.now().toString();
+                const p = { 
+                    id, name: document.getElementById('p-name').value, 
+                    collection: document.getElementById('p-collection').value, 
+                    price: document.getElementById('p-price').value, 
+                    image: document.getElementById('p-image').value, 
+                    desc: document.getElementById('p-desc').value 
+                };
+                if (!p.image) return alert("Select a photo first!");
+                db.ref('products/' + id).set(p).then(() => { closeModal('product-modal'); alert("PRODUCT SAVED."); });
+            };
+
+            window.deleteProduct = (id) => { if(confirm("DELETE PRODUCT?")) db.ref('products/' + id).remove(); };
+            window.resetStats = () => {
+                if(confirm("Are you sure you want to purge all visitor stats? This cannot be undone.")) {
+                    db.ref('stats/visitors').set(0).then(() => {
+                        localStorage.removeItem('streatx_visitor');
+                        alert("STATS PURGED. Your local tag is also cleared for testing.");
+                    });
+                }
+            };
+            db.ref('stats/visitors').on('value', (snap) => document.getElementById('total-visitors').innerText = snap.val() || 0);
+        }
+    </script>
+</body>
+</html>
