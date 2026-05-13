@@ -1,2994 +1,1158 @@
-/* 
-    OBSCURA RECORDS | LUXURY SPACE MUSIC LABEL
-    DESIGN SYSTEM & STYLES
-    AUTHOR: RANGA
-    VERSION: 6.0 | STRICTLY CUSTOM BUILT
-*/
-
-:root {
-    --bg-color: #050510;
-    --accent-blue: #00f0ff;
-    --accent-purple: #b700ff;
-    --accent-magenta: #ff00ff;
-    --text-primary: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.7);
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-blur: blur(12px);
-    --font-heading: 'Space Grotesk', sans-serif;
-    --font-body: 'Outfit', sans-serif;
-    --glow-blue: 0 0 20px rgba(0, 240, 255, 0.6);
-    --glow-purple: 0 0 25px rgba(183, 0, 255, 0.5);
-    --bg-pulse-intensity: 0.15;
-}
-
-
-/* Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body,
-html {
-    width: 100%;
-    background: #000;
-    /* Global Black Base */
-    color: var(--text-primary);
-    font-family: var(--font-body);
-    overflow-x: hidden;
-    scroll-behavior: smooth;
-    user-select: none; /* PREVENT NON-CLICKABLE TEXT SELECTION */
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-}
-
-/* Allow selection for interactive/input elements */
-input, textarea, [contenteditable="true"] {
-    user-select: text;
-    -webkit-user-select: text;
-}
-
-/* --- SCROLL LOCK FOR INTRO --- */
-html.no-scroll, 
-body.no-scroll {
-    overflow: hidden !important;
-    touch-action: none !important;
-}
-
-/* --- CUSTOM GALACTIC SCROLLBAR --- */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: #000;
-}
-
-::-webkit-scrollbar-thumb {
-    background: rgba(0, 240, 255, var(--sb-opacity, 0));
-    border: 1px solid rgba(0, 240, 255, var(--sb-opacity, 0));
-    border-radius: 10px;
-    transition: background 0.3s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-blue);
-    box-shadow: 0 0 15px var(--accent-blue);
-}
-
-/* Firefox Support */
-* {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 240, 255, 0.4) #000;
-}
-
-/* Background & Overlay */
-.space-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000;
-    /* Deep Black Background */
-    z-index: -2;
-}
-
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000; /* PURE BLACK VOID - NO GLOW */
-    z-index: -1;
-    pointer-events: none;
-    opacity: 0.8; /* Keep some darkness depth */
-}
-
-.noise-overlay {
-    display: none;
-}
-
-.scanlines {
-    display: none;
-}
-
-/* Custom Cursor */
-.cursor-outer {
-    position: fixed;
-    width: 40px;
-    height: 40px;
-    border: 1px solid var(--accent-blue);
-    border-radius: 50%;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    z-index: 10000;
-    transition: width 0.3s, height 0.3s, background 0.3s;
-}
-
-.cursor-glow {
-    position: fixed;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%); /* MONOCHROME WHITE GLOW */
-    border-radius: 50%;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    z-index: 9999;
-    opacity: 0; /* START HIDDEN TO PREVENT FLASH */
-    transition: opacity 0.8s ease;
-}
-
-.data-particle {
-    box-shadow: 0 0 10px var(--accent-blue);
-    border-radius: 50%;
-}
-
-
-
-/* Enarma-style Black Splash Screen */
-#entrance-screen {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #000;
-    z-index: 100000;
-}
-
-.splash-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 250px;
-    height: 250px;
-}
-
-.splash-logo {
-    max-width: 160px;
-    opacity: 0;
-    transform: scale(0.95);
-    filter: none;
-    position: relative;
-    overflow: hidden;
-}
-
-.splash-logo::after {
-    content: '';
-    position: absolute;
-    top: -100%;
-    left: 0;
-    width: 100%;
-    height: 40%;
-    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.04), transparent);
-    animation: scanLine 2.5s linear infinite;
-    pointer-events: none;
-}
-
-@keyframes scanLine {
-    0% { top: -100%; }
-    100% { top: 200%; }
-}
-
-@keyframes splashPulse {
-    0%, 100% { transform: scale(0.98); opacity: 0.7; }
-    50% { transform: scale(1.01); opacity: 1; filter: none; }
-}
-
-@keyframes logoVibrate {
-    0% { transform: translate(0,0) skew(0deg); }
-    10% { transform: translate(-1px, 0) skew(-0.5deg) scale(1.001); }
-    20% { transform: translate(1px, 0) skew(0.5deg) scale(0.999); }
-    30% { transform: translate(-1.5px, 0) skew(-0.3deg); }
-    40% { transform: translate(1.5px, 0) skew(0.3deg); }
-    100% { transform: translate(0,0) skew(0deg); }
-}
-
-/* Navigation */
-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: 2rem 5%;
-    z-index: 100;
-}
-
-.glass-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2.5rem;
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
-    border-radius: 50px;
-}
-
-.logo-link {
-    text-decoration: none;
-    color: inherit;
-}
-
-.logo {
-    font-family: var(--font-heading);
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: 0.2rem;
-    cursor: pointer;
-    transition: all 0.4s ease;
-}
-
-.logo-link:hover .logo {
-    color: #fff;
-    filter: drop-shadow(0 0 10px var(--accent-blue));
-    letter-spacing: 0.3rem;
-}
-
-.logo span {
-    color: var(--accent-blue);
-    font-weight: 300;
-}
-
-.logo-link {
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.nav-links a,
-.nav-links .nav-item {
-    text-decoration: none;
-    color: var(--text-primary);
-    margin: 0 1.5rem;
-    font-size: 0.9rem;
-    font-weight: 500;
-    letter-spacing: 0.1rem;
-    transition: color 0.3s;
-    cursor: pointer;
-}
-
-.nav-links a:hover,
-.nav-links .nav-item:hover {
-    color: var(--accent-blue);
-    text-shadow: var(--glow-blue);
-}
-
-.social-menu {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.menu-trigger {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
-    padding: 0.6rem 1.2rem;
-    border-radius: 30px;
-    font-family: var(--font-heading);
-    font-size: 0.75rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px); width: fit-content; margin-left: auto; margin-right: auto;
-}
-
-.menu-trigger i {
-    font-size: 0.6rem;
-    color: var(--accent-blue);
-}
-
-.menu-trigger:hover {
-    background: var(--accent-blue);
-    color: #000;
-    box-shadow: 0 0 20px var(--accent-blue);
-}
-
-.menu-trigger:hover i {
-    color: #000;
-}
-
-/* Dynamic Social Sidebar */
-.social-sidebar {
-    position: fixed;
-    top: 0;
-    right: -380px;
-    width: 380px;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.95);
-    backdrop-filter: blur(40px);
-    border-left: 1px solid var(--accent-blue);
-    z-index: 10001;
-    /* Higher than modals */
-    display: flex;
-    flex-direction: column;
-    padding: 3.5rem 2.5rem;
-    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: -20px 0 50px rgba(0, 0, 0, 0.8);
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--accent-blue) transparent;
-}
-
-@media (max-width: 500px) {
-    .social-sidebar {
-        width: 100vw;
-        right: -100vw;
-        padding: 3.5rem 1.8rem;
-    }
-}
-
-.social-sidebar.active {
-    right: 0;
-}
-
-.sidebar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4rem;
-}
-
-.sidebar-header h3 {
-    font-family: var(--font-heading);
-    letter-spacing: 0.6rem;
-    font-size: 1.1rem;
-    color: var(--accent-blue);
-    margin: 0;
-}
-
-.close-sidebar {
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 2.2rem;
-    cursor: pointer;
-    line-height: 1;
-    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.close-sidebar:hover {
-    color: var(--accent-magenta);
-    transform: rotate(180deg) scale(1.2);
-}
-
-.sidebar-links {
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-}
-
-.sidebar-links a {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    color: #fff;
-    text-decoration: none;
-    font-family: var(--font-heading);
-    font-size: 0.85rem;
-    letter-spacing: 0.25rem;
-    padding: 1.2rem;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    transition: all 0.4s ease;
-}
-
-.sidebar-links a i {
-    font-size: 1.6rem;
-    color: var(--accent-blue);
-    width: 25px;
-    text-align: center;
-}
-
-.sidebar-links a:hover {
-    background: rgba(0, 240, 255, 0.08);
-    border-color: var(--accent-blue);
-    transform: translateX(-15px);
-    box-shadow: 10px 0 20px rgba(0, 240, 255, 0.1);
-}
-
-.sidebar-links a:hover i {
-    color: #fff;
-    text-shadow: 0 0 15px var(--accent-blue);
-}
-
-.sidebar-footer {
-    flex-shrink: 0; /* PREVENT OVERLAP/SQUASH */
-    margin-top: auto;
-    padding-top: 2.5rem;
-    padding-bottom: 2rem; /* BUFFER AT BOTTOM */
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    text-align: center;
-}
-
-.sidebar-footer-logo {
-    font-size: 1.3rem !important;
-    margin-bottom: 0.8rem;
-    display: block;
-}
-
-.sidebar-footer p {
-    font-size: 0.6rem;
-    letter-spacing: 0.4rem;
-    color: var(--text-secondary);
-    opacity: 0.6;
-    text-transform: uppercase;
-}
-
-/* Sidebar Overlay */
-.sidebar-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
-    z-index: 10000;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.5s ease;
-}
-
-.sidebar-overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* --- SIDEBAR NAVIGATION (MOBILE LINKS) --- */
-.sidebar-nav {
-    display: none; /* Hide on Desktop */
-    flex-direction: column;
-    gap: 0.8rem;
-    margin-bottom: 2rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.sidebar-nav-item {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    width: 100%;
-    padding: 1.1rem 1.4rem;
-    color: #fff;
-    text-decoration: none;
-    font-family: var(--font-heading);
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.15rem;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    cursor: pointer;
-    text-align: left;
-    position: relative;
-    overflow: hidden;
-}
-
-.sidebar-nav-item i {
-    font-size: 1.1rem;
-    color: var(--accent-blue);
-    width: 25px;
-    text-align: center;
-}
-
-.sidebar-nav-item:hover {
-    background: rgba(0, 240, 255, 0.08);
-    border-color: var(--accent-blue);
-    transform: translateX(10px);
-    box-shadow: -10px 0 20px rgba(0, 240, 255, 0.1);
-}
-
-.sidebar-nav-item.accent-btn {
-    background: rgba(0, 240, 255, 0.1);
-    border-color: rgba(0, 240, 255, 0.3);
-}
-
-.sidebar-nav-item.accent-btn:hover {
-    background: var(--accent-blue);
-    color: #000;
-}
-
-.sidebar-nav-item.accent-btn:hover i {
-    color: #000;
-}
-
-/* Sidebar Social Links (Mobile Grid vs Desktop List) */
-.sidebar-links-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-}
-
-.sidebar-links-grid a {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    color: #fff;
-    text-decoration: none;
-    font-family: var(--font-heading);
-    font-size: 0.85rem;
-    letter-spacing: 0.25rem;
-    padding: 1.2rem;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    transition: all 0.4s ease;
-}
-
-.sidebar-links-grid a i {
-    font-size: 1.6rem;
-    color: var(--accent-blue);
-    width: 25px;
-    text-align: center;
-}
-
-.sidebar-links-grid a:hover {
-    background: rgba(0, 240, 255, 0.08);
-    border-color: var(--accent-blue);
-    transform: translateX(-15px);
-    box-shadow: 10px 0 20px rgba(0, 240, 255, 0.1);
-}
-
-.sidebar-label {
-    display: inline; /* Visible on Desktop */
-}
-
-/* MOBILE RESPONSIVE SIDEBAR OPTIMIZATION */
-@media (max-width: 900px) {
-    .sidebar-nav {
-        display: flex; /* Show Nav on Mobile */
-    }
-
-    .sidebar-header.compact {
-        margin-bottom: 1rem;
-        display: flex;
-        justify-content: center;
-    }
-
-    .sidebar-links-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.8rem;
-        margin-bottom: 2rem;
-    }
-
-    .sidebar-links-grid a {
-        flex-direction: column;
-        justify-content: center;
-        aspect-ratio: 1;
-        gap: 0;
-        padding: 0;
-        transform: none !important;
-        box-shadow: none !important;
-    }
-
-    .sidebar-links-grid a i {
-        font-size: 1.4rem;
-    }
-
-    .sidebar-label {
-        display: none !important; /* Hide labels only on mobile grid */
-    }
-
-    .sidebar-links-grid a:hover {
-        background: rgba(255, 255, 255, 0.08);
-        border-color: var(--accent-blue);
-        color: var(--accent-blue);
-        transform: translateY(-3px) !important;
-    }
-}
-
-@media (max-width: 480px) {
-    .social-sidebar {
-        width: 100%;
-        right: -100%;
-    }
-}
-
-/* Cinematic Portal Loader */
-.portal-loader {
-    position: fixed;
-    inset: 0;
-    background: #000;
-    z-index: 100000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: opacity 1s ease, visibility 1s;
-}
-
-.loader-content {
-    text-align: center;
-    width: 300px;
-}
-
-.loader-logo {
-    font-family: var(--font-heading);
-    font-size: 1.2rem;
-    letter-spacing: 0.5rem;
-    margin-bottom: 1.5rem;
-    color: #fff;
-}
-
-.loader-bar-container {
-    width: 100%;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.05);
-    overflow: hidden;
-    margin-bottom: 1rem;
-}
-
-.loader-bar {
-    width: 0%;
-    height: 100%;
-    background: var(--accent-blue);
-    box-shadow: none; /* REMOVED GLOW PER USER REQUEST */
-}
-
-.loader-status {
-    font-size: 0.55rem;
-    letter-spacing: 0.3rem;
-    color: var(--accent-blue);
-    opacity: 0.7;
-    text-transform: uppercase;
-}
-
-/* Starfield Particles (Performance Optimized) */
-#particle-bg {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    opacity: 0.6;
-    pointer-events: none;
-}
-
-.demo-trigger-link {
-    font-family: var(--font-heading);
-    font-size: 0.75rem;
-    color: #fff;
-    cursor: pointer;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-    letter-spacing: 0.1rem;
-}
-
-.demo-trigger-link:hover {
-    color: var(--accent-blue);
-    text-shadow: 0 0 10px var(--accent-blue);
-}
-
-.demo-trigger-link i {
-    font-size: 0.7rem;
-    color: var(--accent-blue);
-}
-
-/* Sections */
-section {
-    min-height: 100vh;
-    padding: 15vh 10%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-/* Hero */
-.hero {
-    position: relative;
-}
-
-.hero-content h2 {
-    font-family: var(--font-heading);
-    font-size: 5rem;
-    line-height: 1.1;
-    margin-bottom: 2rem;
-    text-transform: uppercase;
-}
-
-.accent {
-    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.hero-content p {
-    max-width: 600px;
-    font-size: 1.2rem;
-    color: var(--text-secondary);
-    margin-bottom: 2.5rem;
-    line-height: 1.6;
-}
-
-.cta-primary {
-    display: inline-block;
-    padding: 1.2rem 3.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    text-decoration: none;
-    color: #fff;
-    font-weight: 700;
-    font-family: var(--font-heading);
-    font-size: 0.85rem;
-    letter-spacing: 0.3rem;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-    backdrop-filter: blur(5px);
-}
-
-.cta-primary:hover {
-    background: var(--accent-blue);
-    color: #000;
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 50px rgba(0, 240, 255, 0.4);
-    transform: translateY(-5px) scale(1.02);
-}
-
-/* --- STREETX NAVIGATION CARD (V10 - CLEAN MINIMAL) --- */
-.streat-nav-card {
-    position: absolute;
-    right: 4%;
-    bottom: 4%;
-    width: 280px;
-    height: 80px;
-    padding: 0;
-    border-radius: 100px;
-    z-index: 100;
-    transition: all 0.7s cubic-bezier(0.23, 1, 0.32, 1);
-    border: 1px solid rgba(166, 255, 0, 0.2);
-    background: rgba(0, 0, 0, 0.95);
-    backdrop-filter: blur(25px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    overflow: hidden;
-}
-
-.streat-nav-card:hover {
-    width: 380px;
-    height: 480px;
-    border-radius: 30px;
-    background: #000;
-    border-color: #a6ff00;
-    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9);
-    padding: 3rem;
-}
-
-.card-bg-logo {
-    position: absolute;
-    inset: 0;
-    background-size: 150%;
-    background-position: center;
-    background-repeat: no-repeat;
-    opacity: 0.15;
-    transition: 1.2s ease;
-    pointer-events: none;
-}
-
-.streat-nav-card:hover .card-bg-logo {
-    opacity: 0.6;
-    background-size: 110%;
-}
-
-.card-cover {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.5s ease;
-    z-index: 5;
-}
-
-.glow-tag {
-    font-family: var(--font-heading);
-    font-size: 0.75rem;
-    font-weight: 900;
-    letter-spacing: 0.2rem;
-    color: #a6ff00;
-    text-transform: uppercase;
-    text-shadow: 0 0 20px rgba(166, 255, 0, 0.6);
-}
-
-.streat-nav-card:hover .card-cover {
-    opacity: 0;
-    transform: translateY(-20px);
-}
-
-.card-content {
-    position: absolute;
-    inset: 0;
-    padding: 3rem;
-    opacity: 0;
-    transform: translateY(30px);
-    transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end; /* Move items to bottom to let logo shine */
-    align-items: center;
-    text-align: center;
-    z-index: 10;
-}
-
-.streat-nav-card:hover .card-content {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.card-main-logo {
-    width: 180px;
-    filter: brightness(0) invert(1);
-    margin-top: 1rem;
-}
-
-.brand-desc {
-    font-size: 0.75rem;
-    letter-spacing: 0.25rem;
-    color: var(--text-secondary);
-    opacity: 0.6;
-    margin: 1.5rem 0;
-    text-transform: uppercase;
-    font-weight: 500;
-}
-
-.visit-btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.2rem 0;
-    background: transparent;
-    color: #a6ff00;
-    border-bottom: 2px solid rgba(166, 255, 0, 0.2);
-    text-decoration: none;
-    font-weight: 800;
-    font-size: 1.8rem;
-    font-family: 'Syne', sans-serif;
-    letter-spacing: -1px;
-    transition: 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.visit-btn:hover {
-    color: white;
-    border-bottom-color: white;
-    padding-left: 10px;
-}
-
-/* Glitch Effect */
-.glitch-text {
-    position: relative;
-    display: inline-block;
-}
-
-.glitch-btn:hover .glitch-text {
-    animation: glitch-anim 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
-}
-
-.glitch-text::before,
-.glitch-text::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: transparent;
-}
-
-.glitch-btn:hover .glitch-text::before {
-    left: 2px;
-    text-shadow: -2px 0 #ff00ff;
-    clip: rect(44px, 450px, 56px, 0);
-    animation: glitch-anim-2 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both infinite;
-}
-
-.glitch-btn:hover .glitch-text::after {
-    left: -2px;
-    text-shadow: -2px 0 #00f0ff;
-    clip: rect(44px, 450px, 56px, 0);
-    animation: glitch-anim 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
-}
-
-@keyframes glitch-anim {
-    0% { clip: rect(21px, 9999px, 66px, 0); }
-    20% { clip: rect(64px, 9999px, 86px, 0); }
-    40% { clip: rect(10px, 9999px, 22px, 0); }
-    60% { clip: rect(78px, 9999px, 94px, 0); }
-    80% { clip: rect(34px, 9999px, 42px, 0); }
-    100% { clip: rect(55px, 9999px, 62px, 0); }
-}
-
-@keyframes glitch-anim-2 {
-    0% { clip: rect(81px, 9999px, 12px, 0); }
-    20% { clip: rect(24px, 9999px, 76px, 0); }
-    40% { clip: rect(50px, 9999px, 42px, 0); }
-    60% { clip: rect(38px, 9999px, 24px, 0); }
-    80% { clip: rect(14px, 9999px, 92px, 0); }
-    100% { clip: rect(65px, 9999px, 32px, 0); }
-}
-
-.visit-btn i { transition: 0.4s; font-size: 1.2rem; }
-.visit-btn:hover i { transform: translateX(10px); }
-
-/* Mobile Hero Resp */
-@media (max-width: 1100px) {
-    .hero-container {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 3rem;
-    }
-
-    .streat-nav-card {
-        position: relative;
-        right: 0;
-        bottom: 0;
-        margin: 2rem auto;
-        width: 100%;
-        max-width: 320px;
-        height: auto;
-        padding: 2.5rem;
-        border-radius: 20px;
-        flex-direction: column;
-        background: rgba(0, 0, 0, 0.8);
-        border: 1px solid var(--accent);
-    }
-
-    .card-cover { display: none !important; }
-    
-    .card-content { 
-        position: relative; 
-        inset: auto;
-        opacity: 1; 
-        transform: none; 
-        padding: 0;
-    }
-
-    .brand-desc {
-        font-size: 0.6rem;
-        margin: 1rem 0;
-    }
-
-    .visit-btn { 
-        font-size: 1.2rem; 
-        justify-content: center;
-        gap: 15px;
-    }
-
-    .card-bg-logo {
-        opacity: 0.2;
-    }
-}
-
-/* Sections */
-.text-center {
-    text-align: center !important;
-}
-
-.releases-archive {
-    padding: 10vh 0;
-    max-width: 95%;
-    margin: 0 auto;
-}
-
-.section-header {
-    margin-bottom: 4rem;
-}
-
-.archive-header {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0 4rem;
-    margin-bottom: 2rem;
-    min-height: 80px;
-}
-
-.header-content {
-    text-align: center;
-    flex: 1;
-}
-
-.slider-controls {
-    position: absolute;
-    right: 4rem;
-    display: flex;
-    gap: 1rem;
-}
-
-.section-desc {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    letter-spacing: 0.2rem;
-    text-transform: uppercase;
-    text-align: center;
-}
-
-.slider-wrapper {
-    position: relative;
-}
-
-.slider-nav-btn {
-    width: 50px;
-    height: 50px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
-    border-radius: 50%;
-    z-index: 10;
-    font-size: 1.2rem;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.slider-nav-btn:hover {
-    background: var(--accent-blue);
-    color: #000;
-    box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
-    transform: scale(1.1);
-}
-
-
-.releases-slider {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    gap: 2rem;
-    padding: 1rem 2rem 4rem 2rem;
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scroll-behavior: smooth;
-}
-
-.releases-slider::-webkit-scrollbar {
-    display: none;
-    /* Safari and Chrome */
-}
-
-.release-card-large {
-    flex: 0 0 320px;
-    scroll-snap-align: start;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 20px;
-    overflow: hidden;
-    transition: all 0.4s ease;
-    display: flex;
-    flex-direction: column;
-}
-
-.release-card-large:first-child {
-    margin-left: auto;
-}
-
-.release-card-large:last-child {
-    margin-right: auto;
-}
-
-.release-card-large:hover {
-    transform: translateY(-10px);
-    border-color: var(--accent-blue);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.1);
-}
-
-.release-card-large.active-track {
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
-}
-
-.release-cover-large {
-    width: 100%;
-    height: 320px;
-    position: relative;
-    overflow: hidden;
-}
-
-.release-cover-large img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s;
-}
-
-.release-card-large:hover .release-cover-large img {
-    transform: scale(1.1);
-}
-
-.release-type-badge {
-    position: absolute;
-    top: 1.2rem;
-    left: 1.2rem;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    padding: 0.4rem 1rem;
-    border-radius: 30px;
-    font-size: 0.7rem;
-    font-weight: bold;
-    font-family: var(--font-heading);
-    letter-spacing: 0.15rem;
-    z-index: 2;
-}
-
-.player-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.5);
-    opacity: 0;
-    transition: all 0.4s ease;
-    z-index: 10;
-}
-
-.release-card-large:hover .player-overlay,
-.release-card-large.active-track .player-overlay {
-    opacity: 1;
-}
-
-.preview-time {
-    display: block;
-    margin-top: 1rem;
-    font-family: var(--font-heading);
-    font-size: 0.8rem;
-    color: var(--accent-blue);
-    background: rgba(0, 0, 0, 0.7);
-    padding: 0.2rem 0.6rem;
-    border-radius: 20px;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(0, 240, 255, 0.2);
-    letter-spacing: 0.05rem;
-    pointer-events: none;
-    opacity: 0.9;
-}
-
-.play-btn {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: var(--accent-blue);
-    border: none;
-    color: #000;
-    font-size: 1.5rem;
-    cursor: pointer;
-    box-shadow: 0 0 20px var(--accent-blue);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: transform 0.3s;
-}
-
-.play-btn:hover {
-    transform: scale(1.1);
-}
-
-.release-card-large.active-track .play-btn {
-    box-shadow: 0 0 40px var(--accent-blue);
-}
-
-.release-info-large {
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-}
-
-.release-info-large .track-id {
-    font-family: var(--font-heading);
-    font-size: 0.75rem;
-    color: var(--accent-blue);
-    letter-spacing: 0.1rem;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-}
-
-.release-info-large h4 {
-    font-family: var(--font-heading);
-    font-size: 1.5rem;
-    margin: 0 0 0.5rem 0;
-    letter-spacing: 0.05rem;
-    line-height: 1.2;
-}
-
-.producers-text {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    line-height: 1.5;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    padding-bottom: 1.5rem;
-}
-
-.producers-text span {
-    color: #fff;
-    font-weight: 500;
-}
-
-.release-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: auto;
-}
-
-.platform-link {
-    width: 45px;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
-    color: #fff;
-    font-size: 1.2rem;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    border: 1px solid transparent;
-}
-
-.platform-link:hover {
-    transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.platform-link.spotify:hover {
-    color: #1DB954;
-    border-color: #1DB954;
-    box-shadow: 0 5px 15px rgba(29, 185, 84, 0.3);
-}
-
-.platform-link.apple:hover {
-    color: #fa243c;
-    border-color: #fa243c;
-    box-shadow: 0 5px 15px rgba(250, 36, 60, 0.3);
-}
-
-.platform-link.youtube:hover {
-    color: #FF0000;
-    border-color: #FF0000;
-    box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3);
-}
-
-@media (max-width: 768px) {
-    .releases-slider {
-        padding: 1rem 5% 3rem 5%;
-        gap: 1.5rem;
-    }
-
-    .release-card-large {
-        flex: 0 0 280px;
-    }
-
-    .release-cover-large {
-        height: 280px;
-    }
-}
-
-/* Artist Grid */
-.section-title {
-    font-family: var(--font-heading);
-    text-align: center;
-    font-size: 3rem;
-    margin-bottom: 4rem;
-    letter-spacing: 0.3rem;
-}
-
-.artists {
-    margin-bottom: 4vh;
-}
-
-.artists-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 3.5rem;
-    /* Increased gap for better distance */
-    width: 100%;
-}
-
-.artist-item {
-    flex: 0 1 320px;
-    padding: 3rem 2.5rem;
-    border-radius: 20px;
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
-    text-align: center;
-    transition: transform 0.4s, border-color 0.4s;
-    cursor: default;
-    min-height: 440px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-}
-
-.artist-item:hover {
-    transform: translateY(-10px);
-    border-color: var(--accent-blue);
-}
-
-.avatar-wrapper {
-    position: relative;
-    width: 150px;
-    height: 150px;
-    margin: 0 auto 1.5rem;
-}
-
-.artist-img {
-    width: 118px;
-    /* Balanced size for Discord frames */
-    height: 118px;
-    border-radius: 50%;
-    background: #111;
-    border: 2px solid var(--accent-blue);
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1;
-}
-
-.avatar-decoration {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 150px;
-    height: 150px;
-    z-index: 2;
-    pointer-events: none;
-}
-
-.artist-item h4 {
-    font-family: var(--font-heading);
-    font-size: 1.4rem;
-    margin-bottom: 0.5rem;
-}
-
-
-/* Stats Section */
-.stats-section {
-    min-height: 40vh;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-}
-
-.stat-box {
-    padding: 3rem;
-    text-align: center;
-    border-radius: 20px;
-}
-
-.stat-number {
-    font-family: var(--font-heading);
-    font-size: 3.5rem;
-    color: var(--accent-magenta);
-    margin-bottom: 0.5rem;
-    text-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
-}
-
-.stat-box p {
-    font-size: 0.8rem;
-    letter-spacing: 0.2rem;
-    color: var(--text-secondary);
-}
-
-/* Featured Release Enhancement */
-.release-desc {
-    margin: 1.5rem 0;
-    line-height: 1.6;
-    color: var(--text-secondary);
-    max-width: 500px;
-}
-
-.technical-specs {
-    font-family: var(--font-heading);
-    font-size: 0.75rem;
-    color: var(--accent-blue);
-    margin-bottom: 2rem;
-    letter-spacing: 0.1rem;
-}
-
-.meta-tag {
-    position: absolute;
-    bottom: 1rem;
-    right: 1.5rem;
-    font-size: 0.65rem;
-    color: var(--accent-blue);
-    font-family: var(--font-heading);
-    background: rgba(0, 0, 0, 0.5);
-    padding: 0.3rem 0.8rem;
-    border-radius: 5px;
-}
-
-/* Artist Status & Discord Sync */
-.status-indicator {
-    font-weight: 700;
-    letter-spacing: 0.1rem;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-}
-
-.status-indicator.online {
-    color: #00ff00;
-    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-}
-
-.status-indicator.idle {
-    color: #fff000;
-    text-shadow: 0 0 10px rgba(255, 240, 0, 0.5);
-}
-
-.status-indicator.dnd {
-    color: #ff0000;
-    text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-}
-
-.status-indicator.offline {
-    color: #888888;
-    text-shadow: none;
-    opacity: 0.7;
-}
-
-.artist-loc {
-    display: block;
-    margin-top: 1rem;
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    font-family: var(--font-heading);
-}
-
-/* Contact Section (Social Links) */
-.contact-section {
-    margin-bottom: 6vh;
-}
-
-.contact-container {
-    padding: 3rem 2rem;
-    text-align: center;
-    border-radius: 40px;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.contact-container h3 {
-    font-family: var(--font-heading);
-    font-size: 2.2rem;
-    margin-bottom: 0.8rem;
-    letter-spacing: 0.1rem;
-}
-
-.contact-container p {
-    color: var(--text-secondary);
-    margin-bottom: 3rem;
-    font-size: 0.95rem;
-    opacity: 0.8;
-}
-
-.social-grid {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 1.2rem;
-    max-width: 1200px;
-    margin: 3rem auto 0;
-}
-
-.social-card {
-    flex: 0 0 160px;
-    width: 160px;
-    padding: 1.8rem 1rem;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--glass-border);
-    border-radius: 15px;
-    text-decoration: none;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    transition: all 0.3s ease;
-}
-
-.social-card i {
-    font-size: 2.2rem;
-    color: var(--accent-blue);
-    transition: all 0.3s ease;
-}
-
-.social-card span {
-    font-family: var(--font-heading);
-    font-size: 0.75rem;
-    letter-spacing: 0.12rem;
-    font-weight: 700;
-    opacity: 0.7;
-    transition: opacity 0.3s;
-}
-
-.social-card:hover {
-    background: rgba(0, 240, 255, 0.05);
-    border-color: var(--accent-blue);
-    transform: translateY(-5px);
-}
-
-.social-card:hover i {
-    transform: scale(1.1);
-    color: #fff;
-    text-shadow: 0 0 15px var(--accent-blue);
-}
-
-.social-card:hover span {
-    opacity: 1;
-}
-
-/* Demo Submission Portal */
-.demo-section {
-    padding: 12vh 5%;
-    display: flex;
-    justify-content: center;
-}
-
-.demo-card {
-    max-width: 900px;
-    width: 100%;
-    padding: 6rem 4rem;
-    text-align: center;
-    border-radius: 40px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
-}
-
-.demo-card h3 {
-    font-family: var(--font-heading);
-    font-size: 2.5rem;
-    letter-spacing: 0.8rem;
-    color: var(--accent-blue);
-    margin-bottom: 2rem;
-    text-transform: uppercase;
-}
-
-.demo-card p {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    max-width: 600px;
-    margin: 0 auto 4rem;
-    opacity: 0.8;
-}
-
-.cta-btn.secondary {
-    display: inline-block;
-    padding: 1.5rem 4rem;
-    border: 1px solid var(--accent-blue);
-    color: var(--accent-blue);
-    text-decoration: none;
-    font-family: var(--font-heading);
-    letter-spacing: 0.4rem;
-    font-size: 0.9rem;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    background: transparent;
-}
-
-.cta-btn.secondary:hover {
-    background: var(--accent-blue);
-    color: #000;
-    box-shadow: 0 0 60px var(--accent-blue);
-    transform: translateY(-5px);
-}
-
-/* CINEMATIC DEMO SUBMISSION SECTION */
-.demo-portal {
-    padding: 8rem 10%;
-    text-align: center;
-}
-
-.demo-card {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 4rem 3rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.demo-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at center, rgba(138, 43, 226, 0.05), transparent 70%);
-}
-
-.demo-header .section-title {
-    font-size: 3rem;
-    margin-bottom: 2rem !important;
-    letter-spacing: 1rem;
-}
-
-.demo-text {
-    font-size: 1.1rem;
-    color: var(--text-secondary);
-    max-width: 650px;
-    margin: 0 auto 3rem;
-    line-height: 1.8;
-}
-
-.demo-channels {
-    display: flex;
-    justify-content: center;
-    gap: 2.5rem;
-    flex-wrap: wrap;
-}
-
-.channel-link {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 1.5rem 2.5rem;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    text-decoration: none;
-    transition: all 0.4s ease;
-    text-align: left;
-    min-width: 320px;
-}
-
-.channel-link:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: var(--accent-blue);
-    transform: translateY(-5px);
-}
-
-.channel-icon {
-    font-size: 1.8rem;
-    color: var(--accent-blue);
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.channel-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.channel-label {
-    font-family: var(--font-heading);
-    font-size: 0.85rem;
-    color: #fff;
-    letter-spacing: 0.1rem;
-    margin-bottom: 0.3rem;
-}
-
-.channel-detail {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-}
-
-@media (max-width: 768px) {
-    .demo-channels {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .channel-link {
-        width: 100%;
-        min-width: unset;
-    }
-}
-
-/* PREMIUM MODAL SYSTEM (RESTORED UI) */
-.modal {
-    position: fixed;
-    inset: 0;
-    z-index: 200000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.modal.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-.modal-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.9);
-    backdrop-filter: blur(20px);
-}
-
-.modal-content.glass {
-    position: relative;
-    width: 90%;
-    max-width: 800px;
-    padding: 3rem;
-    border-radius: 30px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-    backdrop-filter: blur(25px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transform: scale(0.9) translateY(20px);
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    max-height: 85vh;
-    overflow-y: auto;
-}
-
-.modal.active .modal-content {
-    transform: scale(1) translateY(0);
-}
-
-.close-modal {
-    position: absolute;
-    top: 2rem;
-    right: 2rem;
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 2.5rem;
-    cursor: pointer;
-    line-height: 1;
-    opacity: 0.5;
-    transition: 0.3s;
-    z-index: 10;
-}
-
-.close-modal:hover {
-    opacity: 1;
-    color: var(--accent-blue);
-    transform: rotate(90deg);
-}
-
-.modal .section-title {
-    margin: 0 0 1.5rem 0 !important;
-    padding: 1rem 0 0 0 !important;
-    font-size: 1.8rem;
-    text-align: left;
-    letter-spacing: 0.5rem;
-}
-
-.faq-grid,
-.legal-content {
-    margin-top: 0 !important;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.faq-item.glass,
-.legal-block {
-    padding: 1.2rem 2rem;
-    border-radius: 15px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.3s ease;
-}
-
-.faq-item:hover {
-    background: rgba(255, 255, 255, 0.06);
-}
-
-.faq-question,
-.legal-block h3 {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--font-heading);
-    font-size: 0.9rem;
-    letter-spacing: 0.1rem;
-    color: var(--accent-blue);
-}
-
-.faq-answer,
-.legal-block p {
-    max-height: 0;
-    overflow: hidden;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0;
-    font-size: 0.9rem;
-    line-height: 1.6;
-}
-
-.legal-block p {
-    max-height: none;
-    opacity: 0.8;
-    margin-top: 0.5rem;
-}
-
-.faq-item.active .faq-answer {
-    max-height: 250px;
-    opacity: 0.8;
-    margin-top: 1rem;
-}
-
-.faq-item.active .faq-question i {
-    transform: rotate(45deg);
-}
-
-/* Footer Restore */
-footer {
-    position: relative;
-    padding: 4rem 10% 6rem 10%;
-    text-align: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    background: #000;
-}
-
-.footer-links {
-    margin-top: 2rem;
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-}
-
-.footer-links a {
-    color: var(--accent-blue) !important;
-    text-decoration: none;
-    font-size: 0.8rem;
-    font-weight: 500;
-}
-
-.footer-links a:hover {
-    color: var(--accent-blue);
-}
-
-/* Mobile Responsive */
-@media (max-width: 900px) {
-    .nav-links {
-        display: none;
-    }
-
-    .release-card {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .hero-content h2 {
-        font-size: 3rem;
-    }
-
-    .glitch-logo {
-        font-size: 3.5rem;
-    }
-
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .sync-input {
-        flex-direction: column;
-    }
-
-    .artists-grid {
-        gap: 1.5rem;
-    }
-
-    /* PREVENT HEADER OVERLAP */
-    .glass-nav {
-        padding: 0.8rem 1.2rem !important;
-    }
-    
-    .logo {
-        font-size: 1rem !important;
-        letter-spacing: 0.1rem !important;
-    }
-
-    /* Show Sidebar Navigation on Mobile */
-    .sidebar-nav {
-        display: flex;
-    }
-}
-
-@media (max-width: 768px) {
-    .artists-grid {
-        gap: 2rem !important;
-    }
-    
-    .artist-item {
-        min-height: auto !important;
-        padding: 2.5rem 1.5rem !important;
-    }
-}
-
-@media (max-width: 480px) {
-
-
-    .artist-item {
-        padding: 1.5rem;
-    }
-}
-
-/* Particle Background Canvas - FLOAT OVER EVERYTHING */
-#particle-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 9999;
-    /* Top level so it falls over content */
-    pointer-events: none;
-    opacity: 0.8;
-}
-
-/* Aurora Glow Vibe */
-.space-bg::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.15), transparent 60%);
-    z-index: -1;
-    animation: auroraDance 15s ease-in-out infinite alternate;
-}
-
-@keyframes auroraDance {
-    0% {
-        transform: scale(1) translate(-10%, -10%);
-        opacity: 0.3;
-    }
-
-    100% {
-        transform: scale(1.5) translate(10%, 10%);
-        opacity: 0.7;
-    }
-}
-
-/* --- CYBER DEMO FORM STYLES --- */
-.demo-grid-wide {
-    max-width: 900px !important;
-}
-
-.cyber-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.2rem;
-}
-
-@media (min-width: 601px) {
-    .form-row {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem !important; /* Reduced vertical gap between label and input */
-    margin-bottom: 0.5rem;
-}
-
-.form-group label {
-    font-family: var(--font-heading);
-    font-size: 0.7rem;
-    color: var(--accent-blue);
-    letter-spacing: 0.15rem;
-    opacity: 0.9;
-}
-
-.form-group input,
-.form-group textarea {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 1rem;
-    color: #fff;
-    font-family: var(--font-main);
-    border-radius: 8px;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
-}
-
-.form-group textarea {
-    min-height: 80px;
-    resize: none;
-}
-
-.cta-primary-small {
-    padding: 0.8rem 2rem;
-    background: linear-gradient(45deg, var(--accent-blue), var(--accent-purple));
-    border: none;
-    border-radius: 5px;
-    color: #fff;
-    font-family: var(--font-heading);
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    letter-spacing: 0.1rem;
-}
-
-.form-status {
-    display: none;
-    margin-top: 1.5rem;
-    padding: 0.8rem;
-    background: rgba(0, 255, 255, 0.1);
-    border: 1px solid var(--accent-blue);
-    color: var(--accent-blue);
-    font-family: var(--font-heading);
-    font-size: 0.8rem;
-    text-align: center;
-    border-radius: 5px;
-}
-
-/* Upcoming Releases Slider (Updated for Horizontal) */
-.upcoming-archive {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 10vh 0 5vh 0;
-}
-
-.upcoming-grid {
-    display: flex;
-    overflow-x: auto;
-    flex-wrap: nowrap !important;
-    gap: 2.5rem;
-    padding: 2rem 5%;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    min-height: 480px;
-    width: 100%;
-}
-
-.upcoming-grid::-webkit-scrollbar {
-    display: none;
-}
-
-.upcoming-card {
-    flex: 0 0 360px;
-    position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.03) !important;
-    overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    background: rgba(255, 255, 255, 0.02);
-}
-
-@media (max-width: 768px) {
-    .upcoming-card {
-        flex: 0 0 280px;
-    }
-}
-
-.upcoming-card:hover {
-    transform: translateY(-8px);
-    border-color: var(--accent-magenta);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-}
-
-.upcoming-card .release-cover-large {
-    height: 300px;
-    /* Force consistent heights */
-}
-
-/* Universal badge for upcoming tags */
-.upcoming-status-badge {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: var(--accent-magenta);
-    color: #fff;
-    padding: 0.3rem 0.8rem;
-    border-radius: 4px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.1rem;
-    z-index: 5;
-    text-transform: uppercase;
-    box-shadow: 0 4px 15px rgba(255, 0, 255, 0.3);
-}
-
-.upcoming-date-badge {
-    margin-top: 1.2rem;
-    font-family: var(--font-heading);
-    font-size: 0.75rem;
-    color: var(--accent-blue);
-    background: rgba(0, 240, 255, 0.04);
-    padding: 0.6rem 1.2rem;
-    border-radius: 10px;
-    border: 1px solid rgba(0, 240, 255, 0.2);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.8rem;
-    letter-spacing: 0.12rem;
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.05);
-    backdrop-filter: blur(10px);
-    width: fit-content;
-    text-transform: uppercase;
-}
-
-.upcoming-date-badge i {
-    font-size: 0.85rem;
-    opacity: 0.9;
-    color: var(--accent-blue);
-}
-
-/* Discord CTA in Form */
-.discord-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.8rem;
-    padding: 0.8rem 1.5rem;
-    background: #5865F2;
-    /* Official Discord Blurple */
-    text-decoration: none;
-    color: #fff;
-    border-radius: 5px;
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 0.8rem;
-    letter-spacing: 0.1rem;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.discord-btn:hover {
-    background: #4752C4;
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 10px 25px rgba(88, 101, 242, 0.4);
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.discord-btn i {
-    font-size: 1.1rem;
-}
-
-/* --- UNIVERSAL RESOLUTION & MOBILE OPTIMIZATION --- */
-
-/* Hide Custom Cursor on Mobile & Touch Devices */
-@media (hover: none) and (pointer: coarse),
-(max-width: 1024px) {
-
-    .cursor-outer,
-    .cursor-glow {
-        display: none !important;
-    }
-
-    * {
-        cursor: auto !important;
-    }
-}
-
-/* FIXING OVERLAPS & BALANCING LAYOUT */
-@media (max-width: 1200px) {
-    .archive-container {
-        grid-template-columns: repeat(3, 110px);
-        /* 3 Columns for Tablet */
-        gap: 1.2rem;
-    }
-}
-
-@media (max-width: 900px) {
-    .archive-container {
-        grid-template-columns: repeat(2, 110px);
-        /* 2 Columns for Small Tablet */
-    }
-
-    .profile-hero h1 {
-        font-size: 3.5rem;
-    }
-
-    .nav-arrow {
-        width: 40px;
-        height: 100px;
-        opacity: 0.8;
-    }
-}
-
-@media (max-width: 600px) {
-
-    /* Main Layout Adjustments */
-    .hero h1 {
-        font-size: 2.8rem;
-        letter-spacing: 0.5rem;
-    }
-
-    .hero p {
-        font-size: 0.75rem;
-        letter-spacing: 0.2rem;
-        width: 90%;
-    }
-
-    #profile-detail {
-        padding: 4rem 1.5rem;
-    }
-
-    .archive-container {
-        grid-template-columns: repeat(2, 110px);
-        /* Keep 2 for Mobile */
-        padding-bottom: 5rem;
-    }
-
-    .modal-content, .modal-content.demo-grid-wide {
-        width: 95% !important;
-        max-width: 95vw !important;
-        padding: 2rem 1.25rem !important;
-        max-height: 90vh; /* Allow a bit more height on mobile if needed */
-    }
-
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 0.8rem;
-    }
-
-    .cyber-form {
-        gap: 0.8rem;
-    }
-
-    .modal .section-title {
-        font-size: 1.4rem !important;
-        letter-spacing: 0.15rem !important;
-        margin-bottom: 0.8rem !important;
-    }
-
-    .modal-header p {
-        font-size: 0.75rem !important;
-        line-height: 1.4 !important;
-        margin-bottom: 1rem !important;
-    }
-
-    .form-group label {
-        font-size: 0.65rem !important;
-    }
-
-    .form-group input, 
-    .form-group textarea {
-        padding: 0.9rem !important;
-        font-size: 0.85rem !important;
-    }
-
-    .form-row {
-        gap: 0.8rem !important;
-        grid-template-columns: 1fr !important;
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
-    /* FIXING ARROW OVERLAPS */
-    .nav-arrow {
-        position: fixed;
-        /* Lock to screen edges */
-        bottom: 2rem;
-        top: auto;
-        transform: none;
-        width: 60px;
-        height: 60px;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(5px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        /* Circle look for mobile */
-        z-index: 999;
-    }
-
-    .nav-left {
-        left: 1.5rem;
-    }
-
-    .nav-right {
-        right: 1.5rem;
-    }
-
-    .nav-arrow i {
-        font-size: 1.2rem;
-    }
-
-    /* Compact UI for Mobile */
-    .cta-container {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .cta-primary {
-        width: 100%;
-        text-align: center;
-    }
-
-    .form-actions {
-        grid-template-columns: 1fr !important;
-        gap: 0.8rem !important;
-    }
-
-    /* FIXING ARCHIVE HEADER OVERLAPS */
-    .archive-header {
-        flex-direction: column;
-        gap: 1.5rem;
-        padding: 0;
-        min-height: auto;
-    }
-
-    .header-content {
-        width: 100%;
-        text-align: center;
-    }
-
-    .slider-controls {
-        position: static;
-        /* Remove absolute positioning on mobile */
-        justify-content: center;
-        width: 100%;
-    }
-}
-
-/* --- ARTIST DETAIL MODAL STYLES --- */
-.artist-modal-content {
-    max-width: 600px;
-    padding: 3.5rem;
-}
-
-.artist-modal-header {
-    display: flex;
-    align-items: center;
-    gap: 2.5rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.artist-modal-img-wrapper {
-    flex-shrink: 0;
-    box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
-    border-radius: 50%;
-    border: 2px solid var(--accent-blue);
-}
-
-.artist-modal-title .section-title {
-    letter-spacing: 0.2rem;
-    text-transform: uppercase;
-}
-
-.artist-modal-links .platform-link {
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.artist-modal-links .platform-link:hover {
-    background: var(--accent-blue);
-    color: #000;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 240, 255, 0.4);
-}
-
-@media (max-width: 600px) {
-    .artist-modal-content {
-        padding: 2rem 1.5rem;
-    }
-
-    .artist-modal-header {
-        flex-direction: column;
-        text-align: center;
-        gap: 1.5rem;
-    }
-
-    .artist-modal-title {
-        text-align: center !important;
-    }
-}
-/* Hide Google reCAPTCHA Badge for Cinematic Design */
-.grecaptcha-badge { visibility: hidden !important; }
-
-/* Subtle Security Stamp Styling */
-.security-stamp { font-size: 0.55rem; color: var(--text-secondary); opacity: 0.3; letter-spacing: 0.15rem; margin-top: 1rem; text-transform: uppercase; font-family: var(--font-heading); display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-.security-stamp a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.security-stamp a:hover { opacity: 1; color: var(--accent-blue); border-color: var(--accent-blue); }
-
-/* Final Polishing for Security Stamp */
-.security-stamp { margin-top: 1.5rem; opacity: 0.2; font-size: 0.5rem; }
-
-/* Tech Status Nodes (Footer) */
-.footer-tech-stack { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1.2rem; margin-bottom: 2rem; }
-.tech-node { font-size: 0.5rem; font-family: var(--font-tech); color: var(--text-secondary); opacity: 0.4; letter-spacing: 0.15rem; text-transform: uppercase; display: flex; align-items: center; gap: 0.4rem; padding: 4px 8px; border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; background: rgba(255,255,255,0.02); }
-.tech-pulse { color: var(--accent-blue); animation: tech-pulse 1.5s infinite; }
-@keyframes tech-pulse { 0% { opacity: 0.2; } 50% { opacity: 1; filter: drop-shadow(0 0 5px var(--accent-blue)); } 100% { opacity: 0.2; } }
-@media (max-width: 600px) { .footer-tech-stack { flex-wrap: wrap; gap: 0.8rem; } .tech-node { font-size: 0.45rem; } }
-
-/* Visitor Connection Node (Footer) */
-.visitor-node { font-size: 0.45rem; font-family: monospace; color: var(--accent-blue); opacity: 0.15; letter-spacing: 0.1rem; text-transform: uppercase; margin-top: 1rem; margin-bottom: 25px; text-align: center; }
-
-/* --- KERNEL SECURITY UTILITY & DATA FLOW --- */
-.data-flow-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1; /* Above background, below content */
-    pointer-events: none;
-    opacity: 0.12;
-}
-
-.kernel-monitor {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 1.5rem 3rem;
-    margin-bottom: 2rem;
-    padding: 0 1rem;
-    font-family: var(--font-tech);
-}
-
-.kernel-node {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-size: 0.55rem;
-    color: rgba(255, 255, 255, 0.4);
-    letter-spacing: 0.1rem;
-}
-
-.kernel-node i {
-    color: var(--accent-blue);
-    font-size: 0.65rem;
-    opacity: 0.8;
-}
-
-.kernel-label {
-    text-transform: uppercase;
-    font-weight: 700;
-}
-
-.kernel-status {
-    color: var(--accent-blue);
-    text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
-    font-weight: 800;
-}
-
-.kernel-status.scanning {
-    animation: kernel-blink 0.8s infinite alternate;
-}
-
-.footer-divider {
-    width: 100%;
-    max-width: 800px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-    margin: 1.5rem auto;
-}
-
-@keyframes kernel-blink {
-    from { opacity: 0.3; }
-    to { opacity: 1; }
-}
-
-@media (max-width: 768px) {
-    .kernel-monitor {
-        gap: 1rem 1.5rem;
-    }
-}
-/* --- END KERNEL SECURITY --- */
-
-/* --- SCROLL LOCK FOR INTRO & POPUPS --- */
-html.no-scroll, 
-body.no-scroll {
-    overflow: hidden !important;
-    touch-action: none !important;
-}
-
-/* --- CORE SYSTEM OPTIMIZATION TAG --- */
-.dev-status-tag {
-    position: absolute;
-    bottom: 2rem;
-    right: 3rem;
-    z-index: 5;
-    font-family: var(--font-heading);
-    font-size: 0.45rem;
-    color: var(--accent-blue);
-    letter-spacing: 0.15rem;
-    text-transform: uppercase;
-    pointer-events: none;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    opacity: 0.3;
-    animation: status-entry 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.dev-status-tag::before {
-    content: '';
-    width: 4px;
-    height: 4px;
-    background: var(--accent-blue);
-    border-radius: 50%;
-    box-shadow: 0 0 10px var(--accent-blue);
-    animation: status-core-pulse 2.5s infinite ease-in-out;
-}
-
-@keyframes status-entry {
-    from { transform: translateY(10px); opacity: 0; }
-    to { transform: translateY(0); opacity: 0.3; }
-}
-
-@keyframes status-core-pulse {
-    0%, 100% { opacity: 0.2; transform: scale(1); filter: brightness(1); }
-    50% { opacity: 1; transform: scale(1.3); filter: brightness(1.3); }
-}
-
-@media (max-width: 950px) {
-    .dev-status-tag {
-        bottom: 1.2rem;
-        right: 1.5rem;
-        font-size: 0.4rem;
-        letter-spacing: 0.1rem;
-        gap: 8px;
-    }
-}
-
-/* --- CYBER CHECKLIST SYSTEM (MODAL GUIDELINES) --- */
-.demo-guidelines {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding-top: 1.5rem;
-}
-
-.cyber-check-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 1.2rem;
-    padding: 1.2rem;
-    cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.03);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.02);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.cyber-check-item:hover {
-    background: rgba(0, 240, 255, 0.04);
-    border-color: rgba(0, 240, 255, 0.2);
-    transform: translateX(5px);
-}
-
-.cyber-check-input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-    height: 0;
-    width: 0;
-}
-
-.cyber-tick {
-    flex-shrink: 0;
-    width: 20px;
-    height: 20px;
-    border: 1px solid rgba(0, 240, 255, 0.3);
-    position: relative;
-    border-radius: 4px;
-    margin-top: 0.2rem;
-    background: rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-}
-
-.cyber-tick::after {
-    content: '\f00c';
-    font-family: 'Font Awesome 6 Free';
-    font-weight: 900;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    color: var(--accent-blue);
-    font-size: 0.65rem;
-    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.cyber-check-input:checked + .cyber-tick {
-    background: rgba(0, 240, 255, 0.1);
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
-}
-
-.cyber-check-input:checked + .cyber-tick::after {
-    transform: translate(-50%, -50%) scale(1);
-}
-
-.check-text {
-    flex: 1;
-    text-align: left;
-}
-
-.check-text strong {
-    font-family: var(--font-heading);
-    font-size: 0.72rem;
-    color: var(--accent-blue);
-    display: block;
-    margin-bottom: 0.3rem;
-    letter-spacing: 0.1rem;
-}
-
-.check-text p {
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.5);
-    line-height: 1.4;
-    margin: 0;
-    font-weight: 300;
-}
-
-@media (max-width: 600px) {
-    .cyber-check-item {
-        padding: 1rem;
-        gap: 1rem;
-    }
-}
-
-/* --- CYBER TYPING FREQUENCY EFFECTS --- */
-.cyber-form input, 
-.cyber-form textarea {
-    caret-color: var(--accent-blue); /* Neon Blue Cursor */
-    transition: box-shadow 0.1s ease, border-color 0.2s ease, background 0.2s ease;
-}
-
-/* Keystroke Pulse Effect */
-.cyber-form input.pulse, 
-.cyber-form textarea.pulse {
-    box-shadow: 0 0 25px rgba(0, 240, 255, 0.4), inset 0 0 10px rgba(0, 240, 255, 0.1);
-    border-color: var(--accent-blue) !important;
-    background: rgba(255, 255, 255, 0.08) !important;
-    text-shadow: 0 0 8px rgba(0, 240, 255, 0.6); /* Smooth glowing text while typing */
-}
-
-/* Smooth Input Transition */
-.cyber-form input, 
-.cyber-form textarea {
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0.95;
-}
-
-/* --- MIRROR SIGNAL TYPING ENGINE (REFINED) --- */
-.mirror-container {
-    position: relative !important;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    overflow: hidden;
-    height: 48px; /* Standardize height */
-    display: flex;
-    align-items: center;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.6rem !important; /* Space ABOVE the box */
-    font-size: 0.72rem;
-    letter-spacing: 0.2rem;
-    color: var(--text-secondary);
-}
-
-/* REAL INPUT (The Functional Data Layer) */
-.real-input {
-    position: relative !important;
-    z-index: 2 !important;
-    background: transparent !important;
-    border: none !important; 
-    color: transparent !important; 
-    caret-color: var(--accent-blue) !important;
-    padding: 0 1rem !important; 
-    font-size: 0.85rem !important;
-    width: 100% !important;
-    height: 100% !important;
-    outline: none !important;
-    font-family: var(--font-body) !important;
-}
-
-/* Mirror Display (The Visual Feedback Layer) */
-.mirror-display {
-    position: absolute !important;
-    top: 0 !important;
-    left: 1rem !important;
-    width: calc(100% - 2rem) !important;
-    height: 100% !important;
-    pointer-events: none !important;
-    font-family: var(--font-body) !important;
-    font-size: 0.85rem !important;
-    color: #fff !important;
-    display: flex !important;
-    align-items: center !important;
-    z-index: 1 !important;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-/* Character Animation (CRYSTAL FADE & SETTLE) */
-.mirror-glyph {
-    display: inline-block;
-    will-change: opacity, transform, color, text-shadow;
-    animation: glyphSettle 0.4s cubic-bezier(0.2, 0, 0.2, 1) forwards;
-    opacity: 0;
-}
-
-@keyframes glyphSettle {
-    0% { 
-        opacity: 0; 
-        transform: scale(0.96); 
-        color: var(--accent-blue); 
-        text-shadow: 0 0 10px var(--accent-blue); 
-    }
-    50% { 
-        opacity: 1; 
-        color: var(--accent-blue); 
-        text-shadow: 0 0 15px var(--accent-blue); 
-    }
-    100% { 
-        opacity: 1; 
-        transform: scale(1); 
-        color: #fff; 
-        text-shadow: none; 
-    }
-}
-
-/* Base style for existing chars */
-.mirror-glyph {
-    color: #fff;
-}
-
-/* --- INTERACTION & RECOVERY --- */
-.mirror-container:focus-within {
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
-    background: rgba(255, 255, 255, 0.05);
-}
-
-textarea.real-input {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 8px !important;
-    color: #fff !important;
-    min-height: 120px !important;
-    width: 100% !important;
-    padding: 1.2rem !important;
-    transition: all 0.3s ease !important;
-}
-
-textarea.real-input:focus {
-    border-color: var(--accent-blue) !important;
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.15) !important;
-    background: rgba(255, 255, 255, 0.05) !important;
-}
-
-.real-input::placeholder {
-    color: rgba(255, 255, 255, 0.3) !important;
-    font-size: 0.8rem;
-}
-
-/* --- DYNAMIC MULTI-LINK PORTAL STYLES --- */
-.cyber-mini-btn {
-    background: rgba(0, 240, 255, 0.1);
-    border: 1px solid var(--accent-blue);
-    color: var(--accent-blue);
-    width: 28px;
-    height: 28px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 0.75rem;
-    margin-right: 0.5rem;
-}
-
-.cyber-mini-btn:hover {
-    background: var(--accent-blue);
-    color: #000;
-    box-shadow: 0 0 15px var(--accent-blue);
-    transform: translateY(-2px);
-}
-
-.dynamic-inputs {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-.dynamic-row {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    width: 100%;
-    animation: row-entry 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.dynamic-row .mirror-container {
-    flex-grow: 1;
-}
-
-@keyframes row-entry {
-    from { opacity: 0; transform: translateX(-10px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-.remove-link-btn {
-    background: rgba(255, 0, 128, 0.1);
-    border: 1px solid #ff0080;
-    color: #ff0080;
-    width: 32px;
-    height: 52px; /* Matches input height */
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    flex-shrink: 0;
-}
-
-.remove-link-btn:hover {
-    background: #ff0080;
-    color: #fff;
-    box-shadow: 0 0 15px rgba(255, 0, 128, 0.5);
-}
-
-/* --- GHOST PRODUCTION CUSTOM ANIMATIONS --- */
-@keyframes eventGlow {
-    0% { color: rgba(255, 255, 255, 0.6); text-shadow: none; }
-    50% { color: var(--accent-blue); text-shadow: 0 0 15px var(--accent-blue); }
-    100% { color: rgba(255, 255, 255, 0.6); text-shadow: none; }
-}
-
-.event-glow {
-    animation: eventGlow 3s infinite ease-in-out;
-}
-
-/* --- GHOST PRODUCTION RESPONSIVENESS --- */
-@media (max-width: 1200px) {
-    .ghost-production .glass {
-        padding: 3rem !important;
-    }
-    
-    .ghost-production [style*="gap: 4rem"],
-    .ghost-production [style*="gap: 3rem"] {
-        gap: 2rem !important;
-    }
-}
-
-@media (max-width: 1024px) {
-    .ghost-production {
-        padding: 8vh 4% !important;
-    }
-    
-    .ghost-production .glass {
-        padding: 2.5rem !important;
-    }
-    
-    .ghost-production h3[style*="font-size: 2.2rem"] {
-        font-size: 1.8rem !important;
-    }
-    
-    .ghost-production [style*="grid-template-columns"] {
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
-        gap: 2rem !important;
-    }
-}
-
-@media (max-width: 768px) {
-    .ghost-production {
-        padding: 6vh 3% !important;
-    }
-    
-    .ghost-production .glass {
-        padding: 2rem 1.5rem !important;
-        border-radius: 20px !important;
-    }
-    
-    /* Adjusting the main flex container gap */
-    .ghost-production .glass > div:nth-child(2) {
-        gap: 2rem !important;
-    }
-    
-    /* Fixing min-width overflow */
-    .ghost-production [style*="min-width: 320px"],
-    .ghost-production [style*="min-width: 300px"] {
-        min-width: 100% !important;
-    }
-    
-    .ghost-production h3[style*="font-size: 2.2rem"] {
-        font-size: 1.6rem !important;
-    }
-    
-    .ghost-production .pricing-group {
-        width: 100%;
-    }
-    
-    .ghost-production .special-offer {
-        padding: 1.5rem !important;
-        gap: 1.5rem !important;
-        flex-direction: column;
-        text-align: center !important;
-    }
-    
-    .ghost-production .special-offer > div {
-        text-align: center !important;
-    }
-}
-
-@media (max-width: 480px) {
-    .ghost-production .glass {
-        padding: 1.5rem 1rem !important;
-    }
-    
-    .ghost-production h3[style*="font-size: 2.2rem"] {
-        font-size: 1.4rem !important;
-    }
-    
-    .ghost-production .pricing-group ul li {
-        font-size: 0.8rem !important;
-    }
-    
-    .ghost-production .cta-primary {
-        padding: 1rem !important;
-        font-size: 0.9rem !important;
-    }
-}
+<!DOCTYPE html>
+<html lang="en" class="no-scroll">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBSCURA RECORD | Official Label Portal</title>
+    <meta name="google-site-verification" content="EobLbKFk8O5qOMkycnSnUyz0ApzsycuIaspkpVRiwhM" />
+    <link rel="icon" type="image/png" href="assets/OCR.png?v=61.0">
+    <link rel="apple-touch-icon" href="assets/OCR_solid.png?v=61.0">
+
+    <!-- SEO Master Configuration | MADE BY RANGA -->
+    <meta name="description"
+        content="Official portal of Obscura Record. Independent music label specializing in high-energy Phonk, Funk, and futuristic electronics. Discover new releases and join the sonic void.">
+    <meta name="keywords"
+        content="Obscura Record, Music Label, Phonk, Funk, Futuristic Music, Electronic Music, Independent Artist development, Sonic Void, New Releases 2026">
+    <meta name="author" content="Obscura Record">
+    <meta name="developer" content="Ranga">
+    <meta name="designer" content="Ranga">
+    <meta name="copyright" content="Obscura Record">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook / Discord Visuals | MADE BY RANGA -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://obscurarecords.com/">
+    <meta property="og:title" content="OBSCURA RECORD | Into the Sonic Void">
+    <meta property="og:description"
+        content="Discover high-energy Phonk and futuristic vibrations. Official label archive and artist releases.">
+    <meta property="og:image" content="assets/og-preview.png">
+
+    <!-- Twitter Optimization | MADE BY RANGA -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="OBSCURA RECORD | Into the Sonic Void">
+    <meta property="twitter:description"
+        content="Discover high-energy Phonk and futuristic vibrations. Official label archive.">
+    <link rel="stylesheet" href="style.css?v=60.1">
+
+    <!-- Security Layer: Google reCAPTCHA v3 | MADE BY RANGA -->
+    <script src="https://www.google.com/recaptcha/api.js?render=6Ldwaa0sAAAAAPKd4-a3CL7DQVUHjVG-yD4sQeEZ"></script>
+    <!-- Google Fonts: Space Grotesk for Tech, Outfit for Luxury | MADE BY RANGA -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Space+Grotesk:wght@300;500;700&family=Syne:wght@800&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- GSAP for animations & ScrollTo | MADE BY RANGA -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <!-- Firebase Engine Core (HEAD Bootloader) | MADE BY RANGA -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHf_R1n2Qn-q4NHAjfJt6xD_TWIRjiN1o",
+            authDomain: "obscura-records.firebaseapp.com",
+            databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "obscura-records",
+            storageBucket: "obscura-records.firebasestorage.app",
+            messagingSenderId: "831882873428",
+            appId: "1:831882873428:web:3cf009875e160a9f8efbc1"
+        };
+
+        // Bootstrapping the site engine
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+        // Single fetch to determine latest version
+        firebase.database().ref('siteData/globals/v').once('value').then((snapshot) => {
+            const v = snapshot.val() || '1.0';
+            const scr = document.createElement('script');
+            scr.src = 'script.js?v=60.0';
+            document.head.appendChild(scr);
+            console.log("ENGINE BOOT: v" + v);
+        });
+    </script>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+
+<body class="no-scroll">
+    <!-- Cinematic Portal Loader | MADE BY RANGA -->
+    <div id="portal-loader" class="portal-loader">
+        <div class="loader-content">
+            <div class="loader-logo">OBSCURA <span>RECORD</span></div>
+            <div class="loader-bar-container">
+                <div id="loader-bar" class="loader-bar"></div>
+            </div>
+            <div class="loader-status">ESTABLISHING CONNECTION...</div>
+        </div>
+    </div>
+
+    <!-- Galactic Background (Deep Black Void) | MADE BY RANGA -->
+    <div class="space-bg"></div>
+    <div class="overlay"></div>
+    <canvas id="particle-bg"></canvas>
+    <div class="noise-overlay"></div>
+    <div class="scanlines"></div>
+
+    <!-- Custom Cursor | MADE BY RANGA -->
+    <div class="cursor-glow"></div>
+    <div class="cursor-outer"></div>
+
+    <!-- Entrance Screen (Official Splash) | MADE BY RANGA -->
+    <div id="entrance-screen">
+        <div class="splash-content">
+            <img src="assets/OCR.png" class="splash-logo" alt="OCR LOGO">
+        </div>
+    </div>
+
+    <!-- Main Content (Hidden until Access Granted) | MADE BY RANGA -->
+    <main id="main-site" style="opacity: 0; visibility: hidden;">
+        <!-- Header / Navigation | MADE BY RANGA -->
+        <header>
+            <nav class="glass-nav">
+                <span data-target="reload" class="logo-link">
+                    <div class="logo" data-sync="siteTitle" data-sync-target="html">OBSCURA <span>RECORD</span></div>
+                </span>
+                <div class="nav-links">
+                    <span data-target="#home" class="nav-item" data-sync="navHome" data-sync-target="text">HOME</span>
+                    <span data-target="#releases" class="nav-item" data-sync="navReleases"
+                        data-sync-target="text">RELEASES</span>
+                    <span id="nav-ghost" data-target="#ghost-production" class="nav-item" data-sync="navGhostProduction"
+                        data-sync-target="text">GHOST PRODUCTION</span>
+                    <span data-target="#artists" class="nav-item" data-sync="navStaff"
+                        data-sync-target="text">STAFF</span>
+                    <span data-target="#partners" class="nav-item">PARTNERS</span>
+                    <span data-target="#contact" class="nav-item" data-sync="navContact"
+                        data-sync-target="text">CONTACT</span>
+                    <span id="open-form" class="nav-item">SEND DEMO</span>
+                </div>
+                <div class="social-menu">
+                    <button id="nav-menu-trigger" class="menu-trigger">
+                        <i class="fas fa-ellipsis-v"></i>
+                        <span data-sync="navMenuBtn" data-sync-target="text">MENU</span>
+                    </button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Dynamic Social Sidebar | MADE BY RANGA -->
+        <div id="social-sidebar" class="social-sidebar glass no-tilt">
+            <div class="sidebar-header">
+                <h3>NETWORK</h3>
+                <button id="close-sidebar" class="close-sidebar">&times;</button>
+            </div>
+            <!-- High-Priority Navigation Links -->
+            <div class="sidebar-nav">
+                <span data-target="#home" class="sidebar-nav-item nav-item">
+                    <i class="fas fa-home"></i> <span data-sync="navHome" data-sync-target="text">HOME</span>
+                </span>
+                <span data-target="#releases" class="sidebar-nav-item nav-item">
+                    <i class="fas fa-compact-disc"></i> <span data-sync="navReleases"
+                        data-sync-target="text">RELEASES</span>
+                </span>
+                <span id="side-nav-ghost" data-target="#ghost-production" class="sidebar-nav-item nav-item">
+                    <i class="fas fa-ghost"></i> <span data-sync="navGhostProduction"
+                        data-sync-target="text">GHOST PRODUCTION</span>
+                </span>
+                <span data-target="#artists" class="sidebar-nav-item nav-item">
+                    <i class="fas fa-users-cog"></i> <span data-sync="navStaff" data-sync-target="text">STAFF</span>
+                </span>
+                <span data-target="#partners" class="sidebar-nav-item nav-item">
+                    <i class="fas fa-handshake"></i> <span>PARTNERS</span>
+                </span>
+                <span data-target="#contact" class="sidebar-nav-item nav-item">
+                    <i class="fas fa-satellite-dish"></i> <span data-sync="navContact"
+                        data-sync-target="text">CONTACT</span>
+                </span>
+                <span id="open-form-sidebar" class="sidebar-nav-item nav-item accent-btn">
+                    <i class="fas fa-paper-plane"></i> <span>SEND DEMO</span>
+                </span>
+            </div>
+
+            <div class="sidebar-header compact">
+                <h3 style="font-size: 0.8rem; letter-spacing: 0.4rem; opacity: 0.6;">NETWORK</h3>
+            </div>
+
+            <div class="sidebar-links-grid">
+                <a href="https://www.instagram.com/recordsobscura" target="_blank" data-sync="socialInstaUrl"
+                    data-sync-target="href">
+                    <i class="fab fa-instagram"></i> <span class="sidebar-label" data-sync="socialInstaText"
+                        data-sync-target="text">INSTAGRAM</span>
+                </a>
+                <a href="https://www.youtube.com/channel/UC0A5L7DUgls-AkYaQ4ZwxhA" target="_blank"
+                    data-sync="socialYoutubeUrl" data-sync-target="href">
+                    <i class="fab fa-youtube"></i> <span class="sidebar-label" data-sync="socialYoutubeText"
+                        data-sync-target="text">YOUTUBE</span>
+                </a>
+                <a href="https://discord.gg/E3Sn72cpBR" target="_blank" data-sync="socialDiscordUrl"
+                    data-sync-target="href">
+                    <i class="fab fa-discord"></i> <span class="sidebar-label" data-sync="socialDiscordText"
+                        data-sync-target="text">DISCORD</span>
+                </a>
+                <a href="https://www.tiktok.com/@obscura.records" target="_blank" data-sync="socialTiktokUrl"
+                    data-sync-target="href">
+                    <i class="fab fa-tiktok"></i> <span class="sidebar-label" data-sync="socialTiktokText"
+                        data-sync-target="text">TIKTOK</span>
+                </a>
+                <a href="#" target="_blank" data-sync="socialSpotifyUrl" data-sync-target="href">
+                    <i class="fab fa-spotify"></i> <span class="sidebar-label">SPOTIFY</span>
+                </a>
+                <a href="mailto:info@obscuraricords.com" data-sync="socialEmailUrl" data-sync-target="href">
+                    <i class="fas fa-envelope"></i> <span class="sidebar-label" data-sync="socialEmailText"
+                        data-sync-target="text">EMAIL</span>
+                </a>
+            </div>
+            <div class="sidebar-footer">
+                <div class="logo sidebar-footer-logo">OBSCURA <span>RECORD</span></div>
+                <p>CORE PORTAL v6.0</p>
+            </div>
+        </div>
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+        <!-- Hero Section | MADE BY RANGA -->
+        <section id="home" class="hero">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h2 class="reveal-text" data-sync="heroTitle" data-sync-target="html"><span>WELCOME TO</span> <span
+                            class="accent">OBSCURA RECORD</span></h2>
+                    <p data-sync="heroDesc" data-sync-target="text">OBSCURA RECORD is an independent music label focused on
+                        artist development, music production, and official releases. Our mission is to support talented
+                        artists and create high-quality music through collaboration and innovation.</p>
+                    <div class="hero-actions">
+                        <span data-target="#releases" class="cta-primary nav-item">RELEASES</span>
+                    </div>
+                </div>
+
+                <!-- STREETX NAVIGATION CARD | SIMPLIFIED ORIGINAL VERSION -->
+                <div class="streat-nav-card glass no-tilt">
+                    <div class="card-bg-logo" style="background-image: url('assets/STREETX.PNG');"></div>
+                    <div class="card-cover">
+                        <div class="glow-tag">CLOTHING STORE</div>
+                    </div>
+                    
+                    <div class="card-content">
+                        <p class="brand-desc">PREMIUM STREETWEAR IDENTITY</p>
+
+                        <a href="streatx-clothing/" target="_blank" class="visit-btn glitch-btn">
+                            <span class="glitch-text" data-text="VISIT STORE">VISIT STORE</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- SECTION: UPCOMING RELEASES (Simplified Visual-First) | MADE BY RANGA -->
+        <section id="upcoming" class="upcoming-archive" style="padding-top: 6rem; padding-bottom: 2rem;">
+            <div class="section-header archive-header">
+                <div class="header-content">
+                    <h2 class="section-title"><span class="accent">UPCOMING</span> <span>RELEASES</span></h2>
+                    <p class="section-desc">Intercepting future signals... decryption in progress.</p>
+                </div>
+                <div class="slider-controls">
+                    <button class="slider-nav-btn upcoming-prev"><i class="fas fa-chevron-left"></i></button>
+                    <button class="slider-nav-btn upcoming-next"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <div class="slider-wrapper">
+                <div class="upcoming-grid" id="upcoming-grid">
+                    <!-- Upcoming release cards will populate here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Archival Release Database (Horizontal Tracklist Style) | MADE BY RANGA -->
+        <section id="releases" class="releases-archive">
+            <div class="section-header archive-header">
+                <div class="header-content">
+                    <h2 class="section-title" data-sync="archiveTitle" data-sync-target="html">LABEL <span
+                            class="accent">RELEASES</span></h2>
+                    <p class="section-desc" data-sync="archiveDesc" data-sync-target="text">THESE ARE THE RELEASES THAT
+                        IS PUBLISHED THROUGH OUR LABEL</p>
+                </div>
+                <div class="slider-controls">
+                    <button class="slider-nav-btn prev"><i class="fas fa-chevron-left"></i></button>
+                    <button class="slider-nav-btn next"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <div class="slider-wrapper">
+                <div class="releases-slider">
+                    <!-- Card 1 -->
+                    <div class="release-card-large glass">
+                        <div class="release-cover-large">
+                            <img src="assets/cover.png" alt="Starlight Syndrome">
+                            <div class="release-type-badge">SINGLE</div>
+                            <div class="player-overlay">
+                                <button class="play-btn"><i class="fas fa-play"></i></button>
+                            </div>
+                        </div>
+                        <div class="release-info-large">
+                            <span class="track-id">OS-992 <span class="badge">NEW</span></span>
+                            <h4>STARLIGHT SYNDROME</h4>
+                            <div class="producers-text">Produced by: <span>SVYUXU & OBSCURA</span></div>
+                            <div class="release-actions">
+                                <a href="#" class="platform-link spotify"><i class="fab fa-spotify"></i></a>
+                                <a href="#" class="platform-link apple"><i class="fab fa-apple"></i></a>
+                                <a href="#" class="platform-link youtube"><i class="fab fa-youtube"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="release-card-large glass">
+                        <div class="release-cover-large">
+                            <img src="assets/releases/cover_1.png" alt="Neutron Pulse"
+                                style="filter: hue-rotate(90deg);">
+                            <div class="release-type-badge">EP</div>
+                            <div class="player-overlay">
+                                <button class="play-btn"><i class="fas fa-play"></i></button>
+                            </div>
+                        </div>
+                        <div class="release-info-large">
+                            <span class="track-id">OS-991</span>
+                            <h4>NEUTRON PULSE</h4>
+                            <div class="producers-text">Produced by: <span>RANGA</span></div>
+                            <div class="release-actions">
+                                <a href="#" class="platform-link spotify"><i class="fab fa-spotify"></i></a>
+                                <a href="#" class="platform-link apple"><i class="fab fa-apple"></i></a>
+                                <a href="https://www.youtube.com/watch?v=jfKfPfyJRdk" class="platform-link youtube"><i
+                                        class="fab fa-youtube"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="release-card-large glass">
+                        <div class="release-cover-large">
+                            <img src="assets/releases/cover_2.png" alt="Void Walker"
+                                style="filter: hue-rotate(180deg) invert(0.2);">
+                            <div class="release-type-badge">ALBUM</div>
+                            <div class="player-overlay">
+                                <button class="play-btn"><i class="fas fa-play"></i></button>
+                            </div>
+                        </div>
+                        <div class="release-info-large">
+                            <span class="track-id">OS-990</span>
+                            <h4>VOID WALKER</h4>
+                            <div class="producers-text">Produced by: <span>FL4ME</span></div>
+                            <div class="release-actions">
+                                <a href="#" class="platform-link spotify"><i class="fab fa-spotify"></i></a>
+                                <a href="#" class="platform-link apple"><i class="fab fa-apple"></i></a>
+                                <a href="https://www.youtube.com/watch?v=21X5lGlDOfg" class="platform-link youtube"><i
+                                        class="fab fa-youtube"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4 -->
+                    <div class="release-card-large glass">
+                        <div class="release-cover-large">
+                            <img src="assets/releases/cover_3.png" alt="Solar Flare"
+                                style="filter: hue-rotate(270deg) contrast(1.2);">
+                            <div class="release-type-badge">SINGLE</div>
+                            <div class="player-overlay">
+                                <button class="play-btn"><i class="fas fa-play"></i></button>
+                            </div>
+                        </div>
+                        <div class="release-info-large">
+                            <span class="track-id">OS-989</span>
+                            <h4>SOLAR FLARE</h4>
+                            <div class="producers-text">Produced by: <span>SVYUXU & RANGA</span></div>
+                            <div class="release-actions">
+                                <a href="#" class="platform-link spotify"><i class="fab fa-spotify"></i></a>
+                                <a href="#" class="platform-link apple"><i class="fab fa-apple"></i></a>
+                                <a href="https://www.youtube.com/watch?v=kJQP7kiw5Fk" class="platform-link youtube"><i
+                                        class="fab fa-youtube"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ghost Production Section | MADE BY RANGA -->
+        <section id="ghost-production" class="ghost-production" style="padding: 10vh 5%; background: radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.02) 0%, transparent 70%);">
+            <div class="section-header archive-header">
+                <div class="header-content">
+                    <h2 class="section-title"><span class="accent">GHOST</span> <span>PRODUCTION</span></h2>
+                    <p class="section-desc" data-sync="ghostDesc" data-sync-target="text">Request your custom sound in any style. Secure professional production for a flat fee.</p>
+                </div>
+            </div>
+            
+            <div class="glass no-tilt" style="max-width: 1100px; margin: 0 auto; padding: 4rem; border-radius: 30px; border: 1px solid rgba(0, 240, 255, 0.15); position: relative; overflow: hidden; backdrop-filter: blur(20px);">
+                <div style="position: absolute; top: -10%; right: -10%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(0, 240, 255, 0.05) 0%, transparent 70%); z-index: 0;"></div>
+                
+                <div style="position: relative; z-index: 1; display: flex; gap: 4rem; align-items: center; flex-wrap: wrap;">
+                    <!-- Left Side: Icon & Info -->
+                    <div style="flex: 1; min-width: 320px; text-align: left;">
+                        <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem;">
+                            <i class="fas fa-ghost" style="font-size: 4rem; color: var(--accent-blue); filter: drop-shadow(0 0 10px var(--accent-blue));"></i>
+                            <div>
+                                <h3 style="font-family: var(--font-heading); letter-spacing: 0.3rem; font-size: 2.2rem; margin: 0; text-transform: uppercase;" data-sync="ghostServiceTitle" data-sync-target="text">GHOST PRODUCTION</h3>
+                                <div style="display: flex; gap: 0.8rem; align-items: center; margin-top: 0.5rem;">
+                                    <span class="badge" style="background: var(--accent-blue); color: #000; font-weight: bold; padding: 0.2rem 0.8rem; border-radius: 5px; font-size: 0.7rem;">EXCLUSIVE</span>
+                                    <span class="event-glow" style="font-family: var(--font-heading); font-size: 0.8rem; opacity: 0.6; letter-spacing: 0.1rem;" data-sync="ghostTagline" data-sync-target="text">EXCLUSIVE EVENT</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p style="color: var(--text-primary); font-size: 1.1rem; line-height: 1.7; opacity: 0.9; margin-bottom: 2.5rem;" data-sync="ghostServiceDesc" data-sync-target="text">
+                            Submit your preferred musical style and vision to our portal. Our elite producers will craft a bespoke, professional track tailored specifically to your requirements. Secure your unique sound today and own it forever.
+                        </p>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 3rem; margin-bottom: 4rem; text-align: left;">
+                            <!-- Column 1: Production Packages -->
+                            <div class="pricing-group">
+                                <h4 style="font-family: var(--font-heading); color: var(--accent-blue); letter-spacing: 0.2rem; margin-bottom: 1.5rem; font-size: 0.9rem; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 0.5rem; text-transform: uppercase;">PRODUCTION TIERS</h4>
+                                <ul style="list-style: none; display: flex; flex-direction: column; gap: 1rem; padding: 0;">
+                                    <li style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="opacity: 0.8; font-size: 0.9rem;">30 Seconds Snippet</span>
+                                        <span style="font-weight: 700; color: #fff;" data-sync="ghostPrice30s" data-sync-target="text">$10</span>
+                                    </li>
+                                    <li style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="opacity: 0.8; font-size: 0.9rem;">1 Minute Composition</span>
+                                        <span style="font-weight: 700; color: #fff;" data-sync="ghostPrice1m" data-sync-target="text">$30</span>
+                                    </li>
+                                    <li style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="opacity: 0.8; font-size: 0.9rem;">1 Minute + Vocals</span>
+                                        <span style="font-weight: 700; color: #fff;" data-sync="ghostPriceVocals" data-sync-target="text">$50</span>
+                                    </li>
+                                    <li style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="opacity: 0.8; font-size: 0.9rem;">Customized Package</span>
+                                        <span style="font-weight: 700; color: #fff;" data-sync="ghostPriceCustom" data-sync-target="text">From $100</span>
+                                    </li>
+                                    <li style="margin-top: 0.5rem; padding: 0.8rem; background: rgba(0, 240, 255, 0.05); border-radius: 8px; font-size: 0.75rem; display: flex; justify-content: space-between; border: 1px solid rgba(0, 240, 255, 0.1);">
+                                        <span style="color: var(--accent-blue); font-weight: 700;">ADD-ON: PRO MIX</span>
+                                        <span data-sync="ghostAddonMix" data-sync-target="text">+ $20</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        
+                            <!-- Column 2: Service Inclusions -->
+                            <div class="pricing-group">
+                                <h4 style="font-family: var(--font-heading); color: var(--accent-blue); letter-spacing: 0.2rem; margin-bottom: 1.5rem; font-size: 0.9rem; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 0.5rem; text-transform: uppercase;">CORE FEATURES</h4>
+                                <ul style="list-style: none; display: flex; flex-direction: column; gap: 1rem; padding: 0;">
+                                    <li style="display: flex; align-items: center; gap: 0.8rem;">
+                                        <i class="fas fa-check-circle" style="color: var(--accent-blue); font-size: 0.8rem;"></i>
+                                        <span style="opacity: 0.8; font-size: 0.9rem;" data-sync="ghostFeature1" data-sync-target="text">High-Quality WAV Files</span>
+                                    </li>
+                                    <li style="display: flex; align-items: center; gap: 0.8rem;">
+                                        <i class="fas fa-check-circle" style="color: var(--accent-blue); font-size: 0.8rem;"></i>
+                                        <span style="opacity: 0.8; font-size: 0.9rem;" data-sync="ghostFeature2" data-sync-target="text">24/7 Customer Service</span>
+                                    </li>
+                                    <li style="display: flex; align-items: center; gap: 0.8rem;">
+                                        <i class="fas fa-check-circle" style="color: var(--accent-blue); font-size: 0.8rem;"></i>
+                                        <span style="opacity: 0.8; font-size: 0.9rem;" data-sync="ghostFeature3" data-sync-target="text">3 Project Revisions</span>
+                                    </li>
+                                    <li style="margin-top: 0.5rem; padding: 0.8rem; background: rgba(0, 240, 255, 0.05); border-radius: 8px; font-size: 0.75rem; display: flex; justify-content: space-between; border: 1px solid rgba(0, 240, 255, 0.1);">
+                                        <span style="color: var(--accent-blue); font-weight: 700;">ADD-ON: UNLIMITED REVISIONS</span>
+                                        <span data-sync="ghostAddonRevisions" data-sync-target="text">+ $20</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        
+                            <!-- Column 3: Delivery Timeline -->
+                            <div class="pricing-group">
+                                <h4 style="font-family: var(--font-heading); color: var(--accent-blue); letter-spacing: 0.2rem; margin-bottom: 1.5rem; font-size: 0.9rem; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 0.5rem; text-transform: uppercase;" data-sync="ghostDeliveryTitle" data-sync-target="text">DELIVERY</h4>
+                                <ul style="list-style: none; display: flex; flex-direction: column; gap: 1rem; padding: 0;">
+                                    <li style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="opacity: 0.8; font-size: 0.9rem;">3 Day Express Delivery</span>
+                                        <span style="font-weight: 700; color: #fff;" data-sync="ghostDelivery3d" data-sync-target="text">+ $20</span>
+                                    </li>
+                                    <li style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="opacity: 0.8; font-size: 0.9rem;">5 Day Priority Delivery</span>
+                                        <span style="font-weight: 700; color: #fff;" data-sync="ghostDelivery5d" data-sync-target="text">+ $10</span>
+                                    </li>
+                                    <li style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="opacity: 0.8; font-size: 0.9rem;">7 Day Standard Delivery</span>
+                                        <span style="font-weight: 700; color: var(--accent-blue);">FREE</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Special Offer Banner -->
+                        <div class="special-offer glass" style="background: linear-gradient(90deg, rgba(0, 240, 255, 0.1), rgba(183, 0, 255, 0.1)); border: 1px solid var(--accent-blue); padding: 2.5rem; border-radius: 20px; text-align: left; margin-bottom: 3rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
+                            <div style="flex: 0 0 auto;">
+                                <i class="fas fa-star" style="font-size: 3rem; color: var(--accent-blue); filter: drop-shadow(0 0 10px var(--accent-blue));"></i>
+                            </div>
+                            <div style="flex: 1; min-width: 300px;">
+                                <h3 style="font-family: var(--font-heading); letter-spacing: 0.3rem; font-size: 1.4rem; margin-bottom: 0.5rem;" data-sync="ghostSpecialTitle" data-sync-target="text">SPECIAL OFFER: FULL TRACK</h3>
+                                <p style="font-size: 0.9rem; opacity: 0.9; line-height: 1.6; margin: 0;" data-sync="ghostSpecialDesc" data-sync-target="text">
+                                    1 Full Track, Any Style, Mixed & Mastered. <br>
+                                    <span style="color: var(--accent-blue); font-weight: 700;">MP3 + WAV + MIDI + STEMS + PROJECT FILE</span>
+                                </p>
+                                <p style="font-size: 0.75rem; opacity: 0.5; margin-top: 0.5rem; letter-spacing: 0.1rem; margin-bottom: 0;">KEEP 100% OF YOUR RIGHTS</p>
+                            </div>
+                            <div style="text-align: center;">
+                                <span style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 700; color: #fff;" data-sync="ghostSpecialPrice" data-sync-target="text">$300</span>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                            <div id="order-ghost" class="cta-primary" style="width: 100%; max-width: 400px; text-align: center; padding: 1.2rem; cursor: pointer;">
+                                SECURE YOUR SOUND
+                            </div>
+                            <p style="font-size: 0.75rem; opacity: 0.5; letter-spacing: 0.05rem;">All transactions are encrypted and secured.</p>
+                        </div>
+                    </div> <!-- Closes 372 -->
+                </div> <!-- Closes 370 -->
+            </div> <!-- Closes 367 -->
+        </section>
+
+        <!-- Staff Showcase (Grid) | MADE BY RANGA -->
+        <section id="artists" class="artists">
+            <h2 class="section-title">OBSCURA <span class="accent">STAFF</span></h2>
+            <div class="artists-grid">
+                <div class="artist-item glass" data-discord-id="1296819659131326556">
+                    <div class="avatar-wrapper">
+                        <div class="artist-img"></div>
+                        <img src="" class="avatar-decoration" alt="Frame" style="display: none;">
+                    </div>
+                    <h4>SVYUXU</h4>
+                    <p>Status: <span class="status-indicator">LOADING...</span></p>
+                    <span class="artist-loc">Discord Presence</span>
+                </div>
+                <div class="artist-item glass" data-discord-id="1126206273722011708">
+                    <div class="avatar-wrapper">
+                        <div class="artist-img"></div>
+                        <img src="" class="avatar-decoration" alt="Frame" style="display: none;">
+                    </div>
+                    <h4>RANGA</h4>
+                    <p>Status: <span class="status-indicator">LOADING...</span></p>
+                    <span class="artist-loc">Discord Presence</span>
+                </div>
+                <div class="artist-item glass" data-discord-id="1145271334922879011">
+                    <div class="avatar-wrapper">
+                        <div class="artist-img"></div>
+                        <img src="" class="avatar-decoration" alt="Frame" style="display: none;">
+                    </div>
+                    <h4>שאเ๔๓אภє</h4>
+                    <p>Status: <span class="status-indicator">LOADING...</span></p>
+                    <span class="artist-loc">Discord Presence</span>
+                </div>
+                <div class="artist-item glass" data-discord-id="1099844087961632849">
+                    <div class="avatar-wrapper">
+                        <div class="artist-img"></div>
+                        <img src="" class="avatar-decoration" alt="Frame" style="display: none;">
+                    </div>
+                    <h4>FL4ME</h4>
+                    <p>Status: <span class="status-indicator">LOADING...</span></p>
+                    <span class="artist-loc">Discord Presence</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Label Partners Section | MADE BY RANGA -->
+        <section id="partners" class="artists" style="padding-top: 0;">
+            <h2 class="section-title">LABEL <span class="accent">PARTNERS</span></h2>
+            <div class="artists-grid">
+                <div class="artist-item glass" data-partner-id="1466152706145128659">
+                    <div class="avatar-wrapper">
+                        <div class="artist-img"></div>
+                        <img src="" class="avatar-decoration" alt="Frame" style="display: none;">
+                    </div>
+                    <h4>Itx Record Label</h4>
+                    <p>Status: <span class="status-indicator">LOADING...</span></p>
+                    <span class="artist-loc">Discord Presence</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section (Social Links) | MADE BY RANGA -->
+        <section id="contact" class="contact-section">
+            <div class="contact-container glass">
+                <h2 class="section-title" data-sync="contactTitle" data-sync-target="html">CONNECT WITH <span
+                        class="accent">US</span></h2>
+                <p data-sync="contactDesc" data-sync-target="text">Follow our transmissions across the digital
+                    landscape.</p>
+                <div class="social-grid">
+                    <a href="https://www.instagram.com/" target="_blank" class="social-card" data-sync="socialInstaUrl"
+                        data-sync-target="href">
+                        <i class="fab fa-instagram"></i>
+                        <span data-sync="socialInstaText" data-sync-target="text">INSTAGRAM</span>
+                    </a>
+                    <a href="https://www.youtube.com/" target="_blank" class="social-card" data-sync="socialYoutubeUrl"
+                        data-sync-target="href">
+                        <i class="fab fa-youtube"></i>
+                        <span data-sync="socialYoutubeText" data-sync-target="text">YOUTUBE</span>
+                    </a>
+                    <a href="https://discord.gg/" target="_blank" class="social-card" data-sync="socialDiscordUrl"
+                        data-sync-target="href">
+                        <i class="fab fa-discord"></i>
+                        <span data-sync="socialDiscordText" data-sync-target="text">DISCORD</span>
+                    </a>
+                    <a href="https://www.tiktok.com/" target="_blank" class="social-card" data-sync="socialTiktokUrl"
+                        data-sync-target="href">
+                        <i class="fab fa-tiktok"></i>
+                        <span data-sync="socialTiktokText" data-sync-target="text">TIKTOK</span>
+                    </a>
+                    <a href="mailto:info@obscurarecords.com" class="social-card" data-sync="socialEmailUrl"
+                        data-sync-target="href">
+                        <i class="fas fa-envelope"></i>
+                        <span data-sync="socialEmailText" data-sync-target="text">DIRECT EMAIL</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- All-in-One Contact Us Popup Modal | MADE BY RANGA -->
+        <div id="contact-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content glass">
+                <button class="close-modal">&times;</button>
+                <h2 class="section-title">CONNECT WITH <span class="accent">THE VOID</span></h2>
+                <div class="faq-item glass"
+                    style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; margin-top: 1rem;">
+                    <i class="fas fa-paper-plane" style="color: var(--accent-blue); font-size: 1.5rem;"></i>
+                    <div style="text-align: left;">
+                        <a href="mailto:info@obscurarecords.com" data-sync="socialEmailUrl" data-sync-target="href"
+                            style="font-size: 1rem; color: #fff; text-decoration: none; font-family: var(--font-heading); letter-spacing: 0.1rem;"><span
+                                data-sync="socialEmailText" data-sync-target="text">info@obscurarecords.com</span></a>
+                    </div>
+                </div>
+
+                <div class="demo-channels"
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem;">
+                    <a href="https://www.instagram.com/recordsobscura?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                        target="_blank" class="faq-item glass" data-sync="socialInstaUrl" data-sync-target="href"
+                        style="text-decoration: none; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
+                        <i class="fab fa-instagram" style="color: var(--accent-blue);"></i>
+                        <span style="font-size: 0.8rem; letter-spacing: 0.1rem;" data-sync="socialInstaText"
+                            data-sync-target="text">INSTAGRAM</span>
+                    </a>
+                    <a href="https://discord.gg/E3Sn72cpBR" target="_blank" class="faq-item glass"
+                        data-sync="socialDiscordUrl" data-sync-target="href"
+                        style="text-decoration: none; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
+                        <i class="fab fa-discord" style="color: var(--accent-blue);"></i>
+                        <span style="font-size: 0.8rem; letter-spacing: 0.1rem;" data-sync="socialDiscordText"
+                            data-sync-target="text">DISCORD</span>
+                    </a>
+                    <a href="https://www.tiktok.com/@obscura.records" target="_blank" class="faq-item glass"
+                        data-sync="socialTiktokUrl" data-sync-target="href"
+                        style="text-decoration: none; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
+                        <i class="fab fa-tiktok" style="color: var(--accent-blue);"></i>
+                        <span style="font-size: 0.8rem; letter-spacing: 0.1rem;" data-sync="socialTiktokText"
+                            data-sync-target="text">TIKTOK</span>
+                    </a>
+                    <a href="https://www.youtube.com/channel/UC0A5L7DUgls-AkYaQ4ZwxhA" target="_blank"
+                        class="faq-item glass" data-sync="socialYoutubeUrl" data-sync-target="href"
+                        style="text-decoration: none; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
+                        <i class="fab fa-youtube" style="color: var(--accent-blue);"></i>
+                        <span style="font-size: 0.8rem; letter-spacing: 0.1rem;" data-sync="socialYoutubeText"
+                            data-sync-target="text">YOUTUBE</span>
+                    </a>
+                </div>
+                <p style="margin-top: 1.5rem; font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.6;"
+                    data-sync="contactModalSubtext" data-sync-target="text">For partnerships, general questions, or
+                    portal feedback, reach out via the channels above.</p>
+            </div>
+        </div>
+
+        <!-- Demo Submission Popup Modal | MADE BY RANGA -->
+        <div id="demo-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content glass">
+                <button class="close-modal">&times;</button>
+                <h2 class="section-title">SUBMIT YOUR SOUND</h2>
+                <p class="demo-text" data-sync="demoDesc" data-sync-target="html"
+                    style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">We are looking for the next evolution of
+                    sound. If your music pushes the boundaries of Funk, Phonk, or Futuristic Electronic music, our
+                    portal is open for your transmissions.</p>
+
+                <div class="demo-channels" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <a href="https://discord.gg/E3Sn72cpBR" target="_blank" data-sync="socialDiscordUrl"
+                        data-sync-target="href" class="faq-item glass"
+                        style="text-decoration: none; display: flex; align-items: center; gap: 1rem;">
+                        <i class="fab fa-discord" style="color: var(--accent-blue); font-size: 1.5rem;"></i>
+                        <div style="text-align: left;">
+                            <div style="font-family: var(--font-heading); font-size: 0.85rem; color: #fff;"
+                                data-sync="socialDiscordText" data-sync-target="text">DISCORD (RECOMMENDED)</div>
+                            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);" data-sync="demoDiscordSub"
+                                data-sync-target="text">Faster review & community vibes.</div>
+                        </div>
+                    </a>
+
+                    <a href="mailto:artists@obscurarecord.com" data-sync="socialEmailUrl" data-sync-target="href"
+                        class="faq-item glass"
+                        style="text-decoration: none; display: flex; align-items: center; gap: 1rem;">
+                        <i class="fas fa-envelope" style="color: var(--accent-blue); font-size: 1.5rem;"></i>
+                        <div style="text-align: left;">
+                            <div style="font-family: var(--font-heading); font-size: 0.85rem; color: #fff;"
+                                data-sync="socialEmailText" data-sync-target="text">DIRECT EMAIL</div>
+                            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);" data-sync="demoEmailSub"
+                                data-sync-target="text">artists@obscurarecord.com</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Popup Modal | MADE BY RANGA -->
+        <div id="faq-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content glass">
+                <button class="close-modal">&times;</button>
+                <h2 class="section-title" data-sync="modalFaqTitle" data-sync-target="text">FREQUENCY ASKED QUESTIONS
+                </h2>
+                <div class="faq-grid" id="faq-container">
+                    <div class="faq-item glass">
+                        <div class="faq-question">
+                            <span data-sync="faq1_q" data-sync-target="text">HOW DO I SUBMIT A DEMO?</span><i
+                                class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p data-sync="faq1_a" data-sync-target="html">We highly recommend sending demos through our
+                                <strong>Discord Server</strong> for faster review. Alternatively, you can send an email
+                                message to artists@obscurarecord.com.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="faq-item glass">
+                        <div class="faq-question">
+                            <span data-sync="faq2_q" data-sync-target="text">WHAT GENRES ARE YOU LOOKING FOR?</span><i
+                                class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p data-sync="faq2_a" data-sync-target="html">Our dimension primarily focuses on
+                                <strong>Phonk, Funk, and Futuristic Electronic</strong> music. We are looking for
+                                high-energy vibrations that push the boundaries of sound.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="faq-item glass">
+                        <div class="faq-question">
+                            <span data-sync="faq3_q" data-sync-target="text">WHERE CAN I JOIN THE COMMUNITY?</span><i
+                                class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p data-sync="faq3_a" data-sync-target="html">Join our galactic community on Discord to
+                                connect with other artists, share ideas, and participate in exclusive portal events.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item glass">
+                        <div class="faq-question">
+                            <span data-sync="faq4_q" data-sync-target="text">HOW LONG DOES A RESPONSE TAKE?</span><i
+                                class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p data-sync="faq4_a" data-sync-target="html">Our sonic reviewers aim to respond within a
+                                few galactic cycles. If your sound resonates with our frequency, we will reach out via
+                                Discord or email.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Privacy Policy Popup Modal | MADE BY RANGA -->
+        <div id="privacy-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content glass">
+                <button class="close-modal">&times;</button>
+                <h2 class="section-title" data-sync="modalPrivacyTitle" data-sync-target="text">PRIVACY POLICY</h2>
+                <div class="legal-content text-left" id="privacy-container">
+                    <div class="faq-item glass">
+                        <div class="faq-question">
+                            <span data-sync="p1_q" data-sync-target="text">INTELLECTUAL PROPERTY</span><i
+                                class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p data-sync="p1_a" data-sync-target="text">All content in this dimension—including audio,
+                                graphics, logos, and visual art—is the property of Obscura Record or its licensors.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item glass">
+                        <div class="faq-question">
+                            <span data-sync="p2_q" data-sync-target="text">DATA SECURITY</span><i
+                                class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p data-sync="p2_a" data-sync-target="text">Your portal data is encrypted and secure. We
+                                only collect what is necessary to maintain your connection.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item glass">
+                        <div class="faq-question">
+                            <span data-sync="p3_q" data-sync-target="text">PROMOTIONAL CONTENT</span><i
+                                class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p data-sync="p3_a" data-sync-target="text">By connecting to our portal, you may receive
+                                updates on new releases, talent discoveries, and galactic events.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item glass">
+                        <div class="faq-question">
+                            <span data-sync="p4_q" data-sync-target="text">EXTERNAL EMBEDS</span><i
+                                class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p data-sync="p4_a" data-sync-target="text">We use third-party players (SoundCloud/YouTube).
+                                Their respective privacy policies apply to your interactions on those platforms.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item glass">
+                        <div class="faq-question">
+                            <span data-sync="p5_q" data-sync-target="text">DATA RETENTION</span><i
+                                class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p data-sync="p5_a" data-sync-target="text">We retain connection data only as long as
+                                necessary for community support and galactic record-keeping.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item glass">
+                        <div class="faq-question">
+                            <span data-sync="p6_q" data-sync-target="text">GOVERNING LAW</span><i
+                                class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p data-sync="p6_a" data-sync-target="text">All legal matters are governed by the laws of
+                                our primary operational frequency. Disputes are resolved via cosmic mediation.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item glass">
+                        <div class="faq-question">
+                            <span data-sync="p7_q" data-sync-target="text">LEGAL CONTACT</span><i
+                                class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p data-sync="p7_a" data-sync-target="text">For all legal inquiries, copyright complaints
+                                (DMCA), or licensing requests, please send an email message to our Legal Counsel at
+                                artists@obscurarecord.com. Our team is available at this address for any direct
+                                communications.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Professional Submission Portal (Form State) | MADE BY RANGA -->
+        <div id="submission-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content glass demo-grid-wide no-tilt">
+                <button class="close-modal">&times;</button>
+                <div class="modal-header">
+                    <h2 class="section-title" data-sync="formTitle" data-sync-target="html">Secure <span
+                            class="accent">Form Submission</span></h2>
+                    <p data-sync="formDesc" data-sync-target="text"
+                        style="margin-top:-1rem; margin-bottom: 1.5rem; color: var(--text-secondary); opacity: 0.8; font-size: 0.8rem;">
+                        Transmit your audio frequency to the Obscura A&R department for priority review.</p>
+                </div>
+                <form id="submission-form" class="cyber-form">
+                    <div class="form-row mobile-stack-row">
+                        <div class="form-group">
+                            <label data-sync="formLabelName" data-sync-target="text">Real Name</label>
+                            <div class="mirror-container">
+                                <input type="text" name="name" class="real-input" placeholder="Name"
+                                    data-sync="formPlaceholderName" data-sync-target="placeholder" required>
+                                <div class="mirror-display"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label data-sync="formLabelArtist" data-sync-target="text">Artist Name(s)</label>
+                            <div class="mirror-container">
+                                <input type="text" name="artist" class="real-input" placeholder="Names"
+                                    data-sync="formPlaceholderArtist" data-sync-target="placeholder" required>
+                                <div class="mirror-display"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label data-sync="formLabelEmail" data-sync-target="text">Email Address</label>
+                            <div class="mirror-container">
+                                <input type="email" name="email" class="real-input" placeholder="official@artist.com"
+                                    data-sync="formPlaceholderEmail" data-sync-target="placeholder" required>
+                                <div class="mirror-display"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label data-sync="formLabelGenre" data-sync-target="text">Primary Genre</label>
+                            <div class="mirror-container">
+                                <input type="text" name="genre" class="real-input" placeholder="Funk / EDM / Hip Hop"
+                                    data-sync="formPlaceholderGenre" data-sync-target="placeholder" required>
+                                <div class="mirror-display"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <label data-sync="formLabelSpotify" data-sync-target="text">Artist Profile / Social Links</label>
+                            <button type="button" id="add-link-btn" class="cyber-mini-btn" title="Add Link"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <div id="dynamic-links-container" class="dynamic-inputs">
+                            <div class="dynamic-row">
+                                <div class="mirror-container">
+                                    <input type="url" name="spotify[]" class="real-input"
+                                        placeholder="https://open.spotify.com/artist/..." data-sync="formPlaceholderSpotify"
+                                        data-sync-target="placeholder">
+                                    <div class="mirror-display"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-sync="formLabelLink" data-sync-target="text">Private streaming link (SoundCloud /
+                            Dropbox / Drive)</label>
+                        <div class="mirror-container">
+                            <input type="url" name="link" class="real-input" placeholder="https://soundcloud.com/..."
+                                data-sync="formPlaceholderLink" data-sync-target="placeholder" required>
+                            <div class="mirror-display"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-sync="formLabelMessage" data-sync-target="text">Message / Biography
+                            (Optional)</label>
+                        <textarea name="message" class="real-input"
+                            placeholder="A brief transmission regarding your sound..."
+                            data-sync="formPlaceholderMessage" data-sync-target="placeholder"></textarea>
+                    </div>
+
+                    <!-- Submission Guidelines Checklist (Final Step) | MADE BY RANGA -->
+                    <div class="demo-guidelines"
+                        style="margin-top: 1rem; margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                        <label class="cyber-check-item glass">
+                            <input type="checkbox" class="cyber-check-input" required>
+                            <span class="cyber-tick"></span>
+                            <div class="check-text">
+                                <strong data-sync="formRule1Title" data-sync-target="text">Is this track
+                                    unreleased?</strong>
+                                <p data-sync="formRule1Desc" data-sync-target="text">We do NOT accept already-released
+                                    tracks. Any submissions that have already been published will be automatically
+                                    declined.</p>
+                            </div>
+                        </label>
+                        <label class="cyber-check-item glass">
+                            <input type="checkbox" class="cyber-check-input" required>
+                            <span class="cyber-tick"></span>
+                            <div class="check-text">
+                                <strong data-sync="formRule2Title" data-sync-target="text">Track identification</strong>
+                                <p data-sync="formRule2Desc" data-sync-target="text">Please provide the title for your
+                                    track. If you haven't decided on a name yet, a reference title is sufficient so we
+                                    can identify your submission.</p>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="form-actions"
+                        style="margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <button type="submit" class="cta-primary-small" data-sync="formSubmitBtn"
+                            data-sync-target="text">Initiate Submission</button>
+                        <a href="https://discord.gg/x7Tr99zdWU" target="_blank" class="discord-btn"
+                            data-sync="formDiscordLink" data-sync-target="href">
+                            <i class="fab fa-discord"></i> <span data-sync="formDiscordBtn" data-sync-target="text">Join
+                                Discord</span>
+                        </a>
+                    </div>
+                    <p data-sync="formFooterRec" data-sync-target="text"
+                        style="font-size: 0.65rem; color: var(--accent-blue); opacity: 0.8; margin-top: 1.2rem; text-align: center; letter-spacing: 0.1rem; text-transform: uppercase; font-family: var(--font-heading); font-weight: 700;">
+                        [ Highly Recommended: Join the server for real-time frequency tracking ]
+                    </p>
+                    <p
+                        style="font-size: 0.55rem; color: var(--text-secondary); opacity: 0.4; margin-top: 0.5rem; text-align: center;">
+                        This portal is protected by reCAPTCHA and Subject to Google Privacy Policy and Terms of Service.
+                    </p>
+                </form>
+                <div id="submission-status" class="form-status">TRANSMISSION DEPLOYED SUCCESSFULLY.</div>
+            </div>
+        </div>
+
+        <!-- Secure Contact Portal (New) | MADE BY RANGA -->
+        <div id="contact-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content glass no-tilt" style="max-width: 500px;">
+                <button class="close-modal">&times;</button>
+                <div class="modal-header">
+                    <h2 class="section-title">CONTACT <span class="accent">VOID</span></h2>
+                    <p
+                        style="margin-top:-1rem; margin-bottom: 1.5rem; color: var(--text-secondary); opacity: 0.8; font-size: 0.8rem;">
+                        Establish a direct frequency with the Obscura Record command center.</p>
+                </div>
+                <form id="contact-form" class="cyber-form">
+                    <div class="form-group">
+                        <label>NAME / IDENTIFIER</label>
+                        <input type="text" name="name" placeholder="Entity Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>RETURN EMAIL</label>
+                        <input type="email" name="email" placeholder="freq@void.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>MESSAGE PAYLOAD</label>
+                        <textarea name="message" placeholder="Type your transmission here..." required></textarea>
+                    </div>
+                    <button type="submit" class="cta-primary-small" style="width: 100%;">SEND TRANSMISSION</button>
+                    <p
+                        style="font-size: 0.6rem; color: var(--text-secondary); opacity: 0.5; margin-top: 1rem; text-align: center;">
+                        This frequency is guarded by Google reCAPTCHA and sonic encryption.</p>
+                </form>
+                <div id="contact-status" class="form-status">MESSAGE LOGGED SUCCESSFULLY.</div>
+            </div>
+        </div>
+
+        <!-- Artist Detail Popup Modal | MADE BY RANGA -->
+        <div id="artist-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content glass artist-modal-content">
+                <button class="close-modal">&times;</button>
+                <div class="artist-modal-inner">
+                    <div class="artist-modal-header">
+                        <div class="artist-modal-img-wrapper" style="width: 120px; height: 120px; position: relative;">
+                            <div id="artist-modal-img" class="artist-img"
+                                style="width: 100%; height: 100%; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 2px solid var(--accent-blue); box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);">
+                            </div>
+                            <img src="" id="artist-modal-decoration" class="avatar-decoration"
+                                style="display: none; position: absolute; top: 50%; left: 50%; width: 145px; height: 145px; transform: translate(-50%, -50%); z-index: 2; pointer-events: none;">
+                        </div>
+                        <div class="artist-modal-title" style="text-align: left;">
+                            <h2 id="artist-modal-name" class="section-title"
+                                style="margin: 0; font-size: 2.2rem; letter-spacing: 0.1rem;">ARTIST NAME</h2>
+                            <p id="artist-modal-status" class="status-indicator"
+                                style="display: inline-block; margin-top: 0.5rem;">OFFLINE</p>
+                        </div>
+                    </div>
+                    <div class="artist-modal-body" style="margin-top: 2rem;">
+                        <p id="artist-modal-bio" class="artist-bio"
+                            style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary);">Accessing
+                            encrypted artist profile... no secondary transmission found.</p>
+                        <div id="artist-modal-links" class="artist-modal-links"
+                            style="display: flex; gap: 1rem; margin-top: 2rem;">
+                            <!-- Dynamic Links -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-content">
+                <div class="kernel-monitor" id="kernel-monitor">
+                    <div class="kernel-node">
+                        <i class="fas fa-microchip"></i>
+                        <span class="kernel-label">SYSTEM INTEGRITY:</span>
+                        <span class="kernel-status scanning" id="km-integrity">SCANNING...</span>
+                    </div>
+                    <div class="kernel-node">
+                        <i class="fas fa-network-wired"></i>
+                        <span class="kernel-label">NETWORK FREQ:</span>
+                        <span class="kernel-status" id="km-network">CALIBRATING...</span>
+                    </div>
+                    <div class="kernel-node">
+                        <i class="fas fa-fingerprint"></i>
+                        <span class="kernel-label">AUTH PROTOCOL:</span>
+                        <span class="kernel-status">BIO-METRIC L3</span>
+                    </div>
+                    <div class="kernel-node">
+                        <i class="fas fa-user-secret"></i>
+                        <span class="kernel-label">TAMPER SHIELD:</span>
+                        <span class="kernel-status" id="km-shield">SHIELD ARMED</span>
+                    </div>
+                    <div class="kernel-node">
+                        <i class="fas fa-satellite-dish"></i>
+                        <span class="kernel-label">LIVE NODES ONLINE:</span>
+                        <span class="kernel-status" id="km-live-nodes"
+                            style="color:var(--accent-blue);">ACCESSING...</span>
+                    </div>
+                </div>
+
+                <div class="footer-divider"></div>
+
+                <p data-sync="footerCopyright" data-sync-target="text">&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED.
+                </p>
+                <div class="footer-links">
+                    <a href="javascript:void(0)" id="open-faq" data-sync="footerFaqText" data-sync-target="text">FAQ</a>
+                    <a href="javascript:void(0)" id="open-demo" data-sync="footerDemoText" data-sync-target="text">DEMO
+                        SUBMISSION</a>
+                    <a href="javascript:void(0)" id="open-contact" data-sync="footerContactText"
+                        data-sync-target="text">CONTACT US</a>
+                    <a href="javascript:void(0)" id="open-privacy" data-sync="footerPrivacyText"
+                        data-sync-target="text">PRIVACY</a>
+                </div>
+                <div class="security-stamp">
+                    <i class="fas fa-shield-alt"></i> FREQUENCY GUARDED BY RECAPTCHA V3 | <a
+                        href="https://policies.google.com/privacy">PRIVACY</a> | <a
+                        href="https://policies.google.com/terms">TERMS</a>
+                </div>
+                <div class="footer-tech-stack">
+                    <span class="tech-node"><i class="fas fa-lock tech-pulse"></i> SSL SECURE</span>
+                    <span class="tech-node"><i class="fas fa-database"></i> CLOUD PROTECT</span>
+                    <span class="tech-node"><i class="fas fa-shield-alt"></i> RECAPTCHA V3</span>
+                    <span class="tech-node"><i class="fas fa-signal"></i> NODES ONLINE</span>
+                </div>
+
+                <div id="visitor-connection-node" class="visitor-node">
+                    [ ACCESSING CONNECTION FREQUENCY... ]
+                </div>
+
+                <!-- Development Status Node -->
+                <div class="dev-status-tag">
+                    SYSTEM OPTIMIZATION IN PROGRESS // ENHANCING USER INTERFACE
+                </div>
+            </div>
+        </footer>
+    </main>
+    <canvas id="data-pulse-canvas" class="data-flow-canvas"></canvas>
+
+    <!-- Professional Glitch Filters (SVG Displacement) | MADE BY RANGA -->
+    <svg style="position: absolute; width: 0; height: 0;" xmlns="http://www.w3.org/2000/svg" version="1.1">
+        <defs>
+            <filter id="glitch-filter">
+                <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
+                    result="red" />
+                <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
+                    result="green" />
+                <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
+                    result="blue" />
+                <feOffset id="red-offset" in="red" dx="0" dy="0" result="red-shifted" />
+                <feOffset id="blue-offset" in="blue" dx="0" dy="0" result="blue-shifted" />
+                <feBlend in="red-shifted" in2="green" mode="screen" result="temp" />
+                <feBlend in="temp" in2="blue-shifted" mode="screen" result="all-channels" />
+                <feTurbulence id="glitch-turbulence" type="fractalNoise" baseFrequency="0.000001" numOctaves="1"
+                    result="noise" />
+                <feDisplacementMap id="glitch-disp" in="all-channels" in2="noise" scale="0" xChannelSelector="R"
+                    yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
+
+    <!-- Invisible YT Player Housing | MADE BY RANGA -->
+    <div id="yt-player-container"
+        style="position: fixed; left: -9999px; top: -9999px; width: 320px; height: 180px; pointer-events: none; opacity: 0;">
+    </div>
+
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        // Scroll Fade Out for StreetX Card
+        window.addEventListener('load', () => {
+            if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+                gsap.to('.streat-nav-card', {
+                    scrollTrigger: {
+                        trigger: '.hero',
+                        start: 'bottom 40%',
+                        end: 'bottom top',
+                        scrub: true,
+                    },
+                    opacity: 0,
+                    pointerEvents: 'none',
+                    y: -50
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
