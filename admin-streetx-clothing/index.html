@@ -246,8 +246,8 @@
             openModal('product-modal');
         }
 
-        if (streatxFirebaseConfig.apiKey !== "YOUR_API_KEY") {
-            firebase.initializeApp(streatxFirebaseConfig);
+        if (streetxFirebaseConfig.apiKey !== "YOUR_API_KEY") {
+            firebase.initializeApp(streetxFirebaseConfig);
             db = firebase.database();
 
             db.ref('settings').on('value', (snap) => {
@@ -398,7 +398,7 @@
             window.resetStats = () => {
                 if(confirm("Are you sure you want to purge all visitor stats? This cannot be undone.")) {
                     db.ref('stats/visitors').set(0).then(() => {
-                        localStorage.removeItem('streatx_visitor');
+                        localStorage.removeItem('streetx_visitor');
                         alert("STATS PURGED. Your local tag is also cleared for testing.");
                     });
                 }
