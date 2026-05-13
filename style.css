@@ -703,6 +703,10 @@ section {
 }
 
 /* Hero */
+.hero {
+    position: relative;
+}
+
 .hero-content h2 {
     font-family: var(--font-heading);
     font-size: 5rem;
@@ -749,6 +753,240 @@ section {
     border-color: var(--accent-blue);
     box-shadow: 0 0 50px rgba(0, 240, 255, 0.4);
     transform: translateY(-5px) scale(1.02);
+}
+
+/* --- STREETX NAVIGATION CARD (V10 - CLEAN MINIMAL) --- */
+.streat-nav-card {
+    position: absolute;
+    right: 4%;
+    bottom: 4%;
+    width: 280px;
+    height: 80px;
+    padding: 0;
+    border-radius: 100px;
+    z-index: 100;
+    transition: all 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+    border: 1px solid rgba(166, 255, 0, 0.2);
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(25px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.streat-nav-card:hover {
+    width: 380px;
+    height: 480px;
+    border-radius: 30px;
+    background: #000;
+    border-color: #a6ff00;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9);
+    padding: 3rem;
+}
+
+.card-bg-logo {
+    position: absolute;
+    inset: 0;
+    background-size: 150%;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.15;
+    transition: 1.2s ease;
+    pointer-events: none;
+}
+
+.streat-nav-card:hover .card-bg-logo {
+    opacity: 0.6;
+    background-size: 110%;
+}
+
+.card-cover {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.5s ease;
+    z-index: 5;
+}
+
+.glow-tag {
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.2rem;
+    color: #a6ff00;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(166, 255, 0, 0.6);
+}
+
+.streat-nav-card:hover .card-cover {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+.card-content {
+    position: absolute;
+    inset: 0;
+    padding: 3rem;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Move items to bottom to let logo shine */
+    align-items: center;
+    text-align: center;
+    z-index: 10;
+}
+
+.streat-nav-card:hover .card-content {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.card-main-logo {
+    width: 180px;
+    filter: brightness(0) invert(1);
+    margin-top: 1rem;
+}
+
+.brand-desc {
+    font-size: 0.75rem;
+    letter-spacing: 0.25rem;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    margin: 1.5rem 0;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.visit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 0;
+    background: transparent;
+    color: #a6ff00;
+    border-bottom: 2px solid rgba(166, 255, 0, 0.2);
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 1.8rem;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: -1px;
+    transition: 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.visit-btn:hover {
+    color: white;
+    border-bottom-color: white;
+    padding-left: 10px;
+}
+
+/* Glitch Effect */
+.glitch-text {
+    position: relative;
+    display: inline-block;
+}
+
+.glitch-btn:hover .glitch-text {
+    animation: glitch-anim 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+}
+
+.glitch-btn:hover .glitch-text::before {
+    left: 2px;
+    text-shadow: -2px 0 #ff00ff;
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim-2 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both infinite;
+}
+
+.glitch-btn:hover .glitch-text::after {
+    left: -2px;
+    text-shadow: -2px 0 #00f0ff;
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+}
+
+@keyframes glitch-anim {
+    0% { clip: rect(21px, 9999px, 66px, 0); }
+    20% { clip: rect(64px, 9999px, 86px, 0); }
+    40% { clip: rect(10px, 9999px, 22px, 0); }
+    60% { clip: rect(78px, 9999px, 94px, 0); }
+    80% { clip: rect(34px, 9999px, 42px, 0); }
+    100% { clip: rect(55px, 9999px, 62px, 0); }
+}
+
+@keyframes glitch-anim-2 {
+    0% { clip: rect(81px, 9999px, 12px, 0); }
+    20% { clip: rect(24px, 9999px, 76px, 0); }
+    40% { clip: rect(50px, 9999px, 42px, 0); }
+    60% { clip: rect(38px, 9999px, 24px, 0); }
+    80% { clip: rect(14px, 9999px, 92px, 0); }
+    100% { clip: rect(65px, 9999px, 32px, 0); }
+}
+
+.visit-btn i { transition: 0.4s; font-size: 1.2rem; }
+.visit-btn:hover i { transform: translateX(10px); }
+
+/* Mobile Hero Resp */
+@media (max-width: 1100px) {
+    .hero-container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 3rem;
+    }
+
+    .streat-nav-card {
+        position: relative;
+        right: 0;
+        bottom: 0;
+        margin: 2rem auto;
+        width: 100%;
+        max-width: 320px;
+        height: auto;
+        padding: 2.5rem;
+        border-radius: 20px;
+        flex-direction: column;
+        background: rgba(0, 0, 0, 0.8);
+        border: 1px solid var(--accent);
+    }
+
+    .card-cover { display: none !important; }
+    
+    .card-content { 
+        position: relative; 
+        inset: auto;
+        opacity: 1; 
+        transform: none; 
+        padding: 0;
+    }
+
+    .brand-desc {
+        font-size: 0.6rem;
+        margin: 1rem 0;
+    }
+
+    .visit-btn { 
+        font-size: 1.2rem; 
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .card-bg-logo {
+        opacity: 0.2;
+    }
 }
 
 /* Sections */
