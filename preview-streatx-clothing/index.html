@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STREETX | THE X-DIMENSION</title>
+    <title>STREETX CLOTHING</title>
     <link rel="icon" type="image/png" href="../assets/STREETX.PNG">
     <link rel="stylesheet" href="../streatx-clothing.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Syne:wght@700;800&display=swap"
@@ -224,11 +224,11 @@
         <!-- Hero Section -->
         <section id="home" class="hero-v5">
             <div class="hero-content">
-                <h2 class="hero-tagline" id="hero-title">STREETX<br><span class="accent">CLOTHING</span></h2>
-                <div class="scroll-hint" id="hero-scroll-hint">
-                    <p id="scroll-text">SCROLL TO DISCOVER</p>
-                    <div class="hint-line"></div>
-                </div>
+                <h2 class="hero-tagline" id="hero-title"></h2>
+            </div>
+            <div class="scroll-hint" id="hero-scroll-hint">
+                <p id="scroll-text">SCROLL TO DISCOVER</p>
+                <div class="hint-line"></div>
             </div>
         </section>
 
@@ -348,8 +348,12 @@
                 // 7. Security
                 if (d.protection) {
                     document.addEventListener('contextmenu', e => e.preventDefault());
-                } else {
-                    document.removeEventListener('contextmenu', e => e.preventDefault());
+                }
+
+                // First time reveal logic
+                if (!window.firebaseDataReady) {
+                    window.firebaseDataReady = true;
+                    if (typeof checkAndReveal === 'function') checkAndReveal();
                 }
             });
 
@@ -418,26 +422,48 @@
             });
         }
 
+        function checkAndReveal() {
+            if (window.firebaseDataReady && window.pageLoaded) {
+                const tl = gsap.timeline();
+                tl.to('.loader-line', { width: '100%', duration: 1.2, ease: 'power4.inOut' });
+                tl.to('.loader-v5', {
+                    opacity: 0,
+                    duration: 1,
+                    onComplete: () => {
+                        document.querySelector('.loader-v5').style.display = 'none';
+                        revealHero();
+                    }
+                });
+            }
+        }
+
         // Loader Logic
         window.addEventListener('load', () => {
-            const tl = gsap.timeline();
-            tl.to('.loader-line', { width: '100%', duration: 1.2, ease: 'power4.inOut' });
-            tl.to('.loader-v5', {
-                opacity: 0,
-                duration: 1,
-                onComplete: () => {
-                    document.querySelector('.loader-v5').style.display = 'none';
-                    revealHero();
+            window.pageLoaded = true;
+
+            // Fail-safe: Force reveal after 5 seconds if Firebase is slow
+            setTimeout(() => {
+                if (!window.firebaseDataReady) {
+                    console.log("Firebase Timeout: Forcing reveal.");
+                    window.firebaseDataReady = true;
+                    checkAndReveal();
                 }
-            });
+            }, 5000);
+
+            checkAndReveal();
         });
 
         function revealHero() {
-            gsap.from('.hero-content', {
-                y: 100,
-                opacity: 0,
+            gsap.to('.hero-content', {
+                y: 0,
+                opacity: 1,
                 duration: 1.5,
                 ease: 'power4.out'
+            });
+            gsap.to('.tape-system', {
+                opacity: 0.15,
+                duration: 2,
+                delay: 0.5
             });
         }
 
@@ -448,28 +474,6 @@
             gsap.to('.grid-layer', { x: x, y: y, duration: 2, ease: 'power2.out' });
         });
 
-        // Tape Scroll Animation
-        gsap.to('.tape-1 .tape-track', {
-            x: -500,
-            ease: 'none',
-            scrollTrigger: {
-                trigger: 'body',
-                start: 'top top',
-                end: 'bottom bottom',
-                scrub: 2
-            }
-        });
-
-        gsap.to('.tape-2 .tape-track', {
-            x: 500,
-            ease: 'none',
-            scrollTrigger: {
-                trigger: 'body',
-                start: 'top top',
-                end: 'bottom bottom',
-                scrub: 2
-            }
-        });
     </script>
 </body>
 
