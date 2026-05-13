@@ -11,6 +11,13 @@
     --font-body: 'Inter', sans-serif;
 }
 
+.hero-content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    opacity: 0;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -54,6 +61,12 @@ img {
 }
 
 /* Background Elements */
+.hero-content {
+    position: relative;
+    z-index: 10;
+    max-width: 90%;
+    opacity: 0; /* Initial state for GSAP Reveal */
+}
 .site-bg {
     position: fixed;
     inset: 0;
@@ -199,6 +212,8 @@ header.header-v5 {
     /* Less aggressive spacing */
     text-transform: uppercase;
     font-weight: 800;
+    margin-bottom: 4rem;
+    text-shadow: 0 0 50px rgba(0,0,0,0.9); /* Heavy shadow to separate from tapes */
 }
 
 .hero-tagline .accent {
@@ -208,7 +223,7 @@ header.header-v5 {
 
 .scroll-hint {
     position: absolute;
-    bottom: 50px;
+    bottom: 8vh;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -410,8 +425,8 @@ header.header-v5 {
     pointer-events: none;
     z-index: -5;
     overflow: hidden;
-    opacity: 0.15;
-    /* Subtle background effect */
+    opacity: 0; /* Hidden during load */
+    transition: opacity 1.5s ease;
 }
 
 .tape {
@@ -432,6 +447,17 @@ header.header-v5 {
 .tape-track {
     display: flex;
     white-space: nowrap;
+    animation: tapeScroll 30s linear infinite;
+}
+
+.tape-2 .tape-track {
+    animation-direction: reverse;
+    animation-duration: 40s;
+}
+
+@keyframes tapeScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
 .tape-track span {
