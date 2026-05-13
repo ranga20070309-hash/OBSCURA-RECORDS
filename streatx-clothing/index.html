@@ -139,14 +139,15 @@
         }
 
         .m-main-title {
-            font-size: clamp(2.5rem, 8vw, 6rem);
+            font-size: clamp(1.8rem, 10vw, 6rem);
             font-weight: 800;
             color: #fff;
-            line-height: 1;
-            letter-spacing: -2px;
+            line-height: 1.1;
+            letter-spacing: -1px;
             margin-bottom: 1.5rem;
             text-transform: uppercase;
             animation: m-breathe-glow 4s infinite ease-in-out;
+            padding: 0 10px;
         }
 
         @keyframes m-breathe-glow {
@@ -224,11 +225,11 @@
         <!-- Hero Section -->
         <section id="home" class="hero-v5">
             <div class="hero-content">
-                <h2 class="hero-tagline" id="hero-title">STREETX<br><span class="accent">CLOTHING</span></h2>
-                <div class="scroll-hint" id="hero-scroll-hint">
-                    <p id="scroll-text">SCROLL TO DISCOVER</p>
-                    <div class="hint-line"></div>
-                </div>
+                <h2 class="hero-tagline" id="hero-title"></h2>
+            </div>
+            <div class="scroll-hint" id="hero-scroll-hint">
+                <p id="scroll-text">SCROLL TO DISCOVER</p>
+                <div class="hint-line"></div>
             </div>
         </section>
 
@@ -355,8 +356,12 @@
                 // 7. Security
                 if (d.protection) {
                     document.addEventListener('contextmenu', e => e.preventDefault());
-                } else {
-                    document.removeEventListener('contextmenu', e => e.preventDefault());
+                }
+
+                // First time reveal logic
+                if (!window.firebaseDataReady) {
+                    window.firebaseDataReady = true;
+                    if (typeof checkAndReveal === 'function') checkAndReveal();
                 }
             });
 
@@ -433,26 +438,48 @@
             });
         }
 
+        function checkAndReveal() {
+            if (window.firebaseDataReady && window.pageLoaded) {
+                const tl = gsap.timeline();
+                tl.to('.loader-line', { width: '100%', duration: 1.2, ease: 'power4.inOut' });
+                tl.to('.loader-v5', {
+                    opacity: 0,
+                    duration: 1,
+                    onComplete: () => {
+                        document.querySelector('.loader-v5').style.display = 'none';
+                        revealHero();
+                    }
+                });
+            }
+        }
+
         // Loader Logic
         window.addEventListener('load', () => {
-            const tl = gsap.timeline();
-            tl.to('.loader-line', { width: '100%', duration: 1.2, ease: 'power4.inOut' });
-            tl.to('.loader-v5', {
-                opacity: 0,
-                duration: 1,
-                onComplete: () => {
-                    document.querySelector('.loader-v5').style.display = 'none';
-                    revealHero();
+            window.pageLoaded = true;
+            
+            // Fail-safe: Force reveal after 5 seconds if Firebase is slow
+            setTimeout(() => {
+                if (!window.firebaseDataReady) {
+                    console.log("Firebase Timeout: Forcing reveal.");
+                    window.firebaseDataReady = true;
+                    checkAndReveal();
                 }
-            });
+            }, 5000);
+
+            checkAndReveal();
         });
 
         function revealHero() {
-            gsap.from('.hero-content', {
-                y: 100,
-                opacity: 0,
+            gsap.to('.hero-content', {
+                y: 0,
+                opacity: 1,
                 duration: 1.5,
                 ease: 'power4.out'
+            });
+            gsap.to('.tape-system', {
+                opacity: 0.15,
+                duration: 2,
+                delay: 0.5
             });
         }
 
@@ -463,28 +490,6 @@
             gsap.to('.grid-layer', { x: x, y: y, duration: 2, ease: 'power2.out' });
         });
 
-        // Tape Scroll Animation
-        gsap.to('.tape-1 .tape-track', {
-            x: -500,
-            ease: 'none',
-            scrollTrigger: {
-                trigger: 'body',
-                start: 'top top',
-                end: 'bottom bottom',
-                scrub: 2
-            }
-        });
-
-        gsap.to('.tape-2 .tape-track', {
-            x: 500,
-            ease: 'none',
-            scrollTrigger: {
-                trigger: 'body',
-                start: 'top top',
-                end: 'bottom bottom',
-                scrub: 2
-            }
-        });
     </script>
 </body>
 
