@@ -402,6 +402,61 @@ function stopPlayback(btn) {
     }
 }
 
+// --- POPULAR RELEASES ENGINE ---
+function loadPopular() {
+    const popularGrid = document.getElementById('popular-grid');
+    if (!popularGrid) return;
+
+    firebase.database().ref('siteData/popular_releases').on('value', (snapshot) => {
+        const data = snapshot.val();
+        popularGrid.innerHTML = '';
+
+        if (!data || !Array.isArray(data)) {
+            popularGrid.innerHTML = '<p style="opacity: 0.3; grid-column: 1/-1; text-align: center; padding: 3rem;">NO TRANSMISSIONS FOUND IN THIS SECTOR.</p>';
+            return;
+        }
+
+        data.forEach((r, i) => {
+            const card = document.createElement('div');
+            card.className = 'popular-card';
+            card.innerHTML = `
+                <div class="trending-badge">TRENDING</div>
+                <div class="popular-cover">
+                    <img src="${r.image}" alt="${r.title}">
+                    <div class="popular-overlay">
+                        <div class="play-icon-glow"><i class="fas fa-play"></i></div>
+                    </div>
+                </div>
+                <div class="popular-info">
+                    <h3>${r.title}</h3>
+                    <p>${r.artist}</p>
+                </div>
+            `;
+
+            card.addEventListener('click', () => {
+                playBleep(900, 'sine', 0.1);
+                if (r.link && r.link !== '#') window.open(r.link, '_blank');
+            });
+
+            popularGrid.appendChild(card);
+
+            // Entry Animation
+            gsap.from(card, {
+                y: 50,
+                opacity: 0,
+                scale: 0.9,
+                duration: 1,
+                delay: i * 0.1,
+                ease: "expo.out",
+                scrollTrigger: {
+                    trigger: card,
+                    start: "top 90%",
+                }
+            });
+        });
+    });
+}
+
 const initPortal = () => {
 
     const entranceScreen = document.getElementById('entrance-screen');
@@ -2089,3 +2144,10 @@ if (typeof firebase !== 'undefined') {
         }
     });
 }
+
+// --- INITIALIZE ALL ENGINES ---
+document.addEventListener('DOMContentLoaded', () => {
+    initPortal();
+    loadPopular();
+    // Add other init functions here if needed
+});
