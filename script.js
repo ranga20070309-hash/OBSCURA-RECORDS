@@ -405,17 +405,7 @@ function stopPlayback(btn) {
 // --- POPULAR RELEASES ENGINE ---
 function loadPopular() {
     const popularGrid = document.getElementById('popular-grid');
-    const popularSection = document.getElementById('popular');
     if (!popularGrid) return;
-
-    // Visibility Check
-    firebase.database().ref('siteData/globals/showPopular').on('value', (snap) => {
-        if (snap.exists() && snap.val() === 'Hidden') {
-            if (popularSection) popularSection.style.display = 'none';
-        } else {
-            if (popularSection) popularSection.style.display = 'block';
-        }
-    });
 
     firebase.database().ref('siteData/popular_releases').on('value', (snapshot) => {
         const data = snapshot.val();
@@ -1279,6 +1269,14 @@ const initPortal = () => {
                     } else {
                         upcomingSection.style.setProperty('display', 'flex', 'important');
                     }
+                }
+
+                // POPULAR RELEASES VISIBILITY GATING
+                const popularSection = document.getElementById('popular');
+                if (data.showPopular === 'Hidden') {
+                    if (popularSection) popularSection.style.setProperty('display', 'none', 'important');
+                } else {
+                    if (popularSection) popularSection.style.setProperty('display', 'block', 'important');
                 }
 
                 // GHOST PRODUCTION VISIBILITY GATING
