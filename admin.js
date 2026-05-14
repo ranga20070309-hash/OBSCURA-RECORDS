@@ -723,6 +723,40 @@ window.autoDetectRelease = function(index) {
     }
 };
 
+window.autoDetectPopularRelease = function(index) {
+    const editor = document.querySelectorAll('#popular-container .release-editor-item')[index];
+    if (!editor) return;
+
+    const imgInput = editor.querySelector('.p-image');
+    const spInput = editor.querySelector('.p-spotify');
+    const ytInput = editor.querySelector('.p-youtube');
+
+    let url = imgInput.value;
+    if (url === 'assets/cover.png' || url === '' || url === '#') {
+        url = spInput.value !== '#' ? spInput.value : ytInput.value;
+    }
+
+    if (url && (url.includes('youtube.com') || url.includes('youtu.be'))) {
+        const id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop();
+        const detectedImg = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+        imgInput.value = detectedImg;
+        updateLivePreview(imgInput, `prev-p-${index}`);
+        syncLivePopularCard(index);
+        showToast("YT COVER CAPTURED.");
+    } else if (url && url.includes('spotify.com')) {
+        fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.thumbnail_url) {
+                    imgInput.value = data.thumbnail_url;
+                    updateLivePreview(imgInput, `prev-p-${index}`);
+                    syncLivePopularCard(index);
+                    showToast("SPOTIFY COVER DETECTED.");
+                }
+            }).catch(() => {});
+    }
+};
+
 function renderReleases() {
     const container = document.getElementById('releases-container');
     if (!container) return;
@@ -1470,15 +1504,23 @@ function createPopularEditor(release, index) {
                     <div class="input-group full">
                         <label>Cover Image Source</label>
                         <div style="display: flex; gap: 0.5rem; align-items: center; position: relative;">
-                            <input type="text" class="p-image" value="${release.image || 'assets/cover.png'}" id="input-p-${index}" oninput="updateLivePreview(this, 'prev-p-${index}'); syncLivePopularCard(${index})">
+                            <input type="text" class="p-image" value="${release.image || 'assets/cover.png'}" id="input-p-${index}" oninput="autoDetectPopularRelease(${index}); updateLivePreview(this, 'prev-p-${index}'); syncLivePopularCard(${index})">
                             <button class="action-btn-mini" onclick="triggerPopularUpload(${index})"><i class="fas fa-folder-open"></i></button>
                             <div id="prev-p-${index}" class="floating-preview"></div>
                             <input type="file" id="file-p-${index}" style="display:none" onchange="handlePopularFile(this, ${index})" accept="image/*">
                         </div>
                     </div>
-                    <div class="input-group full">
-                        <label>Streaming Link (Spotify / YT)</label>
-                        <input type="text" class="p-link" value="${release.link || '#'}" oninput="syncLivePopularCard(${index})">
+                    <div class="input-group">
+                        <label><i class="fab fa-spotify"></i> Spotify Link</label>
+                        <input type="text" class="p-spotify" value="${release.spotify || '#'}" oninput="autoDetectPopularRelease(${index}); syncLivePopularCard(${index})">
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fab fa-youtube"></i> YouTube Link</label>
+                        <input type="text" class="p-youtube" value="${release.youtube || '#'}" oninput="autoDetectPopularRelease(${index}); syncLivePopularCard(${index})">
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fab fa-apple"></i> Apple Music Link</label>
+                        <input type="text" class="p-apple" value="${release.apple || '#'}" oninput="syncLivePopularCard(${index})">
                     </div>
                 </div>
             </div>
@@ -1501,19 +1543,27 @@ window.syncLivePopularCard = function(index) {
     const title = editor.querySelector('.p-title').value;
     const artist = editor.querySelector('.p-artist').value;
     const img = editor.querySelector('.p-image').value;
+    const spotify = editor.querySelector('.p-spotify').value;
+    const youtube = editor.querySelector('.p-youtube').value;
+    const apple = editor.querySelector('.p-apple').value;
 
     preview.innerHTML = `
-        <div class="popular-card" style="width: 100%; max-width: 250px; transform: none; cursor: default;">
+        <div class="popular-card" style="width: 220px; transform: scale(0.85); transform-origin: top left; cursor: default; margin: 0;">
             <div class="trending-badge">TRENDING</div>
             <div class="popular-cover">
-                <img src="${img}" alt="${title}">
+                <img src="${img}" alt="${title}" style="height: 220px; object-fit: cover;">
                 <div class="popular-overlay">
                     <div class="play-icon-glow"><i class="fas fa-play"></i></div>
                 </div>
             </div>
             <div class="popular-info">
-                <h3 style="font-size: 1.1rem;">${title || 'TRACK TITLE'}</h3>
-                <p style="font-size: 0.7rem;">${artist || 'ARTIST NAME'}</p>
+                <h3 style="font-size: 1rem;">${title || 'TRACK TITLE'}</h3>
+                <p style="font-size: 0.65rem;">${artist || 'ARTIST NAME'}</p>
+                <div class="popular-links" style="margin-top: 0.5rem; gap: 0.5rem;">
+                    ${spotify !== '#' ? `<i class="fab fa-spotify" style="color: #1DB954; font-size: 0.9rem;"></i>` : ''}
+                    ${youtube !== '#' ? `<i class="fab fa-youtube" style="color: #FF0000; font-size: 0.9rem;"></i>` : ''}
+                    ${apple !== '#' ? `<i class="fab fa-apple" style="color: #fa243c; font-size: 0.9rem;"></i>` : ''}
+                </div>
             </div>
         </div>
     `;
@@ -1547,6 +1597,14 @@ function renderPopularReleases() {
 
 window.loadPopularReleases = function() {
     popularContainer.innerHTML = '<p style="opacity:0.5; padding:2rem;">Scanning high-priority frequencies...</p>';
+    
+    // Load visibility switch
+    db.ref('siteData/globals/showPopular').once('value').then(snap => {
+        if (snap.exists()) {
+            document.getElementById('site_showPopular').value = snap.val();
+        }
+    });
+
     db.ref('siteData/popular_releases').once('value').then(snapshot => {
         let data = snapshot.val();
         popularReleasesArray = (data && Array.isArray(data)) ? data : [];
@@ -1584,9 +1642,15 @@ document.getElementById('save-popular').addEventListener('click', () => {
             title: item.querySelector('.p-title').value,
             artist: item.querySelector('.p-artist').value,
             image: item.querySelector('.p-image').value,
-            link: item.querySelector('.p-link').value
+            spotify: item.querySelector('.p-spotify').value,
+            youtube: item.querySelector('.p-youtube').value,
+            apple: item.querySelector('.p-apple').value
         });
     });
+
+    // Save visibility switch
+    const visibility = document.getElementById('site_showPopular').value;
+    db.ref('siteData/globals/showPopular').set(visibility);
 
     db.ref('siteData/popular_releases').set(dataToSave).then(() => {
         bumpSiteVersion();
