@@ -216,7 +216,7 @@ header {
     left: 0;
     width: 100%;
     padding: 2rem 5%;
-    z-index: 100;
+    z-index: 2000;
 }
 
 .glass-nav {
@@ -764,7 +764,7 @@ section {
 .streat-nav-card {
     position: absolute;
     right: 2%;
-    bottom: 2%;
+    bottom: 1.5%;
     width: 420px;
     height: 110px;
     padding: 0;
@@ -1411,6 +1411,19 @@ section {
     text-decoration: none;
     transition: all 0.3s ease;
     border: 1px solid transparent;
+}
+
+.popular-links {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 1rem;
+    justify-content: center;
+}
+
+.popular-links .platform-link {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
 }
 
 .platform-link:hover {
