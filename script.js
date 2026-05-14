@@ -405,7 +405,17 @@ function stopPlayback(btn) {
 // --- POPULAR RELEASES ENGINE ---
 function loadPopular() {
     const popularGrid = document.getElementById('popular-grid');
+    const popularSection = document.getElementById('popular');
     if (!popularGrid) return;
+
+    // Visibility Check
+    firebase.database().ref('siteData/globals/showPopular').on('value', (snap) => {
+        if (snap.exists() && snap.val() === 'Hidden') {
+            if (popularSection) popularSection.style.display = 'none';
+        } else {
+            if (popularSection) popularSection.style.display = 'block';
+        }
+    });
 
     firebase.database().ref('siteData/popular_releases').on('value', (snapshot) => {
         const data = snapshot.val();
@@ -430,12 +440,19 @@ function loadPopular() {
                 <div class="popular-info">
                     <h3>${r.title}</h3>
                     <p>${r.artist}</p>
+                    <div class="popular-links">
+                        ${r.spotify && r.spotify !== '#' ? `<a href="${r.spotify}" target="_blank" class="platform-link spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
+                        ${r.youtube && r.youtube !== '#' ? `<a href="${r.youtube}" target="_blank" class="platform-link youtube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
+                        ${r.apple && r.apple !== '#' ? `<a href="${r.apple}" target="_blank" class="platform-link apple" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
+                    </div>
                 </div>
             `;
 
             card.addEventListener('click', () => {
-                playBleep(900, 'sine', 0.1);
-                if (r.link && r.link !== '#') window.open(r.link, '_blank');
+                if (typeof playBleep === 'function') playBleep(900, 'sine', 0.1);
+                // Default click opens the first available link
+                const firstLink = r.spotify !== '#' ? r.spotify : (r.youtube !== '#' ? r.youtube : r.apple);
+                if (firstLink && firstLink !== '#') window.open(firstLink, '_blank');
             });
 
             popularGrid.appendChild(card);
