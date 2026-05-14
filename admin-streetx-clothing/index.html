@@ -372,9 +372,9 @@
                         canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // Compressed
+                        const dataUrl = canvas.toDataURL('image/png'); // Preserves transparency
                         document.getElementById('p-image').value = dataUrl;
-                        document.getElementById('file-status').innerText = "Ready to Save!";
+                        document.getElementById('file-status').innerText = "Ready to Save (Transparency Preserved)!";
                     };
                     img.src = event.target.result;
                 };
