@@ -228,21 +228,22 @@
                     </div>
                 </div>
 
-                <!-- STREETX NAVIGATION CARD | SIMPLIFIED ORIGINAL VERSION -->
-                <div class="streat-nav-card glass no-tilt">
-                    <div class="card-bg-logo" style="background-image: url('assets/STREETX.PNG');"></div>
-                    <div class="card-cover">
-                        <div class="glow-tag">CLOTHING STORE</div>
-                    </div>
-                    
-                    <div class="card-content">
-                        <p class="brand-desc">PREMIUM STREETWEAR IDENTITY</p>
+            </div>
+            
+            <!-- STREETX NAVIGATION CARD | MOVED OUTSIDE CONTAINER FOR TRUE CORNER POSITIONING -->
+            <div class="streat-nav-card glass no-tilt">
+                <div class="card-bg-logo" style="background-image: url('assets/STREETX.PNG');"></div>
+                <div class="card-cover">
+                    <div class="glow-tag">CLOTHING STORE</div>
+                </div>
+                
+                <div class="card-content">
+                    <p class="brand-desc">PREMIUM STREETWEAR IDENTITY</p>
 
-                        <a href="streetx-clothing/" target="_blank" class="visit-btn glitch-btn">
-                            <span class="glitch-text" data-text="VISIT STORE">VISIT STORE</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
+                    <a href="streetx-clothing/" target="_blank" class="visit-btn glitch-btn">
+                        <span class="glitch-text" data-text="VISIT STORE">VISIT STORE</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </section>
@@ -1149,24 +1150,6 @@
 
 
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script>
-        // Scroll Fade Out for StreetX Card
-        window.addEventListener('load', () => {
-            if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
-                gsap.to('.streat-nav-card', {
-                    scrollTrigger: {
-                        trigger: '.hero',
-                        start: 'bottom 40%',
-                        end: 'bottom top',
-                        scrub: true,
-                    },
-                    opacity: 0,
-                    pointerEvents: 'none',
-                    y: -50
-                });
-            }
-        });
-    </script>
 </body>
 
 </html>
