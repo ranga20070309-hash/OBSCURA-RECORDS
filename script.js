@@ -411,12 +411,17 @@ function loadPopular() {
         const data = snapshot.val();
         popularGrid.innerHTML = '';
 
-        if (!data || !Array.isArray(data)) {
+        let items = [];
+        if (data) {
+            items = Array.isArray(data) ? data : Object.values(data);
+        }
+
+        if (items.length === 0) {
             popularGrid.innerHTML = '<p style="opacity: 0.3; grid-column: 1/-1; text-align: center; padding: 3rem;">NO TRANSMISSIONS FOUND IN THIS SECTOR.</p>';
             return;
         }
 
-        data.forEach((r, i) => {
+        items.forEach((r, i) => {
             const card = document.createElement('div');
             card.className = 'popular-card';
             card.innerHTML = `
@@ -1602,17 +1607,15 @@ const initPortal = () => {
 
         db.ref('siteData/releases').on('value', (snapshot) => {
             let data = snapshot.val();
-            // Firebase returns null when the array/node is completely empty
-            if (!data) {
-                data = [];
+            let items = [];
+            if (data) {
+                items = Array.isArray(data) ? data : Object.values(data);
             }
 
-            if (Array.isArray(data)) {
-                if (data[0] && data[0]._isEmpty) {
-                    renderReleases([]);
-                } else {
-                    renderReleases(data);
-                }
+            if (items.length > 0 && items[0] && items[0]._isEmpty) {
+                renderReleases([]);
+            } else {
+                renderReleases(items);
             }
         });
 
@@ -1706,8 +1709,11 @@ const initPortal = () => {
 
         db.ref('siteData/upcoming').on('value', (snapshot) => {
             let data = snapshot.val();
-            if (!data) data = [];
-            if (Array.isArray(data)) renderUpcoming(data);
+            let items = [];
+            if (data) {
+                items = Array.isArray(data) ? data : Object.values(data);
+            }
+            renderUpcoming(items);
         });
     }
     // --- SOCIAL SIDEBAR TOGGLE ---
