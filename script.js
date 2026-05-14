@@ -466,6 +466,65 @@ function loadPopular() {
                 }
             });
         });
+
+        // --- POPULAR SLIDER LOGIC ---
+        const popularControls = document.querySelector('.popular-controls');
+        const btnPrev = document.querySelector('.popular-prev');
+        const btnNext = document.querySelector('.popular-next');
+        let popularAutoScroll = null;
+
+        const checkPopularOverflow = () => {
+            if (!popularGrid || !popularControls) return;
+            if (popularGrid.scrollWidth > popularGrid.clientWidth) {
+                popularControls.style.display = 'flex';
+            } else {
+                popularControls.style.display = 'none';
+            }
+        };
+
+        // Initialize Slider Interactions
+        if (btnPrev && btnNext && popularGrid) {
+            btnPrev.addEventListener('click', (e) => {
+                e.stopPropagation();
+                popularGrid.scrollBy({ left: -400, behavior: 'smooth' });
+                resetPopularAutoScroll();
+            });
+            btnNext.addEventListener('click', (e) => {
+                e.stopPropagation();
+                popularGrid.scrollBy({ left: 400, behavior: 'smooth' });
+                resetPopularAutoScroll();
+            });
+        }
+
+        // Auto-Scroll Engine
+        const startPopularAutoScroll = () => {
+            if (popularAutoScroll) clearInterval(popularAutoScroll);
+            popularAutoScroll = setInterval(() => {
+                if (!popularGrid) return;
+                let maxScroll = popularGrid.scrollWidth - popularGrid.clientWidth;
+                if (popularGrid.scrollLeft >= maxScroll - 10) {
+                    popularGrid.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    popularGrid.scrollBy({ left: 400, behavior: 'smooth' });
+                }
+            }, 5000);
+        };
+
+        const resetPopularAutoScroll = () => {
+            clearInterval(popularAutoScroll);
+            setTimeout(startPopularAutoScroll, 10000); // Resume after 10s of inactivity
+        };
+
+        // Run checks after data is loaded and DOM is updated
+        setTimeout(() => {
+            checkPopularOverflow();
+            if (popularGrid && popularGrid.scrollWidth > popularGrid.clientWidth) {
+                startPopularAutoScroll();
+            }
+        }, 800);
+
+        // Window resize listener
+        window.addEventListener('resize', checkPopularOverflow);
     });
 }
 
