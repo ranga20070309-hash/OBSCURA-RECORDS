@@ -2123,10 +2123,16 @@ const initKernelSecurity = () => {
     }, 1500); // Slightly slower polling frequency for stability
 };
 
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initPortal);
-} else {
+// --- ENGINE INITIALIZATION (STATE-AWARE) ---
+const startEngines = () => {
     initPortal();
+    loadPopular();
+};
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startEngines);
+} else {
+    startEngines();
 }
 
 // Fallback: If the loader is still visible after 6 seconds of script execution, dismiss it.
@@ -2166,9 +2172,4 @@ if (typeof firebase !== 'undefined') {
     });
 }
 
-// --- INITIALIZE ALL ENGINES ---
-document.addEventListener('DOMContentLoaded', () => {
-    initPortal();
-    loadPopular();
-    // Add other init functions here if needed
-});
+// PORTAL CORE INITIALIZED
