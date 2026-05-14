@@ -137,6 +137,8 @@ navBtns.forEach(btn => {
             loadUpcoming();
         } else if (target === 'security-panel') {
             loadSecurityLogs();
+        } else if (target === 'popular-panel') {
+            loadPopularReleases();
         }
     });
 });
@@ -1444,3 +1446,151 @@ window.syncLiveReleaseCard = function(index) {
 
 // Initial load
 initializeSecurity();
+
+// --- POPULAR RELEASES PANEL ---
+const popularContainer = document.getElementById('popular-container');
+let popularReleasesArray = [];
+
+function createPopularEditor(release, index) {
+    const div = document.createElement('div');
+    div.className = 'release-editor-item';
+    div.innerHTML = `
+        <button class="delete-btn" onclick="removePopularRelease(${index})"><i class="fas fa-trash"></i></button>
+        <div class="editor-main-layout">
+            <div class="editor-controls">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Release Title</label>
+                        <input type="text" class="p-title" value="${release.title || ''}" oninput="syncLivePopularCard(${index})">
+                    </div>
+                    <div class="input-group">
+                        <label>Artist / Producer</label>
+                        <input type="text" class="p-artist" value="${release.artist || ''}" oninput="syncLivePopularCard(${index})">
+                    </div>
+                    <div class="input-group full">
+                        <label>Cover Image Source</label>
+                        <div style="display: flex; gap: 0.5rem; align-items: center; position: relative;">
+                            <input type="text" class="p-image" value="${release.image || 'assets/cover.png'}" id="input-p-${index}" oninput="updateLivePreview(this, 'prev-p-${index}'); syncLivePopularCard(${index})">
+                            <button class="action-btn-mini" onclick="triggerPopularUpload(${index})"><i class="fas fa-folder-open"></i></button>
+                            <div id="prev-p-${index}" class="floating-preview"></div>
+                            <input type="file" id="file-p-${index}" style="display:none" onchange="handlePopularFile(this, ${index})" accept="image/*">
+                        </div>
+                    </div>
+                    <div class="input-group full">
+                        <label>Streaming Link (Spotify / YT)</label>
+                        <input type="text" class="p-link" value="${release.link || '#'}" oninput="syncLivePopularCard(${index})">
+                    </div>
+                </div>
+            </div>
+            <div class="card-preview-zone">
+                <label class="preview-label">PORTAL PREVIEW</label>
+                <div id="live-popular-card-${index}" class="admin-live-mock">
+                    <!-- Preview card will be injected here -->
+                </div>
+            </div>
+        </div>
+    `;
+    return div;
+}
+
+window.syncLivePopularCard = function(index) {
+    const editor = document.querySelectorAll('#popular-container .release-editor-item')[index];
+    const preview = document.getElementById(`live-popular-card-${index}`);
+    if (!editor || !preview) return;
+
+    const title = editor.querySelector('.p-title').value;
+    const artist = editor.querySelector('.p-artist').value;
+    const img = editor.querySelector('.p-image').value;
+
+    preview.innerHTML = `
+        <div class="popular-card" style="width: 100%; max-width: 250px; transform: none; cursor: default;">
+            <div class="trending-badge">TRENDING</div>
+            <div class="popular-cover">
+                <img src="${img}" alt="${title}">
+                <div class="popular-overlay">
+                    <div class="play-icon-glow"><i class="fas fa-play"></i></div>
+                </div>
+            </div>
+            <div class="popular-info">
+                <h3 style="font-size: 1.1rem;">${title || 'TRACK TITLE'}</h3>
+                <p style="font-size: 0.7rem;">${artist || 'ARTIST NAME'}</p>
+            </div>
+        </div>
+    `;
+};
+
+window.triggerPopularUpload = function(index) {
+    document.getElementById(`file-p-${index}`).click();
+};
+
+window.handlePopularFile = function(input, index) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const pInput = document.getElementById(`input-p-${index}`);
+            pInput.value = e.target.result;
+            updateLivePreview(pInput, `prev-p-${index}`);
+            syncLivePopularCard(index);
+            showToast("POPULAR COVER ENCODED.");
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+};
+
+function renderPopularReleases() {
+    popularContainer.innerHTML = '';
+    popularReleasesArray.forEach((r, i) => {
+        popularContainer.appendChild(createPopularEditor(r, i));
+        syncLivePopularCard(i);
+    });
+}
+
+window.loadPopularReleases = function() {
+    popularContainer.innerHTML = '<p style="opacity:0.5; padding:2rem;">Scanning high-priority frequencies...</p>';
+    db.ref('siteData/popular_releases').once('value').then(snapshot => {
+        let data = snapshot.val();
+        popularReleasesArray = (data && Array.isArray(data)) ? data : [];
+        renderPopularReleases();
+        if(popularReleasesArray.length > 0) showToast(`POPULAR GRID SYNCED: ${popularReleasesArray.length} HITS.`);
+    });
+};
+
+window.removePopularRelease = function(index) {
+    if(confirm("PURGE POPULAR FREQUENCY?")) {
+        popularReleasesArray.splice(index, 1);
+        renderPopularReleases();
+    }
+};
+
+const addPopBtn = document.getElementById('add-popular-btn');
+if(addPopBtn) {
+    addPopBtn.onclick = () => {
+        popularReleasesArray.unshift({
+            title: "NEW HIT",
+            artist: "ARTIST",
+            image: "assets/cover.png",
+            link: "#"
+        });
+        renderPopularReleases();
+        showToast("POPULAR SLOT INITIALIZED.");
+    };
+}
+
+document.getElementById('save-popular').addEventListener('click', () => {
+    const items = document.querySelectorAll('#popular-container .release-editor-item');
+    let dataToSave = [];
+    items.forEach(item => {
+        dataToSave.push({
+            title: item.querySelector('.p-title').value,
+            artist: item.querySelector('.p-artist').value,
+            image: item.querySelector('.p-image').value,
+            link: item.querySelector('.p-link').value
+        });
+    });
+
+    db.ref('siteData/popular_releases').set(dataToSave).then(() => {
+        bumpSiteVersion();
+        showSaveMsg('save-msg-popular');
+        showToast("POPULAR GRID DEPLOYED TO MAIN PORTAL.");
+    });
+});
