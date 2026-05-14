@@ -497,24 +497,6 @@
                 </div>
             </section>
 
-            <!-- Popular Releases Panel -->
-            <section id="popular-panel" class="panel">
-                <div class="panel-header">
-                    <h2><i class="fas fa-star"></i> POPULAR RELEASES (CINEMATIC)</h2>
-                    <p>Feature your top-tier frequencies at the head of the portal transmissions.</p>
-                </div>
-
-                <div class="btn-group mb-2">
-                    <button class="action-btn" id="add-popular-btn"><i class="fas fa-plus"></i> ADD POPULAR FREQUENCY</button>
-                    <button class="save-btn" id="save-popular" style="background:var(--accent-blue); border-color:var(--accent-blue); color: #000;"><i class="fas fa-cloud-upload-alt"></i> DEPLOY POPULAR GRID</button>
-                    <span id="save-msg-popular" class="save-msg">Grid deployed successfully.</span>
-                </div>
-
-                <div id="popular-container" class="releases-list">
-                    <!-- Dynamic popular release forms will compile here -->
-                    <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Scanning for high-priority frequencies...</p>
-                </div>
-            </section>
 
             <!-- Release Archive Panel -->
             <section id="releases-panel" class="panel">
@@ -624,6 +606,35 @@
                     <!-- Dynamic partner forms will compile here -->
                     <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Initializing neural link to partner
                         database...</p>
+                </div>
+            </section>
+
+            <!-- Popular Releases Panel | MADE BY RANGA -->
+            <section id="popular-panel" class="panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-star"></i> POPULAR RELEASES (GRID SHOWCASE)</h2>
+                    <p>Manage the high-visibility trending cards displayed at the top of the portal.</p>
+                </div>
+
+                <div class="form-grid info-block">
+                    <div class="input-group">
+                        <label>POPULAR SECTION VISIBILITY</label>
+                        <p class="field-desc">Toggle the entire Popular Releases section on the main portal.</p>
+                        <select id="site_showPopular">
+                            <option value="Visible">Visible</option>
+                            <option value="Hidden">Hidden</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="btn-group mb-2">
+                    <button class="action-btn" id="add-popular-btn"><i class="fas fa-plus"></i> ADD POPULAR FREQUENCY</button>
+                    <button class="save-btn" id="save-popular"><i class="fas fa-upload"></i> SYNC POPULAR TO SERVER</button>
+                    <span id="save-msg-popular" class="save-msg">Sync successful.</span>
+                </div>
+
+                <div id="popular-container" class="releases-list">
+                    <!-- Dynamic popular forms will compile here -->
                 </div>
             </section>
 
