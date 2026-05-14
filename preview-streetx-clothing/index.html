@@ -377,8 +377,8 @@
                                     <p class="m-col">${p.collection} / ${p.price}</p>
                                     <p class="m-desc">${p.desc || ""}</p>
                                 </div>
-                                <div class="mockup-visual" style="background-image: url('${p.image}')">
-                                    ${!p.image ? '<div class="image-placeholder">NO MOCKUP</div>' : ''}
+                                <div class="mockup-visual">
+                                    ${p.image ? `<img src="${p.image}" alt="${p.name}" class="product-img">` : '<div class="image-placeholder">NO MOCKUP</div>'}
                                 </div>
                             </div>
                         `;
