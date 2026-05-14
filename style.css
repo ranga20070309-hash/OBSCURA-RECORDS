@@ -763,10 +763,10 @@ section {
 /* --- STREETX NAVIGATION CARD (V10 - CLEAN MINIMAL) --- */
 .streat-nav-card {
     position: absolute;
-    right: 4%;
-    bottom: 4%;
-    width: 280px;
-    height: 80px;
+    right: 2%;
+    bottom: 2%;
+    width: 420px;
+    height: 110px;
     padding: 0;
     border-radius: 100px;
     z-index: 100;
