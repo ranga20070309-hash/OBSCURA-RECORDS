@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STREETX CLOTHING</title>
+    <title>STREETX | PREVIEW (BYPASS)</title>
     <link rel="icon" type="image/png" href="../assets/STREETX.PNG">
     <link rel="stylesheet" href="../streetx-clothing.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Syne:wght@700;800&display=swap"
@@ -30,172 +30,10 @@
         <div class="noise-layer"></div>
     </div>
 
-    <!-- Cinematic Maintenance Mode Overlay -->
-    <div id="maintenance-overlay" class="maintenance-screen">
-        <div class="m-scanlines"></div>
-        <div class="m-vignette"></div>
-        
-        <!-- Large Background X -->
-        <div class="m-bg-x">X</div>
-
-        <div class="maintenance-content">
-            <div class="m-header">
-                <span class="m-code">[ CORE_SYSTEM_OFFLINE ]</span>
-                <div class="m-glitch-wrap">
-                    <h1 class="m-main-title" id="m-title">SITE UNDER RENOVATION</h1>
-                </div>
-            </div>
-            
-            <div class="m-divider-wrap">
-                <div class="m-line"></div>
-                <div class="m-diamond"></div>
-                <div class="m-line"></div>
-            </div>
-
-            <p class="m-sub-text" id="m-msg">WE'RE REFINING THE EXPERIENCE. BE RIGHT BACK.</p>
-            
-            <div class="m-status-footer">
-                <div class="m-stat-item">
-                    <span class="pulse-dot"></span>
-                    <span>PROTOCOL: RENOVATION_V5</span>
-                </div>
-                <div class="m-stat-item">
-                    <span>LOCATION: OBSCURA_CORE</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Massive Background Marquee -->
-        <div class="m-massive-marquee">
-            <div class="m-marquee-inner">
-                <span>STREETX CORE OFFLINE // STREETX CORE OFFLINE // STREETX CORE OFFLINE // </span>
-            </div>
-        </div>
-    </div>
-
-    <style>
-        .maintenance-screen {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 99999;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            font-family: 'Syne', sans-serif;
-        }
-
-        .m-scanlines {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-            background-size: 100% 4px;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .m-massive-marquee {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-10deg);
-            width: 150%;
-            opacity: 0.05;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .m-marquee-inner {
-            display: flex;
-            white-space: nowrap;
-            animation: m-slow-scroll 60s linear infinite;
-        }
-
-        .m-marquee-inner span {
-            font-size: 15vw;
-            font-weight: 900;
-            color: transparent;
-            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
-            text-transform: uppercase;
-            padding-right: 5rem;
-        }
-
-        @keyframes m-slow-scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
-        .maintenance-content { position: relative; z-index: 10; text-align: center; width: 90%; }
-
-        .m-code { 
-            font-size: 0.6rem; 
-            letter-spacing: 0.5rem; 
-            color: var(--accent); 
-            margin-bottom: 2rem;
-            display: block;
-            opacity: 0.6;
-        }
-
-        .m-main-title {
-            font-size: clamp(1.2rem, 12vw, 6rem);
-            font-weight: 800;
-            color: #fff;
-            line-height: 1;
-            letter-spacing: -2px;
-            margin-bottom: 1.5rem;
-            text-transform: uppercase;
-            animation: m-breathe-glow 4s infinite ease-in-out;
-            padding: 0 15px;
-            word-wrap: break-word;
-            display: inline-block;
-            max-width: 100%;
-        }
-
-        @keyframes m-breathe-glow {
-            0%, 100% { text-shadow: 0 0 10px rgba(166, 255, 0, 0.2); opacity: 0.9; }
-            50% { text-shadow: 0 0 30px rgba(166, 255, 0, 0.6); opacity: 1; }
-        }
-
-        .m-divider-wrap { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 2rem; opacity: 0.2; }
-        .m-line { width: 50px; height: 1px; background: #fff; }
-
-        .m-sub-text {
-            font-size: 0.7rem;
-            letter-spacing: 0.4rem;
-            color: #fff;
-            opacity: 0.4;
-            max-width: 600px;
-            margin: 0 auto 3rem;
-            text-transform: uppercase;
-            line-height: 1.8;
-        }
-
-        .m-status-footer { display: flex; justify-content: center; gap: 30px; opacity: 0.2; font-size: 0.5rem; letter-spacing: 0.2rem; text-transform: uppercase; }
-        .pulse-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: m-pulse 1s infinite; display: inline-block; margin-right: 8px; }
-        
-        @keyframes m-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-        
-        @keyframes m-marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
-        @keyframes m-glitch {
-            0% { transform: translate(0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); }
-            60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); }
-            100% { transform: translate(0); }
-        }
-    </style>
-
     <!-- Minimal Header -->
     <header class="header-v5" id="nav-section">
         <div class="header-inner">
-            <a href="../streetx-clothing/" class="logo-area">
+            <a href="./" class="logo-area">
                 <img src="../assets/STREETX.PNG" alt="STREETX" id="header-logo">
                 <span id="header-name">STREETX</span>
             </a>
@@ -207,7 +45,7 @@
         </div>
     </header>
 
-    <!-- Industrial Tapes (Scroll Effect) -->
+    <!-- Industrial Tapes (Scroll Effect) - DOUBLE LAYER -->
     <div class="tape-system" id="tape-section">
         <div class="tape tape-1">
             <div class="tape-track">
@@ -228,7 +66,7 @@
         <!-- Hero Section -->
         <section id="home" class="hero-v5">
             <div class="hero-content">
-                <h2 class="hero-tagline" id="hero-title"></h2>
+                <h2 class="hero-tagline" id="hero-title">STREETX<br><span class="accent">CLOTHING</span></h2>
             </div>
             <div class="scroll-hint" id="hero-scroll-hint">
                 <p id="scroll-text">SCROLL TO DISCOVER</p>
@@ -236,9 +74,26 @@
             </div>
         </section>
 
-        <!-- Mockup Showcase Section -->
-        <section id="collection" class="showcase-v5">
-            <!-- Dynamic products will load here -->
+        <!-- Collection Slider Only -->
+        <section id="collection" class="featured-section">
+            <div class="hero-split">
+                <div class="hero-text-side">
+                    <h2 class="hero-main-title">STREETX<br><span class="outlined">DROP 01</span></h2>
+                    <p class="hero-desc-text">Discover our curated selection of premium streetwear pieces.</p>
+                    <a href="#" class="btn-primary-v5" id="coll-shop-btn">VISIT SHOP</a>
+                </div>
+                <div class="hero-visual-side">
+                    <div class="hero-slider-container" id="collection-slider">
+                        <div class="hero-slide active" id="collection-slide-1">
+                            <div class="product-item-circle"></div>
+                            <img src="" alt="" class="hero-img">
+                        </div>
+                        <div class="hero-slide next" id="collection-slide-2">
+                            <img src="" alt="" class="hero-img-blur">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- Identity Section -->
@@ -278,14 +133,10 @@
 
     <!-- Scripts -->
     <script>
-        // Force scroll to top on reload
         history.scrollRestoration = 'manual';
         window.scrollTo(0, 0);
-
-        // GSAP Initialization
         gsap.registerPlugin(ScrollTrigger);
 
-        // Firebase Initialization
         let db;
         if (streetxFirebaseConfig.apiKey !== "YOUR_API_KEY") {
             firebase.initializeApp(streetxFirebaseConfig);
@@ -296,12 +147,7 @@
         function initDynamicContent() {
             // Load Settings (Absolute Control)
             db.ref('settings').on('value', (snap) => {
-                const d = snap.val() || {}; // Use empty object if null
-
-                // 0. Maintenance Mode Control (BYPASSED IN PREVIEW)
-                const mOverlay = document.getElementById('maintenance-overlay');
-                if (mOverlay) mOverlay.style.display = 'none';
-                document.body.style.overflow = 'auto';
+                const d = snap.val() || {};
 
                 // 1. Aesthetics (CSS Variable)
                 document.documentElement.style.setProperty('--accent', d.accentColor || '#a6ff00');
@@ -326,12 +172,27 @@
                 scrollHint.style.display = (d.showScrollHint !== false) ? 'flex' : 'none';
                 document.getElementById('scroll-text').innerText = d.scrollText || "SCROLL TO DISCOVER";
 
-                // 4. Identity
+                // 4. Collection
+                const collection = document.getElementById('collection');
+                if (collection) {
+                    collection.style.display = (d.showCollection !== false) ? 'block' : 'none';
+                    const collTitle = collection.querySelector('.hero-main-title');
+                    const collDesc = collection.querySelector('.hero-desc-text');
+                    const collBtn = document.getElementById('coll-shop-btn');
+                    if (collTitle) collTitle.innerHTML = `${d.collTitle || "STREETX"}<br><span class="outlined">${d.collAccent || "DROP 01"}</span>`;
+                    if (collDesc) collDesc.innerText = d.collDesc || "Discover our curated selection of premium streetwear pieces.";
+                    if (collBtn) {
+                        collBtn.innerText = d.collBtnText || "VISIT SHOP";
+                        collBtn.href = d.collBtnLink || "../shop-streetx-clothing/";
+                    }
+                }
+
+                // 5. Identity
                 const identity = document.getElementById('about');
                 identity.style.display = (d.showIdentity !== false) ? 'block' : 'none';
                 document.getElementById('id-tagline').innerText = d.idTagline || "IDENTITY";
                 document.getElementById('id-title').innerHTML = (d.idTitle || "DEFINING THE X-DIMENSION").replace("X-DIMENSION", '<span class="accent">X-DIMENSION</span>');
-                document.getElementById('id-desc').innerText = d.idDesc || "Rooted in industrial aesthetics and cyber-tech influences, StreetX represents the intersection of high-performance utility and raw street culture. Every piece is an exploration of form and function.";
+                document.getElementById('id-desc').innerText = d.idDesc || "Rooted in industrial aesthetics and cyber-tech influences.";
 
                 document.getElementById('stat1-label').innerText = d.stat1Label || "EST";
                 document.getElementById('stat1-val').innerText = d.stat1Val || "2026";
@@ -340,89 +201,25 @@
                 document.getElementById('stat3-label').innerText = d.stat3Label || "STATUS";
                 document.getElementById('stat3-val').innerText = d.stat3Val || "ACTIVE";
 
-                // 5. Tapes
+                // 6. Tapes
                 document.querySelectorAll('.tape-track span').forEach(s => s.innerText = d.tapeText || "STREETX CLOTHING // ");
 
-                // 6. Footer
+                // 7. Footer
                 const footer = document.getElementById('footer-section');
                 footer.style.display = (d.showFooter !== false) ? 'block' : 'none';
                 document.getElementById('footer-logo-container').style.display = (d.footerLogoShow !== false) ? 'block' : 'none';
                 document.getElementById('footer-copy').innerText = d.footerCopy || "© 2026 STREETX CLOTHING";
 
-                // 7. Security
-                if (d.protection) {
-                    document.addEventListener('contextmenu', e => e.preventDefault());
-                }
-
-                // First time reveal logic
                 if (!window.firebaseDataReady) {
                     window.firebaseDataReady = true;
-                    if (typeof checkAndReveal === 'function') checkAndReveal();
+                    checkAndReveal();
                 }
             });
 
-            // Load Products
+            // Load Products for Slider
             db.ref('products').on('value', (snap) => {
-                const container = document.getElementById('collection');
                 const products = snap.val();
-
-                if (products && Object.keys(products).length > 0) {
-                    container.innerHTML = ""; // Clear existing
-                    Object.values(products).forEach((p, index) => {
-                        const block = `
-                            <div class="mockup-block">
-                                <div class="mockup-info">
-                                    <span class="m-no">${String(index + 1).padStart(2, '0')}</span>
-                                    <h3>${p.name}</h3>
-                                    <p class="m-col">${p.collection} / ${p.price}</p>
-                                    <p class="m-desc">${p.desc || ""}</p>
-                                </div>
-                                <div class="mockup-visual">
-                                    ${p.image ? `<img src="${p.image}" alt="${p.name}" class="product-img">` : '<div class="image-placeholder">NO MOCKUP</div>'}
-                                </div>
-                            </div>
-                        `;
-                        container.insertAdjacentHTML('beforeend', block);
-                    });
-                } else {
-                    // Fallback to static mockups if Firebase is empty
-                    container.innerHTML = `
-                        <div class="mockup-block">
-                            <div class="mockup-info"><span class="m-no">01</span><h3>SIGNATURE HOODIE</h3><p class="m-col">HEAVYWEIGHT TECH FABRIC</p></div>
-                            <div class="mockup-visual"><div class="image-placeholder">MOCKUP 01</div></div>
-                        </div>
-                        <div class="mockup-block">
-                            <div class="mockup-info"><span class="m-no">02</span><h3>CARGO CORE PANTS</h3><p class="m-col">REINFORCED STITCHING</p></div>
-                            <div class="mockup-visual"><div class="image-placeholder">MOCKUP 02</div></div>
-                        </div>
-                        <div class="mockup-block">
-                            <div class="mockup-info"><span class="m-no">03</span><h3>X-DIMENSION TEE</h3><p class="m-col">PREMIUM PIMA COTTON</p></div>
-                            <div class="mockup-visual"><div class="image-placeholder">MOCKUP 03</div></div>
-                        </div>
-                    `;
-                }
-
-                // Refresh ScrollTrigger for both dynamic and static blocks
-                ScrollTrigger.refresh();
-                initMockupAnimations();
-            });
-
-            // Visitor Tracking Disabled for Preview Mode
-        }
-
-        function initMockupAnimations() {
-            document.querySelectorAll('.mockup-block').forEach((block) => {
-                gsap.from(block, {
-                    scrollTrigger: {
-                        trigger: block,
-                        start: 'top 80%',
-                        toggleActions: 'play none none none'
-                    },
-                    y: 100,
-                    opacity: 0,
-                    duration: 1.2,
-                    ease: 'power3.out'
-                });
+                if (products) initCollectionSlider(Object.values(products));
             });
         }
 
@@ -441,46 +238,47 @@
             }
         }
 
-        // Loader Logic
         window.addEventListener('load', () => {
             window.pageLoaded = true;
-
-            // Fail-safe: Force reveal after 5 seconds if Firebase is slow
-            setTimeout(() => {
-                if (!window.firebaseDataReady) {
-                    console.log("Firebase Timeout: Forcing reveal.");
-                    window.firebaseDataReady = true;
-                    checkAndReveal();
-                }
-            }, 5000);
-
             checkAndReveal();
         });
 
         function revealHero() {
-            gsap.to('.hero-content', {
-                y: 0,
-                opacity: 1,
-                duration: 1.5,
-                ease: 'power4.out'
-            });
-            gsap.to('.tape-system', {
-                opacity: 0.15,
-                duration: 2,
-                delay: 0.5
-            });
+            gsap.to('.hero-content', { y: 0, opacity: 1, duration: 1.5, ease: 'power4.out' });
+            gsap.to('.tape-system', { opacity: 0.15, duration: 2, delay: 0.5 });
         }
 
-        // Background Parallax
-        window.addEventListener('mousemove', (e) => {
-            const x = (e.clientX / window.innerWidth - 0.5) * 30;
-            const y = (e.clientY / window.innerHeight - 0.5) * 30;
-            gsap.to('.grid-layer', { x: x, y: y, duration: 2, ease: 'power2.out' });
-        });
+        function initCollectionSlider(pList) {
+            if (!pList || pList.length === 0) return;
+            let currentIdx = 0;
+            const slide1 = document.querySelector('#collection-slide-1 img');
+            const slide2 = document.querySelector('#collection-slide-2 img');
+            const slider = document.getElementById('collection-slider');
 
-        // Smooth Scroll Navigation & Hash Prevention
+            function updateSlider() {
+                const currentP = pList[currentIdx];
+                const nextP = pList[(currentIdx + 1) % pList.length];
+                const currentImg = Array.isArray(currentP.images) ? currentP.images[0] : currentP.image;
+                const nextImg = Array.isArray(nextP.images) ? nextP.images[0] : nextP.image;
+
+                if (slider) {
+                    gsap.to(slider, {
+                        opacity: 0, duration: 0.5, onComplete: () => {
+                            if (slide1) slide1.src = currentImg;
+                            if (slide2) slide2.src = nextImg;
+                            gsap.to(slider, { opacity: 1, duration: 0.8 });
+                        }
+                    });
+                }
+                currentIdx = (currentIdx + 1) % pList.length;
+            }
+            updateSlider();
+            setInterval(updateSlider, 5000);
+        }
+
+        // Clean URL Navigation Fix
         document.querySelectorAll('.nav-links a').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
+            anchor.addEventListener('click', function (e) {
                 const targetId = this.getAttribute('href');
                 if (targetId.startsWith('#')) {
                     e.preventDefault();
@@ -494,12 +292,13 @@
                             top: offsetPosition,
                             behavior: 'smooth'
                         });
+
+                        // Keep URL Clean (No Hash)
+                        window.history.replaceState(null, null, ' ');
                     }
                 }
             });
         });
-
     </script>
 </body>
-
 </html>
