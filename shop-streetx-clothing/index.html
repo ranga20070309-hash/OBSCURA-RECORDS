@@ -875,6 +875,10 @@
     <script src="../config-streetx-clothing.js"></script>
 
     <script>
+        // Force scroll to top on reload
+        history.scrollRestoration = 'manual';
+        window.scrollTo(0, 0);
+
         if (streetxFirebaseConfig.apiKey !== "YOUR_API_KEY") {
             firebase.initializeApp(streetxFirebaseConfig);
             const db = firebase.database();
