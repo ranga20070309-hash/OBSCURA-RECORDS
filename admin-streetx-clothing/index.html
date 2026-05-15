@@ -24,6 +24,7 @@
             <a href="#" class="active" onclick="showTab('dashboard')"><i class="fas fa-chart-line"></i> DASHBOARD</a>
             <a href="#" onclick="showTab('products')"><i class="fas fa-tshirt"></i> PRODUCTS</a>
             <a href="#" onclick="showTab('settings')"><i class="fas fa-sliders-h"></i> CORE SETTINGS</a>
+            <a href="../admin-shop-streetx/" style="color: var(--accent); border-top: 1px solid rgba(255,255,255,0.05); margin-top: 10px; padding-top: 15px;"><i class="fas fa-shopping-bag"></i> MANAGE SHOP</a>
             <a href="../streetx-clothing/" target="_blank"><i class="fas fa-external-link-alt"></i> VIEW PUBLIC SITE</a>
             <a href="../preview-streetx-clothing/" target="_blank" style="color: var(--accent);"><i class="fas fa-eye"></i> PREVIEW (BYPASS)</a>
         </nav>
@@ -126,6 +127,20 @@
                     </div>
                 </div>
 
+                <!-- Collection Slider Section -->
+                <div class="settings-card highlight">
+                    <div class="card-head"><h3>COLLECTION SECTION</h3><input type="checkbox" id="set-show-collection" checked></div>
+                    <div class="card-body">
+                        <div class="input-group"><label>Collection Title</label><input type="text" id="set-coll-title"></div>
+                        <div class="input-group"><label>Collection Accent</label><input type="text" id="set-coll-accent"></div>
+                        <div class="input-group"><label>Collection Description</label><textarea id="set-coll-desc" rows="3"></textarea></div>
+                        <div class="input-row">
+                            <div class="input-group"><label>Button Text</label><input type="text" id="set-coll-btn-text"></div>
+                            <div class="input-group"><label>Shop Link</label><input type="text" id="set-coll-btn-link"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Identity Section -->
                 <div class="settings-card">
                     <div class="card-head"><h3>IDENTITY SECTION</h3><input type="checkbox" id="set-show-identity" checked></div>
@@ -187,14 +202,15 @@
                 <div class="input-group"><label>Name</label><input type="text" id="p-name"></div>
                 <div class="input-group"><label>Collection</label><input type="text" id="p-collection"></div>
                 <div class="input-group"><label>Price</label><input type="text" id="p-price"></div>
-                <div class="input-group">
-                    <label>Product Mockup (Free Upload)</label>
+                <div class="input-group full">
+                    <label>Product Mockups (Multiple Support)</label>
                     <div class="upload-area">
-                        <input type="file" id="p-file" accept="image/*" style="display: none;">
-                        <button class="btn-cancel" onclick="document.getElementById('p-file').click()" style="width: 100%; margin:0;">SELECT PHOTO</button>
+                        <input type="file" id="p-file" accept="image/*" style="display: none;" multiple>
+                        <button class="btn-cancel" onclick="document.getElementById('p-file').click()" style="width: 100%; margin:0;">+ ADD PHOTOS</button>
                         <p id="file-status" style="font-size: 0.6rem; color: var(--accent); margin-top: 5px;"></p>
                     </div>
-                    <input type="hidden" id="p-image">
+                    <div id="p-image-gallery" class="gallery-preview"></div>
+                    <input type="hidden" id="p-images-data">
                 </div>
                 <div class="input-group full"><label>Spec Details</label><textarea id="p-desc" rows="4"></textarea></div>
             </div>
@@ -224,9 +240,13 @@
             const name = document.getElementById('p-name');
             const col = document.getElementById('p-collection');
             const price = document.getElementById('p-price');
-            const img = document.getElementById('p-image');
+            const gallery = document.getElementById('p-image-gallery');
+            const imagesData = document.getElementById('p-images-data');
             const desc = document.getElementById('p-desc');
             const fileStatus = document.getElementById('file-status');
+
+            gallery.innerHTML = "";
+            imagesData.value = "[]";
 
             if (id && currentProducts[id]) {
                 const p = currentProducts[id];
@@ -235,16 +255,44 @@
                 name.value = p.name;
                 col.value = p.collection;
                 price.value = p.price;
-                img.value = p.image;
                 desc.value = p.desc || "";
-                fileStatus.innerText = "Current photo loaded.";
+                
+                // Compatibility layer: Handle single string or array
+                let images = [];
+                if (Array.isArray(p.images)) images = p.images;
+                else if (p.image) images = [p.image];
+                
+                imagesData.value = JSON.stringify(images);
+                renderGallery(images);
+                fileStatus.innerText = `${images.length} photos loaded.`;
             } else {
                 title.innerText = "ADD NEW PRODUCT";
-                pId.value = ""; name.value = ""; col.value = ""; price.value = ""; img.value = ""; desc.value = "";
+                pId.value = ""; name.value = ""; col.value = ""; price.value = ""; desc.value = "";
                 fileStatus.innerText = "";
             }
             openModal('product-modal');
         }
+
+        function renderGallery(images) {
+            const gallery = document.getElementById('p-image-gallery');
+            gallery.innerHTML = "";
+            images.forEach((imgData, index) => {
+                const item = document.createElement('div');
+                item.className = "gallery-item";
+                item.innerHTML = `
+                    <img src="${imgData}">
+                    <button class="remove-img" onclick="removeImage(${index})"><i class="fas fa-times"></i></button>
+                `;
+                gallery.appendChild(item);
+            });
+        }
+
+        window.removeImage = (index) => {
+            let images = JSON.parse(document.getElementById('p-images-data').value);
+            images.splice(index, 1);
+            document.getElementById('p-images-data').value = JSON.stringify(images);
+            renderGallery(images);
+        };
 
         if (streetxFirebaseConfig.apiKey !== "YOUR_API_KEY") {
             firebase.initializeApp(streetxFirebaseConfig);
@@ -267,6 +315,14 @@
                 document.getElementById('set-id-tagline').value = d.idTagline ?? "IDENTITY";
                 document.getElementById('set-id-title').value = d.idTitle ?? "DEFINING THE X-DIMENSION";
                 document.getElementById('set-id-desc').value = d.idDesc ?? "";
+                
+                document.getElementById('set-show-collection').checked = d.showCollection ?? true;
+                document.getElementById('set-coll-title').value = d.collTitle ?? "STREETX";
+                document.getElementById('set-coll-accent').value = d.collAccent ?? "DROP 01";
+                document.getElementById('set-coll-desc').value = d.collDesc ?? "Discover our curated selection of premium streetwear pieces.";
+                document.getElementById('set-coll-btn-text').value = d.collBtnText ?? "VISIT SHOP";
+                document.getElementById('set-coll-btn-link').value = d.collBtnLink ?? "../shop-streetx-clothing/";
+                
                 document.getElementById('set-maintenance-mode').checked = d.maintenanceMode ?? false;
                 document.getElementById('dash-m-toggle').checked = d.maintenanceMode ?? false;
                 const statusEl = document.getElementById('current-status');
@@ -310,6 +366,12 @@
                     idTagline: document.getElementById('set-id-tagline').value,
                     idTitle: document.getElementById('set-id-title').value,
                     idDesc: document.getElementById('set-id-desc').value,
+                    showCollection: document.getElementById('set-show-collection').checked,
+                    collTitle: document.getElementById('set-coll-title').value,
+                    collAccent: document.getElementById('set-coll-accent').value,
+                    collDesc: document.getElementById('set-coll-desc').value,
+                    collBtnText: document.getElementById('set-coll-btn-text').value,
+                    collBtnLink: document.getElementById('set-coll-btn-link').value || "../shop-streetx-clothing/",
                     maintenanceMode: document.getElementById('set-maintenance-mode').checked,
                     maintenanceTitle: document.getElementById('set-maintenance-title').value,
                     maintenanceMsg: document.getElementById('set-maintenance-msg').value,
@@ -344,8 +406,9 @@
                 if (products) {
                     Object.values(products).forEach(p => {
                         count++;
+                        const displayImg = Array.isArray(p.images) ? p.images[0] : (p.image || "");
                         list.innerHTML += `<tr>
-                            <td><img src="${p.image}" style="height:40px; border-radius:4px;"></td>
+                            <td><img src="${displayImg}" style="height:40px; border-radius:4px;"></td>
                             <td>${p.name}</td><td>${p.collection}</td><td>${p.price}</td>
                             <td>
                                 <button class="btn-cancel" style="padding: 5px 10px; margin-right: 5px;" onclick="openProductModal('${p.id}')"><i class="fas fa-edit"></i></button>
@@ -359,38 +422,48 @@
 
             // Free Image Handler (Base64 + Resizer)
             document.getElementById('p-file').onchange = (e) => {
-                const file = e.target.files[0]; if (!file) return;
-                document.getElementById('file-status').innerText = "Processing...";
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800;
-                        let width = img.width; let height = img.height;
-                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                        canvas.width = width; canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        const dataUrl = canvas.toDataURL('image/png'); // Preserves transparency
-                        document.getElementById('p-image').value = dataUrl;
-                        document.getElementById('file-status').innerText = "Ready to Save (Transparency Preserved)!";
+                const files = e.target.files; if (!files.length) return;
+                document.getElementById('file-status').innerText = `Processing ${files.length} photos...`;
+                
+                Array.from(files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const MAX_WIDTH = 800;
+                            let width = img.width; let height = img.height;
+                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                            canvas.width = width; canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            const dataUrl = canvas.toDataURL('image/png'); // Preserves transparency
+                            
+                            let images = JSON.parse(document.getElementById('p-images-data').value || "[]");
+                            images.push(dataUrl);
+                            document.getElementById('p-images-data').value = JSON.stringify(images);
+                            renderGallery(images);
+                            document.getElementById('file-status').innerText = `${images.length} photos ready!`;
+                        };
+                        img.src = event.target.result;
                     };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
+                    reader.readAsDataURL(file);
+                });
             };
 
             document.getElementById('save-product-btn').onclick = () => {
                 const id = document.getElementById('p-id').value || Date.now().toString();
+                const images = JSON.parse(document.getElementById('p-images-data').value || "[]");
+                
                 const p = { 
                     id, name: document.getElementById('p-name').value, 
                     collection: document.getElementById('p-collection').value, 
                     price: document.getElementById('p-price').value, 
-                    image: document.getElementById('p-image').value, 
+                    images: images,
+                    image: images[0] || "", // Keep for backward compatibility
                     desc: document.getElementById('p-desc').value 
                 };
-                if (!p.image) return alert("Select a photo first!");
+                if (!p.images.length) return alert("Add at least one photo!");
                 db.ref('products/' + id).set(p).then(() => { closeModal('product-modal'); alert("PRODUCT SAVED."); });
             };
 
