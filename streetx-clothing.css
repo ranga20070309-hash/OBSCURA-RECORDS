@@ -331,39 +331,39 @@ header.header-v5 {
     position: relative;
 }
 
-    @media (max-width: 1200px) {
-        .hero-split {
-            display: flex !important;
-            flex-direction: column !important;
-            text-align: center;
-            gap: 3rem;
-            padding: 0 5%;
-        }
-
-        .hero-visual-side {
-            order: 1 !important;
-            height: auto !important;
-            min-height: 350px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .hero-text-side {
-            order: 2 !important;
-            text-align: center !important;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .hero-desc-text {
-            margin-left: auto;
-            margin-right: auto;
-        }
+@media (max-width: 1200px) {
+    .hero-split {
+        display: flex !important;
+        flex-direction: column !important;
+        text-align: center;
+        gap: 3rem;
+        padding: 0 5%;
     }
+
+    .hero-visual-side {
+        order: 1 !important;
+        height: auto !important;
+        min-height: 350px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .hero-text-side {
+        order: 2 !important;
+        text-align: center !important;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .hero-desc-text {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
 
 .hero-text-side {
     text-align: left;
