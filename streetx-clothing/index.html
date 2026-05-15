@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STREETX CLOTHING</title>
+    <title>STREETX | THE X-DIMENSION</title>
     <link rel="icon" type="image/png" href="../assets/STREETX.PNG">
     <link rel="stylesheet" href="../streetx-clothing.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Syne:wght@700;800&display=swap"
@@ -34,7 +34,7 @@
     <div id="maintenance-overlay" class="maintenance-screen">
         <div class="m-scanlines"></div>
         <div class="m-vignette"></div>
-        
+
         <!-- Large Background X -->
         <div class="m-bg-x">X</div>
 
@@ -45,7 +45,7 @@
                     <h1 class="m-main-title" id="m-title">SITE UNDER RENOVATION</h1>
                 </div>
             </div>
-            
+
             <div class="m-divider-wrap">
                 <div class="m-line"></div>
                 <div class="m-diamond"></div>
@@ -53,7 +53,7 @@
             </div>
 
             <p class="m-sub-text" id="m-msg">WE'RE REFINING THE EXPERIENCE. BE RIGHT BACK.</p>
-            
+
             <div class="m-status-footer">
                 <div class="m-stat-item">
                     <span class="pulse-dot"></span>
@@ -74,6 +74,12 @@
     </div>
 
     <style>
+        html, body.streat-v5 {
+            overflow-x: hidden !important;
+            width: 100vw;
+            position: relative;
+        }
+
         .maintenance-screen {
             position: fixed;
             inset: 0;
@@ -123,16 +129,26 @@
         }
 
         @keyframes m-slow-scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
         }
 
-        .maintenance-content { position: relative; z-index: 10; text-align: center; width: 90%; }
+        .maintenance-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            width: 90%;
+        }
 
-        .m-code { 
-            font-size: 0.6rem; 
-            letter-spacing: 0.5rem; 
-            color: var(--accent); 
+        .m-code {
+            font-size: 0.6rem;
+            letter-spacing: 0.5rem;
+            color: var(--accent);
             margin-bottom: 2rem;
             display: block;
             opacity: 0.6;
@@ -141,7 +157,6 @@
         .m-main-title {
             font-size: clamp(1.2rem, 12vw, 6rem);
             font-weight: 800;
-            color: #fff;
             line-height: 1;
             letter-spacing: -1px;
             margin-bottom: 1.5rem;
@@ -154,12 +169,33 @@
         }
 
         @keyframes m-breathe-glow {
-            0%, 100% { text-shadow: 0 0 10px rgba(166, 255, 0, 0.2); opacity: 0.9; }
-            50% { text-shadow: 0 0 30px rgba(166, 255, 0, 0.6); opacity: 1; }
+
+            0%,
+            100% {
+                text-shadow: 0 0 10px rgba(166, 255, 0, 0.2);
+                opacity: 0.9;
+            }
+
+            50% {
+                text-shadow: 0 0 30px rgba(166, 255, 0, 0.6);
+                opacity: 1;
+            }
         }
 
-        .m-divider-wrap { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 2rem; opacity: 0.2; }
-        .m-line { width: 50px; height: 1px; background: #fff; }
+        .m-divider-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 2rem;
+            opacity: 0.2;
+        }
+
+        .m-line {
+            width: 50px;
+            height: 1px;
+            background: #fff;
+        }
 
         .m-sub-text {
             font-size: 0.7rem;
@@ -172,23 +208,72 @@
             line-height: 1.8;
         }
 
-        .m-status-footer { display: flex; justify-content: center; gap: 30px; opacity: 0.2; font-size: 0.5rem; letter-spacing: 0.2rem; text-transform: uppercase; }
-        .pulse-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: m-pulse 1s infinite; display: inline-block; margin-right: 8px; }
-        
-        @keyframes m-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-        
+        .m-status-footer {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            opacity: 0.2;
+            font-size: 0.5rem;
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: m-pulse 1s infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        @keyframes m-pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.2;
+            }
+        }
+
         @keyframes m-marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
         }
 
         @keyframes m-glitch {
-            0% { transform: translate(0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); }
-            60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); }
-            100% { transform: translate(0); }
+            0% {
+                transform: translate(0);
+            }
+
+            20% {
+                transform: translate(-2px, 2px);
+            }
+
+            40% {
+                transform: translate(-2px, -2px);
+            }
+
+            60% {
+                transform: translate(2px, 2px);
+            }
+
+            80% {
+                transform: translate(2px, -2px);
+            }
+
+            100% {
+                transform: translate(0);
+            }
         }
     </style>
 
@@ -223,12 +308,28 @@
         </div>
     </div>
 
+    <!-- Industrial Tapes (Scroll Effect) -->
+    <div class="tape-system" id="tape-section">
+        <div class="tape tape-1">
+            <div class="tape-track">
+                <span>STREETX CLOTHING // STREETX CLOTHING // STREETX CLOTHING // </span>
+                <span>STREETX CLOTHING // STREETX CLOTHING // STREETX CLOTHING // </span>
+            </div>
+        </div>
+        <div class="tape tape-2">
+            <div class="tape-track">
+                <span>STREETX CLOTHING // STREETX CLOTHING // STREETX CLOTHING // </span>
+                <span>STREETX CLOTHING // STREETX CLOTHING // STREETX CLOTHING // </span>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main>
         <!-- Hero Section -->
         <section id="home" class="hero-v5">
             <div class="hero-content">
-                <h2 class="hero-tagline" id="hero-title"></h2>
+                <h2 class="hero-tagline" id="hero-title">STREETX<br><span class="accent">CLOTHING</span></h2>
             </div>
             <div class="scroll-hint" id="hero-scroll-hint">
                 <p id="scroll-text">SCROLL TO DISCOVER</p>
@@ -236,9 +337,26 @@
             </div>
         </section>
 
-        <!-- Mockup Showcase Section -->
-        <section id="collection" class="showcase-v5">
-            <!-- Dynamic products will load here -->
+        <!-- Collection Slider Only -->
+        <section id="collection" class="featured-section">
+            <div class="hero-split">
+                <div class="hero-text-side">
+                    <h2 class="hero-main-title">STREETX<br><span class="outlined">DROP 01</span></h2>
+                    <p class="hero-desc-text">Discover our curated selection of premium streetwear pieces.</p>
+                    <a href="#" class="btn-primary-v5" id="coll-shop-btn">VISIT SHOP</a>
+                </div>
+                <div class="hero-visual-side">
+                    <div class="hero-slider-container" id="collection-slider">
+                        <div class="hero-slide active" id="collection-slide-1">
+                            <div class="product-item-circle"></div>
+                            <img src="" alt="" class="hero-img">
+                        </div>
+                        <div class="hero-slide next" id="collection-slide-2">
+                            <img src="" alt="" class="hero-img-blur">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- Identity Section -->
@@ -296,7 +414,13 @@
         function initDynamicContent() {
             // Load Settings (Absolute Control)
             db.ref('settings').on('value', (snap) => {
-                const d = snap.val() || {}; // Use empty object if null
+                const d = snap.val() || {};
+
+                // Cinematic Reveal Logic
+                if (!window.firebaseDataReady) {
+                    window.firebaseDataReady = true;
+                    checkAndReveal();
+                }
 
                 // 0. Maintenance Mode Control
                 const mOverlay = document.getElementById('maintenance-overlay');
@@ -333,7 +457,22 @@
                 scrollHint.style.display = (d.showScrollHint !== false) ? 'flex' : 'none';
                 document.getElementById('scroll-text').innerText = d.scrollText || "SCROLL TO DISCOVER";
 
-                // 4. Identity
+                // 4. Collection
+                const collection = document.getElementById('collection');
+                if (collection) {
+                    collection.style.display = (d.showCollection !== false) ? 'block' : 'none';
+                    const collTitle = collection.querySelector('.hero-main-title');
+                    const collDesc = collection.querySelector('.hero-desc-text');
+                    const collBtn = document.getElementById('coll-shop-btn');
+                    if (collTitle) collTitle.innerHTML = `${d.collTitle || "STREETX"}<br><span class="outlined">${d.collAccent || "DROP 01"}</span>`;
+                    if (collDesc) collDesc.innerText = d.collDesc || "Discover our curated selection of premium streetwear pieces.";
+                    if (collBtn) {
+                        collBtn.innerText = d.collBtnText || "VISIT SHOP";
+                        collBtn.href = (d.collBtnLink && d.collBtnLink !== "#") ? d.collBtnLink : "../shop-streetx-clothing/";
+                    }
+                }
+
+                // 5. Identity
                 const identity = document.getElementById('about');
                 identity.style.display = (d.showIdentity !== false) ? 'block' : 'none';
                 document.getElementById('id-tagline').innerText = d.idTagline || "IDENTITY";
@@ -367,52 +506,96 @@
                     if (typeof checkAndReveal === 'function') checkAndReveal();
                 }
             });
-
             // Load Products
             db.ref('products').on('value', (snap) => {
-                const container = document.getElementById('collection');
                 const products = snap.val();
 
                 if (products && Object.keys(products).length > 0) {
-                    container.innerHTML = ""; // Clear existing
-                        Object.values(products).forEach((p, index) => {
-                            const block = `
-                                <div class="mockup-block">
-                                    <div class="mockup-info">
-                                        <span class="m-no">${String(index + 1).padStart(2, '0')}</span>
-                                        <h3>${p.name}</h3>
-                                        <p class="m-col">${p.collection} / ${p.price}</p>
-                                        <p class="m-desc">${p.desc || ""}</p>
+                    const pList = Object.values(products);
+
+                    // 1. Init Collection Slider
+                    initCollectionSlider(pList);
+
+                    // 2. Render Grid Below
+                    const gridContainer = document.getElementById('collection-grid');
+                    gridContainer.innerHTML = "";
+
+                    pList.forEach((p, index) => {
+                        let images = [];
+                        if (Array.isArray(p.images)) images = p.images;
+                        else if (p.image) images = [p.image];
+
+                        const hasMultiple = images.length > 1;
+
+                        const block = `
+                            <div class="mockup-block">
+                                <div class="mockup-visual ${hasMultiple ? 'has-gallery' : ''}" id="gallery-${p.id}">
+                                    <div class="product-item-circle"><div></div></div>
+                                    <div class="gallery-wrapper">
+                                        ${images.map((img, i) => `
+                                            <img src="${img}" alt="${p.name}" class="product-img ${i === 0 ? 'active' : ''}" data-index="${i}">
+                                        `).join('')}
                                     </div>
-                                    <div class="mockup-visual">
-                                        ${p.image ? `<img src="${p.image}" alt="${p.name}" class="product-img">` : '<div class="image-placeholder">NO MOCKUP</div>'}
-                                    </div>
+                                    ${hasMultiple ? `
+                                        <div class="gallery-controls">
+                                            <button class="g-prev" onclick="changeImage('${p.id}', -1)"><i class="fas fa-chevron-left"></i></button>
+                                            <div class="g-dots">
+                                                ${images.map((_, i) => `<span class="g-dot ${i === 0 ? 'active' : ''}" onclick="jumpToImage('${p.id}', ${i})"></span>`).join('')}
+                                            </div>
+                                            <button class="g-next" onclick="changeImage('${p.id}', 1)"><i class="fas fa-chevron-right"></i></button>
+                                        </div>
+                                    ` : ''}
+                                    ${images.length === 0 ? '<div class="image-placeholder">NO MOCKUP</div>' : ''}
                                 </div>
-                            `;
-                            container.insertAdjacentHTML('beforeend', block);
-                        });
+                                <div class="mockup-info">
+                                    <span class="m-no">${String(index + 1).padStart(2, '0')}</span>
+                                    <h3>${p.name}</h3>
+                                    <p class="m-col">${p.collection} / ${p.price}</p>
+                                </div>
+                            </div>
+                        `;
+                        gridContainer.insertAdjacentHTML('beforeend', block);
+                    });
                 } else {
-                    // Fallback to static mockups if Firebase is empty
+                    // Fallback to static mockups
                     container.innerHTML = `
                         <div class="mockup-block">
                             <div class="mockup-info"><span class="m-no">01</span><h3>SIGNATURE HOODIE</h3><p class="m-col">HEAVYWEIGHT TECH FABRIC</p></div>
                             <div class="mockup-visual"><div class="image-placeholder">MOCKUP 01</div></div>
                         </div>
-                        <div class="mockup-block">
-                            <div class="mockup-info"><span class="m-no">02</span><h3>CARGO CORE PANTS</h3><p class="m-col">REINFORCED STITCHING</p></div>
-                            <div class="mockup-visual"><div class="image-placeholder">MOCKUP 02</div></div>
-                        </div>
-                        <div class="mockup-block">
-                            <div class="mockup-info"><span class="m-no">03</span><h3>X-DIMENSION TEE</h3><p class="m-col">PREMIUM PIMA COTTON</p></div>
-                            <div class="mockup-visual"><div class="image-placeholder">MOCKUP 03</div></div>
-                        </div>
                     `;
                 }
 
-                // Refresh ScrollTrigger for both dynamic and static blocks
                 ScrollTrigger.refresh();
                 initMockupAnimations();
             });
+
+            window.changeImage = (productId, direction) => {
+                const gallery = document.getElementById(`gallery-${productId}`);
+                const imgs = gallery.querySelectorAll('.product-img');
+                const dots = gallery.querySelectorAll('.g-dot');
+                let activeIdx = Array.from(imgs).findIndex(img => img.classList.contains('active'));
+
+                imgs[activeIdx].classList.remove('active');
+                dots[activeIdx].classList.remove('active');
+
+                activeIdx = (activeIdx + direction + imgs.length) % imgs.length;
+
+                imgs[activeIdx].classList.add('active');
+                dots[activeIdx].classList.add('active');
+            };
+
+            window.jumpToImage = (productId, index) => {
+                const gallery = document.getElementById(`gallery-${productId}`);
+                const imgs = gallery.querySelectorAll('.product-img');
+                const dots = gallery.querySelectorAll('.g-dot');
+
+                imgs.forEach(img => img.classList.remove('active'));
+                dots.forEach(dot => dot.classList.remove('active'));
+
+                imgs[index].classList.add('active');
+                dots[index].classList.add('active');
+            };
 
             // Unique Visitor Tracking (LocalStorage Based)
             const isUnique = !localStorage.getItem('streetx_visitor');
@@ -459,7 +642,7 @@
         // Loader Logic
         window.addEventListener('load', () => {
             window.pageLoaded = true;
-            
+
             // Fail-safe: Force reveal after 5 seconds if Firebase is slow
             setTimeout(() => {
                 if (!window.firebaseDataReady) {
@@ -494,8 +677,9 @@
         });
 
         // Smooth Scroll Navigation & Hash Prevention
+        // Clean URL Navigation Fix
         document.querySelectorAll('.nav-links a').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
+            anchor.addEventListener('click', function (e) {
                 const targetId = this.getAttribute('href');
                 if (targetId.startsWith('#')) {
                     e.preventDefault();
@@ -509,11 +693,71 @@
                             top: offsetPosition,
                             behavior: 'smooth'
                         });
+
+                        // Keep URL Clean (No Hash)
+                        window.history.replaceState(null, null, ' ');
                     }
                 }
             });
         });
 
+        function initCollectionSlider(pList) {
+            if (!pList || pList.length === 0) return;
+            let currentIdx = 0;
+            const slide1 = document.querySelector('#collection-slide-1 img');
+            const slide2 = document.querySelector('#collection-slide-2 img');
+            const slider = document.getElementById('collection-slider');
+
+            function updateSlider() {
+                const currentP = pList[currentIdx];
+                const nextP = pList[(currentIdx + 1) % pList.length];
+
+                const currentImg = Array.isArray(currentP.images) ? currentP.images[0] : currentP.image;
+                const nextImg = Array.isArray(nextP.images) ? nextP.images[0] : nextP.image;
+
+                if (slider) {
+                    gsap.to(slider, {
+                        opacity: 0, duration: 0.5, onComplete: () => {
+                            if (slide1) slide1.src = currentImg;
+                            if (slide2) slide2.src = nextImg;
+                            gsap.to(slider, { opacity: 1, duration: 0.8 });
+                        }
+                    });
+                }
+
+                currentIdx = (currentIdx + 1) % pList.length;
+            }
+
+            updateSlider();
+            setInterval(updateSlider, 5000);
+        }
+
+        // Cinematic Loader Reveal Sync
+        function checkAndReveal() {
+            if (window.firebaseDataReady && window.pageLoaded) {
+                const tl = gsap.timeline();
+                tl.to('.loader-line', { width: '100%', duration: 1.2, ease: 'power4.inOut' });
+                tl.to('.loader-v5', {
+                    opacity: 0,
+                    duration: 1,
+                    onComplete: () => {
+                        document.querySelector('.loader-v5').style.display = 'none';
+                        gsap.to('.tape-system', { opacity: 1, duration: 1.5 });
+                    }
+                });
+            }
+        }
+
+        window.addEventListener('load', () => {
+            window.pageLoaded = true;
+            setTimeout(() => {
+                if (!window.firebaseDataReady) {
+                    window.firebaseDataReady = true;
+                    checkAndReveal();
+                }
+            }, 5000);
+            checkAndReveal();
+        });
     </script>
 </body>
 
