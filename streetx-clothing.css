@@ -519,6 +519,7 @@ header.header-v5 {
     background: #050505;
     position: relative;
     z-index: 10;
+    scroll-margin-top: 65px;
 }
 
 .grid-section {
@@ -865,9 +866,10 @@ header.header-v5 {
 
 /* Identity V5 */
 .identity-v5 {
-    padding: 15rem 10%;
+    padding: 8rem 10%;
     background: linear-gradient(to bottom, transparent, #000);
     text-align: center;
+    scroll-margin-top: 65px;
 }
 
 .id-content {
