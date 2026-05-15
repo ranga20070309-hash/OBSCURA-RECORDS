@@ -396,6 +396,33 @@
 
     <!-- Scripts -->
     <script>
+        // --- 1. CLEAN URL & SMOOTH SCROLL (RUNS FIRST) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.nav-links a').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const targetId = this.getAttribute('href');
+                    if (targetId.startsWith('#')) {
+                        e.preventDefault();
+                        const targetElement = document.querySelector(targetId);
+                        if (targetElement) {
+                            const headerOffset = 65; // Precision Offset
+                            const elementPosition = targetElement.getBoundingClientRect().top;
+                            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                            window.scrollTo({
+                                top: offsetPosition,
+                                behavior: 'smooth'
+                            });
+
+                            // Keep URL Clean (No Hash)
+                            window.history.replaceState(null, null, ' ');
+                        }
+                    }
+                });
+            });
+        });
+
+        // --- 2. FIREBASE & CONTENT LOGIC ---
         // Force scroll to top on reload
         history.scrollRestoration = 'manual';
         window.scrollTo(0, 0);
@@ -678,29 +705,11 @@
             gsap.to('.grid-layer', { x: x, y: y, duration: 2, ease: 'power2.out' });
         });
 
-        // Smooth Scroll Navigation & Hash Prevention
-        // Clean URL Navigation Fix
-        document.querySelectorAll('.nav-links a').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                const targetId = this.getAttribute('href');
-                if (targetId.startsWith('#')) {
-                    e.preventDefault();
-                    const targetElement = document.querySelector(targetId);
-                    if (targetElement) {
-                        const headerOffset = 150; // Balanced Offset
-                        const elementPosition = targetElement.getBoundingClientRect().top;
-                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-                        window.scrollTo({
-                            top: offsetPosition,
-                            behavior: 'smooth'
-                        });
-
-                        // Keep URL Clean (No Hash)
-                        window.history.replaceState(null, null, ' ');
-                    }
-                }
-            });
+        // Background Parallax
+        window.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 30;
+            const y = (e.clientY / window.innerHeight - 0.5) * 30;
+            gsap.to('.grid-layer', { x: x, y: y, duration: 2, ease: 'power2.out' });
         });
 
         function initCollectionSlider(pList) {
