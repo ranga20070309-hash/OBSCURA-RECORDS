@@ -183,7 +183,8 @@
                     if (collDesc) collDesc.innerText = d.collDesc || "Discover our curated selection of premium streetwear pieces.";
                     if (collBtn) {
                         collBtn.innerText = d.collBtnText || "VISIT SHOP";
-                        collBtn.href = d.collBtnLink || "../shop-streetx-clothing/";
+                        const targetPath = (d.collBtnLink && d.collBtnLink !== "#") ? d.collBtnLink : "../shop-streetx-clothing/";
+                        collBtn.setAttribute('href', targetPath);
                     }
                 }
 
