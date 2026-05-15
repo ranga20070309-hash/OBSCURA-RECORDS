@@ -183,7 +183,8 @@
                     if (collDesc) collDesc.innerText = d.collDesc || "Discover our curated selection of premium streetwear pieces.";
                     if (collBtn) {
                         collBtn.innerText = d.collBtnText || "VISIT SHOP";
-                        const targetPath = (d.collBtnLink && d.collBtnLink !== "#") ? d.collBtnLink : "../shop-streetx-clothing/";
+                        // Absolute Redirect Fix
+                        const targetPath = (d.collBtnLink && d.collBtnLink !== "#") ? d.collBtnLink : "https://www.obscurarecord.com/shop-streetx-clothing";
                         collBtn.setAttribute('href', targetPath);
                     }
                 }
