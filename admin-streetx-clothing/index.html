@@ -13,27 +13,194 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="../config-streetx-clothing.js"></script>
     <script>
-        // --- ADMIN HANDSHAKE SECURITY (LEVEL 1) ---
-        (function() {
-            const handshake = sessionStorage.getItem('streetx_access_granted');
-            const isLocal = window.location.protocol === 'file:';
-            
-            if (!handshake && !isLocal) {
-                // Initial block to prevent UI flashing
-                document.documentElement.style.display = 'none';
-                alert("SECURITY ALERT: UNAUTHORIZED DIRECT ACCESS DETECTED.\n\nPlease access this portal through the main Obscura Records Admin.");
-                window.location.href = "../admin.html";
-            }
-        })();
-
         function secureNavigate(url, key) {
             sessionStorage.setItem(key, 'true');
             window.location.href = url;
         }
     </script>
+    <style>
+        /* --- PREMIUM AUTHENTICATION OVERLAY --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Animated Background Particles */
+        #login-overlay::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: url('https://www.transparenttextures.com/patterns/stardust.png');
+            opacity: 0.15;
+            animation: bg-drift 120s linear infinite;
+        }
+
+        @keyframes bg-drift {
+            from { transform: translate(-25%, -25%); }
+            to { transform: translate(0, 0); }
+        }
+
+        .login-glass {
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 60px 40px;
+            border-radius: 40px;
+            width: 420px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                        0 0 40px rgba(var(--accent-rgb), 0.05);
+            animation: auth-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes auth-reveal {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); filter: blur(10px); }
+            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+
+        .login-glass img {
+            width: 100px;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 0 15px rgba(var(--accent-rgb), 0.3));
+            animation: logo-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes logo-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 25px rgba(var(--accent-rgb), 0.5)); }
+        }
+
+        .login-glass h2 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.4rem;
+            letter-spacing: 0.5rem;
+            margin-bottom: 40px;
+            color: #fff;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        .login-input-group {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .login-input-group:focus-within {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.15);
+            transform: translateY(-2px);
+        }
+
+        .login-input-group i {
+            color: var(--accent);
+            opacity: 0.6;
+            font-size: 1.1rem;
+        }
+
+        .login-input-group input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            padding: 18px;
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            letter-spacing: 0.05rem;
+        }
+
+        .login-input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.2rem;
+        }
+
+        #login-btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 20px;
+            width: 100%;
+            border-radius: 18px;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        #login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(var(--accent-rgb), 0.4);
+            filter: brightness(1.1);
+        }
+
+        #login-btn:active {
+            transform: translateY(0);
+        }
+
+        #login-error {
+            color: #ff3e3e;
+            font-size: 0.7rem;
+            margin-top: 25px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.1rem;
+            display: none;
+            text-transform: uppercase;
+            animation: error-shake 0.4s ease-in-out;
+        }
+
+        @keyframes error-shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+    </style>
 </head>
 <body class="admin-v1">
-    <!-- ... Sidebar and Main Content (Same as before) ... -->
+    <!-- INDEPENDENT LOGIN GATE -->
+    <div id="login-overlay">
+        <div class="login-glass">
+            <img src="../assets/STREETX.PNG" alt="STREETX">
+            <h2>STREETX CORE AUTH</h2>
+            <div class="login-input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="streetx-email" placeholder="ADMIN EMAIL">
+            </div>
+            <div class="login-input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="streetx-pass" placeholder="ACCESS KEY">
+            </div>
+            <button id="login-btn">AUTHORIZE ACCESS</button>
+            <p id="login-error">INVALID FREQUENCY DETECTED.</p>
+        </div>
+    </div>
     <aside class="sidebar">
         <div class="sidebar-header">
             <img src="../assets/STREETX.PNG" alt="STREETX">
@@ -496,6 +663,66 @@
                 }
             };
             db.ref('stats/visitors').on('value', (snap) => document.getElementById('total-visitors').innerText = snap.val() || 0);
+
+            // --- PROFESSIONAL FIREBASE AUTHENTICATION ENGINE ---
+            const loginOverlay = document.getElementById('login-overlay');
+            const loginBtn = document.getElementById('login-btn');
+            const emailInput = document.getElementById('streetx-email');
+            const passInput = document.getElementById('streetx-pass');
+            const loginError = document.getElementById('login-error');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            // 1. Force NON-PERSISTENT Auth (Clears on reload)
+            firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE)
+                .then(() => {
+                    console.log("Auth Persistence set to NONE. Sessions will not survive reload.");
+                });
+
+            // 2. Monitor Auth State (Strictly Memory-Based)
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    console.log("Transmission Secured: ROOT ACCESS GRANTED.");
+                    loginOverlay.style.display = 'none';
+                    document.body.classList.remove('locked');
+                } else {
+                    console.log("Portal Locked: Awaiting Authorization.");
+                    loginOverlay.style.display = 'flex';
+                    document.body.classList.add('locked');
+                }
+            });
+
+            // 3. Login Logic
+            loginBtn.onclick = () => {
+                const email = emailInput.value.trim();
+                const pass = passInput.value;
+
+                if (!email || !pass) return alert("Security Alert: Missing credentials.");
+
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AUTHORIZING...';
+                loginBtn.disabled = true;
+
+                firebase.auth().signInWithEmailAndPassword(email, pass)
+                    .then(() => {
+                        loginBtn.innerHTML = 'AUTHORIZE ACCESS';
+                        loginBtn.disabled = false;
+                    })
+                    .catch((error) => {
+                        console.error("Auth Failure:", error);
+                        loginError.style.display = 'block';
+                        loginBtn.innerHTML = 'AUTHORIZE ACCESS';
+                        loginBtn.disabled = false;
+                        setTimeout(() => { loginError.style.display = 'none'; }, 5000);
+                    });
+            };
+
+            // 3. Logout Logic
+            if (logoutBtn) {
+                logoutBtn.onclick = () => {
+                    if (confirm("Terminate current administrative session?")) {
+                        firebase.auth().signOut();
+                    }
+                };
+            }
         }
     </script>
 </body>
