@@ -12,6 +12,20 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="../config-streetx-clothing.js"></script>
+    <script>
+        // --- ADMIN HANDSHAKE SECURITY (LEVEL 2) ---
+        (function() {
+            const handshake = sessionStorage.getItem('shop_access_granted');
+            const isLocal = window.location.protocol === 'file:';
+            
+            if (!handshake && !isLocal) {
+                // Initial block to prevent UI flashing
+                document.documentElement.style.display = 'none';
+                alert("SECURITY ALERT: UNAUTHORIZED DIRECT ACCESS DETECTED.\n\nPlease access this portal through the main StreetX Admin.");
+                window.location.href = "../admin-streetx-clothing/";
+            }
+        })();
+    </script>
     <style>
         .dual-upload {
             display: grid;
