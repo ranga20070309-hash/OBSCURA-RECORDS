@@ -62,6 +62,12 @@ function analyzeLinkSafety(url) {
 }
 
 
+// --- ADMIN HANDSHAKE SYSTEM (CORE) ---
+window.secureNavigate = function(url, key) {
+    sessionStorage.setItem(key, 'true');
+    window.location.href = url;
+};
+
 window.saveIndividualStaff = function (discordId) {
     const item = document.querySelector(`.staff-editor-item[data-discord-id="${discordId}"]`);
     if (!item) {
