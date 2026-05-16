@@ -12,6 +12,25 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="../config-streetx-clothing.js"></script>
+    <script>
+        // --- ADMIN HANDSHAKE SECURITY (LEVEL 1) ---
+        (function() {
+            const handshake = sessionStorage.getItem('streetx_access_granted');
+            const isLocal = window.location.protocol === 'file:';
+            
+            if (!handshake && !isLocal) {
+                // Initial block to prevent UI flashing
+                document.documentElement.style.display = 'none';
+                alert("SECURITY ALERT: UNAUTHORIZED DIRECT ACCESS DETECTED.\n\nPlease access this portal through the main Obscura Records Admin.");
+                window.location.href = "../admin.html";
+            }
+        })();
+
+        function secureNavigate(url, key) {
+            sessionStorage.setItem(key, 'true');
+            window.location.href = url;
+        }
+    </script>
 </head>
 <body class="admin-v1">
     <!-- ... Sidebar and Main Content (Same as before) ... -->
@@ -24,7 +43,7 @@
             <a href="#" class="active" onclick="showTab('dashboard')"><i class="fas fa-chart-line"></i> DASHBOARD</a>
             <a href="#" onclick="showTab('products')"><i class="fas fa-tshirt"></i> PRODUCTS</a>
             <a href="#" onclick="showTab('settings')"><i class="fas fa-sliders-h"></i> CORE SETTINGS</a>
-            <a href="../admin-shop-streetx/" style="color: var(--accent); border-top: 1px solid rgba(255,255,255,0.05); margin-top: 10px; padding-top: 15px;"><i class="fas fa-shopping-bag"></i> MANAGE SHOP</a>
+            <a href="javascript:void(0)" onclick="secureNavigate('../admin-shop-streetx/', 'shop_access_granted')" style="color: var(--accent); border-top: 1px solid rgba(255,255,255,0.05); margin-top: 10px; padding-top: 15px;"><i class="fas fa-shopping-bag"></i> MANAGE SHOP</a>
             <a href="../streetx-clothing/" target="_blank"><i class="fas fa-external-link-alt"></i> VIEW PUBLIC SITE</a>
             <a href="../preview-streetx-clothing/" target="_blank" style="color: var(--accent);"><i class="fas fa-eye"></i> PREVIEW (BYPASS)</a>
         </nav>
