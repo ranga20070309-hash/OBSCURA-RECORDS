@@ -207,12 +207,15 @@
             <span>ABSOLUTE CORE</span>
         </div>
         <nav class="sidebar-nav">
+            <div class="nav-category-label">CORE DIRECTIVES</div>
             <a href="#" class="active" onclick="showTab('dashboard')"><i class="fas fa-chart-line"></i> DASHBOARD</a>
             <a href="#" onclick="showTab('products')"><i class="fas fa-tshirt"></i> PRODUCTS</a>
             <a href="#" onclick="showTab('settings')"><i class="fas fa-sliders-h"></i> CORE SETTINGS</a>
-            <a href="javascript:void(0)" onclick="secureNavigate('../admin-shop-streetx/', 'shop_access_granted')" style="color: var(--accent); border-top: 1px solid rgba(255,255,255,0.05); margin-top: 10px; padding-top: 15px;"><i class="fas fa-shopping-bag"></i> MANAGE SHOP</a>
-            <a href="../streetx-clothing/" target="_blank"><i class="fas fa-external-link-alt"></i> VIEW PUBLIC SITE</a>
-            <a href="../preview-streetx-clothing/" target="_blank" style="color: var(--accent);"><i class="fas fa-eye"></i> PREVIEW (BYPASS)</a>
+            
+            <div class="nav-category-label" style="margin-top: 20px;">EXTERNAL PORTALS</div>
+            <a href="javascript:void(0)" onclick="secureNavigate('../admin-shop-streetx/', 'shop_access_granted')" style="color: var(--accent);"><i class="fas fa-shopping-bag"></i> MANAGE SHOP</a>
+            <a href="../streetx-clothing/" target="_blank"><i class="fas fa-external-link-alt"></i> VIEW SITE</a>
+            <a href="../preview-streetx-clothing/" target="_blank" style="color: var(--accent); opacity: 0.8;"><i class="fas fa-eye"></i> PREVIEW</a>
         </nav>
         <div class="sidebar-footer">
             <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> LOGOUT</button>
