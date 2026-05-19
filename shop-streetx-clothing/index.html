@@ -875,6 +875,9 @@
     <script src="../config-streetx-clothing.js"></script>
 
     <script>
+        // Disable Right-Click (Context Menu)
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
         // Force scroll to top on reload
         history.scrollRestoration = 'manual';
         window.scrollTo(0, 0);
