@@ -38,9 +38,9 @@
                 <span id="header-name">STREETX</span>
             </a>
             <nav class="nav-links">
-                <a href="#home" id="nav-home">HOME</a>
-                <a href="#collection" id="nav-collection">COLLECTION</a>
-                <a href="#about" id="nav-about">IDENTITY</a>
+                <a data-target="#home" id="nav-home">HOME</a>
+                <a data-target="#collection" id="nav-collection">COLLECTION</a>
+                <a data-target="#about" id="nav-about">IDENTITY</a>
             </nav>
         </div>
     </header>
@@ -80,7 +80,7 @@
                 <div class="hero-text-side">
                     <h2 class="hero-main-title">STREETX<br><span class="outlined">DROP 01</span></h2>
                     <p class="hero-desc-text">Discover our curated selection of premium streetwear pieces.</p>
-                    <a href="#" class="btn-primary-v5" id="coll-shop-btn">VISIT SHOP</a>
+                    <a class="btn-primary-v5" id="coll-shop-btn">VISIT SHOP</a>
                 </div>
                 <div class="hero-visual-side">
                     <div class="hero-slider-container" id="collection-slider">
@@ -137,8 +137,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.nav-links a').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
-                    const targetId = this.getAttribute('href');
-                    if (targetId.startsWith('#')) {
+                    const targetId = this.getAttribute('data-target');
+                    if (targetId && targetId.startsWith('#')) {
                         e.preventDefault();
                         const targetElement = document.querySelector(targetId);
                         if (targetElement) {
@@ -303,8 +303,7 @@
             }
             updateSlider();
             setInterval(updateSlider, 5000);
-        }
-    </script>
+    }
+</script>
 </body>
-
 </html>
