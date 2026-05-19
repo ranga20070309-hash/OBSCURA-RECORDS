@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STREETX CLOTHING</title>
+    <title>STREETX | THE X-DIMENSION</title>
     <link rel="icon" type="image/png" href="../assets/STREETX.PNG">
     <link rel="stylesheet" href="../streetx-clothing.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Syne:wght@700;800&display=swap"
@@ -74,8 +74,7 @@
     </div>
 
     <style>
-        html,
-        body.streat-v5 {
+        html, body.streat-v5 {
             overflow-x: hidden !important;
             width: 100vw;
             position: relative;
@@ -286,9 +285,9 @@
                 <span id="header-name">STREETX</span>
             </a>
             <nav class="nav-links">
-                <a href="#home" id="nav-home">HOME</a>
-                <a href="#collection" id="nav-collection">COLLECTION</a>
-                <a href="#about" id="nav-about">IDENTITY</a>
+                <a data-target="#home" id="nav-home">HOME</a>
+                <a data-target="#collection" id="nav-collection">COLLECTION</a>
+                <a data-target="#about" id="nav-about">IDENTITY</a>
             </nav>
         </div>
     </header>
@@ -344,7 +343,7 @@
                 <div class="hero-text-side">
                     <h2 class="hero-main-title">STREETX<br><span class="outlined">DROP 01</span></h2>
                     <p class="hero-desc-text">Discover our curated selection of premium streetwear pieces.</p>
-                    <a href="#" class="btn-primary-v5" id="coll-shop-btn">VISIT SHOP</a>
+                    <a class="btn-primary-v5" id="coll-shop-btn">VISIT SHOP</a>
                 </div>
                 <div class="hero-visual-side">
                     <div class="hero-slider-container" id="collection-slider">
@@ -401,8 +400,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.nav-links a').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
-                    const targetId = this.getAttribute('href');
-                    if (targetId.startsWith('#')) {
+                    const targetId = this.getAttribute('data-target');
+                    if (targetId && targetId.startsWith('#')) {
                         e.preventDefault();
                         const targetElement = document.querySelector(targetId);
                         if (targetElement) {
@@ -754,10 +753,16 @@
                     duration: 1,
                     onComplete: () => {
                         document.querySelector('.loader-v5').style.display = 'none';
-                        gsap.to('.tape-system', { opacity: 1, duration: 1.5 });
+                        revealHero();
                     }
                 });
             }
+        }
+
+        function revealHero() {
+            gsap.to('.hero-content', { y: 0, opacity: 1, duration: 1.5, ease: 'power4.out' });
+            gsap.to('.tape-system', { opacity: 0.15, duration: 2, delay: 0.5 });
+            gsap.to('.featured-section', { backgroundColor: '#050505', duration: 1.5 });
         }
 
         window.addEventListener('load', () => {
