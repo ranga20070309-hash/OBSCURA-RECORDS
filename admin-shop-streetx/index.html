@@ -269,7 +269,6 @@
                         <div class="size-item"><span>M</span><input type="number" id="size-m" value="0" min="0"></div>
                         <div class="size-item"><span>L</span><input type="number" id="size-l" value="0" min="0"></div>
                         <div class="size-item"><span>XL</span><input type="number" id="size-xl" value="0" min="0"></div>
-                        <div class="size-item"><span>XXL</span><input type="number" id="size-xxl" value="0" min="0"></div>
                     </div>
                 </div>
                 <div class="input-group full"><label>Product Description</label><textarea id="p-desc" rows="4"></textarea></div>
@@ -333,7 +332,7 @@
                 }
 
                 // Load Sizes (Quantities)
-                const sizes = p.sizes || { xs:0, s:0, m:0, l:0, xl:0, xxl:0 };
+                const sizes = p.sizes || { xs:0, s:0, m:0, l:0, xl:0 };
                 Object.keys(sizes).forEach(s => {
                     const el = document.getElementById(`size-${s}`);
                     if(el) el.value = sizes[s];
@@ -458,7 +457,7 @@
                 const id = document.getElementById('p-id').value || Date.now().toString();
                 
                 const sizes = {};
-                ['xs','s','m','l','xl','xxl'].forEach(s => {
+                ['xs','s','m','l','xl'].forEach(s => {
                     sizes[s] = parseInt(document.getElementById(`size-${s}`).value) || 0;
                 });
 
