@@ -39,6 +39,11 @@
             margin-bottom: 1rem;
             display: inline-block;
             position: relative;
+            opacity: 0; /* Start hidden for GSAP reveal */
+        }
+
+        .shop-header h1.normal-state {
+            opacity: 1;
             animation: subtle-glitch 6s infinite;
         }
 
@@ -71,9 +76,13 @@
 
         .shop-header p {
             font-size: clamp(0.6rem, 2.5vw, 0.75rem);
-            opacity: 0.5;
+            opacity: 0; /* Start hidden for GSAP reveal */
             letter-spacing: 0.4rem;
             text-transform: uppercase;
+        }
+
+        .shop-header p.normal-state {
+            opacity: 0.5;
         }
 
         /* Product Grid */
@@ -869,7 +878,7 @@
 
     <main>
         <section class="shop-header">
-            <h1 id="shop-title">THE STORE</h1>
+            <h1 id="shop-title" data-text="THE STORE">THE STORE</h1>
             <p id="shop-subtitle">ARCHIVED & FEATURED DROPS</p>
         </section>
 
@@ -984,7 +993,11 @@
                 const subEl = document.querySelector('.shop-header p');
                 const backBtn = document.querySelector('.back-main');
 
-                if(titleEl && s.title) titleEl.innerText = s.title;
+                if(titleEl) {
+                    const newTitle = s.title || "THE STORE";
+                    titleEl.innerText = newTitle;
+                    titleEl.setAttribute('data-text', newTitle);
+                }
                 if(subEl && s.subtitle) subEl.innerText = s.subtitle;
                 if(backBtn && s.backText) backBtn.innerText = s.backText;
 
@@ -1167,8 +1180,72 @@
             });
         }
 
+        function revealTitleWithGlitch() {
+            const titleEl = document.getElementById('shop-title');
+            if (!titleEl) return;
+
+            // Ensure clean starting state
+            gsap.set(titleEl, { opacity: 0, scale: 1.05, letterSpacing: '2px', skewX: 0, x: 0, textShadow: 'none' });
+
+            const glitchTimeline = gsap.timeline({
+                onComplete: () => {
+                    titleEl.classList.add('normal-state');
+                    gsap.set(titleEl, { clearProps: "all" });
+
+                    // Fade in the subtitle beautifully
+                    gsap.to('#shop-subtitle', {
+                        opacity: 0.5,
+                        duration: 1.2,
+                        ease: 'power2.out',
+                        onComplete: () => {
+                            const subEl = document.getElementById('shop-subtitle');
+                            if (subEl) {
+                                subEl.classList.add('normal-state');
+                                gsap.set(subEl, { clearProps: 'all' });
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Smooth main fade-in and scale/letter-spacing transition
+            glitchTimeline.to(titleEl, {
+                opacity: 1,
+                scale: 1,
+                letterSpacing: '-2px',
+                duration: 1.2,
+                ease: 'power3.out'
+            });
+
+            // Layer subtle, elegant cyber activation displacements over the smooth fade-in
+            glitchTimeline
+                .to(titleEl, { x: -6, skewX: 5, textShadow: "3px 0 0 var(--accent), -3px 0 0 #ff0055", duration: 0.06 }, 0.1)
+                .to(titleEl, { x: 4, skewX: -4, textShadow: "-2px 0 0 var(--accent), 2px 0 0 #ff0055", duration: 0.05 }, 0.16)
+                .to(titleEl, { x: 0, skewX: 0, textShadow: "none", duration: 0.05 }, 0.21)
+                .to(titleEl, { x: -3, textShadow: "2px 0 0 #00ffcc", duration: 0.05 }, 0.5)
+                .to(titleEl, { x: 2, textShadow: "-2px 0 0 #ff0055", duration: 0.05 }, 0.55)
+                .to(titleEl, { x: 0, textShadow: "none", duration: 0.05 }, 0.6)
+                .to(titleEl, { x: -4, skewX: 3, textShadow: "3px 0 0 var(--accent), -3px 0 0 #ff0055", duration: 0.06 }, 0.9)
+                .to(titleEl, { x: 0, skewX: 0, textShadow: "none", duration: 0.08 }, 0.96);
+        }
+
         function checkAndReveal() {
             if (window.firebaseDataReady && window.productsReady && window.pageLoaded) {
+                if (window.loaderRevealed) return;
+                window.loaderRevealed = true;
+
+                const headerEl = document.querySelector('.shop-header');
+                const naturalHeight = headerEl ? headerEl.offsetHeight : 230;
+
+                // Instantly collapse the .shop-header section underneath the navigation bar
+                // before the loader fades out, to prevent layout jumps.
+                const nav = document.getElementById('nav-section');
+                const navHeight = nav ? nav.offsetHeight : 74;
+                gsap.set('.shop-header', {
+                    height: navHeight + 'px',
+                    overflow: 'hidden'
+                });
+
                 const tl = gsap.timeline();
                 tl.to('.loader-line', { width: '100%', duration: 1.2, ease: 'power4.inOut' });
                 tl.to('.loader-v5', {
@@ -1176,6 +1253,20 @@
                     duration: 1,
                     onComplete: () => {
                         document.querySelector('.loader-v5').style.display = 'none';
+
+                        // Majestic, butter-smooth slide down animation of the divider bar using exact pixel heights
+                        gsap.to('.shop-header', {
+                            height: naturalHeight + 'px',
+                            duration: 1.8,
+                            ease: 'power4.inOut',
+                            onComplete: () => {
+                                // Clear inline styles completely to preserve standard responsive layout
+                                gsap.set('.shop-header', { clearProps: 'all' });
+                                
+                                // Trigger the high-end digital glitch reveal of the title
+                                revealTitleWithGlitch();
+                            }
+                        });
                     }
                 });
             }
