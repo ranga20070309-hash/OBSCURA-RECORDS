@@ -121,6 +121,47 @@
             accent-color: var(--accent);
             width: 16px; height: 16px;
         }
+        .size-inventory-container {
+            background: #000;
+            padding: 15px;
+            border: 1px solid #222;
+            width: 100%;
+        }
+        .size-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 1.5fr;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .size-row:last-child {
+            margin-bottom: 0;
+        }
+        .size-row-header {
+            display: grid;
+            grid-template-columns: 60px 1fr 1.5fr;
+            gap: 15px;
+            margin-bottom: 10px;
+            font-size: 0.6rem;
+            font-weight: 800;
+            opacity: 0.5;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .size-row span {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #fff;
+        }
+        .size-row input {
+            background: #111;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px;
+            font-family: inherit;
+            border-radius: 4px;
+            width: 100%;
+        }
         .admin-tab { display: none; }
         .admin-tab.active { display: block; }
         .settings-grid {
@@ -239,6 +280,7 @@
                 <div class="input-group"><label>Product Name</label><input type="text" id="p-name"></div>
                 <div class="input-group"><label>Category / Collection</label><input type="text" id="p-collection"></div>
                 <div class="input-group"><label>Price (e.g. Rs.2,500)</label><input type="text" id="p-price"></div>
+                <div class="input-group"><label>Price Note (e.g. *Prices may vary depending on size)</label><input type="text" id="p-price-note" placeholder="Leave empty for no note"></div>
                 <div class="input-group full">
                     <label>Stock Status</label>
                     <select id="p-stock" style="width: 100%; background: #111; color: #fff; border: 1px solid #333; padding: 12px; font-family: inherit;">
@@ -262,13 +304,38 @@
                     </div>
                 </div>
                 <div class="input-group full">
-                    <label>SIZE INVENTORY (ENTER QUANTITY PER SIZE)</label>
-                    <div class="size-config-grid inventory-grid">
-                        <div class="size-item"><span>XS</span><input type="number" id="size-xs" value="0" min="0"></div>
-                        <div class="size-item"><span>S</span><input type="number" id="size-s" value="0" min="0"></div>
-                        <div class="size-item"><span>M</span><input type="number" id="size-m" value="0" min="0"></div>
-                        <div class="size-item"><span>L</span><input type="number" id="size-l" value="0" min="0"></div>
-                        <div class="size-item"><span>XL</span><input type="number" id="size-xl" value="0" min="0"></div>
+                    <label>SIZE INVENTORY (QUANTITY & OPTIONAL CUSTOM PRICE PER SIZE)</label>
+                    <div class="size-inventory-container">
+                        <div class="size-row-header">
+                            <span>Size</span>
+                            <span>Stock Qty</span>
+                            <span>Price (Optional)</span>
+                        </div>
+                        <div class="size-row">
+                            <span>XS</span>
+                            <input type="number" id="size-xs-qty" value="0" min="0" placeholder="Qty">
+                            <input type="text" id="size-xs-price" placeholder="e.g. Rs.2,500 (Use Base)">
+                        </div>
+                        <div class="size-row">
+                            <span>S</span>
+                            <input type="number" id="size-s-qty" value="0" min="0" placeholder="Qty">
+                            <input type="text" id="size-s-price" placeholder="e.g. Rs.2,500 (Use Base)">
+                        </div>
+                        <div class="size-row">
+                            <span>M</span>
+                            <input type="number" id="size-m-qty" value="0" min="0" placeholder="Qty">
+                            <input type="text" id="size-m-price" placeholder="e.g. Rs.2,500 (Use Base)">
+                        </div>
+                        <div class="size-row">
+                            <span>L</span>
+                            <input type="number" id="size-l-qty" value="0" min="0" placeholder="Qty">
+                            <input type="text" id="size-l-price" placeholder="e.g. Rs.2,500 (Use Base)">
+                        </div>
+                        <div class="size-row">
+                            <span>XL</span>
+                            <input type="number" id="size-xl-qty" value="0" min="0" placeholder="Qty">
+                            <input type="text" id="size-xl-price" placeholder="e.g. Rs.2,500 (Use Base)">
+                        </div>
                     </div>
                 </div>
                 <div class="input-group full"><label>Product Description</label><textarea id="p-desc" rows="4"></textarea></div>
@@ -319,6 +386,8 @@
                 name.value = p.name;
                 col.value = p.collection;
                 price.value = p.price;
+                const priceNoteEl = document.getElementById('p-price-note');
+                if (priceNoteEl) priceNoteEl.value = p.priceNote || "";
                 stock.value = p.stock || "in";
                 desc.value = p.desc || "";
                 
@@ -331,16 +400,33 @@
                     preFront.innerHTML = `<img src="${p.frontImage}">`;
                 }
 
-                // Load Sizes (Quantities)
-                const sizes = p.sizes || { xs:0, s:0, m:0, l:0, xl:0 };
-                Object.keys(sizes).forEach(s => {
-                    const el = document.getElementById(`size-${s}`);
-                    if(el) el.value = sizes[s];
+                // Load Sizes (Quantities & Prices)
+                const sizes = p.sizes || { xs: { qty: 0, price: "" }, s: { qty: 0, price: "" }, m: { qty: 0, price: "" }, l: { qty: 0, price: "" }, xl: { qty: 0, price: "" } };
+                ['xs','s','m','l','xl'].forEach(s => {
+                    const qtyEl = document.getElementById(`size-${s}-qty`);
+                    const priceEl = document.getElementById(`size-${s}-price`);
+                    
+                    let sizeData = sizes[s];
+                    if (typeof sizeData === 'number') {
+                        sizeData = { qty: sizeData, price: "" };
+                    } else if (!sizeData) {
+                        sizeData = { qty: 0, price: "" };
+                    }
+                    
+                    if (qtyEl) qtyEl.value = sizeData.qty || 0;
+                    if (priceEl) priceEl.value = sizeData.price || "";
                 });
             } else {
                 title.innerText = "ADD SHOP PRODUCT";
                 pId.value = ""; name.value = ""; col.value = ""; price.value = ""; stock.value = "in"; desc.value = "";
-                document.querySelectorAll('.size-config-grid input').forEach(i => i.value = 0);
+                const priceNoteEl = document.getElementById('p-price-note');
+                if (priceNoteEl) priceNoteEl.value = "*Prices may vary depending on size";
+                ['xs','s','m','l','xl'].forEach(s => {
+                    const qtyEl = document.getElementById(`size-${s}-qty`);
+                    const priceEl = document.getElementById(`size-${s}-price`);
+                    if (qtyEl) qtyEl.value = 0;
+                    if (priceEl) priceEl.value = "";
+                });
             }
             openModal('product-modal');
         }
@@ -458,13 +544,19 @@
                 
                 const sizes = {};
                 ['xs','s','m','l','xl'].forEach(s => {
-                    sizes[s] = parseInt(document.getElementById(`size-${s}`).value) || 0;
+                    const qtyVal = parseInt(document.getElementById(`size-${s}-qty`).value) || 0;
+                    const priceVal = document.getElementById(`size-${s}-price`).value.trim();
+                    sizes[s] = {
+                        qty: qtyVal,
+                        price: priceVal
+                    };
                 });
 
                 const p = { 
                     id, name: document.getElementById('p-name').value, 
                     collection: document.getElementById('p-collection').value, 
                     price: document.getElementById('p-price').value, 
+                    priceNote: document.getElementById('p-price-note').value.trim(),
                     stock: document.getElementById('p-stock').value,
                     backImage: document.getElementById('p-back-data').value,
                     frontImage: document.getElementById('p-front-data').value,
