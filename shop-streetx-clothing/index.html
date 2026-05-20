@@ -1023,9 +1023,9 @@
                     const stockNotice = document.getElementById('stock-notice');
                     sizeList.innerHTML = "";
                     stockNotice.innerText = "";
-                    const sizeMap = p.sizes || { xs:0, s:0, m:0, l:0, xl:0, xxl:0 };
+                    const sizeMap = p.sizes || { xs:0, s:0, m:0, l:0, xl:0 };
                     
-                    ['xs','s','m','l','xl','xxl'].forEach(s => {
+                    ['xs','s','m','l','xl'].forEach(s => {
                         const qty = parseInt(sizeMap[s]) || 0;
                         const isGlobalOut = p.stock === 'out';
                         const isAvailable = qty > 0 && !isGlobalOut;
