@@ -37,6 +37,36 @@
             text-transform: uppercase;
             letter-spacing: -2px;
             margin-bottom: 1rem;
+            display: inline-block;
+            position: relative;
+            animation: subtle-glitch 6s infinite;
+        }
+
+        @keyframes subtle-glitch {
+            0%, 92%, 96%, 100% {
+                text-shadow: none;
+                transform: skew(0deg);
+            }
+            93% {
+                text-shadow: 2px -1px 0 rgba(var(--accent-rgb), 0.8), -1px 2px 0 rgba(255, 0, 0, 0.6);
+                transform: skew(1.5deg);
+            }
+            94% {
+                text-shadow: -2px 1px 0 rgba(var(--accent-rgb), 0.8), 2px -2px 0 rgba(255, 0, 0, 0.6);
+                transform: skew(-1.5deg);
+            }
+            95% {
+                text-shadow: none;
+                transform: skew(0deg);
+            }
+            97% {
+                text-shadow: 1.5px 2px 0 rgba(var(--accent-rgb), 0.8), -2px -1px 0 rgba(255, 0, 0, 0.6);
+                transform: skew(0.8deg);
+            }
+            98% {
+                text-shadow: none;
+                transform: skew(0deg);
+            }
         }
 
         .shop-header p {
@@ -84,6 +114,7 @@
             border-color: var(--accent);
             transform: translateY(-10px);
             background: rgba(var(--accent-rgb), 0.03);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(var(--accent-rgb), 0.15);
         }
 
         .product-card::before {
@@ -159,6 +190,16 @@
             font-size: 1.1rem;
         }
 
+        .product-price-note {
+            font-size: 0.65rem;
+            color: var(--accent);
+            opacity: 0.8;
+            margin-top: 5px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
         .product-actions {
             margin-top: auto;
             display: grid;
@@ -189,11 +230,14 @@
         .btn-shop:hover {
             border-color: var(--accent);
             color: var(--accent);
+            box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.3);
         }
 
         .btn-shop.primary:hover {
             background: #000;
             color: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.4);
         }
 
         /* Status Badges */
@@ -272,6 +316,13 @@
             justify-content: center;
             cursor: pointer;
             z-index: 10;
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .modal-close:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: rotate(90deg);
+            box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.3);
         }
 
         .modal-grid {
@@ -350,6 +401,15 @@
             font-size: 1.5rem;
             color: var(--accent);
             font-weight: 600;
+            display: inline-block;
+            transition: opacity 0.25s cubic-bezier(0.25, 1, 0.5, 1), transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .modal-p-price.changing {
+            opacity: 0;
+            transform: translateY(-8px);
         }
 
         .modal-section {
@@ -375,6 +435,12 @@
             padding: 5px 12px;
             font-size: 10px;
             cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .size-guide:hover {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.3);
         }
 
         .size-selector {
@@ -400,6 +466,7 @@
             background: #fff;
             color: #000;
             border-color: #fff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
         }
 
         .size-opt.sold-out {
@@ -413,6 +480,8 @@
 
         .size-opt:hover:not(.active):not(.sold-out) {
             border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.3);
+            transform: scale(1.05);
         }
 
         .back-main {
@@ -556,12 +625,16 @@
             border-color: #25D366;
             color: #25D366;
             background: rgba(37, 211, 102, 0.05);
+            box-shadow: 0 0 15px rgba(37, 211, 102, 0.2);
+            transform: translateY(-2px);
         }
 
         .contact-btn.mail:hover {
             border-color: var(--accent);
             color: var(--accent);
             background: rgba(var(--accent-rgb), 0.05);
+            box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.2);
+            transform: translateY(-2px);
         }
 
         @media (max-width: 900px) {
@@ -828,6 +901,7 @@
                 <div class="modal-info">
                     <h2 id="modal-p-name">PRODUCT NAME</h2>
                     <div class="modal-p-price" id="modal-p-price">Rs.0.00</div>
+                    <div class="modal-p-price-note" id="modal-p-price-note" style="font-size: 0.65rem; color: var(--accent); opacity: 0.8; margin-top: 5px; font-weight: 600; letter-spacing: 0.5px;"></div>
                     
                     <div class="modal-section">
                         <div class="section-head">
@@ -962,6 +1036,7 @@
                                 <span class="product-collection">${p.collection || "UNRELEASED"}</span>
                                 <h3 class="product-name">${p.name}</h3>
                                 <div class="product-price">${p.price || "TBA"}</div>
+                                ${p.priceNote ? `<div class="product-price-note">${p.priceNote}</div>` : ''}
                             </div>
                             <div class="product-actions">
                                 <button class="btn-shop primary" onclick="openProductDetails('${p.id}')">VIEW DETAILS</button>
@@ -995,6 +1070,12 @@
                     document.getElementById('modal-img-title').innerText = p.name;
                     document.getElementById('modal-p-name').innerText = p.name;
                     document.getElementById('modal-p-price').innerText = p.price;
+                    
+                    const modalPriceNoteEl = document.getElementById('modal-p-price-note');
+                    if (modalPriceNoteEl) {
+                        modalPriceNoteEl.innerText = p.priceNote || "";
+                    }
+                    
                     document.getElementById('modal-p-desc').innerText = p.desc || "No description provided for this item.";
                     document.getElementById('modal-p-cat').innerText = p.collection || "STREETWEAR";
                     
@@ -1026,7 +1107,17 @@
                     const sizeMap = p.sizes || { xs:0, s:0, m:0, l:0, xl:0 };
                     
                     ['xs','s','m','l','xl'].forEach(s => {
-                        const qty = parseInt(sizeMap[s]) || 0;
+                        let sizeData = sizeMap[s];
+                        let qty = 0;
+                        let sizePrice = "";
+                        
+                        if (typeof sizeData === 'number') {
+                            qty = sizeData;
+                        } else if (sizeData && typeof sizeData === 'object') {
+                            qty = parseInt(sizeData.qty) || 0;
+                            sizePrice = sizeData.price || "";
+                        }
+                        
                         const isGlobalOut = p.stock === 'out';
                         const isAvailable = qty > 0 && !isGlobalOut;
                         
@@ -1038,6 +1129,19 @@
                                 document.querySelectorAll('.size-opt').forEach(so => so.classList.remove('active'));
                                 opt.classList.add('active');
                                 stockNotice.innerText = `${qty} ITEMS LEFT`;
+                                
+                                // Dynamic Price Update based on selected size
+                                const priceEl = document.getElementById('modal-p-price');
+                                if (priceEl) {
+                                    const newPrice = sizePrice ? sizePrice : (p.price || "TBA");
+                                    if (priceEl.innerText !== newPrice) {
+                                        priceEl.classList.add('changing');
+                                        setTimeout(() => {
+                                            priceEl.innerText = newPrice;
+                                            priceEl.classList.remove('changing');
+                                        }, 250);
+                                    }
+                                }
                             };
                         }
                         sizeList.appendChild(opt);
