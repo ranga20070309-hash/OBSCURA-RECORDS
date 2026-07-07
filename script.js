@@ -39,7 +39,7 @@ const PREVIEW_LIMIT = 30;
 // --- EMAILJS CONFIGURATION (Centralized) ---
 const EMAILJS_PUBLIC_KEY = "ZTB9xthISj6SlffAR";
 const EMAILJS_SERVICE_ID = "service_p1220kd";
-const EMAILJS_DEMO_TEMPLATE_ID = "template_wvju7pg";
+const EMAILJS_DEMO_TEMPLATE_ID = "template_l3g9qy9";
 const EMAILJS_CONTACT_TEMPLATE_ID = "template_4s6ht2i";
 
 // --- INITIALIZE GSAP CONFIG (Silence Warnings) ---
