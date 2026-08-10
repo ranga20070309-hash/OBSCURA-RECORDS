@@ -266,6 +266,24 @@
                         <p class="field-desc">CRITICAL: The master passphrase required to unlock this dashboard. Update with caution.</p>
                         <input type="text" id="security_rootKey" value="ORC ADMINS PASS 2026">
                     </div>
+                    <div class="input-group full security-box" style="border-color: #ff0055; background: rgba(255, 0, 85, 0.03); margin-top: 1rem;">
+                        <label><i class="fas fa-power-off" style="color: #ff0055;"></i> MAINTENANCE MODE (SITE DISABLE SWITCH)</label>
+                        <p class="field-desc">Master toggle to lock the main site in full-screen maintenance mode.</p>
+                        <select id="site_maintenanceMode">
+                            <option value="Disabled">Disabled (Site Active)</option>
+                            <option value="Enabled">Enabled (Maintenance Screen Active)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-exclamation-triangle"></i> MAINTENANCE TITLE</label>
+                        <p class="field-desc">Headline shown on the full-screen maintenance overlay.</p>
+                        <input type="text" id="site_maintenanceTitle" value="PORTAL UNDER RENOVATION">
+                    </div>
+                    <div class="input-group full">
+                        <label><i class="fas fa-align-left"></i> MAINTENANCE MESSAGE</label>
+                        <p class="field-desc">Subtext transmission for visitors during maintenance.</p>
+                        <textarea id="site_maintenanceMsg">WE ARE REFINING THE SONIC EXPERIENCE. TRANSMISSION TEMPORARILY PAUSED.</textarea>
+                    </div>
                 </div>
 
                 <div class="btn-group">
