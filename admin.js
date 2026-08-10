@@ -560,7 +560,7 @@ function loadGlobals() {
 
         document.querySelectorAll('input[id^="site_"], textarea[id^="site_"], select[id^="site_"]').forEach(el => {
             const key = el.id.replace('site_', '');
-            if (data && data[key] !== undefined) {
+            if (data && data[key] !== undefined && data[key] !== "..." && data[key] !== "") {
                 el.value = data[key];
             } else {
                 needsSync = true;
@@ -823,17 +823,19 @@ function loadReleases() {
     db.ref('siteData/releases').once('value').then(snapshot => {
         let data = snapshot.val();
 
-        if (data && Array.isArray(data)) {
-            if (data[0] && data[0]._isEmpty) {
-                releasesArray = [];
-            } else {
-                releasesArray = data;
-                showToast(`ARCHIVE SYNCED: ${data.length} TRACKS LOADED.`);
-            }
+        if (data && Array.isArray(data) && data.length > 0 && (!data[0] || !data[0]._isEmpty)) {
+            releasesArray = data;
+            showToast(`ARCHIVE SYNCED: ${data.length} TRACKS LOADED.`);
             renderReleases();
         } else {
-            showToast('NOTICE: ARCHIVE EMPTY. SYSTEM STANDBY.', 'error');
-            releasesArray = [];
+            // Default baseline catalog from index.html if empty
+            releasesArray = [
+                { id: "OS-992", title: "STARLIGHT SYNDROME", producers: "SVYUXU & OBSCURA", type: "SINGLE", image: "assets/cover.png", spotify: "#", apple: "#", youtube: "#", preview: "#" },
+                { id: "OS-991", title: "NEUTRON PULSE", producers: "RANGA", type: "EP", image: "assets/releases/cover_1.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=jfKfPfyJRdk", preview: "#" },
+                { id: "OS-990", title: "VOID WALKER", producers: "FL4ME", type: "ALBUM", image: "assets/releases/cover_2.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=21X5lGlDOfg", preview: "#" },
+                { id: "OS-989", title: "SOLAR FLARE", producers: "SVYUXU & RANGA", type: "SINGLE", image: "assets/releases/cover_3.png", spotify: "#", apple: "#", youtube: "https://www.youtube.com/watch?v=kJQP7kiw5Fk", preview: "#" }
+            ];
+            showToast('ARCHIVE INITIALIZED WITH BASELINE CATALOG.');
             renderReleases();
         }
     }).catch(err => {
@@ -1039,10 +1041,14 @@ if (document.getElementById('add-upcoming-btn')) {
 function loadUpcoming() {
     db.ref('siteData/upcoming').once('value').then(snapshot => {
         let data = snapshot.val();
-        if (data && Array.isArray(data)) {
+        if (data && Array.isArray(data) && data.length > 0) {
             upcomingArray = data;
-            renderUpcoming();
+        } else {
+            upcomingArray = [
+                { id: "OS-993", title: "CYBERNETIC VOID", producers: "SVYUXU", date: "COMING SOON", image: "assets/cover.png" }
+            ];
         }
+        renderUpcoming();
     });
 }
 
@@ -1306,6 +1312,21 @@ function loadStaff() {
             staffContainer.innerHTML = '';
             if (partnersContainer) partnersContainer.innerHTML = '';
 
+            const baseStaff = {
+                "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                "1126206273722011708": { name: "RANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                "1145271334922879011": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                "1099844087961632849": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" }
+            };
+
+            // Auto-initialize base staff if empty
+            if (Object.keys(staffData).length === 0) {
+                Object.entries(baseStaff).forEach(([id, s]) => {
+                    db.ref('staff_status/' + id).set(s);
+                    staffData[id] = s;
+                });
+            }
+
             // Render Staff
             Object.entries(staffData).forEach(([id, staff]) => {
                 if (!partnerIds.includes(id)) {
@@ -1369,9 +1390,9 @@ if (initStaffBtn) {
         if (confirm('Initialize base staff records? This will only add missing entries and WON\'T overwrite existing avatars.')) {
             const baseStaff = {
                 "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                "459345097373515777": { name: "IRANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                "1296819349885161472": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                "1296813876364705792": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                "1126206273722011708": { name: "RANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                "1145271334922879011": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                "1099844087961632849": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
                 "1466152706145128659": { name: "Itx Record Label", status: "offline", bio: "LABEL PARTNER", avatar_url: "assets/staff/default.png" }
             };
 
