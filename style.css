@@ -54,11 +54,24 @@ textarea,
     -webkit-user-select: text;
 }
 
-/* --- SCROLL LOCK FOR INTRO --- */
+/* --- SCROLL LOCK FOR INTRO & MAINTENANCE --- */
 html.no-scroll,
-body.no-scroll {
+body.no-scroll,
+html.maintenance-active,
+body.maintenance-active {
     overflow: hidden !important;
     touch-action: none !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+html.no-scroll::-webkit-scrollbar,
+body.no-scroll::-webkit-scrollbar,
+html.maintenance-active::-webkit-scrollbar,
+body.maintenance-active::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
 }
 
 /* --- CUSTOM GALACTIC SCROLLBAR --- */
