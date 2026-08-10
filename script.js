@@ -1325,6 +1325,25 @@ const initPortal = () => {
         db.ref('siteData/globals').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
+                // --- MAINTENANCE MODE OVERRIDE ---
+                const maintenanceOverlay = document.getElementById('maintenance-overlay');
+                if (maintenanceOverlay) {
+                    const isMaint = data.maintenanceMode === 'Enabled' || data.maintenanceMode === true || data.maintenanceMode === 'ON';
+                    if (isMaint) {
+                        maintenanceOverlay.style.display = 'flex';
+                        document.body.classList.add('no-scroll');
+                        document.documentElement.classList.add('no-scroll');
+                        const mTitle = document.getElementById('m-title');
+                        const mMsg = document.getElementById('m-msg');
+                        if (mTitle && data.maintenanceTitle) mTitle.innerHTML = data.maintenanceTitle;
+                        if (mMsg && data.maintenanceMsg) mMsg.textContent = data.maintenanceMsg;
+                    } else {
+                        maintenanceOverlay.style.display = 'none';
+                        document.body.classList.remove('no-scroll');
+                        document.documentElement.classList.remove('no-scroll');
+                    }
+                }
+
                 // --- CATEGORY VISIBILITY OVERRIDE ---
                 const upcomingSection = document.getElementById('upcoming');
                 if (upcomingSection) {
