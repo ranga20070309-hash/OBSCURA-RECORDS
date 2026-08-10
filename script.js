@@ -1379,8 +1379,8 @@ const initPortal = () => {
                     const isMaint = data.maintenanceMode === 'Enabled' || data.maintenanceMode === true || data.maintenanceMode === 'ON';
                     if (isMaint) {
                         maintenanceOverlay.style.display = 'flex';
-                        document.body.classList.add('no-scroll');
-                        document.documentElement.classList.add('no-scroll');
+                        document.body.classList.add('no-scroll', 'maintenance-active');
+                        document.documentElement.classList.add('no-scroll', 'maintenance-active');
                         const mTitle = document.getElementById('m-title');
                         const mMsg = document.getElementById('m-msg');
                         if (mTitle && data.maintenanceTitle) mTitle.innerHTML = data.maintenanceTitle;
@@ -1389,8 +1389,8 @@ const initPortal = () => {
                         initSpaceCanvas();
                     } else {
                         maintenanceOverlay.style.display = 'none';
-                        document.body.classList.remove('no-scroll');
-                        document.documentElement.classList.remove('no-scroll');
+                        document.body.classList.remove('no-scroll', 'maintenance-active');
+                        document.documentElement.classList.remove('no-scroll', 'maintenance-active');
 
                         if (mCanvasAnimId) cancelAnimationFrame(mCanvasAnimId);
                     }
