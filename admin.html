@@ -284,6 +284,7 @@
                 <div class="form-grid">
                     <div class="input-group"><label>HOME TXT</label><p class="field-desc">Text for the Home link.</p><input type="text" id="site_navHome" value="HOME"></div>
                     <div class="input-group"><label>RELEASES TXT</label><p class="field-desc">Text for Archive link.</p><input type="text" id="site_navReleases" value="RELEASES"></div>
+                    <div class="input-group"><label>GHOST PRODUCTION TXT</label><p class="field-desc">Text for Ghost Production link.</p><input type="text" id="site_navGhostProduction" value="GHOST PRODUCTION"></div>
                     <div class="input-group"><label>STAFF TXT</label><p class="field-desc">Text for Personnel link.</p><input type="text" id="site_navStaff" value="STAFF"></div>
                     <div class="input-group"><label>CONTACT TXT</label><p class="field-desc">Text for Contact link.</p><input type="text" id="site_navContact" value="CONTACT"></div>
                     <div class="input-group"><label>MENU ACTUATOR</label><p class="field-desc">Label for the mobile menu toggle.</p><input type="text" id="site_navMenuBtn" value="MENU"></div>
@@ -315,10 +316,16 @@
                     <div class="input-group full"><label>Social Header (HTML)</label><p class="field-desc">The headline displayed above the social icon grid.</p><input type="text" id="site_contactTitle" value="CONNECT WITH <span class='accent'>US</span>"></div>
                     <div class="input-group full"><label>Social Directive Subtext</label><p class="field-desc">Supporting directive text below the social header.</p><input type="text" id="site_contactDesc" value="Follow our transmissions across the digital landscape."></div>
 
-                    <div class="input-group"><label>Instagram URL</label><p class="field-desc">Full link to IG profile.</p><input type="text" id="site_socialInstaUrl" value="..."></div>
-                    <div class="input-group"><label>YouTube URL</label><p class="field-desc">Full link to YT channel.</p><input type="text" id="site_socialYoutubeUrl" value="..."></div>
-                    <div class="input-group"><label>Discord URL</label><p class="field-desc">Full link to Discord server.</p><input type="text" id="site_socialDiscordUrl" value="..."></div>
-                    <div class="input-group"><label>TikTok URL</label><p class="field-desc">Full link to TikTok profile.</p><input type="text" id="site_socialTiktokUrl" value="..."></div>
+                    <div class="input-group"><label>Instagram URL</label><p class="field-desc">Full link to IG profile.</p><input type="text" id="site_socialInstaUrl" value="https://www.instagram.com/recordsobscura"></div>
+                    <div class="input-group"><label>Instagram Label</label><input type="text" id="site_socialInstaText" value="INSTAGRAM"></div>
+                    <div class="input-group"><label>YouTube URL</label><p class="field-desc">Full link to YT channel.</p><input type="text" id="site_socialYoutubeUrl" value="https://www.youtube.com/channel/UC0A5L7DUgls-AkYaQ4ZwxhA"></div>
+                    <div class="input-group"><label>YouTube Label</label><input type="text" id="site_socialYoutubeText" value="YOUTUBE"></div>
+                    <div class="input-group"><label>Discord URL</label><p class="field-desc">Full link to Discord server.</p><input type="text" id="site_socialDiscordUrl" value="https://discord.gg/E3Sn72cpBR"></div>
+                    <div class="input-group"><label>Discord Label</label><input type="text" id="site_socialDiscordText" value="DISCORD"></div>
+                    <div class="input-group"><label>TikTok URL</label><p class="field-desc">Full link to TikTok profile.</p><input type="text" id="site_socialTiktokUrl" value="https://www.tiktok.com/@obscura.records"></div>
+                    <div class="input-group"><label>TikTok Label</label><input type="text" id="site_socialTiktokText" value="TIKTOK"></div>
+                    <div class="input-group"><label>Spotify URL</label><p class="field-desc">Full link to Spotify artist profile.</p><input type="text" id="site_socialSpotifyUrl" value="https://open.spotify.com"></div>
+                    <div class="input-group"><label>Email Label</label><input type="text" id="site_socialEmailText" value="DIRECT EMAIL"></div>
                 </div>
 
                 <h3
@@ -352,12 +359,12 @@
 
                 <h3 class="section-subheader">MODAL HEADERS & CORE SUBTEXT</h3>
                 <div class="form-grid">
-                    <div class="input-group"><label>FAQ Modal Title</label><p class="field-desc">Title displayed at the top of the FAQ popup.</p><input type="text" id="site_modalFaqTitle" value="..."></div>
-                    <div class="input-group"><label>Privacy Modal Title</label><p class="field-desc">Title for the legal/privacy policy popup.</p><input type="text" id="site_modalPrivacyTitle" value="..."></div>
-                    <div class="input-group full"><label>Contact Modal Subtext</label><p class="field-desc">Instructional text displayed within the contact modal.</p><textarea id="site_contactModalSubtext">...</textarea></div>
-                    <div class="input-group full"><label>Demo Requirements Description</label><p class="field-desc">A detailed brief for artists outlining what the label is looking for.</p><textarea id="site_demoDesc">...</textarea></div>
-                    <div class="input-group"><label>Demo Discord Sub</label><p class="field-desc">Small subtext below the Discord demo button.</p><input type="text" id="site_demoDiscordSub" value="..."></div>
-                    <div class="input-group"><label>Demo Email Sub</label><p class="field-desc">Small subtext below the Email demo button.</p><input type="text" id="site_demoEmailSub" value="..."></div>
+                    <div class="input-group"><label>FAQ Modal Title</label><p class="field-desc">Title displayed at the top of the FAQ popup.</p><input type="text" id="site_modalFaqTitle" value="FREQUENCY ASKED QUESTIONS"></div>
+                    <div class="input-group"><label>Privacy Modal Title</label><p class="field-desc">Title for the legal/privacy policy popup.</p><input type="text" id="site_modalPrivacyTitle" value="PRIVACY POLICY"></div>
+                    <div class="input-group full"><label>Contact Modal Subtext</label><p class="field-desc">Instructional text displayed within the contact modal.</p><textarea id="site_contactModalSubtext">For partnerships, general questions, or portal feedback, reach out via the channels above.</textarea></div>
+                    <div class="input-group full"><label>Demo Requirements Description</label><p class="field-desc">A detailed brief for artists outlining what the label is looking for.</p><textarea id="site_demoDesc">We are looking for the next evolution of sound. If your music pushes the boundaries of Funk, Phonk, or Futuristic Electronic music, our portal is open for your transmissions.</textarea></div>
+                    <div class="input-group"><label>Demo Discord Sub</label><p class="field-desc">Small subtext below the Discord demo button.</p><input type="text" id="site_demoDiscordSub" value="Faster review & community vibes."></div>
+                    <div class="input-group"><label>Demo Email Sub</label><p class="field-desc">Small subtext below the Email demo button.</p><input type="text" id="site_demoEmailSub" value="sayurux@gmail.com"></div>
                 </div>
 
                 <h3
@@ -389,6 +396,11 @@
                             value="Primary Genre"></div>
                     <div class="input-group"><label>Placeholder: Genre</label><input type="text"
                             id="site_formPlaceholderGenre" value="Funk / EDM / Hip Hop"></div>
+
+                    <div class="input-group"><label>Label: Artist Social Links</label><input type="text" id="site_formLabelSpotify"
+                            value="Artist Profile / Social Links"></div>
+                    <div class="input-group"><label>Placeholder: Artist Social Links</label><input type="text"
+                            id="site_formPlaceholderSpotify" value="https://open.spotify.com/artist/..."></div>
 
                     <div class="input-group"><label>Label: Link</label><input type="text" id="site_formLabelLink"
                             value="PRIVATE STREAMING LINK (SoundCloud / Dropbox / Drive)"></div>
@@ -803,9 +815,9 @@
                     if (confirm('Initialize base staff records? This is only needed once.')) {
                         const baseStaff = {
                             "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                            "459345097373515777": { name: "IRANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                            "1296819349885161472": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                            "1296813876364705792": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                            "1126206273722011708": { name: "RANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                            "1145271334922879011": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+                            "1099844087961632849": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
                             "1466152706145128659": { name: "Itx Record Label", status: "offline", bio: "LABEL PARTNER", avatar_url: "assets/staff/default.png" }
                         };
 
