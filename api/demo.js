@@ -39,6 +39,43 @@ function sanitize(str) {
         .replace(/'/g, '&#039;');
 }
 
+async function sendDiscordDemoNotification({ artist, name, email, genre, link, spotify, message, date }) {
+    const webhookUrl = process.env.DISCORD_WEBHOOK_URL || 'https://discord.com/api/webhooks/1538094536637550635/00D-4jyKHXXsNlXMb250cnhl8DPIQVJtyqu9EjKg0fTLXl5i0yT1F0pHN_EcNMZJm_OR';
+    if (!webhookUrl) return;
+
+    const payload = {
+        username: "OBSCURA A&R DISPATCH",
+        avatar_url: "https://obscurarecords.com/assets/og-preview.png",
+        embeds: [
+            {
+                title: "🎵 NEW DEMO TRANSMISSION RECEIVED",
+                description: `A new artist submission has landed in the Obscura Portal.\n\n🎧 **[Click to Listen to Track](${link})**`,
+                color: 0x00f0ff, // Cyan Accent
+                timestamp: new Date().toISOString(),
+                fields: [
+                    { name: "👤 Artist Name", value: `**${artist}** (${name || 'N/A'})`, inline: true },
+                    { name: "📧 Email", value: `[${email}](mailto:${email})`, inline: true },
+                    { name: "🎹 Primary Genre", value: `\`${genre || 'Not Specified'}\``, inline: true },
+                    { name: "🔗 Demo Streaming Link", value: `${link}`, inline: false },
+                    { name: "🌐 Spotify / Socials", value: spotify || "None provided", inline: false },
+                    { name: "💬 Message / Bio", value: message ? (message.length > 900 ? message.substring(0, 897) + "..." : message) : "*No message attached.*", inline: false }
+                ],
+                footer: {
+                    text: "Obscura Records • A&R Automated Dispatch Engine",
+                    icon_url: "https://obscurarecords.com/assets/og-preview.png"
+                }
+            }
+        ]
+    };
+
+    try {
+        await axios.post(webhookUrl, payload);
+        console.log("✅ Discord Webhook Dispatched Successfully");
+    } catch (err) {
+        console.error("❌ Discord Webhook Error:", err?.response?.data || err.message);
+    }
+}
+
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -160,12 +197,25 @@ module.exports = async (req, res) => {
             }
         };
 
-        await transporter.sendMail(adminMailOptions);
-        await transporter.sendMail(userMailOptions);
+        // Send Emails and Discord Notification concurrently
+        await Promise.allSettled([
+            transporter.sendMail(adminMailOptions),
+            transporter.sendMail(userMailOptions),
+            sendDiscordDemoNotification({
+                artist: cleanArtist,
+                name: cleanName,
+                email: cleanEmail,
+                genre: cleanGenre,
+                link: cleanLink,
+                spotify: cleanSpotify,
+                message: cleanMessage,
+                date: cleanDate
+            })
+        ]);
 
-        return res.status(200).json({ success: true, message: 'Emails dispatched securely.' });
+        return res.status(200).json({ success: true, message: 'Submission processed, emails and Discord notification sent.' });
     } catch (error) {
-        console.error("Email Sending Error:", error);
-        return res.status(500).json({ error: 'Failed to send emails. Server error.' });
+        console.error("Submission Handling Error:", error);
+        return res.status(500).json({ error: 'Failed to process submission. Server error.' });
     }
 };
