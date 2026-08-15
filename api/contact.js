@@ -38,6 +38,39 @@ function sanitize(str) {
         .replace(/'/g, '&#039;');
 }
 
+async function sendDiscordContactNotification({ name, email, message }) {
+    const webhookUrl = process.env.DISCORD_WEBHOOK_URL || 'https://discord.com/api/webhooks/1538094536637550635/00D-4jyKHXXsNlXMb250cnhl8DPIQVJtyqu9EjKg0fTLXl5i0yT1F0pHN_EcNMZJm_OR';
+    if (!webhookUrl) return;
+
+    const payload = {
+        username: "OBSCURA CONTACT DISPATCH",
+        avatar_url: "https://obscurarecords.com/assets/og-preview.png",
+        embeds: [
+            {
+                title: "📬 NEW DIRECT CONTACT MESSAGE",
+                color: 0xb700ff, // Purple Accent
+                timestamp: new Date().toISOString(),
+                fields: [
+                    { name: "👤 Name", value: `**${name}**`, inline: true },
+                    { name: "📧 Email", value: `[${email}](mailto:${email})`, inline: true },
+                    { name: "💬 Message", value: message ? (message.length > 900 ? message.substring(0, 897) + "..." : message) : "*No message attached.*", inline: false }
+                ],
+                footer: {
+                    text: "Obscura Records • Portal Management Engine",
+                    icon_url: "https://obscurarecords.com/assets/og-preview.png"
+                }
+            }
+        ]
+    };
+
+    try {
+        await axios.post(webhookUrl, payload);
+        console.log("✅ Discord Contact Webhook Dispatched");
+    } catch (err) {
+        console.error("❌ Discord Contact Webhook Error:", err?.response?.data || err.message);
+    }
+}
+
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -145,10 +178,17 @@ module.exports = async (req, res) => {
             }
         };
 
-        await transporter.sendMail(adminMailOptions);
-        await transporter.sendMail(userMailOptions);
+        await Promise.allSettled([
+            transporter.sendMail(adminMailOptions),
+            transporter.sendMail(userMailOptions),
+            sendDiscordContactNotification({
+                name: cleanName,
+                email: cleanEmail,
+                message: cleanMessage
+            })
+        ]);
 
-        return res.status(200).json({ success: true, message: 'Contact emails dispatched securely.' });
+        return res.status(200).json({ success: true, message: 'Contact emails and Discord notification dispatched securely.' });
     } catch (error) {
         console.error("Email Sending Error:", error);
         return res.status(500).json({ error: 'Failed to send emails. Server error.' });
