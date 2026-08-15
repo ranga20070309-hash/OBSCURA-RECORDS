@@ -269,10 +269,15 @@
                     <div class="input-group full security-box" style="border-color: rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.02); margin-top: 1rem;">
                         <label><i class="fas fa-power-off"></i> MAINTENANCE MODE (TEMPORARY SITE LOCK)</label>
                         <p class="field-desc">Master toggle to display the calm maintenance screen to site visitors.</p>
-                        <select id="site_maintenanceMode">
-                            <option value="Disabled">Disabled (Site Active)</option>
-                            <option value="Enabled">Enabled (Maintenance Screen Active)</option>
-                        </select>
+                        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-top: 0.5rem;">
+                            <select id="site_maintenanceMode" style="flex: 1; min-width: 200px;">
+                                <option value="Disabled">Disabled (Site Active)</option>
+                                <option value="Enabled">Enabled (Maintenance Screen Active)</option>
+                            </select>
+                            <button type="button" id="admin-preview-btn" onclick="sessionStorage.setItem('rootAuth','granted'); sessionStorage.setItem('adminBypass','true'); window.open('index.html?preview=true', '_blank')" style="background: rgba(0, 240, 255, 0.15); border: 1px solid #00f0ff; color: #00f0ff; padding: 0.6rem 1.2rem; border-radius: 4px; font-weight: 600; cursor: pointer; font-family: monospace; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;">
+                                <i class="fas fa-eye"></i> PREVIEW SITE (BYPASS LOCK)
+                            </button>
+                        </div>
                     </div>
                     <div class="input-group">
                         <label><i class="fas fa-heading"></i> MAINTENANCE TITLE</label>
