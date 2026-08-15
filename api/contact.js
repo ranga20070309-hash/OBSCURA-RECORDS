@@ -68,39 +68,81 @@ module.exports = async (req, res) => {
     }
 
     const cleanName = sanitize(name);
-    const cleanEmail = sanitize(email);
+    const cleanEmail = email.trim();
     const cleanMessage = sanitize(message);
 
     try {
         const adminMailOptions = {
-            from: `"Obscura Contact Portal" <${process.env.EMAIL_USER}>`,
-            replyTo: email,
+            from: `"Obscura Records" <${process.env.EMAIL_USER}>`,
+            replyTo: cleanEmail,
             to: process.env.EMAIL_USER,
-            subject: `[CONTACT] Message from ${cleanName}`,
+            subject: `[CONTACT INQUIRY] Message from ${cleanName}`,
+            text: `New Contact Message\n\nFrom: ${cleanName}\nEmail: ${cleanEmail}\n\nMessage:\n${cleanMessage}`,
             html: `
-                <h2>New Contact Message</h2>
-                <p><strong>From:</strong> ${cleanName}</p>
-                <p><strong>Email:</strong> ${cleanEmail}</p>
-                <br/>
-                <p><strong>Message:</strong></p>
-                <p>${cleanMessage}</p>
-            `
+                <div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #111111;">
+                    <h2 style="color: #6a0dad; margin-bottom: 10px;">New Contact Inquiry</h2>
+                    <table style="width: 100%; max-width: 600px; border-collapse: collapse;">
+                        <tr><td style="padding: 6px 0; font-weight: bold; width: 140px;">Name:</td><td>${cleanName}</td></tr>
+                        <tr><td style="padding: 6px 0; font-weight: bold;">Email:</td><td><a href="mailto:${cleanEmail}">${cleanEmail}</a></td></tr>
+                    </table>
+                    <div style="margin-top: 15px; padding: 12px; background-color: #f4f4f4; border-left: 4px solid #6a0dad;">
+                        <strong>Message:</strong><br/>
+                        <p style="margin: 5px 0 0 0; white-space: pre-wrap;">${cleanMessage}</p>
+                    </div>
+                </div>
+            `,
+            headers: {
+                'X-Priority': '1 (Highest)',
+                'X-MSMail-Priority': 'High',
+                'Importance': 'High'
+            }
         };
 
         const userMailOptions = {
             from: `"Obscura Records" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: `We received your message - Obscura Records`,
+            to: cleanEmail,
+            subject: `We have received your message - Obscura Records`,
+            text: `Hi ${cleanName},\n\nThank you for reaching out to Obscura Records. We have safely received your inquiry.\n\nOur team reviews all incoming correspondence and will respond as soon as possible if your inquiry requires a response.\n\nBest Regards,\nObscura Records Team\nhttps://obscurarecords.com`,
             html: `
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #050505; color: #ffffff; padding: 30px; border: 1px solid #b700ff; border-radius: 10px;">
-                    <h2 style="color: #b700ff; letter-spacing: 2px;">OBSCURA RECORDS</h2>
-                    <p>Hi ${cleanName},</p>
-                    <p>We have received your message. Our team will review your inquiry and get back to you if necessary.</p>
-                    <p>Thank you for reaching out to the void.</p>
-                    <br/>
-                    <p>Best Regards,<br/><strong>Obscura Records Team</strong></p>
-                </div>
-            `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f7f9fa; color: #222222;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #eaeaea;">
+                        <tr>
+                            <td style="background-color: #0b0c10; padding: 30px 40px; text-align: center;">
+                                <h1 style="color: #b700ff; margin: 0; font-size: 24px; letter-spacing: 3px; text-transform: uppercase;">OBSCURA RECORDS</h1>
+                                <p style="color: #c5c6c7; margin: 5px 0 0 0; font-size: 12px; letter-spacing: 1px;">DIRECT TRANSMISSION RECEIVED</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 40px 40px 30px 40px; font-size: 15px; line-height: 1.7; color: #333333;">
+                                <p style="margin-top: 0; font-size: 16px;">Hi <strong>${cleanName}</strong>,</p>
+                                <p>Thank you for getting in touch with <strong>Obscura Records</strong>. We have received your inquiry and forwarded it to our management team.</p>
+                                <p style="color: #555555;">We will review your inquiry and get back to you if follow-up is needed.</p>
+                                <hr style="border: none; border-top: 1px solid #eeeeee; margin: 30px 0;" />
+                                <p style="margin-top: 10px;"><strong>Best Regards,</strong><br/>Management & Support<br/><strong>Obscura Records</strong></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: #f9fbfd; padding: 20px 40px; text-align: center; font-size: 12px; color: #888888; border-top: 1px solid #eaeaea;">
+                                <p style="margin: 0 0 5px 0;">This transmission was generated from <a href="https://obscurarecords.com" style="color: #6a0dad; text-decoration: none;">obscurarecords.com</a>.</p>
+                                <p style="margin: 0;">Obscura Records &bull; All Rights Reserved.</p>
+                            </td>
+                        </tr>
+                    </table>
+                </body>
+                </html>
+            `,
+            headers: {
+                'X-Auto-Response-Suppress': 'All',
+                'Precedence': 'bulk',
+                'Auto-Submitted': 'auto-replied',
+                'List-Unsubscribe': '<mailto:artists@obscurarecord.com?subject=unsubscribe>'
+            }
         };
 
         await transporter.sendMail(adminMailOptions);
