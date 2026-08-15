@@ -1,0 +1,9 @@
+{
+  "name": "obscura-records",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "axios": "^1.7.9",
+    "nodemailer": "^6.9.16"
+  }
+}
