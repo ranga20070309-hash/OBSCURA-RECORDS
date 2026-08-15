@@ -1369,15 +1369,102 @@ const initPortal = () => {
             render();
         }
 
+        // --- FLOATING ADMIN PREVIEW BANNER ENGINE ---
+        function renderAdminPreviewBanner(active) {
+            let banner = document.getElementById('admin-preview-floating-bar');
+            if (!active) {
+                if (banner) banner.style.display = 'none';
+                return;
+            }
+
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'admin-preview-floating-bar';
+                banner.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    background: rgba(10, 10, 15, 0.95);
+                    border-bottom: 2px solid #00f0ff;
+                    box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+                    color: #fff;
+                    padding: 8px 16px;
+                    z-index: 999999;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    font-family: 'Space Grotesk', monospace, sans-serif;
+                    font-size: 0.78rem;
+                    backdrop-filter: blur(10px);
+                    box-sizing: border-box;
+                `;
+                banner.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="display: inline-block; width: 8px; height: 8px; background: #00f0ff; border-radius: 50%; box-shadow: 0 0 8px #00f0ff;"></span>
+                        <strong style="color: #00f0ff; letter-spacing: 1px;">MAINTENANCE MODE ACTIVE</strong>
+                        <span style="opacity: 0.7;">| ADMIN PREVIEW BYPASS ENGAGED</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button id="apb-toggle-screen" style="background: rgba(0, 240, 255, 0.15); border: 1px solid #00f0ff; color: #00f0ff; padding: 4px 10px; border-radius: 3px; font-size: 0.7rem; cursor: pointer; font-family: inherit; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="fas fa-eye"></i> Toggle Lock Screen
+                        </button>
+                        <button id="apb-lock-site" style="background: rgba(255, 62, 62, 0.2); border: 1px solid #ff3e3e; color: #ff3e3e; padding: 4px 10px; border-radius: 3px; font-size: 0.7rem; cursor: pointer; font-family: inherit; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="fas fa-lock"></i> Exit Preview
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(banner);
+
+                document.getElementById('apb-toggle-screen').addEventListener('click', () => {
+                    const overlay = document.getElementById('maintenance-overlay');
+                    if (overlay) {
+                        if (overlay.style.display === 'none' || !overlay.style.display) {
+                            overlay.style.display = 'flex';
+                            document.body.classList.add('no-scroll', 'maintenance-active');
+                            document.documentElement.classList.add('no-scroll', 'maintenance-active');
+                        } else {
+                            overlay.style.display = 'none';
+                            document.body.classList.remove('no-scroll', 'maintenance-active');
+                            document.documentElement.classList.remove('no-scroll', 'maintenance-active');
+                        }
+                    }
+                });
+
+                document.getElementById('apb-lock-site').addEventListener('click', () => {
+                    sessionStorage.removeItem('adminBypass');
+                    location.href = window.location.pathname;
+                });
+            } else {
+                banner.style.display = 'flex';
+            }
+        }
+
         // 1. Sync Globals (Text Elements & Links)
         db.ref('siteData/globals').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                // --- MAINTENANCE MODE OVERRIDE ---
+                // --- MAINTENANCE MODE OVERRIDE (ADMIN SITE ONLY) ---
                 const maintenanceOverlay = document.getElementById('maintenance-overlay');
+                
+                // Retrieve root key from siteData globals or fallback to master passphrase
+                const activeRootKey = (data.security && data.security.rootKey) ? data.security.rootKey : "ORC ADMINS PASS 2026";
+
+                // URL Parameter Check - ONLY allow bypass if master key parameter is provided
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlKey = urlParams.get('key') || urlParams.get('pass');
+                if (urlKey && (urlKey === activeRootKey || urlKey === 'ORC ADMINS PASS 2026')) {
+                    sessionStorage.setItem('rootAuth', 'granted');
+                    sessionStorage.setItem('adminBypass', 'true');
+                }
+
                 if (maintenanceOverlay) {
                     const isMaint = data.maintenanceMode === 'Enabled' || data.maintenanceMode === true || data.maintenanceMode === 'ON';
-                    if (isMaint) {
+                    
+                    // Strictly check if session was initiated/authenticated from the Admin Panel
+                    const isBypassed = (sessionStorage.getItem('adminBypass') === 'true' || sessionStorage.getItem('rootAuth') === 'granted');
+
+                    if (isMaint && !isBypassed) {
                         maintenanceOverlay.style.display = 'flex';
                         document.body.classList.add('no-scroll', 'maintenance-active');
                         document.documentElement.classList.add('no-scroll', 'maintenance-active');
@@ -1394,6 +1481,9 @@ const initPortal = () => {
 
                         if (mCanvasAnimId) cancelAnimationFrame(mCanvasAnimId);
                     }
+
+                    // Render Floating Admin Preview Banner when Maintenance is Active but Admin is Bypassing
+                    renderAdminPreviewBanner(isMaint && isBypassed);
                 }
 
                 // --- CATEGORY VISIBILITY OVERRIDE ---
