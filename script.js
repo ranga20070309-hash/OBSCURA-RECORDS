@@ -36,11 +36,11 @@ let playbackStartOffset = 0;
 let autoScrollInterval = null;
 const PREVIEW_LIMIT = 30;
 
-// --- EMAILJS CONFIGURATION (Centralized) ---
-const EMAILJS_PUBLIC_KEY = "ZTB9xthISj6SlffAR";
-const EMAILJS_SERVICE_ID = "service_q2zt0eg";
-const EMAILJS_DEMO_TEMPLATE_ID = "template_l3g9qy9";
-const EMAILJS_CONTACT_TEMPLATE_ID = "template_4s6ht2i";
+// --- BACKEND API CONFIGURATION ---
+// Automatically uses relative path on Vercel production, or localhost:3000 during local dev
+const API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") && window.location.port !== "" && window.location.port !== "3000"
+    ? "http://localhost:3000"
+    : "";
 
 // --- INITIALIZE GSAP CONFIG (Silence Warnings) ---
 gsap.config({ nullTargetWarn: false });
@@ -675,7 +675,7 @@ const initPortal = () => {
     const contactStatus = document.getElementById('contact-status');
 
     // Using the stabilized reCAPTCHA key
-    const RECAPTCHA_SITE_KEY = "6Ldwaa0sAAAAAPKd4-a3CL7DQVUHjVG-yD4sQeEZ";
+    const RECAPTCHA_SITE_KEY = "6LcFNKgsAAAAAEEdRhYJrwgeWzaRyMmzbgNy3swn";
 
     // --- MULTI-LINK DYNAMIC ENGINE ---
     const addLinkBtn = document.getElementById('add-link-btn');
@@ -824,27 +824,30 @@ const initPortal = () => {
                     LABEL_DATE: submission.date
                 };
 
-                // Initialize EmailJS notifying
-                if (typeof emailjs !== 'undefined' && EMAILJS_SERVICE_ID !== "service_xxxxxxx") {
-                    emailjs.init(EMAILJS_PUBLIC_KEY);
-                    try {
-                        const emailResult = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_DEMO_TEMPLATE_ID, {
-                            ...labels,
-                            val_name: submission.name,
-                            val_artist: submission.artist,
-                            val_email: submission.email,
-                            val_genre: submission.genre,
-                            val_link: submission.link,
-                            val_spotify: formattedLinksForEmail,
-                            val_message: submission.message,
-                            val_date: submission.date,
+                // Initialize Backend API Request
+                try {
+                    const emailResult = await fetch(API_BASE_URL + '/api/demo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: submission.name,
                             artist: submission.artist,
-                            email: submission.email
-                        });
-                        console.log("✅ SYSTEM: Email Notification Dispatched", emailResult.status);
-                    } catch (eErr) {
-                        console.error("❌ ERROR: Email Transmission Node Failure", eErr);
+                            email: submission.email,
+                            genre: submission.genre,
+                            link: submission.link,
+                            spotify: formattedLinksForEmail,
+                            message: submission.message,
+                            date: submission.date,
+                            recaptcha_token: token
+                        })
+                    });
+                    if (emailResult.ok) {
+                        console.log("✅ SYSTEM: Custom Email Backend Dispatched Successfully");
+                    } else {
+                        console.error("❌ ERROR: Custom Email Backend Rejected Request", await emailResult.text());
                     }
+                } catch (eErr) {
+                    console.error("❌ ERROR: Email Transmission Node Failure", eErr);
                 }
 
                 await firebase.database().ref('siteData/submissions/demo').push(submission);
@@ -911,20 +914,25 @@ const initPortal = () => {
 
                 await firebase.database().ref('siteData/submissions/contact').push(data);
 
-                // --- EMAILJS CONTACT NOTIFICATION ---
-                if (typeof emailjs !== 'undefined' && EMAILJS_SERVICE_ID !== "service_xxxxxxx") {
-                    emailjs.init(EMAILJS_PUBLIC_KEY);
-                    try {
-                        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_CONTACT_TEMPLATE_ID, {
-                            val_name: data.name,
-                            val_email: data.email,
-                            val_message: data.message,
-                            date_log: new Date().toLocaleString()
-                        });
-                        console.log("✅ SYSTEM: Contact Email Sent");
-                    } catch (eErr) {
-                        console.error("❌ ERROR: Contact Email Failure", eErr);
+                // --- CUSTOM BACKEND CONTACT NOTIFICATION ---
+                try {
+                    const emailResult = await fetch(API_BASE_URL + '/api/contact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: data.name,
+                            email: data.email,
+                            message: data.message,
+                            recaptcha_token: token
+                        })
+                    });
+                    if (emailResult.ok) {
+                        console.log("✅ SYSTEM: Custom Contact Email Sent");
+                    } else {
+                        console.error("❌ ERROR: Custom Contact Email Failure", await emailResult.text());
                     }
+                } catch (eErr) {
+                    console.error("❌ ERROR: Contact Email Failure", eErr);
                 }
 
                 contactForm.style.display = 'none';
