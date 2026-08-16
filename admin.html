@@ -186,6 +186,7 @@
                 <a href="#" class="nav-btn" data-target="modals-panel"><i class="fas fa-window-restore"></i> MODALS &
                     FAQ</a>
                 <a href="#" class="nav-btn" data-target="demo-inbox-panel"><i class="fas fa-inbox"></i> DEMO INBOX</a>
+                <a href="#" class="nav-btn" data-target="artists-panel"><i class="fas fa-users"></i> ARTIST PROFILES <span class="badge-mini" style="background:#00f0ff; color:#000; padding:1px 5px; border-radius:3px; font-size:0.55rem; font-weight:800;">BETA</span></a>
                 <a href="#" class="nav-btn" data-target="upcoming-panel"><i class="fas fa-calendar-alt"></i>
                     UPCOMING</a>
                 <a href="#" class="nav-btn" data-target="releases-panel"><i class="fas fa-compact-disc"></i> RELEASE
@@ -601,6 +602,38 @@
                     <p style="opacity: 0.5; font-style: italic;">Standby... scanning frequencies...</p>
                 </div>
             </section>
+
+            <!-- ========================================== -->
+            <!-- ARTIST PROFILES & PRODUCERS DIRECTORY PANEL -->
+            <!-- ========================================== -->
+            <section id="artists-panel" class="panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-users"></i> ARTIST PROFILES & REGISTERED PRODUCERS</h2>
+                    <p>All producers authenticated via Google Sign-In with linked transmissions and telemetry.</p>
+                </div>
+
+                <div class="artist-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="kernel-node" style="padding: 1.2rem; background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 8px;">
+                        <span class="kernel-label">TOTAL REGISTERED ARTISTS:</span>
+                        <span class="kernel-status" id="admin-total-artists" style="font-size: 1.5rem; color: #00f0ff; font-weight: 800;">0</span>
+                    </div>
+                    <div class="kernel-node" style="padding: 1.2rem; background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 8px;">
+                        <span class="kernel-label">LINKED DEMO SUBMISSIONS:</span>
+                        <span class="kernel-status" id="admin-total-demos" style="font-size: 1.5rem; color: #00ff88; font-weight: 800;">0</span>
+                    </div>
+                </div>
+
+                <div class="inbox-controls" style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
+                    <input type="text" id="search-artists-input" placeholder="Search by Artist name or email..." style="flex: 1; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; padding: 0.8rem 1rem; color: #ffffff;">
+                    <button class="action-btn" id="refresh-artists"><i class="fas fa-sync"></i> SYNC DIRECTORY</button>
+                </div>
+
+                <div id="artists-directory-container" class="releases-list">
+                    <!-- Loaded dynamically from Firebase siteData/users -->
+                    <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Querying encrypted artist directory...</p>
+                </div>
+            </section>
+
 
             <!-- Upcoming Releases Panel -->
             <section id="upcoming-panel" class="panel">
