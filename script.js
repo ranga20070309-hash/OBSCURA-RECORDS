@@ -2465,23 +2465,26 @@ function initArtistPortalEngine() {
     let submissionsListenerRef = null;
     let chatListenerRef = null;
 
-    // 1. Google Sign-In Trigger
+    // 1. Google Sign-In Trigger (Redirect mode — bypasses popup referrer blocking)
     const handleGoogleSignIn = () => {
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
-
-        auth.signInWithPopup(provider)
-            .then((result) => {
-                const user = result.user;
-                console.log("Artist Authenticated:", user.displayName);
-                syncUserProfile(user);
-            })
-            .catch((error) => {
-                if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
-                    console.error("Authentication Error:", error.message);
-                }
-            });
+        auth.signInWithRedirect(provider).catch((error) => {
+            console.error("Authentication Redirect Error:", error.message);
+        });
     };
+
+    // Handle Redirect Result on page load
+    auth.getRedirectResult().then((result) => {
+        if (result && result.user) {
+            console.log("Artist Authenticated via Redirect:", result.user.displayName);
+            syncUserProfile(result.user);
+        }
+    }).catch((error) => {
+        if (error.code !== 'auth/no-current-user') {
+            console.warn("Redirect Result Notice:", error.message);
+        }
+    });
 
     if (signinBtn) signinBtn.onclick = handleGoogleSignIn;
     if (sideSigninBtn) sideSigninBtn.onclick = handleGoogleSignIn;
