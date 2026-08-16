@@ -801,7 +801,16 @@ const initPortal = () => {
                     ? spotifyLinks.map((link, i) => `🔗 [ VIEW PROFILE ${i + 1} ]: ${link}`).join('\n')
                     : "Not Provided";
 
+                const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+                const subRef = firebase.database().ref('siteData/submissions/demo').push();
+                const subKey = subRef.key;
+
                 const submission = {
+                    key: subKey,
+                    userId: currentUser ? currentUser.uid : null,
+                    userEmail: currentUser ? currentUser.email : null,
+                    userPhoto: currentUser ? currentUser.photoURL : null,
+                    status: 'PENDING',
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
                     date: new Date().toLocaleString(),
                     name: nameInput?.value || "N/A",
@@ -838,7 +847,8 @@ const initPortal = () => {
                             spotify: formattedLinksForEmail,
                             message: submission.message,
                             date: submission.date,
-                            recaptcha_token: token
+                            recaptcha_token: token,
+                            subKey: subKey
                         })
                     });
                     if (emailResult.ok) {
@@ -850,7 +860,7 @@ const initPortal = () => {
                     console.error("❌ ERROR: Email Transmission Node Failure", eErr);
                 }
 
-                await firebase.database().ref('siteData/submissions/demo').push(submission);
+                await subRef.set(submission);
 
                 subForm.style.display = 'none';
                 if (subStatus) subStatus.style.display = 'block';
@@ -2355,6 +2365,7 @@ const initKernelSecurity = () => {
 const startEngines = () => {
     initPortal();
     loadPopular();
+    if (typeof initArtistPortalEngine === 'function') initArtistPortalEngine();
 };
 
 if (document.readyState === "loading") {
@@ -2400,4 +2411,404 @@ if (typeof firebase !== 'undefined') {
     });
 }
 
+// ==============================================================
+// ARTIST AUTHENTICATION & PRODUCER COMMAND PORTAL ENGINE (BETA)
+// ==============================================================
+function initArtistPortalEngine() {
+    if (typeof firebase === 'undefined' || !firebase.auth) {
+        console.warn("Artist Auth Engine: Standby (Firebase Auth initializing...)");
+        return;
+    }
+
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // UI Elements - Navbar & Sidebar
+    const signinBtn = document.getElementById('artist-signin-btn');
+    const profileBadge = document.getElementById('artist-profile-badge');
+    const navAvatar = document.getElementById('nav-artist-avatar');
+    const navName = document.getElementById('nav-artist-name');
+    const dropdownMenu = document.getElementById('artist-dropdown-menu');
+    const dropdownEmail = document.getElementById('dropdown-artist-email');
+    const signoutBtn = document.getElementById('artist-signout-btn');
+    const openDashBtn = document.getElementById('open-artist-dash-btn');
+    const openInquiriesBtn = document.getElementById('open-artist-inquiries-btn');
+
+    // Sidebar Mobile
+    const sideSigninBtn = document.getElementById('sidebar-signin-btn');
+    const sideProfileCard = document.getElementById('sidebar-profile-card');
+    const sideAvatar = document.getElementById('sidebar-artist-avatar');
+    const sideName = document.getElementById('sidebar-artist-name');
+    const sideEmail = document.getElementById('sidebar-artist-email');
+    const sideOpenDashBtn = document.getElementById('sidebar-open-dash-btn');
+
+    // Dashboard Modal Elements
+    const dashModal = document.getElementById('artist-dashboard-modal');
+    const dashUserAvatar = document.getElementById('dash-user-avatar');
+    const dashUserName = document.getElementById('dash-user-name');
+    const dashUserEmail = document.getElementById('dash-user-email');
+    const dashUserUid = document.getElementById('dash-user-uid');
+    const dashSubCount = document.getElementById('dash-sub-count');
+    const dashSubmissionsList = document.getElementById('dash-submissions-list');
+    const dashSendDemoBtn = document.getElementById('dash-send-demo-btn');
+    const dashTabBtns = document.querySelectorAll('.dash-tab-btn');
+    const dashTabPanes = document.querySelectorAll('.dash-tab-pane');
+
+    // Chat Stream
+    const dashChatStream = document.getElementById('dash-chat-stream');
+    const dashChatForm = document.getElementById('dash-chat-form');
+    const dashChatInput = document.getElementById('dash-chat-input');
+
+    let currentArtistUser = null;
+    let submissionsListenerRef = null;
+    let chatListenerRef = null;
+
+    // 1. Google Sign-In Trigger
+    const handleGoogleSignIn = () => {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        auth.signInWithPopup(provider)
+            .then((result) => {
+                const user = result.user;
+                console.log("Artist Authenticated:", user.displayName);
+                syncUserProfile(user);
+            })
+            .catch((error) => {
+                if (error.code !== 'auth/popup-closed-by-user') {
+                    console.error("Authentication Error:", error.message);
+                    alert("Authentication Failure: " + error.message);
+                }
+            });
+    };
+
+    if (signinBtn) signinBtn.addEventListener('click', handleGoogleSignIn);
+    if (sideSigninBtn) sideSigninBtn.addEventListener('click', handleGoogleSignIn);
+
+    // 2. Sign-Out Trigger
+    if (signoutBtn) {
+        signoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            auth.signOut().then(() => {
+                if (dropdownMenu) dropdownMenu.classList.remove('show');
+                if (profileBadge) profileBadge.classList.remove('active');
+                if (dashModal) dashModal.classList.remove('active');
+                document.body.classList.remove('no-scroll');
+            });
+        });
+    }
+
+    // 3. Dropdown Menu Toggle
+    if (profileBadge && dropdownMenu) {
+        profileBadge.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileBadge.classList.toggle('active');
+            dropdownMenu.classList.toggle('show');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!profileBadge.contains(e.target)) {
+                profileBadge.classList.remove('active');
+                dropdownMenu.classList.remove('show');
+            }
+        });
+    }
+
+    // 4. Modal Open Controls
+    const openDashboard = (initialTab = 'submissions-tab') => {
+        if (!currentArtistUser) {
+            handleGoogleSignIn();
+            return;
+        }
+        if (dropdownMenu) dropdownMenu.classList.remove('show');
+        if (profileBadge) profileBadge.classList.remove('active');
+        
+        switchTab(initialTab);
+        if (dashModal) {
+            dashModal.classList.add('active');
+            document.body.classList.add('no-scroll');
+            document.documentElement.classList.add('no-scroll');
+        }
+    };
+
+    if (openDashBtn) openDashBtn.addEventListener('click', (e) => { e.preventDefault(); openDashboard('submissions-tab'); });
+    if (openInquiriesBtn) openInquiriesBtn.addEventListener('click', (e) => { e.preventDefault(); openDashboard('inquiries-tab'); });
+    if (sideOpenDashBtn) sideOpenDashBtn.addEventListener('click', (e) => { e.preventDefault(); openDashboard('submissions-tab'); });
+
+    // Close Modal Button in Dashboard
+    if (dashModal) {
+        const closeBtn = dashModal.querySelector('.close-modal');
+        const overlay = dashModal.querySelector('.modal-overlay');
+        [closeBtn, overlay].forEach(btn => {
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    dashModal.classList.remove('active');
+                    document.body.classList.remove('no-scroll');
+                    document.documentElement.classList.remove('no-scroll');
+                });
+            }
+        });
+    }
+
+    // Direct Transmit Demo Button inside Dashboard
+    if (dashSendDemoBtn) {
+        dashSendDemoBtn.addEventListener('click', () => {
+            if (dashModal) dashModal.classList.remove('active');
+            const subModal = document.getElementById('submission-modal');
+            if (subModal) {
+                subModal.classList.add('active');
+                // Pre-fill fields
+                if (currentArtistUser) {
+                    const artistInput = subModal.querySelector('input[name="artist"]');
+                    const emailInput = subModal.querySelector('input[name="email"]');
+                    if (artistInput && !artistInput.value) artistInput.value = currentArtistUser.displayName || '';
+                    if (emailInput && !emailInput.value) emailInput.value = currentArtistUser.email || '';
+                }
+            }
+        });
+    }
+
+    // 5. Dashboard Tab Switching
+    function switchTab(tabId) {
+        dashTabBtns.forEach(b => {
+            if (b.dataset.tab === tabId) b.classList.add('active');
+            else b.classList.remove('active');
+        });
+        dashTabPanes.forEach(p => {
+            if (p.id === tabId) p.classList.add('active');
+            else p.classList.remove('active');
+        });
+    }
+
+    dashTabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchTab(btn.dataset.tab);
+        });
+    });
+
+    // 6. Listen for Firebase Auth State Changes
+    auth.onAuthStateChanged((user) => {
+        currentArtistUser = user;
+        if (user) {
+            // Update Navigation & Profile UI
+            if (signinBtn) signinBtn.style.display = 'none';
+            if (profileBadge) profileBadge.style.display = 'inline-flex';
+            if (navAvatar) navAvatar.src = user.photoURL || 'assets/OCR.png';
+            if (navName) navName.textContent = (user.displayName || 'ARTIST').split(' ')[0].toUpperCase();
+            if (dropdownEmail) dropdownEmail.textContent = user.email || '';
+
+            // Mobile Sidebar Card
+            if (sideSigninBtn) sideSigninBtn.style.display = 'none';
+            if (sideProfileCard) sideProfileCard.style.display = 'flex';
+            if (sideAvatar) sideAvatar.src = user.photoURL || 'assets/OCR.png';
+            if (sideName) sideName.textContent = user.displayName || 'ARTIST';
+            if (sideEmail) sideEmail.textContent = user.email || '';
+
+            // Update Dashboard Modal User Identity
+            if (dashUserAvatar) dashUserAvatar.src = user.photoURL || 'assets/OCR.png';
+            if (dashUserName) dashUserName.textContent = (user.displayName || 'PRODUCER COMMAND').toUpperCase();
+            if (dashUserEmail) dashUserEmail.textContent = user.email || '';
+            if (dashUserUid) dashUserUid.textContent = `UID: ${user.uid}`;
+
+            // Sync user profile to database (0 byte photo storage)
+            syncUserProfile(user);
+
+            // Listen to User Submissions Stream
+            listenToUserSubmissions(user);
+
+            // Listen to User Encrypted Chat Stream
+            listenToUserChat(user);
+        } else {
+            // User Logged Out
+            if (signinBtn) signinBtn.style.display = 'inline-flex';
+            if (profileBadge) profileBadge.style.display = 'none';
+            if (sideSigninBtn) sideSigninBtn.style.display = 'block';
+            if (sideProfileCard) sideProfileCard.style.display = 'none';
+
+            if (submissionsListenerRef) submissionsListenerRef.off();
+            if (chatListenerRef) chatListenerRef.off();
+        }
+    });
+
+    // Sync User Profile Record to Firebase Realtime DB
+    function syncUserProfile(user) {
+        if (!user) return;
+        const userRef = db.ref(`siteData/users/${user.uid}`);
+        userRef.update({
+            uid: user.uid,
+            name: user.displayName || 'Unknown Artist',
+            email: user.email || 'N/A',
+            photoURL: user.photoURL || 'assets/OCR.png',
+            lastLogin: firebase.database.ServerValue.TIMESTAMP
+        });
+    }
+
+    // 7. Live Submissions Listener (Filtered by UID or Email)
+    function listenToUserSubmissions(user) {
+        if (!dashSubmissionsList) return;
+        if (submissionsListenerRef) submissionsListenerRef.off();
+
+        submissionsListenerRef = db.ref('siteData/submissions/demo');
+        submissionsListenerRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            dashSubmissionsList.innerHTML = '';
+
+            if (!data) {
+                renderEmptySubmissions();
+                return;
+            }
+
+            let mySubs = [];
+            Object.keys(data).forEach(key => {
+                const sub = data[key];
+                // Match by userId or userEmail
+                const isMatch = (sub.userId && sub.userId === user.uid) ||
+                                (sub.userEmail && sub.userEmail.toLowerCase() === (user.email || '').toLowerCase()) ||
+                                (sub.email && sub.email.toLowerCase() === (user.email || '').toLowerCase());
+                if (isMatch) {
+                    mySubs.push({ id: key, ...sub });
+                }
+            });
+
+            // Update badge count
+            if (dashSubCount) dashSubCount.textContent = mySubs.length;
+
+            if (mySubs.length === 0) {
+                renderEmptySubmissions();
+                return;
+            }
+
+            // Sort newest first
+            mySubs.sort((a, b) => {
+                const timeA = a.timestamp || 0;
+                const timeB = b.timestamp || 0;
+                return timeB - timeA;
+            });
+
+            mySubs.forEach(sub => {
+                const card = document.createElement('div');
+                card.className = 'dash-sub-card';
+
+                const status = (sub.status || 'PENDING').toUpperCase();
+                let statusBadgeClass = 'badge-pending';
+                let statusText = 'PENDING REVIEW';
+
+                if (status === 'UNDER_REVIEW' || status === 'REVIEW') {
+                    statusBadgeClass = 'badge-review';
+                    statusText = 'UNDER A&R REVIEW';
+                } else if (status === 'ACCEPTED') {
+                    statusBadgeClass = 'badge-accepted';
+                    statusText = 'ACCEPTED FOR RELEASE';
+                } else if (status === 'DECLINED' || status === 'ARCHIVED') {
+                    statusBadgeClass = 'badge-declined';
+                    statusText = 'ARCHIVED';
+                }
+
+                card.innerHTML = `
+                    <div class="dash-sub-header">
+                        <span class="dash-sub-genre">${sub.genre || 'ELECTRONIC'}</span>
+                        <span class="dash-status-badge ${statusBadgeClass}">
+                            <span class="dot"></span> ${statusText}
+                        </span>
+                    </div>
+                    <div class="dash-sub-title">${sub.artist || sub.name || 'UNTITLED DEMO'}</div>
+                    <div class="dash-sub-date">LOGGED: ${sub.date || 'RECENT TRANSMISSION'}</div>
+                    ${sub.link && sub.link !== '#' ? `<a href="${sub.link}" target="_blank" class="dash-sub-link-btn"><i class="fas fa-play-circle"></i> LISTEN TO TRACK</a>` : ''}
+                `;
+                dashSubmissionsList.appendChild(card);
+            });
+        });
+    }
+
+    function renderEmptySubmissions() {
+        if (dashSubCount) dashSubCount.textContent = '0';
+        if (dashSubmissionsList) {
+            dashSubmissionsList.innerHTML = `
+                <div class="dash-empty-state">
+                    <i class="fas fa-satellite-dish"></i>
+                    <p>No transmissions logged yet under this frequency.</p>
+                    <button onclick="document.getElementById('dash-send-demo-btn').click()" class="cta-primary-small" style="margin-top:1rem;">
+                        <i class="fas fa-upload"></i> TRANSMIT FIRST DEMO
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    // 8. Live Encrypted Chat Stream
+    function listenToUserChat(user) {
+        if (!dashChatStream) return;
+        if (chatListenerRef) chatListenerRef.off();
+
+        chatListenerRef = db.ref(`siteData/conversations/${user.uid}/messages`);
+        chatListenerRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            renderChatMessages(data);
+        });
+    }
+
+    if (dashChatForm) {
+        dashChatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = dashChatInput.value.trim();
+            if (!text || !currentArtistUser) return;
+
+            const msgRef = db.ref(`siteData/conversations/${currentArtistUser.uid}/messages`).push();
+            msgRef.set({
+                sender: 'artist',
+                text: text,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }).then(() => {
+                dashChatInput.value = '';
+                // Update meta for admin inbox
+                db.ref(`siteData/conversations/${currentArtistUser.uid}/meta`).update({
+                    artistName: currentArtistUser.displayName || 'Unknown Artist',
+                    artistEmail: currentArtistUser.email || '',
+                    lastMessage: text,
+                    lastUpdated: firebase.database.ServerValue.TIMESTAMP
+                });
+            });
+        });
+    }
+
+    function renderChatMessages(data) {
+        if (!dashChatStream) return;
+        if (!data) {
+            dashChatStream.innerHTML = `
+                <div class="chat-empty-hint">
+                    <p>Direct encrypted channel open. Dispatch your first communique to A&R Command.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let msgsHtml = '';
+        Object.keys(data).forEach(k => {
+            const msg = data[k];
+            const isArtist = msg.sender === 'artist';
+            msgsHtml += `
+                <div class="dash-chat-message ${isArtist ? 'artist' : 'staff'}">
+                    <div class="chat-sender-tag">
+                        ${isArtist ? '<i class="fas fa-user"></i> PRODUCER' : '<i class="fas fa-shield-alt"></i> OBSCURA A&R'}
+                    </div>
+                    <div>${msg.text}</div>
+                    <span class="chat-meta">${msg.date || ''}</span>
+                </div>
+            `;
+        });
+
+        dashChatStream.innerHTML = msgsHtml;
+        dashChatStream.scrollTop = dashChatStream.scrollHeight;
+    }
+}
+
+// Start Artist Engine
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initArtistPortalEngine);
+} else {
+    initArtistPortalEngine();
+}
+
 // PORTAL CORE INITIALIZED
+
