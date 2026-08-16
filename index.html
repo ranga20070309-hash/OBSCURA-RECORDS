@@ -52,6 +52,7 @@
     <!-- Firebase Engine Core (HEAD Bootloader) | MADE BY RANGA -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -72,6 +73,9 @@
             const v = snapshot.val() || '1.0';
             const scr = document.createElement('script');
             scr.src = 'script.js?v=60.0';
+            scr.onload = () => {
+                if (typeof initArtistPortalEngine === 'function') initArtistPortalEngine();
+            };
             document.head.appendChild(scr);
             console.log("ENGINE BOOT: v" + v);
         });
@@ -142,6 +146,41 @@
                     <span data-target="#contact" class="nav-item" data-sync="navContact"
                         data-sync-target="text">CONTACT</span>
                     <span id="open-form" class="nav-item">SEND DEMO</span>
+                    
+                    <!-- Artist Google Authentication Hub // BETA -->
+                    <div id="artist-auth-container" class="artist-auth-wrapper">
+                        <button id="artist-signin-btn" class="cyber-auth-btn" title="Sign in with Google">
+                            <i class="fab fa-google"></i>
+                            <span>ARTIST SIGN IN</span>
+                            <span class="auth-beta-badge"><span class="beta-dot"></span>BETA</span>
+                        </button>
+                        <div id="artist-profile-badge" class="artist-profile-badge" style="display: none;">
+                            <img id="nav-artist-avatar" class="nav-artist-avatar" src="assets/OCR.png" alt="Artist Profile">
+                            <span id="nav-artist-name" class="nav-artist-name">ARTIST</span>
+                            <i class="fas fa-chevron-down dropdown-arrow"></i>
+                            <div id="artist-dropdown-menu" class="artist-dropdown glass">
+                                <div class="dropdown-header">
+                                    <span class="dropdown-status-dot"></span>
+                                    <span id="dropdown-artist-email" class="dropdown-email">artist@google.com</span>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <a href="#" id="open-artist-dash-btn" class="dropdown-item">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>Artist Dashboard</span>
+                                    <span class="badge-mini">LIVE</span>
+                                </a>
+                                <a href="#" id="open-artist-inquiries-btn" class="dropdown-item">
+                                    <i class="fas fa-comments"></i>
+                                    <span>Direct A&R Thread</span>
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a href="#" id="artist-signout-btn" class="dropdown-item signout">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Sign Out</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="social-menu">
                     <button id="nav-menu-trigger" class="menu-trigger">
@@ -160,6 +199,23 @@
             </div>
             <!-- High-Priority Navigation Links -->
             <div class="sidebar-nav">
+                <!-- Mobile Artist Portal Link -->
+                <div id="sidebar-artist-auth-card" class="sidebar-artist-card">
+                    <button id="sidebar-signin-btn" class="cyber-auth-btn full-width">
+                        <i class="fab fa-google"></i>
+                        <span>ARTIST SIGN IN</span>
+                        <span class="auth-beta-badge"><span class="beta-dot"></span>BETA</span>
+                    </button>
+                    <div id="sidebar-profile-card" class="sidebar-profile-box" style="display: none;">
+                        <img id="sidebar-artist-avatar" class="nav-artist-avatar" src="assets/OCR.png" alt="Profile">
+                        <div class="sidebar-user-meta">
+                            <span id="sidebar-artist-name" class="sidebar-user-name">ARTIST</span>
+                            <span id="sidebar-artist-email" class="sidebar-user-email">artist@google.com</span>
+                        </div>
+                        <button id="sidebar-open-dash-btn" class="sidebar-dash-btn"><i class="fas fa-tachometer-alt"></i></button>
+                    </div>
+                </div>
+
                 <span data-target="#home" class="sidebar-nav-item nav-item">
                     <i class="fas fa-home"></i> <span data-sync="navHome" data-sync-target="text">HOME</span>
                 </span>
@@ -1124,6 +1180,88 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ARTIST COMMAND DASHBOARD MODAL // BETA -->
+        <!-- ========================================== -->
+        <div id="artist-dashboard-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content glass no-tilt artist-dashboard-content" style="max-width: 900px; width: 95%;">
+                <button class="close-modal">&times;</button>
+                
+                <!-- Dashboard Top Header Bar -->
+                <div class="artist-dash-header">
+                    <div class="dash-user-identity">
+                        <div class="dash-avatar-wrapper">
+                            <img id="dash-user-avatar" src="assets/OCR.png" alt="Producer Avatar" class="dash-user-avatar">
+                            <div class="avatar-glow-ring"></div>
+                        </div>
+                        <div class="dash-user-text">
+                            <div class="dash-title-row">
+                                <h2 id="dash-user-name" class="dash-user-name">PRODUCER COMMAND</h2>
+                                <span class="badge-verified"><i class="fas fa-check-circle"></i> VERIFIED</span>
+                                <span class="auth-beta-badge"><span class="beta-dot"></span>BETA</span>
+                            </div>
+                            <p id="dash-user-email" class="dash-user-email">producer@obscurarecords.com</p>
+                            <span id="dash-user-uid" class="dash-user-uid">UID: SECURE_ENCLAVE_SYNCED</span>
+                        </div>
+                    </div>
+                    <div class="dash-quick-actions">
+                        <button id="dash-send-demo-btn" class="cta-primary-small">
+                            <i class="fas fa-plus"></i> TRANSMIT DEMO
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <div class="artist-dash-tabs">
+                    <button class="dash-tab-btn active" data-tab="submissions-tab">
+                        <i class="fas fa-satellite-dish"></i> TRANSMISSIONS QUEUE (<span id="dash-sub-count">0</span>)
+                    </button>
+                    <button class="dash-tab-btn" data-tab="inquiries-tab">
+                        <i class="fas fa-comments"></i> A&R DIRECT LINE
+                    </button>
+                </div>
+
+                <!-- Tab 1: Submissions Stream -->
+                <div id="submissions-tab" class="dash-tab-pane active">
+                    <div class="dash-status-legend">
+                        <span class="legend-pill pill-pending"><span class="dot"></span> PENDING REVIEW</span>
+                        <span class="legend-pill pill-review"><span class="dot"></span> UNDER A&R REVIEW</span>
+                        <span class="legend-pill pill-accepted"><span class="dot"></span> ACCEPTED FOR RELEASE</span>
+                        <span class="legend-pill pill-declined"><span class="dot"></span> ARCHIVED</span>
+                    </div>
+
+                    <div id="dash-submissions-list" class="dash-submissions-grid">
+                        <div class="dash-empty-state">
+                            <i class="fas fa-compact-disc fa-spin"></i>
+                            <p>Scanning the encrypted vault for your transmissions...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Direct A&R Chat Stream -->
+                <div id="inquiries-tab" class="dash-tab-pane">
+                    <div class="dash-chat-container">
+                        <div class="chat-banner">
+                            <i class="fas fa-shield-alt"></i> DIRECT ENCRYPTED COMMUNICATION WITH OBSCURA RECORDS A&R DESK
+                        </div>
+                        <div id="dash-chat-stream" class="dash-chat-stream">
+                            <div class="chat-empty-hint">
+                                <p>No direct messages yet. Send a query below to dispatch to our command center.</p>
+                            </div>
+                        </div>
+                        <form id="dash-chat-form" class="dash-chat-composer">
+                            <input type="text" id="dash-chat-input" placeholder="Type direct inquiry to A&R..." required autocomplete="off">
+                            <button type="submit" class="dash-chat-send-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
             </div>
         </div>
 
