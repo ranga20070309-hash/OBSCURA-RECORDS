@@ -2415,10 +2415,12 @@ if (typeof firebase !== 'undefined') {
 // ARTIST AUTHENTICATION & PRODUCER COMMAND PORTAL ENGINE (BETA)
 // ==============================================================
 function initArtistPortalEngine() {
+    if (window.__artistPortalInitialized) return;
     if (typeof firebase === 'undefined' || !firebase.auth) {
         console.warn("Artist Auth Engine: Standby (Firebase Auth initializing...)");
         return;
     }
+    window.__artistPortalInitialized = true;
 
     const auth = firebase.auth();
     const db = firebase.database();
@@ -2475,19 +2477,18 @@ function initArtistPortalEngine() {
                 syncUserProfile(user);
             })
             .catch((error) => {
-                if (error.code !== 'auth/popup-closed-by-user') {
+                if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
                     console.error("Authentication Error:", error.message);
-                    alert("Authentication Failure: " + error.message);
                 }
             });
     };
 
-    if (signinBtn) signinBtn.addEventListener('click', handleGoogleSignIn);
-    if (sideSigninBtn) sideSigninBtn.addEventListener('click', handleGoogleSignIn);
+    if (signinBtn) signinBtn.onclick = handleGoogleSignIn;
+    if (sideSigninBtn) sideSigninBtn.onclick = handleGoogleSignIn;
 
     // 2. Sign-Out Trigger
     if (signoutBtn) {
-        signoutBtn.addEventListener('click', (e) => {
+        signoutBtn.onclick = (e) => {
             e.preventDefault();
             auth.signOut().then(() => {
                 if (dropdownMenu) dropdownMenu.classList.remove('show');
@@ -2495,16 +2496,16 @@ function initArtistPortalEngine() {
                 if (dashModal) dashModal.classList.remove('active');
                 document.body.classList.remove('no-scroll');
             });
-        });
+        };
     }
 
     // 3. Dropdown Menu Toggle
     if (profileBadge && dropdownMenu) {
-        profileBadge.addEventListener('click', (e) => {
+        profileBadge.onclick = (e) => {
             e.stopPropagation();
             profileBadge.classList.toggle('active');
             dropdownMenu.classList.toggle('show');
-        });
+        };
 
         document.addEventListener('click', (e) => {
             if (!profileBadge.contains(e.target)) {
@@ -2531,9 +2532,9 @@ function initArtistPortalEngine() {
         }
     };
 
-    if (openDashBtn) openDashBtn.addEventListener('click', (e) => { e.preventDefault(); openDashboard('submissions-tab'); });
-    if (openInquiriesBtn) openInquiriesBtn.addEventListener('click', (e) => { e.preventDefault(); openDashboard('inquiries-tab'); });
-    if (sideOpenDashBtn) sideOpenDashBtn.addEventListener('click', (e) => { e.preventDefault(); openDashboard('submissions-tab'); });
+    if (openDashBtn) openDashBtn.onclick = (e) => { e.preventDefault(); openDashboard('submissions-tab'); };
+    if (openInquiriesBtn) openInquiriesBtn.onclick = (e) => { e.preventDefault(); openDashboard('inquiries-tab'); };
+    if (sideOpenDashBtn) sideOpenDashBtn.onclick = (e) => { e.preventDefault(); openDashboard('submissions-tab'); };
 
     // Close Modal Button in Dashboard
     if (dashModal) {
@@ -2541,18 +2542,18 @@ function initArtistPortalEngine() {
         const overlay = dashModal.querySelector('.modal-overlay');
         [closeBtn, overlay].forEach(btn => {
             if (btn) {
-                btn.addEventListener('click', () => {
+                btn.onclick = () => {
                     dashModal.classList.remove('active');
                     document.body.classList.remove('no-scroll');
                     document.documentElement.classList.remove('no-scroll');
-                });
+                };
             }
         });
     }
 
     // Direct Transmit Demo Button inside Dashboard
     if (dashSendDemoBtn) {
-        dashSendDemoBtn.addEventListener('click', () => {
+        dashSendDemoBtn.onclick = () => {
             if (dashModal) dashModal.classList.remove('active');
             const subModal = document.getElementById('submission-modal');
             if (subModal) {
@@ -2565,7 +2566,7 @@ function initArtistPortalEngine() {
                     if (emailInput && !emailInput.value) emailInput.value = currentArtistUser.email || '';
                 }
             }
-        });
+        };
     }
 
     // 5. Dashboard Tab Switching
@@ -2581,9 +2582,9 @@ function initArtistPortalEngine() {
     }
 
     dashTabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.onclick = () => {
             switchTab(btn.dataset.tab);
-        });
+        };
     });
 
     // 6. Listen for Firebase Auth State Changes
@@ -2640,6 +2641,8 @@ function initArtistPortalEngine() {
             email: user.email || 'N/A',
             photoURL: user.photoURL || 'assets/OCR.png',
             lastLogin: firebase.database.ServerValue.TIMESTAMP
+        }).catch(err => {
+            console.warn("User profile sync notice:", err.message);
         });
     }
 
