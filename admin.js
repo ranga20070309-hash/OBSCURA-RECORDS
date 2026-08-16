@@ -137,6 +137,8 @@ navBtns.forEach(btn => {
             loadStaff();
         } else if (target === 'demo-inbox-panel') {
             loadSubmissions();
+        } else if (target === 'artists-panel') {
+            loadArtistProfiles();
         } else if (target === 'releases-panel') {
             loadReleases();
         } else if (target === 'upcoming-panel') {
@@ -1137,12 +1139,16 @@ function loadSubmissions() {
             
             // Analyze Link Integrity
             const safety = analyzeLinkSafety(sub.link || sub.spotify);
+            const currentStatus = (sub.status || 'PENDING').toUpperCase();
 
             card.innerHTML = `
                 <button class="delete-demo-record" data-pid="${sub.id}" data-path="${sub.path}" style="position:absolute; top:1.2rem; right:1.2rem; width:32px; height:32px; background:rgba(255,0,0,0.15); border:1px solid rgba(255,0,0,0.3); color:#ff4444; border-radius:6px; cursor:pointer; z-index:100; display:flex; align-items:center; justify-content:center; transition:0.3s;" title="PURGE RECORD"><i class="fas fa-times"></i></button>
                 <div class="demo-header">
                     <div class="demo-title">
-                        <div style="font-size: 0.6rem; color: ${typeColor}; font-weight: 800; letter-spacing: 0.1rem; margin-bottom: 0.5rem;">[ ${sub.type} ]</div>
+                        <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem;">
+                            <span style="font-size: 0.6rem; color: ${typeColor}; font-weight: 800; letter-spacing: 0.1rem;">[ ${sub.type} ]</span>
+                            ${sub.userId ? `<span style="font-size:0.55rem; background:rgba(0,240,255,0.15); color:#00f0ff; padding:1px 6px; border-radius:3px; font-family:monospace;"><i class="fab fa-google"></i> REGISTERED ARTIST</span>` : ''}
+                        </div>
                         <h3 style="color:var(--accent-blue); font-size:1.1rem;">${sub.artist || sub.name || 'ANONYMOUS'}</h3>
                         <p style="font-size:0.65rem; opacity:0.5; font-family:monospace;">SIGNAL RECEIVED: ${sub.date || 'UNKNOWN TIME'}</p>
                     </div>
@@ -1153,7 +1159,29 @@ function loadSubmissions() {
                     <div class="meta-item" style="grid-column: span 2;"><label style="font-size:0.6rem; opacity:0.5; display:block; margin-bottom:0.3rem;">CONTACT</label><span style="font-size:0.85rem;">${sub.email || 'N/A'}</span></div>
                 </div>
                 <div class="demo-message" style="background: rgba(255,255,255,0.02); padding: 1.2rem; border-radius: 10px; font-size: 0.8rem; margin-top: 1.5rem; border: 1px solid rgba(255,255,255,0.05); color: #ccc; line-height:1.5;">${sub.message || 'No additional data transmitted.'}</div>
-                <div class="demo-actions" style="margin-top:2rem;">
+                
+                <!-- Status Control Bar -->
+                <div style="margin-top: 1.5rem; padding: 0.8rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;">
+                    <label style="font-size: 0.62rem; color: #00f0ff; letter-spacing: 0.08rem; font-family: monospace; display: block; margin-bottom: 0.5rem;">
+                        <i class="fas fa-sliders-h"></i> A&R REVIEW STATUS (SYNCED TO DISCORD & ARTIST DASHBOARD):
+                    </label>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button onclick="updateSubStatus('${sub.path}', '${sub.id}', 'PENDING')" class="action-btn" style="padding: 0.4rem 0.8rem; font-size: 0.65rem; border-radius: 4px; ${currentStatus === 'PENDING' ? 'background: #ffaa00; color: #000; font-weight: 800;' : 'background: rgba(255,170,0,0.1); color: #ffaa00;'}">
+                            🟡 PENDING
+                        </button>
+                        <button onclick="updateSubStatus('${sub.path}', '${sub.id}', 'UNDER_REVIEW')" class="action-btn" style="padding: 0.4rem 0.8rem; font-size: 0.65rem; border-radius: 4px; ${currentStatus === 'UNDER_REVIEW' ? 'background: #00f0ff; color: #000; font-weight: 800;' : 'background: rgba(0,240,255,0.1); color: #00f0ff;'}">
+                            🔵 UNDER REVIEW
+                        </button>
+                        <button onclick="updateSubStatus('${sub.path}', '${sub.id}', 'ACCEPTED')" class="action-btn" style="padding: 0.4rem 0.8rem; font-size: 0.65rem; border-radius: 4px; ${currentStatus === 'ACCEPTED' ? 'background: #00ff88; color: #000; font-weight: 800;' : 'background: rgba(0,255,136,0.1); color: #00ff88;'}">
+                            🟢 ACCEPTED
+                        </button>
+                        <button onclick="updateSubStatus('${sub.path}', '${sub.id}', 'DECLINED')" class="action-btn" style="padding: 0.4rem 0.8rem; font-size: 0.65rem; border-radius: 4px; ${currentStatus === 'DECLINED' ? 'background: #ff0055; color: #fff; font-weight: 800;' : 'background: rgba(255,0,85,0.1); color: #ff0055;'}">
+                            🔴 DECLINED
+                        </button>
+                    </div>
+                </div>
+
+                <div class="demo-actions" style="margin-top:1.5rem;">
                     <div class="link-safety-badge" style="color:${safety.color}; background: ${safety.color}15; border-color:${safety.color}30;">
                         <i class="fas ${safety.icon}"></i> 
                         INTEGRITY: ${safety.status}
@@ -1173,6 +1201,136 @@ function loadSubmissions() {
         console.error("Inbox Error:", err);
         inboxContainer.innerHTML = '<p style="color:var(--accent-magenta); font-style:italic; padding:4rem; text-align:center;">VAULT CONNECTION FAILURE: CHECK KERNEL LINK.</p>';
     });
+}
+
+// Global Status Updater
+window.updateSubStatus = function(path, id, newStatus) {
+    db.ref(path + '/' + id).update({
+        status: newStatus,
+        statusUpdatedAt: firebase.database.ServerValue.TIMESTAMP,
+        statusUpdatedBy: 'Admin (Web Portal)'
+    }).then(() => {
+        showToast(`STATUS UPDATED: ${newStatus}`);
+        loadSubmissions();
+    }).catch(err => {
+        showToast(`STATUS UPDATE FAILED: ${err.message}`, 'error');
+    });
+};
+
+// ==============================================================
+// ARTIST PROFILES DIRECTORY ENGINE (ADMIN)
+// ==============================================================
+let allRegisteredArtists = [];
+
+function loadArtistProfiles() {
+    const container = document.getElementById('artists-directory-container');
+    const totalArtistsEl = document.getElementById('admin-total-artists');
+    const totalDemosEl = document.getElementById('admin-total-demos');
+    const searchInput = document.getElementById('search-artists-input');
+
+    if (!container) return;
+    container.innerHTML = '<p style="opacity:0.5; padding:3rem; text-align:center; font-family:monospace;">QUERYING ARTIST DIRECTORY FREQUENCY...</p>';
+
+    Promise.all([
+        db.ref('siteData/users').once('value'),
+        db.ref('siteData/submissions/demo').once('value')
+    ]).then(([usersSnap, demosSnap]) => {
+        const usersData = usersSnap.val() || {};
+        const demosData = demosSnap.val() || {};
+
+        allRegisteredArtists = [];
+        let totalLinkedDemos = 0;
+
+        Object.keys(usersData).forEach(uid => {
+            const user = usersData[uid];
+            // Calculate how many demos submitted by this artist
+            let userDemosCount = 0;
+            Object.keys(demosData).forEach(dKey => {
+                const d = demosData[dKey];
+                if ((d.userId && d.userId === uid) || (d.email && d.email.toLowerCase() === (user.email || '').toLowerCase())) {
+                    userDemosCount++;
+                    totalLinkedDemos++;
+                }
+            });
+
+            allRegisteredArtists.push({
+                uid: uid,
+                name: user.name || 'Unknown Producer',
+                email: user.email || 'N/A',
+                photoURL: user.photoURL || 'assets/OCR.png',
+                createdAt: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Recent',
+                lastLogin: user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'N/A',
+                demosCount: userDemosCount
+            });
+        });
+
+        if (totalArtistsEl) totalArtistsEl.textContent = allRegisteredArtists.length;
+        if (totalDemosEl) totalDemosEl.textContent = totalLinkedDemos;
+
+        renderArtistCards(allRegisteredArtists);
+
+        if (searchInput) {
+            searchInput.oninput = () => {
+                const query = searchInput.value.toLowerCase().trim();
+                const filtered = allRegisteredArtists.filter(a => 
+                    a.name.toLowerCase().includes(query) || 
+                    a.email.toLowerCase().includes(query)
+                );
+                renderArtistCards(filtered);
+            };
+        }
+    }).catch(err => {
+        console.error("Error loading artists:", err);
+        container.innerHTML = `<p style="color:#ff0055; padding:2rem; text-align:center;">ERROR ACCESSING ARTIST DIRECTORY: ${err.message}</p>`;
+    });
+}
+
+function renderArtistCards(artistsList) {
+    const container = document.getElementById('artists-directory-container');
+    if (!container) return;
+
+    if (artistsList.length === 0) {
+        container.innerHTML = '<p style="opacity:0.4; padding:3rem; text-align:center; font-family:monospace;">NO REGISTERED ARTIST PROFILES FOUND.</p>';
+        return;
+    }
+
+    let html = '';
+    artistsList.forEach(artist => {
+        html += `
+            <div class="release-editor-item" style="display:flex; align-items:center; justify-content:space-between; gap:1.5rem; flex-wrap:wrap; padding:1.2rem 1.5rem; background:rgba(12,15,22,0.8); border:1px solid rgba(0,240,255,0.2); border-radius:8px;">
+                <div style="display:flex; align-items:center; gap:1.2rem;">
+                    <img src="${artist.photoURL}" alt="Profile" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid #00f0ff;">
+                    <div>
+                        <h3 style="margin:0; font-size:1.1rem; color:#ffffff;">${artist.name}</h3>
+                        <p style="margin:2px 0 0; font-size:0.75rem; color:#00f0ff; font-family:monospace;">${artist.email}</p>
+                        <span style="font-size:0.65rem; color:rgba(255,255,255,0.4); font-family:monospace;">JOINED: ${artist.createdAt} &bull; LAST LOGIN: ${artist.lastLogin}</span>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem;">
+                    <div style="text-align:right;">
+                        <span style="display:block; font-size:1.3rem; font-weight:800; color:#00ff88;">${artist.demosCount}</span>
+                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5); font-family:monospace;">TOTAL DEMOS</span>
+                    </div>
+                    <button class="action-btn" onclick="filterSubmissionsForArtist('${artist.email}')" style="padding:0.6rem 1rem; font-size:0.7rem;">
+                        <i class="fas fa-inbox"></i> VIEW DEMOS
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+window.filterSubmissionsForArtist = function(email) {
+    const inboxNavBtn = document.querySelector('.nav-btn[data-target="demo-inbox-panel"]');
+    if (inboxNavBtn) inboxNavBtn.click();
+    showToast(`FILTERING SUBMISSIONS FOR: ${email}`);
+};
+
+const refreshArtistsBtn = document.getElementById('refresh-artists');
+if (refreshArtistsBtn) {
+    refreshArtistsBtn.addEventListener('click', loadArtistProfiles);
 }
 
 // Robust Event Delegation for Deletion
