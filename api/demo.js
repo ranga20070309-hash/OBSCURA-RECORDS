@@ -39,7 +39,7 @@ function sanitize(str) {
         .replace(/'/g, '&#039;');
 }
 
-async function sendDiscordDemoNotification({ artist, name, email, genre, link, spotify, message, date }) {
+async function sendDiscordDemoNotification({ artist, name, email, genre, link, spotify, message, date, subKey }) {
     const webhookUrl = process.env.DISCORD_WEBHOOK_URL || 'https://discord.com/api/webhooks/1538094536637550635/00D-4jyKHXXsNlXMb250cnhl8DPIQVJtyqu9EjKg0fTLXl5i0yT1F0pHN_EcNMZJm_OR';
     if (!webhookUrl) return;
 
@@ -58,7 +58,8 @@ async function sendDiscordDemoNotification({ artist, name, email, genre, link, s
                     { name: "🎹 Primary Genre", value: `\`${genre || 'Not Specified'}\``, inline: true },
                     { name: "🔗 Demo Streaming Link", value: `${link}`, inline: false },
                     { name: "🌐 Spotify / Socials", value: spotify || "None provided", inline: false },
-                    { name: "💬 Message / Bio", value: message ? (message.length > 900 ? message.substring(0, 897) + "..." : message) : "*No message attached.*", inline: false }
+                    { name: "💬 Message / Bio", value: message ? (message.length > 900 ? message.substring(0, 897) + "..." : message) : "*No message attached.*", inline: false },
+                    { name: "⚡ Live A&R Status", value: `🟡 **PENDING REVIEW**\n*ID:* \`${subKey || 'N/A'}\``, inline: false }
                 ],
                 footer: {
                     text: "Obscura Records • A&R Automated Dispatch Engine",
@@ -93,7 +94,7 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const { name, artist, email, genre, link, spotify, message, date, recaptcha_token } = req.body || {};
+    const { name, artist, email, genre, link, spotify, message, date, recaptcha_token, subKey } = req.body || {};
 
     if (!email || !artist || !link) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -209,7 +210,8 @@ module.exports = async (req, res) => {
                 link: cleanLink,
                 spotify: cleanSpotify,
                 message: cleanMessage,
-                date: cleanDate
+                date: cleanDate,
+                subKey: subKey
             })
         ]);
 
