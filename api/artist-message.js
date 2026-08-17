@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const { artistName, artistEmail, trackTitle, messageText, subId } = req.body || {};
+    const { artistName, artistEmail, trackTitle, genre, messageText, subId } = req.body || {};
 
     if (!artistEmail || !messageText) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -43,36 +43,34 @@ module.exports = async (req, res) => {
 
     const cleanArtist = sanitize(artistName || 'Producer');
     const cleanEmail = artistEmail.trim();
-    const cleanTrack = sanitize(trackTitle || 'Demo Submission');
+    const cleanTrack = sanitize(trackTitle || 'Demo');
+    const cleanGenre = sanitize(genre || 'test');
     const cleanMsg = sanitize(messageText);
-    const cleanSubId = sanitize(subId || 'N/A');
+    const cleanSubId = sanitize(subId || 'general');
 
     try {
         if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+            const threadSubject = `Re: [DEMO SUBMISSION] ${cleanArtist} - ${cleanGenre}`;
+            const messageThreadId = `<demo-${cleanSubId}@obscurarecord.com>`;
+
             const mailOptions = {
-                from: `"OBSCURA ARTIST PORTAL" <${process.env.EMAIL_USER}>`,
+                from: `"Obscura Records" <${process.env.EMAIL_USER}>`,
                 to: process.env.EMAIL_USER,
                 replyTo: cleanEmail,
-                subject: `[A&R COMMUNIQUE] ${cleanArtist} — Re: ${cleanTrack}`,
-                text: `New message from Producer ${cleanArtist} (${cleanEmail})\nTrack: ${cleanTrack}\nSubmission ID: ${cleanSubId}\n\nMessage:\n${messageText}`,
+                subject: threadSubject,
+                text: `${cleanArtist} (${cleanEmail}) sent a message:\n\n${messageText}`,
                 html: `
-                    <div style="background-color:#050508; color:#e0e0e0; font-family:'Courier New', monospace; padding:30px; border:1px solid #00f0ff; border-radius:8px; max-width:600px;">
-                        <h2 style="color:#00f0ff; letter-spacing:2px; margin-top:0;">[ OBSCURA RECORDS // ARTIST MESSAGE ]</h2>
-                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 13px;">
-                            <tr><td style="padding: 4px 0; color:#888; width: 120px;">PRODUCER:</td><td style="color:#ffffff; font-weight:bold;">${cleanArtist}</td></tr>
-                            <tr><td style="padding: 4px 0; color:#888;">EMAIL:</td><td><a href="mailto:${cleanEmail}" style="color:#00f0ff;">${cleanEmail}</a></td></tr>
-                            <tr><td style="padding: 4px 0; color:#888;">TRACK:</td><td style="color:#00ff88;">${cleanTrack}</td></tr>
-                            <tr><td style="padding: 4px 0; color:#888;">DEMO ID:</td><td><code style="color:#ffaa00;">${cleanSubId}</code></td></tr>
-                        </table>
-                        <hr style="border:none; border-top:1px solid rgba(0,240,255,0.2); margin:15px 0;">
-                        <div style="background:rgba(0,240,255,0.06); padding:16px; border-left:3px solid #00f0ff; border-radius:0 4px 4px 0; font-size: 14px; line-height: 1.6; color:#ffffff;">
-                            ${cleanMsg.replace(/\n/g, '<br>')}
+                    <div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #111111;">
+                        <p style="margin:0 0 10px 0;"><strong>${cleanArtist}</strong> (<a href="mailto:${cleanEmail}">${cleanEmail}</a>) replied in A&R Direct Line:</p>
+                        <div style="background-color: #f4f4f4; border-left: 4px solid #0066cc; padding: 12px; margin: 10px 0; border-radius: 0 4px 4px 0;">
+                            <p style="margin: 0; white-space: pre-wrap;">${cleanMsg}</p>
                         </div>
-                        <hr style="border:none; border-top:1px solid rgba(0,240,255,0.2); margin:15px 0;">
-                        <p style="font-size:0.75rem; color:#666; margin:0;">You can click Reply in your email client to directly reply to ${cleanEmail}, or respond through the Obscura Admin Command Portal.</p>
+                        <p style="font-size: 12px; color: #777; margin-top: 15px;">Track: ${cleanTrack} | Submission ID: ${cleanSubId}</p>
                     </div>
                 `,
                 headers: {
+                    'In-Reply-To': messageThreadId,
+                    'References': messageThreadId,
                     'X-Priority': '1 (Highest)',
                     'X-MSMail-Priority': 'High',
                     'Importance': 'High'
@@ -82,7 +80,7 @@ module.exports = async (req, res) => {
             await transporter.sendMail(mailOptions);
         }
 
-        return res.status(200).json({ success: true, message: 'Delivered to Obscura A&R Desk' });
+        return res.status(200).json({ success: true, message: 'Delivered into conversation thread.' });
     } catch (err) {
         console.error("Artist message notification error:", err);
         return res.status(500).json({ error: 'Failed to deliver message via SMTP.' });
