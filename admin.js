@@ -70,38 +70,31 @@ window.secureNavigate = function(url, key) {
 
 window.saveIndividualStaff = function (discordId) {
     const item = document.querySelector(`.staff-editor-item[data-discord-id="${discordId}"]`);
-    if (!item) {
-        showToast("CRITICAL ERROR: Editor entry missing.", 'error');
-        return;
-    }
-    
+    if (!item) { showToast("CRITICAL ERROR: Editor entry missing.", 'error'); return; }
     const saveBtn = item.querySelector('.save-btn-staff');
     if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SYNCING...';
+    const nameInput = item.querySelector('.s-name');
     const bio = item.querySelector('.s-bio').value;
     const avatar = item.querySelector('.s-avatar') ? item.querySelector('.s-avatar').value : '';
+    const role = item.querySelector('.s-role') ? item.querySelector('.s-role').value : '';
+    const discordLink = item.querySelector('.s-discord-link') ? item.querySelector('.s-discord-link').value : '';
     const socials = {};
     item.querySelectorAll('input[class^="s-social-"]').forEach(input => {
         const platform = input.className.replace('s-social-', '');
-        if (input.value.trim() !== '') {
-            socials[platform] = input.value.trim();
-        }
+        if (input.value.trim() !== '') socials[platform] = input.value.trim();
     });
-    
-    const data = { bio: bio, avatar_url: avatar, socials: socials };
-    
-    // SMART ROUTING: Determine if this is a partner or staff
-    const partnerIds = ["1466152706145128659"];
-    const isPartner = partnerIds.includes(discordId);
+    const data = { bio, avatar_url: avatar, role, discord_link: discordLink, socials };
+    if (nameInput && nameInput.value.trim()) data.name = nameInput.value.trim();
+    const isPartner = item.dataset.type === 'partner';
     const path = isPartner ? 'partner_status/' : 'staff_status/';
-
     db.ref(path + discordId).update(data).then(() => {
         showToast(`${isPartner ? 'PARTNER' : 'PERSONNEL'} SYNC SUCCESSFUL: ${discordId}`);
-        if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> SYNC INDIVIDUAL';
+        if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> SYNC';
         bumpSiteVersion();
         loadStaff();
     }).catch(err => {
         showToast('SYNC ERROR: ' + err.message, 'error');
-        if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> RETRY SYNC';
+        if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> RETRY';
     });
 };
 
@@ -923,7 +916,7 @@ function createUpcomingEditor(item, index) {
                     </div>
                     <div class="input-group full">
                         <label>Visual Asset Management</label>
-                        <p class="field-desc">Browse local storage (💾) or capture YouTube cover (🪄).</p>
+                        <p class="field-desc">Browse local storage (ðŸ’¾) or capture YouTube cover (ðŸª„).</p>
                         <div style="display: flex; gap: 0.5rem; align-items: center; position: relative;">
                             <input type="text" class="u-image" value="${item.image || 'assets/cover.png'}" id="input-u-${index}" oninput="updateLivePreview(this, 'prev-u-${index}'); syncLiveCard(${index})">
                             <button class="action-btn-mini" onclick="triggerUpcomingUpload(${index})"><i class="fas fa-folder-open"></i></button>
@@ -1232,51 +1225,70 @@ if (refreshBtn) refreshBtn.addEventListener('click', loadSubmissions);
 
 
 // --- STAFF PROFILES PANEL ---
-function createStaffEditor(staff, discordId) {
+function esc(str) { return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function createStaffEditor(staff, discordId, type) {
     const div = document.createElement('div');
     div.className = 'release-editor-item staff-editor-item';
-    div.style.marginBottom = '2.5rem';
-    div.style.background = 'rgba(255,255,255,0.02)';
-    div.style.padding = '2.5rem';
-    div.style.borderRadius = '24px';
-    div.style.border = '1px solid rgba(255,255,255,0.05)';
+    div.style.marginBottom = '2rem';
     div.dataset.discordId = discordId;
+    div.dataset.type = type || 'staff';
 
-    // Socials section
     const socials = staff.socials || {};
     const platforms = ['instagram', 'spotify', 'apple', 'facebook', 'youtube', 'tiktok', 'twitter'];
-    let socialsHtml = '';
-    platforms.forEach(p => {
-        socialsHtml += `
-            <div class="input-group">
-                <label>${p.toUpperCase()} LINK</label>
-                <input type="text" class="s-social-${p}" value="${socials[p] || ''}" placeholder="https://...">
-            </div>
-        `;
-    });
+    let socialsHtml = platforms.map(p => `
+        <div class="input-group">
+            <label>${p.toUpperCase()} LINK</label>
+            <input type="text" class="s-social-${p}" value="${esc(socials[p])}" placeholder="https://...">
+        </div>`).join('');
+
+    const isPartner = type === 'partner';
+    const typeLabel = isPartner ? 'LABEL PARTNER' : 'STAFF MEMBER';
+    const accentColor = isPartner ? '#ff00ff' : '#00f0ff';
+    const avatarUrl = staff.avatar_url || 'assets/staff/default.png';
 
     div.innerHTML = `
-        <button class="delete-btn" onclick="removeStaff('${discordId}')"><i class="fas fa-trash"></i></button>
+        <button class="delete-btn" onclick="removeStaffMember('${discordId}','${type || 'staff'}')" title="Delete"><i class="fas fa-trash"></i></button>
         <div class="staff-header-row">
             <div class="staff-meta-main">
-                <div class="staff-avatar-circle" style="background-image: url(${staff.avatar_url || 'assets/staff/default.png'})"></div>
+                <div class="staff-avatar-circle" id="padmin-${discordId}" style="background-image:url('${esc(avatarUrl)}')"></div>
                 <div>
-                    <h3>${staff.name || 'UNKNOWN'}</h3>
-                    <small>SEC_ID: ${discordId}</small>
+                    <h3>${esc(staff.name || 'UNKNOWN')}</h3>
+                    <div style="display:flex;gap:0.6rem;align-items:center;margin-top:0.4rem;flex-wrap:wrap;">
+                        <span style="font-family:monospace;font-size:0.68rem;color:var(--text-secret);">ID: ${discordId}</span>
+                        <span style="font-size:0.58rem;padding:0.2rem 0.7rem;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid ${accentColor};color:${accentColor};font-family:'Syncopate',sans-serif;letter-spacing:0.08rem;">${typeLabel}</span>
+                    </div>
                 </div>
             </div>
-            <button class="save-btn save-btn-staff" onclick="saveIndividualStaff('${discordId}')"><i class="fas fa-save"></i> SYNC INDIVIDUAL</button>
+            <button class="save-btn save-btn-staff" onclick="saveIndividualStaff('${discordId}')"><i class="fas fa-save"></i> SAVE</button>
         </div>
         <div class="form-grid">
-            <div class="input-group full">
-                <label>AVATAR SOURCE URL</label>
-                <input type="text" class="s-avatar" value="${staff.avatar_url || ''}" placeholder="Image Link...">
+            <div class="input-group">
+                <label>DISPLAY NAME</label>
+                <p class="field-desc">Name shown on the public site card.</p>
+                <input type="text" class="s-name" value="${esc(staff.name)}" placeholder="e.g. SVYUXU">
+            </div>
+            <div class="input-group">
+                <label>ROLE / TITLE</label>
+                <p class="field-desc">e.g. CEO, A&amp;R, Head of Marketing</p>
+                <input type="text" class="s-role" value="${esc(staff.role)}" placeholder="e.g. A&R">
             </div>
             <div class="input-group full">
-                <label>PERSONNEL BIOGRAPHY</label>
-                <textarea class="s-bio">${staff.bio || ''}</textarea>
+                <label>AVATAR IMAGE URL</label>
+                <p class="field-desc">Direct image link. Updates the preview below instantly.</p>
+                <input type="text" class="s-avatar" value="${esc(staff.avatar_url)}" placeholder="https://..." oninput="(function(v){var el=document.getElementById('padmin-${discordId}');if(el)el.style.backgroundImage='url('+v+')'})(this.value)">
             </div>
-            <h4 class="form-sub-header">BROADCAST CHANNELS</h4>
+            <div class="input-group full">
+                <label>DISCORD CONNECT LINK</label>
+                <p class="field-desc">Optional Discord invite / profile URL — shown as a button in the public card popup.</p>
+                <input type="text" class="s-discord-link" value="${esc(staff.discord_link)}" placeholder="https://discord.gg/...">
+            </div>
+            <div class="input-group full">
+                <label>BIOGRAPHY</label>
+                <p class="field-desc">Short bio shown in the profile popup on the public site.</p>
+                <textarea class="s-bio">${esc(staff.bio)}</textarea>
+            </div>
+            <h4 class="form-sub-header">SOCIAL / BROADCAST CHANNELS</h4>
             ${socialsHtml}
         </div>
     `;
@@ -1284,10 +1296,17 @@ function createStaffEditor(staff, discordId) {
 }
 
 window.removeStaff = function (discordId) {
-    if (confirm('SYSTEM OVERRIDE: Purge this personnel record from the transmission?')) {
-        db.ref('staff_status/' + discordId).remove().then(() => {
-            loadStaff(); // Refresh view
-        });
+    window.removeStaffMember(discordId, 'staff');
+};
+
+window.removeStaffMember = function (discordId, type) {
+    const label = (type === 'partner') ? 'PARTNER' : 'PERSONNEL';
+    if (confirm(`SYSTEM OVERRIDE: Purge this ${label} record?`)) {
+        const path = (type === 'partner') ? 'partner_status/' : 'staff_status/';
+        db.ref(path + discordId).remove().then(() => {
+            showToast(`${label} PURGED: ${discordId}`);
+            loadStaff();
+        }).catch(err => showToast('PURGE ERROR: ' + err.message, 'error'));
     }
 };
 
@@ -1296,88 +1315,134 @@ function loadStaff() {
     const partnersContainer = document.getElementById('partners-container');
     if (!staffContainer) return;
 
-    staffContainer.innerHTML = '<p style="opacity:0.5; padding:2rem;">Syncing personnel records...</p>';
-    if (partnersContainer) partnersContainer.innerHTML = '<p style="opacity:0.5; padding:2rem;">Syncing partner records...</p>';
+    staffContainer.innerHTML = '<p style="opacity:0.5;padding:2rem;"><i class="fas fa-spinner fa-spin" style="margin-right:0.5rem;color:#00f0ff;"></i>Syncing personnel records...</p>';
+    if (partnersContainer) partnersContainer.innerHTML = '<p style="opacity:0.5;padding:2rem;"><i class="fas fa-spinner fa-spin" style="margin-right:0.5rem;color:#ff00ff;"></i>Syncing partner records...</p>';
 
-    const partnerIds = ["1466152706145128659"];
+    const baseStaff = {
+        "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+        "1126206273722011708": { name: "RANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+        "1145271334922879011": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
+        "1099844087961632849": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" }
+    };
 
-    // 1. Load Staff
     db.ref('staff_status').once('value').then(snapshot => {
-        const staffData = snapshot.val() || {};
-        
-        // 2. Load Partners
+        let staffData = snapshot.val() || {};
+        if (Object.keys(staffData).length === 0) {
+            Object.entries(baseStaff).forEach(([id, s]) => { db.ref('staff_status/' + id).set(s); staffData[id] = s; });
+        }
         db.ref('partner_status').once('value').then(pSnapshot => {
             const partnerData = pSnapshot.val() || {};
-            
             staffContainer.innerHTML = '';
             if (partnersContainer) partnersContainer.innerHTML = '';
 
-            const baseStaff = {
-                "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                "1126206273722011708": { name: "RANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                "1145271334922879011": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                "1099844087961632849": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" }
-            };
+            Object.entries(staffData).forEach(([id, s]) => staffContainer.appendChild(createStaffEditor(s, id, 'staff')));
+            Object.entries(partnerData).forEach(([id, p]) => { if (partnersContainer) partnersContainer.appendChild(createStaffEditor(p, id, 'partner')); });
 
-            // Auto-initialize base staff if empty
-            if (Object.keys(staffData).length === 0) {
-                Object.entries(baseStaff).forEach(([id, s]) => {
-                    db.ref('staff_status/' + id).set(s);
-                    staffData[id] = s;
-                });
-            }
-
-            // Render Staff
-            Object.entries(staffData).forEach(([id, staff]) => {
-                if (!partnerIds.includes(id)) {
-                    staffContainer.appendChild(createStaffEditor(staff, id));
-                }
-            });
-
-            // Render Partners
-            Object.entries(partnerData).forEach(([id, partner]) => {
-                if (partnerIds.includes(id) && partnersContainer) {
-                    partnersContainer.appendChild(createStaffEditor(partner, id));
-                }
-            });
-            
-            if (staffContainer.innerHTML === '') staffContainer.innerHTML = '<p style="opacity:0.3; padding:2rem;">No staff records.</p>';
-            if (partnersContainer && partnersContainer.innerHTML === '') partnersContainer.innerHTML = '<p style="opacity:0.3; padding:2rem;">No partner records.</p>';
+            if (staffContainer.children.length === 0) staffContainer.innerHTML = '<p style="opacity:0.35;padding:2rem;font-style:italic;">No staff records. Click ADD NEW STAFF MEMBER to create one.</p>';
+            if (partnersContainer && partnersContainer.children.length === 0) partnersContainer.innerHTML = '<p style="opacity:0.35;padding:2rem;font-style:italic;">No partner records. Click ADD NEW PARTNER to create one.</p>';
         });
     });
 }
 
 function saveStaff() {
     const items = document.querySelectorAll('.staff-editor-item');
-    if (items.length === 0) {
-        alert('NO PERSONNEL RECORDS FOUND TO SYNC.');
-        return;
-    }
-    const updates = {};
+    if (items.length === 0) { showToast('NO PERSONNEL RECORDS TO SYNC.', 'error'); return; }
+    const staffUpdates = {}, partnerUpdates = {};
     items.forEach(item => {
         const id = item.dataset.discordId;
+        const isPartner = item.dataset.type === 'partner';
+        const nameInput = item.querySelector('.s-name');
         const bio = item.querySelector('.s-bio').value;
-        const avatar = item.querySelector('.s-avatar') ? item.querySelector('.s-avatar').value : '';
+        const avatar = item.querySelector('.s-avatar')?.value || '';
+        const role = item.querySelector('.s-role')?.value || '';
+        const discordLink = item.querySelector('.s-discord-link')?.value || '';
         const socials = {};
-        item.querySelectorAll('input[class^="s-social-"]').forEach(input => {
-            const platform = input.className.replace('s-social-', '');
-            if (input.value.trim() !== '') {
-                socials[platform] = input.value.trim();
-            }
+        item.querySelectorAll('input[class^="s-social-"]').forEach(inp => {
+            const p = inp.className.replace('s-social-', '');
+            if (inp.value.trim()) socials[p] = inp.value.trim();
         });
-        updates[id + '/bio'] = bio;
-        updates[id + '/avatar_url'] = avatar;
-        updates[id + '/socials'] = socials;
+        const target = isPartner ? partnerUpdates : staffUpdates;
+        if (nameInput?.value.trim()) target[id + '/name'] = nameInput.value.trim();
+        target[id + '/bio'] = bio;
+        target[id + '/avatar_url'] = avatar;
+        target[id + '/role'] = role;
+        target[id + '/discord_link'] = discordLink;
+        target[id + '/socials'] = socials;
     });
-    db.ref('staff_status').update(updates).then(() => {
-        showToast('STAFF DIRECTORY DEPLOYED SUCCESSFULLY.');
+    const p1 = Object.keys(staffUpdates).length > 0 ? db.ref('staff_status').update(staffUpdates) : Promise.resolve();
+    const p2 = Object.keys(partnerUpdates).length > 0 ? db.ref('partner_status').update(partnerUpdates) : Promise.resolve();
+    Promise.all([p1, p2]).then(() => {
+        showToast('FULL DIRECTORY SYNC SUCCESSFUL.');
         showSaveMsg('save-msg-staff');
         bumpSiteVersion();
         loadStaff();
-    }).catch(err => {
-        showToast('CRITICAL SYNC ERROR: CHECK CONNECTION', 'error');
-    });
+    }).catch(err => showToast('SYNC ERROR: ' + err.message, 'error'));
 }
+
+// ─── ADD NEW STAFF / PARTNER ───────────────────────────────────────────────────
+window.openAddMemberModal = function(type) {
+    document.getElementById('add-member-modal-overlay')?.remove();
+    const isP = type === 'partner';
+    const lbl = isP ? 'LABEL PARTNER' : 'STAFF MEMBER';
+    const clr = isP ? '#ff00ff' : '#00f0ff';
+    const ov = document.createElement('div');
+    ov.id = 'add-member-modal-overlay';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.88);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;';
+    ov.innerHTML = `
+        <div style="background:#09090f;border:1px solid ${clr};border-radius:28px;padding:3rem;width:100%;max-width:500px;box-shadow:0 0 80px ${clr}22;position:relative;">
+            <button onclick="document.getElementById('add-member-modal-overlay').remove()" style="position:absolute;top:1rem;right:1.5rem;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;opacity:0.5;">&times;</button>
+            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;">
+                <i class="fas ${isP ? 'fa-handshake' : 'fa-user-plus'}" style="font-size:2rem;color:${clr};"></i>
+                <div>
+                    <h2 style="font-family:'Syncopate',sans-serif;font-size:0.95rem;letter-spacing:0.2rem;color:${clr};">ADD NEW ${lbl}</h2>
+                    <p style="font-size:0.7rem;opacity:0.45;margin-top:0.3rem;">Written to Firebase immediately.</p>
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:1rem;">
+                <div>
+                    <label style="display:block;font-size:0.65rem;letter-spacing:0.15rem;opacity:0.55;margin-bottom:0.4rem;font-family:'Syncopate',sans-serif;">DISPLAY NAME *</label>
+                    <input id="nm-name" type="text" placeholder="e.g. SVYUXU" style="width:100%;padding:0.85rem 1.1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:0.9rem;font-family:inherit;outline:none;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.65rem;letter-spacing:0.15rem;opacity:0.55;margin-bottom:0.4rem;font-family:'Syncopate',sans-serif;">DISCORD USER ID *</label>
+                    <input id="nm-id" type="text" placeholder="e.g. 1296819659131326556" style="width:100%;padding:0.85rem 1.1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:0.9rem;font-family:inherit;outline:none;">
+                    <small style="font-size:0.62rem;opacity:0.35;margin-top:0.3rem;display:block;">Right-click user in Discord &rarr; Copy User ID (requires Developer Mode)</small>
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.65rem;letter-spacing:0.15rem;opacity:0.55;margin-bottom:0.4rem;font-family:'Syncopate',sans-serif;">ROLE / TITLE</label>
+                    <input id="nm-role" type="text" placeholder="e.g. A&R, CEO, Label Head" style="width:100%;padding:0.85rem 1.1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:0.9rem;font-family:inherit;outline:none;">
+                </div>
+                <div id="nm-error" style="color:#ff4466;font-size:0.75rem;display:none;padding:0.4rem 0;"></div>
+                <button onclick="addNewMember('${type}')" style="padding:1.1rem;border-radius:14px;border:2px solid ${clr};background:transparent;color:${clr};font-family:'Syncopate',sans-serif;font-size:0.72rem;letter-spacing:0.15rem;cursor:pointer;transition:all 0.3s;font-weight:700;" onmouseover="this.style.background='${clr}';this.style.color='#000'" onmouseout="this.style.background='transparent';this.style.color='${clr}'">
+                    <i class="fas fa-plus"></i> CREATE ${lbl} RECORD
+                </button>
+            </div>
+        </div>`;
+    document.body.appendChild(ov);
+    ov.addEventListener('click', e => { if(e.target===ov) ov.remove(); });
+    setTimeout(() => document.getElementById('nm-name')?.focus(), 80);
+};
+
+window.addNewMember = function(type) {
+    const name = document.getElementById('nm-name')?.value.trim();
+    const discordId = document.getElementById('nm-id')?.value.trim();
+    const role = document.getElementById('nm-role')?.value.trim() || '';
+    const err = document.getElementById('nm-error');
+    if (!name || !discordId) { if(err){err.textContent='Name and Discord ID are required.';err.style.display='block';} return; }
+    if (!/^\d{17,20}$/.test(discordId)) { if(err){err.textContent='Invalid Discord ID (17-20 digits).';err.style.display='block';} return; }
+    if(err) err.style.display='none';
+    const path = type === 'partner' ? 'partner_status/' : 'staff_status/';
+    const record = { name, status: 'offline', bio: '', role, discord_link: '', avatar_url: 'assets/staff/default.png', socials: {} };
+    db.ref(path + discordId).once('value').then(snap => {
+        if (snap.exists()) { if(err){err.textContent='A record with this Discord ID already exists.';err.style.display='block';} return; }
+        db.ref(path + discordId).set(record).then(() => {
+            document.getElementById('add-member-modal-overlay')?.remove();
+            showToast(`${type==='partner'?'PARTNER':'STAFF'} CREATED: ${name}`);
+            bumpSiteVersion();
+            loadStaff();
+        }).catch(e => { if(err){err.textContent='Firebase error: '+e.message;err.style.display='block';} });
+    });
+};
 
 // Individual save function moved to top for scope safety
 
