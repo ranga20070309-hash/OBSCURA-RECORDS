@@ -862,6 +862,32 @@ const initPortal = () => {
 
                 await subRef.set(submission);
 
+                // Auto-create initial message in A&R thread for this demo
+                if (currentUser && currentUser.uid) {
+                    try {
+                        const threadMsgRef = db.ref(`siteData/conversations/${currentUser.uid}/threads/${subKey}/messages`).push();
+                        await threadMsgRef.set({
+                            sender: 'artist',
+                            senderName: submission.artist || currentUser.displayName || 'Producer',
+                            text: `[DEMO SUBMITTED] ${submission.artist} (${submission.genre})\nLink: ${submission.link}\nMessage: ${submission.message || 'No additional bio.'}`,
+                            timestamp: firebase.database.ServerValue.TIMESTAMP,
+                            date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        });
+
+                        await db.ref(`siteData/conversations/${currentUser.uid}/threads/${subKey}/meta`).set({
+                            artistName: submission.artist || currentUser.displayName || 'Producer',
+                            artistEmail: submission.email || currentUser.email || '',
+                            trackTitle: submission.artist,
+                            genre: submission.genre,
+                            subId: subKey,
+                            lastMessage: submission.message || 'Demo submitted.',
+                            lastUpdated: firebase.database.ServerValue.TIMESTAMP
+                        });
+                    } catch (tErr) {
+                        console.warn("Thread init notice:", tErr);
+                    }
+                }
+
                 subForm.style.display = 'none';
                 if (subStatus) subStatus.style.display = 'block';
 
@@ -2890,6 +2916,7 @@ function initArtistPortalEngine() {
                         artistName: currentArtistUser.displayName || 'Producer',
                         artistEmail: currentArtistUser.email || '',
                         trackTitle: trackTitle,
+                        genre: sub ? sub.genre : 'test',
                         messageText: text,
                         subId: activeThreadId
                     })
