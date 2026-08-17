@@ -508,7 +508,7 @@
                     <div class="input-group"><label>P1: Title</label><input type="text" id="site_p1_q"
                             value="INTELLECTUAL PROPERTY"></div>
                     <div class="input-group"><label>P1: Text</label><textarea
-                            id="site_p1_a">All content in this dimension—including audio, graphics, logos, and visual art—is the property of Obscura Record or its licensors.</textarea>
+                            id="site_p1_a">All content in this dimensionâ€”including audio, graphics, logos, and visual artâ€”is the property of Obscura Record or its licensors.</textarea>
                     </div>
 
                     <div class="input-group"><label>P2: Title</label><input type="text" id="site_p2_q"
@@ -642,12 +642,14 @@
                 </div>
 
                 <div class="btn-group mb-2"
-                    style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2.5rem;">
-                    <button class="save-btn" id="save-staff-main"><i class="fas fa-upload"></i> SYNC ALL PROFILES TO
-                        SERVER</button>
+                    style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2.5rem; flex-wrap: wrap;">
+                    <button class="save-btn" id="save-staff-main"><i class="fas fa-upload"></i> SYNC ALL TO SERVER</button>
+                    <button class="action-btn" onclick="openAddMemberModal('staff')" style="border-color: #00f0ff; color: #00f0ff; background: rgba(0,240,255,0.05);">
+                        <i class="fas fa-user-plus"></i> ADD NEW STAFF MEMBER
+                    </button>
                     <button class="action-btn" id="init-staff-btn"
-                        style="background: rgba(0, 240, 255, 0.05); border: 1.5px solid var(--primary); color: var(--primary); padding: 1.25rem 2rem; border-radius: 14px; cursor: pointer; font-family: inherit; font-size: 0.8rem; letter-spacing: 0.1rem; font-weight: 700; transition: 0.4s;">
-                        <i class="fas fa-seedling"></i> INITIALIZE BASE PERSONNEL
+                        style="background: rgba(255,255,255,0.03); border: 1.5px solid var(--text-dim); color: var(--text-dim); padding: 1.25rem 2rem; border-radius: 14px; cursor: pointer; font-family: inherit; font-size: 0.8rem; letter-spacing: 0.1rem; font-weight: 700; transition: 0.4s;">
+                        <i class="fas fa-seedling"></i> INIT BASE PERSONNEL
                     </button>
                     <span id="save-msg-staff" class="save-msg">Profiles synced successfully.</span>
                 </div>
@@ -660,6 +662,11 @@
                 </div>
 
                 <h3 class="section-subheader" style="margin-top: 4rem;">LABEL PARTNERS</h3>
+                <div style="margin-bottom: 1.5rem;">
+                    <button class="action-btn" onclick="openAddMemberModal('partner')" style="border-color: #ff00ff; color: #ff00ff; background: rgba(255,0,255,0.05);">
+                        <i class="fas fa-handshake"></i> ADD NEW PARTNER
+                    </button>
+                </div>
                 <div id="partners-container" class="releases-list">
                     <!-- Dynamic partner forms will compile here -->
                     <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Initializing neural link to partner
@@ -818,18 +825,18 @@
 
     <script src="admin.js?v=4.8"></script>
     <script>
-        // Emergency Cache-Bypass for Staff Management
+        // Compatibility shims — main logic in admin.js
         function removeStaff(discordId) {
-            if (confirm('SYSTEM OVERRIDE: Purge this personnel record from the transmission?')) {
-                if (typeof firebase !== 'undefined') {
-                    const db = firebase.database();
-                    db.ref('staff_status/' + discordId).remove().then(() => {
-                        alert('Personnel record purged successfully.');
-                        if (typeof loadStaff === 'function') loadStaff();
-                        else window.location.reload();
-                    });
-                }
+            if (typeof window.removeStaffMember === 'function') {
+                window.removeStaffMember(discordId, 'staff');
+            } else if (confirm('Purge this staff record?')) {
+                firebase.database().ref('staff_status/' + discordId).remove().then(() => {
+                    if (typeof loadStaff === 'function') loadStaff(); else location.reload();
+                });
             }
+        }
+        function removeStaffMember(discordId, type) {
+            if (typeof window.removeStaffMember === 'function') window.removeStaffMember(discordId, type);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
