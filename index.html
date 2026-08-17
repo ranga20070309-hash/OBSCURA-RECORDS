@@ -1215,16 +1215,16 @@
                 <!-- Navigation Tabs -->
                 <div class="artist-dash-tabs">
                     <button class="dash-tab-btn active" data-tab="submissions-tab">
-                        <i class="fas fa-satellite-dish"></i> TRANSMISSIONS QUEUE (<span id="dash-sub-count">0</span>)
+                        <i class="fas fa-satellite-dish"></i> TRANSMISSIONS (<span id="dash-sub-count">0</span>)
                     </button>
                     <button class="dash-tab-btn" data-tab="inquiries-tab">
-                        <i class="fas fa-comments"></i> A&R DIRECT LINE
+                        <i class="fas fa-comments"></i> A&R DIRECT LINE <span id="unread-badge" class="unread-badge" style="display:none;"></span>
                     </button>
                 </div>
 
-                <!-- Tab 1: Submissions Stream -->
+                <!-- Tab 1: Submissions List -->
                 <div id="submissions-tab" class="dash-tab-pane active">
-                    <div id="dash-submissions-list" class="dash-submissions-grid">
+                    <div id="dash-submissions-list" class="dash-submissions-list">
                         <div class="dash-empty-state">
                             <i class="fas fa-compact-disc fa-spin"></i>
                             <p>Scanning vault for your transmissions...</p>
@@ -1232,19 +1232,38 @@
                     </div>
                 </div>
 
-                <!-- Tab 2: Direct A&R Chat Stream -->
+                <!-- Tab 2: Per-Submission A&R Chat Thread -->
                 <div id="inquiries-tab" class="dash-tab-pane">
-                    <div class="dash-chat-container">
-                        <div class="chat-banner">
-                            <i class="fas fa-shield-alt"></i> DIRECT ENCRYPTED COMMUNICATION WITH OBSCURA RECORDS A&R DESK
+                    <!-- Thread Selector (when no thread is open) -->
+                    <div id="thread-selector" class="thread-selector">
+                        <div class="thread-select-hint">
+                            <i class="fas fa-comments"></i>
+                            <p>Select a transmission from the queue to open its dedicated A&R thread.</p>
                         </div>
-                        <div id="dash-chat-stream" class="dash-chat-stream">
+                        <div id="thread-list" class="thread-list"></div>
+                    </div>
+
+                    <!-- Active Thread View -->
+                    <div id="active-thread" class="active-thread" style="display:none;">
+                        <div class="thread-header">
+                            <button class="thread-back-btn" onclick="closeThread()">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <div class="thread-header-info">
+                                <div id="thread-track-title" class="thread-track-title">TRACK TITLE</div>
+                                <div id="thread-track-meta" class="thread-track-meta">A&R DIRECT LINE</div>
+                            </div>
+                            <span id="thread-status-badge" class="dash-status-badge badge-pending">
+                                <span class="dot"></span> PENDING
+                            </span>
+                        </div>
+                        <div id="thread-chat-stream" class="dash-chat-stream thread-chat-stream">
                             <div class="chat-empty-hint">
-                                <p>No direct messages yet. Send a query below to dispatch to our command center.</p>
+                                <p>Encrypted channel open. Send your first message to A&R Command.</p>
                             </div>
                         </div>
-                        <form id="dash-chat-form" class="dash-chat-composer">
-                            <input type="text" id="dash-chat-input" placeholder="Type direct inquiry to A&R..." required autocomplete="off">
+                        <form id="thread-chat-form" class="dash-chat-composer">
+                            <input type="text" id="thread-chat-input" placeholder="Message A&R about this track..." required autocomplete="off">
                             <button type="submit" class="dash-chat-send-btn">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
