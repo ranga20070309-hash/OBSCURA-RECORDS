@@ -1474,52 +1474,124 @@ section {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 3.5rem;
-    /* Increased gap for better distance */
+    align-items: stretch;
+    gap: 2.5rem;
     width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
 }
 
 .artist-item {
-    flex: 0 1 320px;
-    padding: 3rem 2.5rem;
-    border-radius: 20px;
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
+    flex: 0 1 300px;
+    padding: 2.5rem 2rem 2rem;
+    border-radius: 24px;
+    background: rgba(10, 10, 20, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     text-align: center;
-    transition: transform 0.4s, border-color 0.4s;
-    cursor: default;
-    min-height: 440px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    min-height: 420px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.artist-item::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+    opacity: 0.4;
+    transition: opacity 0.4s;
 }
 
 .artist-item:hover {
-    transform: translateY(-10px);
-    border-color: var(--accent-blue);
+    transform: translateY(-8px);
+    border-color: rgba(0, 240, 255, 0.4);
+    box-shadow: 0 20px 40px rgba(0, 240, 255, 0.15), 0 0 30px rgba(0, 240, 255, 0.1);
+}
+
+.artist-item:hover::before {
+    opacity: 1;
+}
+
+/* Partner Card Variant */
+.artist-item.partner-card {
+    flex: 0 1 340px;
+    border-color: rgba(255, 0, 255, 0.12);
+    min-height: 380px;
+}
+
+.artist-item.partner-card::before {
+    background: linear-gradient(90deg, transparent, var(--accent-magenta), transparent);
+}
+
+.artist-item.partner-card:hover {
+    border-color: rgba(255, 0, 255, 0.5);
+    box-shadow: 0 20px 40px rgba(255, 0, 255, 0.18), 0 0 30px rgba(255, 0, 255, 0.12);
 }
 
 .avatar-wrapper {
     position: relative;
-    width: 150px;
-    height: 150px;
-    margin: 0 auto 1.5rem;
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .artist-img {
-    width: 118px;
-    /* Balanced size for Discord frames */
-    height: 118px;
+    width: 110px;
+    height: 110px;
     border-radius: 50%;
-    background: #111;
+    background: #0d0d18;
+    background-size: cover;
+    background-position: center;
     border: 2px solid var(--accent-blue);
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+}
+
+.artist-img.online {
+    border-color: #00ff88;
+    box-shadow: 0 0 25px rgba(0, 255, 136, 0.5);
+}
+
+.artist-img.idle {
+    border-color: #ffcc00;
+    box-shadow: 0 0 25px rgba(255, 204, 0, 0.5);
+}
+
+.artist-img.dnd {
+    border-color: #ff0055;
+    box-shadow: 0 0 25px rgba(255, 0, 85, 0.5);
+}
+
+.artist-img.offline {
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+}
+
+.artist-item.partner-card .artist-img {
+    border-color: var(--accent-magenta);
+    box-shadow: 0 0 25px rgba(255, 0, 255, 0.35);
+    border-radius: 20px;
 }
 
 .avatar-decoration {
@@ -1527,16 +1599,85 @@ section {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 150px;
-    height: 150px;
+    width: 140px;
+    height: 140px;
     z-index: 2;
     pointer-events: none;
 }
 
 .artist-item h4 {
     font-family: var(--font-heading);
-    font-size: 1.4rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.35rem;
+    letter-spacing: 0.05rem;
+    margin-bottom: 0.4rem;
+    color: #fff;
+}
+
+/* Staff & Partner Role Badges */
+.staff-role-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: 0.12rem;
+    text-transform: uppercase;
+    padding: 0.25rem 0.85rem;
+    border-radius: 20px;
+    background: rgba(0, 240, 255, 0.08);
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    color: var(--accent-blue);
+    margin-bottom: 0.8rem;
+}
+
+.staff-role-badge.partner-badge {
+    background: rgba(255, 0, 255, 0.08);
+    border-color: rgba(255, 0, 255, 0.35);
+    color: var(--accent-magenta);
+}
+
+.partner-bio-preview {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0.6rem 0 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-align: center;
+    max-width: 280px;
+}
+
+.partner-card-socials {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: auto;
+    padding-top: 0.8rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.partner-card-socials .platform-link {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+    text-decoration: none;
+}
+
+.partner-card-socials .platform-link:hover {
+    background: var(--accent-magenta);
+    color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
 }
 
 
