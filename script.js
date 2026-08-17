@@ -1088,7 +1088,7 @@ const initPortal = () => {
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- UNIFIED PROFILE DETAIL MODAL (WITH TOP BANNER) ---
+        // --- UNIFIED PROFILE DETAIL MODAL (WITH TOP BANNER & DISCORD SYNC) ---
         function openProfileModal(opts) {
             const modal      = document.getElementById('artist-modal');
             const mBanner    = document.getElementById('artist-modal-banner');
@@ -1103,25 +1103,41 @@ const initPortal = () => {
 
             if (typeof playBleep === 'function') playBleep(700, 'sine', 0.1);
 
-            // 1. Dynamic Profile Banner
-            const bannerUrl = (opts.bannerUrl && opts.bannerUrl.trim() !== '') ? opts.bannerUrl : 'assets/cover.png';
-            if (mBanner && mBannerImg) {
-                mBannerImg.style.backgroundImage = `url("${bannerUrl}")`;
+            // 1. Dynamic Profile Banner (Supports Discord Animated GIFs, Image URLs, & Banner Colors)
+            const bannerUrl = (opts.bannerUrl && opts.bannerUrl.trim() !== '') ? opts.bannerUrl : '';
+            const bannerColor = opts.bannerColor || '';
+
+            if (mBanner) {
+                if (bannerColor) {
+                    mBanner.style.backgroundColor = bannerColor;
+                } else {
+                    mBanner.style.backgroundColor = '#0d0b18';
+                }
+
+                if (mBannerImg) {
+                    if (bannerUrl) {
+                        mBannerImg.style.backgroundImage = `url("${bannerUrl}")`;
+                        mBannerImg.style.display = 'block';
+                    } else if (bannerColor) {
+                        mBannerImg.style.backgroundImage = `linear-gradient(180deg, ${bannerColor} 0%, rgba(13,11,24,0.9) 100%)`;
+                        mBannerImg.style.display = 'block';
+                    } else {
+                        mBannerImg.style.backgroundImage = `url("assets/cover.png")`;
+                        mBannerImg.style.display = 'block';
+                    }
+                }
                 mBanner.style.display = 'block';
             }
 
             // 2. Name
             if (mName) mName.textContent = opts.name || 'PERSONNEL PROFILE';
 
-            // 3. Status Indicator
+            // 3. Status Indicator (Hidden for Partners, Dynamic for Staff)
             if (mStatus) {
                 if (opts.isPartner) {
-                    mStatus.textContent = 'OFFICIAL PARTNER';
-                    mStatus.className = 'status-indicator';
-                    mStatus.style.color = 'var(--accent-magenta)';
-                    mStatus.style.borderColor = 'rgba(255, 0, 200, 0.4)';
-                    mStatus.style.background = 'rgba(255, 0, 200, 0.1)';
+                    mStatus.style.display = 'none';
                 } else {
+                    mStatus.style.display = 'inline-block';
                     mStatus.textContent = (opts.status || 'OFFLINE').toUpperCase();
                     mStatus.className = `status-indicator ${opts.statusClass || 'offline'}`;
                     mStatus.style.color = '';
@@ -1235,7 +1251,8 @@ const initPortal = () => {
                         bio: d.bio || 'Accessing encrypted artist profile...',
                         avatarUrl: avatarSrc,
                         decorationUrl: d.decoration_url,
-                        bannerUrl: d.banner_url || 'assets/cover.png',
+                        bannerUrl: d.banner_url || d.banner || '',
+                        bannerColor: d.banner_color || d.accent_color || '',
                         socials: d.socials,
                         isPartner: false
                     });
@@ -1269,13 +1286,13 @@ const initPortal = () => {
             });
         }
 
-        // --- DYNAMIC PARTNER CARD BUILDER (100% EXACT COPY OF STAFF CARD DESIGN) ---
+        // --- DYNAMIC PARTNER CARD BUILDER (100% EXACT COPY OF STAFF CARD DESIGN - NO STATUS) ---
         function createPartnerCard(partnerId, data, gridEl) {
             const item = document.createElement('div');
             item.className = 'artist-item glass';
             item.dataset.partnerId = partnerId;
 
-            const bannerUrl = (data.banner_url && data.banner_url.trim() !== '') ? data.banner_url : 'assets/cover.png';
+            const bannerUrl = (data.banner_url && data.banner_url.trim() !== '') ? data.banner_url : (data.banner || 'assets/cover.png');
             const logoUrl = (data.logo_url && data.logo_url.trim() !== '') ? data.logo_url : (data.avatar_url && data.avatar_url.trim() !== '' ? data.avatar_url : 'assets/staff/default.png');
             const tagline = data.tagline || 'Label Partner';
             const name = data.name || 'LABEL PARTNER';
@@ -1287,7 +1304,6 @@ const initPortal = () => {
                     <img src="" class="avatar-decoration" alt="Frame" style="display:none;">
                 </div>
                 <h4>${name}</h4>
-                <p>Status: <span class="status-indicator online">PARTNER</span></p>
                 <span class="artist-loc">${tagline}</span>
             `;
 
@@ -1296,11 +1312,10 @@ const initPortal = () => {
             item.onclick = () => {
                 openProfileModal({
                     name: name,
-                    status: 'LABEL PARTNER',
-                    statusClass: 'online',
                     bio: bio,
                     avatarUrl: logoUrl,
                     bannerUrl: bannerUrl,
+                    bannerColor: data.banner_color || data.accent_color || '',
                     socials: data.socials,
                     isPartner: true
                 });
