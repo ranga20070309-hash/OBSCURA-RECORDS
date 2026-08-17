@@ -649,6 +649,10 @@
                         style="background: rgba(0, 240, 255, 0.05); border: 1.5px solid var(--primary); color: var(--primary); padding: 1.25rem 2rem; border-radius: 14px; cursor: pointer; font-family: inherit; font-size: 0.8rem; letter-spacing: 0.1rem; font-weight: 700; transition: 0.4s;">
                         <i class="fas fa-seedling"></i> INITIALIZE BASE PERSONNEL
                     </button>
+                    <button onclick="wipeAllProfiles()"
+                        style="background: rgba(255,30,30,0.08); border: 1.5px solid #ff3333; color: #ff5555; padding: 1.25rem 2rem; border-radius: 14px; cursor: pointer; font-family: inherit; font-size: 0.8rem; letter-spacing: 0.1rem; font-weight: 700; transition: 0.4s;">
+                        <i class="fas fa-radiation"></i> WIPE ALL FIREBASE PROFILES
+                    </button>
                     <span id="save-msg-staff" class="save-msg">Profiles synced successfully.</span>
                 </div>
 
@@ -888,6 +892,25 @@
             }
         }
 
+        // WIPE ALL FIREBASE PROFILES (staff_status + partner_status)
+        function wipeAllProfiles() {
+            if (!confirm('⚠️ WARNING: This will DELETE ALL staff and partner profile data from Firebase.\n\nThe bot will re-populate data when users come online.\n\nAre you sure?')) return;
+            if (!confirm('FINAL CONFIRM: Type OK to proceed — this cannot be undone.')) return;
+
+            if (typeof firebase !== 'undefined') {
+                const db = firebase.database();
+                Promise.all([
+                    db.ref('staff_status').remove(),
+                    db.ref('partner_status').remove()
+                ]).then(() => {
+                    if (typeof showToast === 'function') showToast('ALL PROFILES WIPED FROM FIREBASE. Bot will re-sync on next activity.');
+                    if (typeof loadStaff === 'function') loadStaff();
+                }).catch(err => {
+                    alert('WIPE ERROR: ' + err.message);
+                });
+            }
+        }
+
         function openAddModal(type) {
             document.getElementById('new-member-id').value = '';
             document.getElementById('new-member-name').value = '';
@@ -914,19 +937,40 @@
             if (typeof firebase !== 'undefined') {
                 const db = firebase.database();
                 const path = type === 'partner' ? 'partner_status/' : 'staff_status/';
-                // avatar_url, decoration_url, and status will be set/overwritten by the Discord bot
-                const record = {
-                    name: name ? name.toUpperCase() : (type === 'partner' ? 'PARTNER' : 'STAFF'),
-                    status: 'offline',
-                    bio: bio || (type === 'partner' ? 'LABEL PARTNER' : 'CORE STAFF'),
-                    socials: {}
-                };
-                db.ref(path + discordId).set(record).then(() => {
-                    document.getElementById('add-member-modal').style.display = 'none';
-                    if (typeof showToast === 'function') showToast(type.toUpperCase() + ' ADDED — BOT WILL SYNC AVATAR & STATUS AUTOMATICALLY.');
-                    if (typeof loadStaff === 'function') loadStaff();
-                }).catch(err => {
-                    alert('SYNC ERROR: ' + err.message);
+                const ref  = db.ref(path + discordId);
+
+                // SAFE MERGE: Check if record already exists first
+                ref.once('value').then(snap => {
+                    if (snap.exists()) {
+                        // Record exists (bot may have already populated avatar/status)
+                        // ONLY update bio + placeholder name if empty — never overwrite bot fields
+                        const existing = snap.val();
+                        const updates = {};
+                        if (bio) updates.bio = bio;
+                        if (name && !existing.name) updates.name = name.toUpperCase();
+                        if (!existing.socials)       updates.socials = {};
+
+                        ref.update(updates).then(() => {
+                            document.getElementById('add-member-modal').style.display = 'none';
+                            if (typeof showToast === 'function') showToast('RECORD UPDATED — BOT DATA PRESERVED.');
+                            if (typeof loadStaff === 'function') loadStaff();
+                        }).catch(err => alert('UPDATE ERROR: ' + err.message));
+
+                    } else {
+                        // New record — create minimal placeholder, bot will fill avatar/status
+                        const record = {
+                            name:   name ? name.toUpperCase() : (type === 'partner' ? 'PARTNER' : 'STAFF'),
+                            status: 'offline',
+                            bio:    bio || (type === 'partner' ? 'LABEL PARTNER' : 'CORE STAFF'),
+                            socials: {}
+                            // avatar_url & decoration_url intentionally omitted — bot sets these
+                        };
+                        ref.set(record).then(() => {
+                            document.getElementById('add-member-modal').style.display = 'none';
+                            if (typeof showToast === 'function') showToast(type.toUpperCase() + ' ADDED — BOT WILL AUTO-SYNC AVATAR & STATUS.');
+                            if (typeof loadStaff === 'function') loadStaff();
+                        }).catch(err => alert('SYNC ERROR: ' + err.message));
+                    }
                 });
             } else {
                 alert('Firebase not ready. Try again.');
