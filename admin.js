@@ -77,8 +77,9 @@ window.saveIndividualStaff = function (discordId) {
     
     const saveBtn = item.querySelector('.save-btn-staff');
     if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SYNCING...';
-    const bio = item.querySelector('.s-bio').value;
-    const avatar = item.querySelector('.s-avatar') ? item.querySelector('.s-avatar').value : '';
+
+    // ONLY save bio + socials — name, avatar, decoration come from the Discord bot
+    const bio     = item.querySelector('.s-bio') ? item.querySelector('.s-bio').value : '';
     const socials = {};
     item.querySelectorAll('input[class^="s-social-"]').forEach(input => {
         const platform = input.className.replace('s-social-', '');
@@ -87,11 +88,9 @@ window.saveIndividualStaff = function (discordId) {
         }
     });
     
-    const data = { bio: bio, avatar_url: avatar, socials: socials };
+    const data = { bio: bio, socials: socials };
     
-    // SMART ROUTING: Determine if this is a partner or staff
-    const partnerIds = ["1466152706145128659"];
-    const isPartner = partnerIds.includes(discordId);
+    const isPartner = item.dataset.isPartner === 'true';
     const path = isPartner ? 'partner_status/' : 'staff_status/';
 
     db.ref(path + discordId).update(data).then(() => {
@@ -1232,17 +1231,18 @@ if (refreshBtn) refreshBtn.addEventListener('click', loadSubmissions);
 
 
 // --- STAFF PROFILES PANEL ---
-function createStaffEditor(staff, discordId) {
+function createStaffEditor(staff, discordId, isPartner) {
     const div = document.createElement('div');
     div.className = 'release-editor-item staff-editor-item';
     div.style.marginBottom = '2.5rem';
     div.style.background = 'rgba(255,255,255,0.02)';
     div.style.padding = '2.5rem';
     div.style.borderRadius = '24px';
-    div.style.border = '1px solid rgba(255,255,255,0.05)';
+    div.style.border = isPartner ? '1px solid rgba(255,0,200,0.12)' : '1px solid rgba(255,255,255,0.05)';
     div.dataset.discordId = discordId;
+    div.dataset.isPartner = isPartner ? 'true' : 'false';
 
-    // Socials section
+    // Socials section — only editable fields
     const socials = staff.socials || {};
     const platforms = ['instagram', 'spotify', 'apple', 'facebook', 'youtube', 'tiktok', 'twitter'];
     let socialsHtml = '';
@@ -1255,25 +1255,37 @@ function createStaffEditor(staff, discordId) {
         `;
     });
 
+    const typeBadgeColor = isPartner ? 'var(--secondary)' : 'var(--primary)';
+    const typeBadgeLabel = isPartner ? 'PARTNER' : 'STAFF';
+
+    // Bot-provided fields shown as read-only info (name, avatar, decoration, status)
+    const currentStatus = (staff.status || 'offline').toLowerCase();
+    const statusColor = currentStatus === 'online' ? '#23d18b' : currentStatus === 'idle' ? '#f0b429' : currentStatus === 'dnd' ? '#ff4444' : '#555';
+
     div.innerHTML = `
-        <button class="delete-btn" onclick="removeStaff('${discordId}')"><i class="fas fa-trash"></i></button>
+        <button class="delete-btn" onclick="removeStaff('${discordId}', ${isPartner})"><i class="fas fa-trash"></i></button>
         <div class="staff-header-row">
             <div class="staff-meta-main">
-                <div class="staff-avatar-circle" style="background-image: url(${staff.avatar_url || 'assets/staff/default.png'})"></div>
+                <div style="position:relative; width:80px; height:80px; flex-shrink:0;">
+                    <div class="staff-avatar-circle" style="background-image: url(${staff.avatar_url || 'assets/staff/default.png'}); border-color: ${typeBadgeColor}; width:80px; height:80px;"></div>
+                    <span style="position:absolute; bottom:2px; right:2px; width:14px; height:14px; background:${statusColor}; border-radius:50%; border:2px solid #0a0a0a;"></span>
+                </div>
                 <div>
+                    <span style="display:inline-block; background: ${typeBadgeColor}22; border: 1px solid ${typeBadgeColor}; color: ${typeBadgeColor}; font-size: 0.6rem; letter-spacing: 0.15rem; padding: 0.2rem 0.7rem; border-radius: 6px; margin-bottom: 0.5rem; font-family: 'Syncopate', sans-serif;">${typeBadgeLabel}</span>
                     <h3>${staff.name || 'UNKNOWN'}</h3>
                     <small>SEC_ID: ${discordId}</small>
+                    <div style="margin-top:0.4rem; display:flex; gap:0.5rem; align-items:center; opacity:0.5; font-size:0.7rem; font-family:monospace;">
+                        <i class="fab fa-discord" style="color:#5865F2;"></i>
+                        NAME, AVATAR &amp; STATUS AUTO-SYNCED BY BOT
+                    </div>
                 </div>
             </div>
-            <button class="save-btn save-btn-staff" onclick="saveIndividualStaff('${discordId}')"><i class="fas fa-save"></i> SYNC INDIVIDUAL</button>
+            <button class="save-btn save-btn-staff" onclick="saveIndividualStaff('${discordId}')"><i class="fas fa-save"></i> SYNC BIO &amp; LINKS</button>
         </div>
         <div class="form-grid">
             <div class="input-group full">
-                <label>AVATAR SOURCE URL</label>
-                <input type="text" class="s-avatar" value="${staff.avatar_url || ''}" placeholder="Image Link...">
-            </div>
-            <div class="input-group full">
                 <label>PERSONNEL BIOGRAPHY</label>
+                <p class="field-desc">Write a short bio. Name, avatar, and status come automatically from Discord bot.</p>
                 <textarea class="s-bio">${staff.bio || ''}</textarea>
             </div>
             <h4 class="form-sub-header">BROADCAST CHANNELS</h4>
@@ -1283,10 +1295,14 @@ function createStaffEditor(staff, discordId) {
     return div;
 }
 
-window.removeStaff = function (discordId) {
+window.removeStaff = function (discordId, isPartner) {
     if (confirm('SYSTEM OVERRIDE: Purge this personnel record from the transmission?')) {
-        db.ref('staff_status/' + discordId).remove().then(() => {
+        const path = isPartner ? 'partner_status/' : 'staff_status/';
+        db.ref(path + discordId).remove().then(() => {
+            showToast('PERSONNEL RECORD PURGED.');
             loadStaff(); // Refresh view
+        }).catch(err => {
+            showToast('DELETE ERROR: ' + err.message, 'error');
         });
     }
 };
@@ -1299,13 +1315,11 @@ function loadStaff() {
     staffContainer.innerHTML = '<p style="opacity:0.5; padding:2rem;">Syncing personnel records...</p>';
     if (partnersContainer) partnersContainer.innerHTML = '<p style="opacity:0.5; padding:2rem;">Syncing partner records...</p>';
 
-    const partnerIds = ["1466152706145128659"];
-
-    // 1. Load Staff
+    // 1. Load Staff (staff_status/ path)
     db.ref('staff_status').once('value').then(snapshot => {
         const staffData = snapshot.val() || {};
         
-        // 2. Load Partners
+        // 2. Load Partners (partner_status/ path — separate, no hardcoded IDs)
         db.ref('partner_status').once('value').then(pSnapshot => {
             const partnerData = pSnapshot.val() || {};
             
@@ -1327,22 +1341,20 @@ function loadStaff() {
                 });
             }
 
-            // Render Staff
+            // Render Staff — all entries from staff_status/
             Object.entries(staffData).forEach(([id, staff]) => {
-                if (!partnerIds.includes(id)) {
-                    staffContainer.appendChild(createStaffEditor(staff, id));
-                }
+                staffContainer.appendChild(createStaffEditor(staff, id, false));
             });
 
-            // Render Partners
+            // Render Partners — all entries from partner_status/ (separate path, fully dynamic)
             Object.entries(partnerData).forEach(([id, partner]) => {
-                if (partnerIds.includes(id) && partnersContainer) {
-                    partnersContainer.appendChild(createStaffEditor(partner, id));
+                if (partnersContainer) {
+                    partnersContainer.appendChild(createStaffEditor(partner, id, true));
                 }
             });
             
-            if (staffContainer.innerHTML === '') staffContainer.innerHTML = '<p style="opacity:0.3; padding:2rem;">No staff records.</p>';
-            if (partnersContainer && partnersContainer.innerHTML === '') partnersContainer.innerHTML = '<p style="opacity:0.3; padding:2rem;">No partner records.</p>';
+            if (staffContainer.innerHTML === '') staffContainer.innerHTML = '<p style="opacity:0.3; padding:2rem;">No staff records found. Use ADD NEW STAFF MEMBER to add.</p>';
+            if (partnersContainer && partnersContainer.innerHTML === '') partnersContainer.innerHTML = '<p style="opacity:0.3; padding:2rem;">No partner records found. Use ADD NEW PARTNER to add.</p>';
         });
     });
 }
