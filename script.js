@@ -2590,10 +2590,12 @@ function initArtistPortalEngine() {
         };
     });
 
-    // 6. Listen for Firebase Auth State Changes
+    // 6. Listen for Firebase Auth State Changes (Strictly for Google Auth Artists)
     auth.onAuthStateChanged((user) => {
-        currentArtistUser = user;
-        if (user) {
+        const isGoogleArtist = user && user.providerData && user.providerData.some(p => p.providerId === 'google.com');
+
+        if (isGoogleArtist) {
+            currentArtistUser = user;
             // Update Navigation & Profile UI
             if (signinBtn) signinBtn.style.display = 'none';
             if (profileBadge) profileBadge.style.display = 'inline-flex';
@@ -2623,7 +2625,8 @@ function initArtistPortalEngine() {
             // Listen to User Encrypted Chat Stream
             listenToUserChat(user);
         } else {
-            // User Logged Out / Unauthenticated
+            currentArtistUser = null;
+            // User Logged Out / Unauthenticated / Admin Backend Session
             if (signinBtn) signinBtn.style.display = 'inline-flex';
             if (profileBadge) profileBadge.style.display = 'none';
             if (sideSigninBtn) sideSigninBtn.style.display = 'block';
