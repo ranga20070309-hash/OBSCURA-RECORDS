@@ -78,8 +78,11 @@ window.saveIndividualStaff = function (discordId) {
     const saveBtn = item.querySelector('.save-btn-staff');
     if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SYNCING...';
 
-    // ONLY save bio + socials — name, avatar, decoration come from the Discord bot
+    // Save bio, order + socials — name, avatar, decoration come from the Discord bot
     const bio     = item.querySelector('.s-bio') ? item.querySelector('.s-bio').value : '';
+    const orderEl = item.querySelector('.s-order');
+    const order   = orderEl ? (parseInt(orderEl.value.trim()) || 99) : 99;
+
     const socials = {};
     item.querySelectorAll('input[class^="s-social-"]').forEach(input => {
         const platform = input.className.replace('s-social-', '');
@@ -88,14 +91,14 @@ window.saveIndividualStaff = function (discordId) {
         }
     });
     
-    const data = { bio: bio, socials: socials };
+    const data = { bio: bio, order: order, socials: socials };
     
     const isPartner = item.dataset.isPartner === 'true';
     const path = isPartner ? 'partner_status/' : 'staff_status/';
 
     db.ref(path + discordId).update(data).then(() => {
-        showToast(`${isPartner ? 'PARTNER' : 'PERSONNEL'} SYNC SUCCESSFUL: ${discordId}`);
-        if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> SYNC INDIVIDUAL';
+        showToast(`${isPartner ? 'PARTNER' : 'PERSONNEL'} SYNC SUCCESSFUL (ORDER #${order}): ${discordId}`);
+        if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> SYNC BIO, ORDER & LINKS';
         bumpSiteVersion();
         loadStaff();
     }).catch(err => {
@@ -1272,6 +1275,7 @@ function createStaffEditor(staff, discordId, isPartner) {
                 </div>
                 <div>
                     <span style="display:inline-block; background: ${typeBadgeColor}22; border: 1px solid ${typeBadgeColor}; color: ${typeBadgeColor}; font-size: 0.6rem; letter-spacing: 0.15rem; padding: 0.2rem 0.7rem; border-radius: 6px; margin-bottom: 0.5rem; font-family: 'Syncopate', sans-serif;">${typeBadgeLabel}</span>
+                    <span style="display:inline-block; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.6rem; letter-spacing: 0.1rem; padding: 0.2rem 0.6rem; border-radius: 6px; margin-left: 0.4rem; font-family: monospace;">RANK #${typeof staff.order === 'number' ? staff.order : 99}</span>
                     <h3>${staff.name || 'UNKNOWN'}</h3>
                     <small>SEC_ID: ${discordId}</small>
                     <div style="margin-top:0.4rem; display:flex; gap:0.5rem; align-items:center; opacity:0.5; font-size:0.7rem; font-family:monospace;">
@@ -1280,9 +1284,14 @@ function createStaffEditor(staff, discordId, isPartner) {
                     </div>
                 </div>
             </div>
-            <button class="save-btn save-btn-staff" onclick="saveIndividualStaff('${discordId}')"><i class="fas fa-save"></i> SYNC BIO &amp; LINKS</button>
+            <button class="save-btn save-btn-staff" onclick="saveIndividualStaff('${discordId}')"><i class="fas fa-save"></i> SYNC BIO, ORDER &amp; LINKS</button>
         </div>
         <div class="form-grid">
+            <div class="input-group full">
+                <label>HIERARCHY ORDER (1 = TOP / OWNER, 2 = ADMIN, 3 = A&R, etc.)</label>
+                <p class="field-desc">Lower numbers appear first on the site (e.g. 1 = Owner, 2 = Admin 1, 3 = Admin 2, 4 = A&R, 5-7 = Designers).</p>
+                <input type="number" class="s-order" value="${typeof staff.order === 'number' ? staff.order : 99}" min="1" max="99" style="max-width:180px;">
+            </div>
             <div class="input-group full">
                 <label>PERSONNEL BIOGRAPHY</label>
                 <p class="field-desc">Write a short bio. Name, avatar, and status come automatically from Discord bot.</p>
@@ -1326,13 +1335,23 @@ function loadStaff() {
             staffContainer.innerHTML = '';
             if (partnersContainer) partnersContainer.innerHTML = '';
 
-            // Render Staff — all entries from staff_status/ (NO auto-init — use INITIALIZE BASE PERSONNEL button)
-            Object.entries(staffData).forEach(([id, staff]) => {
+            // Render Staff — sorted by hierarchy order (1, 2, 3...)
+            const sortedStaff = Object.entries(staffData).sort((a, b) => {
+                const orderA = (a[1] && typeof a[1].order === 'number') ? a[1].order : 99;
+                const orderB = (b[1] && typeof b[1].order === 'number') ? b[1].order : 99;
+                return orderA - orderB;
+            });
+            sortedStaff.forEach(([id, staff]) => {
                 staffContainer.appendChild(createStaffEditor(staff, id, false));
             });
 
-            // Render Partners — all entries from partner_status/ (separate path, fully dynamic)
-            Object.entries(partnerData).forEach(([id, partner]) => {
+            // Render Partners — sorted by hierarchy order
+            const sortedPartners = Object.entries(partnerData).sort((a, b) => {
+                const orderA = (a[1] && typeof a[1].order === 'number') ? a[1].order : 99;
+                const orderB = (b[1] && typeof b[1].order === 'number') ? b[1].order : 99;
+                return orderA - orderB;
+            });
+            sortedPartners.forEach(([id, partner]) => {
                 if (partnersContainer) {
                     partnersContainer.appendChild(createStaffEditor(partner, id, true));
                 }
