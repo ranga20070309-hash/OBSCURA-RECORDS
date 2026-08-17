@@ -991,31 +991,6 @@
 
             const addPartnerBtn = document.getElementById('add-partner-btn');
             if (addPartnerBtn) addPartnerBtn.onclick = () => openAddModal('partner');
-
-            const btn = document.getElementById('init-staff-btn');
-            if (btn) {
-                btn.onclick = () => {
-                    if (confirm('Initialize base staff records? This is only needed once.')) {
-                        const baseStaff = {
-                            "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                            "1126206273722011708": { name: "RANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                            "1145271334922879011": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                            "1099844087961632849": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" }
-                        };
-                        const basePartners = {
-                            "1466152706145128659": { name: "ITX RECORD LABEL", status: "offline", bio: "LABEL PARTNER", avatar_url: "assets/staff/default.png" }
-                        };
-                        if (typeof firebase !== 'undefined') {
-                            const db = firebase.database();
-                            db.ref('staff_status').update(baseStaff);
-                            db.ref('partner_status').update(basePartners).then(() => {
-                                alert('SUCCESS: Personnel & Partners synced! RELOADING...');
-                                window.location.reload();
-                            });
-                        }
-                    }
-                };
-            }
         });
     </script>
 </body>
