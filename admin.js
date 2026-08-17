@@ -1326,22 +1326,7 @@ function loadStaff() {
             staffContainer.innerHTML = '';
             if (partnersContainer) partnersContainer.innerHTML = '';
 
-            const baseStaff = {
-                "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                "1126206273722011708": { name: "RANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                "1145271334922879011": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                "1099844087961632849": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" }
-            };
-
-            // Auto-initialize base staff if empty
-            if (Object.keys(staffData).length === 0) {
-                Object.entries(baseStaff).forEach(([id, s]) => {
-                    db.ref('staff_status/' + id).set(s);
-                    staffData[id] = s;
-                });
-            }
-
-            // Render Staff — all entries from staff_status/
+            // Render Staff — all entries from staff_status/ (NO auto-init — use INITIALIZE BASE PERSONNEL button)
             Object.entries(staffData).forEach(([id, staff]) => {
                 staffContainer.appendChild(createStaffEditor(staff, id, false));
             });
@@ -1353,8 +1338,20 @@ function loadStaff() {
                 }
             });
             
-            if (staffContainer.innerHTML === '') staffContainer.innerHTML = '<p style="opacity:0.3; padding:2rem;">No staff records found. Use ADD NEW STAFF MEMBER to add.</p>';
-            if (partnersContainer && partnersContainer.innerHTML === '') partnersContainer.innerHTML = '<p style="opacity:0.3; padding:2rem;">No partner records found. Use ADD NEW PARTNER to add.</p>';
+            if (staffContainer.innerHTML === '') {
+                staffContainer.innerHTML = `
+                    <div style="padding:2.5rem; opacity:0.5; text-align:center;">
+                        <i class="fas fa-user-slash" style="font-size:2rem; margin-bottom:1rem; display:block;"></i>
+                        No staff records in Firebase. Use <strong>ADD NEW STAFF MEMBER</strong> or <strong>INITIALIZE BASE PERSONNEL</strong>.
+                    </div>`;
+            }
+            if (partnersContainer && partnersContainer.innerHTML === '') {
+                partnersContainer.innerHTML = `
+                    <div style="padding:2.5rem; opacity:0.5; text-align:center;">
+                        <i class="fas fa-handshake-slash" style="font-size:2rem; margin-bottom:1rem; display:block;"></i>
+                        No partner records in Firebase. Use <strong>ADD NEW PARTNER</strong>.
+                    </div>`;
+            }
         });
     });
 }
