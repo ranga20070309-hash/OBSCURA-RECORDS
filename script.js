@@ -2725,14 +2725,14 @@ function initArtistPortalEngine() {
 
                 const status = (sub.status || 'PENDING').toUpperCase();
                 let statusBadgeClass = 'badge-pending';
-                let statusText = 'PENDING REVIEW';
+                let statusText = 'PENDING';
 
                 if (status === 'UNDER_REVIEW' || status === 'REVIEW') {
                     statusBadgeClass = 'badge-review';
-                    statusText = 'UNDER A&R REVIEW';
+                    statusText = 'UNDER REVIEW';
                 } else if (status === 'ACCEPTED') {
                     statusBadgeClass = 'badge-accepted';
-                    statusText = 'ACCEPTED FOR RELEASE';
+                    statusText = 'ACCEPTED';
                 } else if (status === 'DECLINED' || status === 'ARCHIVED') {
                     statusBadgeClass = 'badge-declined';
                     statusText = 'ARCHIVED';
@@ -2740,19 +2740,35 @@ function initArtistPortalEngine() {
 
                 card.innerHTML = `
                     <div class="dash-sub-header">
-                        <span class="dash-sub-genre">${sub.genre || 'ELECTRONIC'}</span>
+                        <div class="dash-sub-title">${sub.artist || sub.name || 'UNTITLED DEMO'}</div>
                         <span class="dash-status-badge ${statusBadgeClass}">
                             <span class="dot"></span> ${statusText}
                         </span>
                     </div>
-                    <div class="dash-sub-title">${sub.artist || sub.name || 'UNTITLED DEMO'}</div>
-                    <div class="dash-sub-date">LOGGED: ${sub.date || 'RECENT TRANSMISSION'}</div>
-                    ${sub.link && sub.link !== '#' ? `<a href="${sub.link}" target="_blank" class="dash-sub-link-btn"><i class="fas fa-play-circle"></i> LISTEN TO TRACK</a>` : ''}
+                    <div class="dash-sub-meta">
+                        <span class="dash-sub-genre">${sub.genre || 'ELECTRONIC'}</span>
+                        <span class="dash-sub-date">${sub.date || 'RECENT TRANSMISSION'}</span>
+                    </div>
+                    <div class="dash-sub-actions">
+                        ${sub.link && sub.link !== '#' ? `<a href="${sub.link}" target="_blank" class="dash-sub-link-btn"><i class="fas fa-play"></i> LISTEN</a>` : ''}
+                        <button class="dash-sub-chat-btn" onclick="openDemoThread('${sub.id}', '${(sub.artist || sub.name || 'Demo').replace(/'/g, "\\'")}')">
+                            <i class="fas fa-comments"></i> MESSAGE A&R
+                        </button>
+                    </div>
                 `;
                 dashSubmissionsList.appendChild(card);
             });
         });
     }
+
+    // Direct Thread Switcher
+    window.openDemoThread = function(subId, trackTitle) {
+        switchTab('inquiries-tab');
+        if (dashChatInput) {
+            dashChatInput.value = `[RE: ${trackTitle}] `;
+            dashChatInput.focus();
+        }
+    };
 
     function renderEmptySubmissions() {
         if (dashSubCount) dashSubCount.textContent = '0';
