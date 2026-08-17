@@ -1304,11 +1304,128 @@ function createStaffEditor(staff, discordId, isPartner) {
     return div;
 }
 
+// --- PARTNER LABEL EDITOR PANEL (CUSTOM LUXURY DESIGN) ---
+function createPartnerEditor(partner, id) {
+    const div = document.createElement('div');
+    div.className = 'release-editor-item partner-editor-item';
+    div.style.marginBottom = '2.5rem';
+    div.style.background = 'rgba(255, 0, 200, 0.03)';
+    div.style.padding = '2.5rem';
+    div.style.borderRadius = '24px';
+    div.style.border = '1px solid rgba(255, 0, 200, 0.2)';
+    div.dataset.partnerId = id;
+
+    const bannerUrl = partner.banner_url || 'assets/cover.png';
+    const logoUrl = partner.logo_url || partner.avatar_url || 'assets/staff/default.png';
+
+    const socials = partner.socials || {};
+    const platforms = ['website', 'spotify', 'youtube', 'instagram', 'soundcloud', 'apple', 'twitter', 'facebook', 'tiktok'];
+    let socialsHtml = '';
+    platforms.forEach(p => {
+        socialsHtml += `
+            <div class="input-group">
+                <label>${p.toUpperCase()} LINK</label>
+                <input type="text" class="p-social-${p}" value="${socials[p] || ''}" placeholder="https://...">
+            </div>
+        `;
+    });
+
+    div.innerHTML = `
+        <button class="delete-btn" onclick="removeStaff('${id}', true)"><i class="fas fa-trash"></i></button>
+        <div class="staff-header-row">
+            <div class="staff-meta-main">
+                <div style="position:relative; width:80px; height:80px; flex-shrink:0;">
+                    <div class="staff-avatar-circle" style="background-image: url(${logoUrl}); border-color: var(--secondary); width:80px; height:80px;"></div>
+                </div>
+                <div>
+                    <span style="display:inline-block; background: rgba(255,0,200,0.15); border: 1px solid var(--secondary); color: var(--secondary); font-size: 0.6rem; letter-spacing: 0.15rem; padding: 0.2rem 0.7rem; border-radius: 6px; margin-bottom: 0.5rem; font-family: 'Syncopate', sans-serif;">LABEL PARTNER</span>
+                    <span style="display:inline-block; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.6rem; letter-spacing: 0.1rem; padding: 0.2rem 0.6rem; border-radius: 6px; margin-left: 0.4rem; font-family: monospace;">RANK #${typeof partner.order === 'number' ? partner.order : 99}</span>
+                    <h3>${partner.name || 'LABEL PARTNER'}</h3>
+                    <small>PARTNER_ID: ${id}</small>
+                </div>
+            </div>
+            <button class="save-btn" style="background:var(--secondary); color:#000;" onclick="saveIndividualPartner('${id}')"><i class="fas fa-save"></i> SYNC PARTNER</button>
+        </div>
+        <div class="form-grid">
+            <div class="input-group full">
+                <label>LABEL NAME</label>
+                <input type="text" class="p-name" value="${partner.name || ''}" placeholder="e.g. ITX RECORD LABEL">
+            </div>
+            <div class="input-group full">
+                <label>TAGLINE / GENRE SUBTITLE</label>
+                <input type="text" class="p-tagline" value="${partner.tagline || ''}" placeholder="e.g. ELECTRONIC & BASS AUDIO ALLIANCE">
+            </div>
+            <div class="input-group full">
+                <label>LOGO IMAGE URL</label>
+                <input type="text" class="p-logo" value="${partner.logo_url || partner.avatar_url || ''}" placeholder="https://... (Direct image URL for Logo)">
+            </div>
+            <div class="input-group full">
+                <label>BANNER / COVER IMAGE URL</label>
+                <input type="text" class="p-banner" value="${partner.banner_url || ''}" placeholder="https://... (Direct image URL for Wide Banner)">
+            </div>
+            <div class="input-group full">
+                <label>HIERARCHY ORDER (1 = FIRST, 2, 3...)</label>
+                <input type="number" class="p-order" value="${typeof partner.order === 'number' ? partner.order : 99}" min="1" max="99" style="max-width:180px;">
+            </div>
+            <div class="input-group full">
+                <label>LABEL DESCRIPTION / BIO</label>
+                <textarea class="p-bio">${partner.bio || ''}</textarea>
+            </div>
+            <h4 class="form-sub-header">BROADCAST & STREAMING CHANNELS</h4>
+            ${socialsHtml}
+        </div>
+    `;
+    return div;
+}
+
+window.saveIndividualPartner = function(id) {
+    const item = document.querySelector(`.partner-editor-item[data-partner-id="${id}"]`);
+    if (!item) {
+        showToast("CRITICAL ERROR: Partner entry missing.", 'error');
+        return;
+    }
+
+    const name = item.querySelector('.p-name') ? item.querySelector('.p-name').value.trim() : '';
+    const tagline = item.querySelector('.p-tagline') ? item.querySelector('.p-tagline').value.trim() : '';
+    const logoUrl = item.querySelector('.p-logo') ? item.querySelector('.p-logo').value.trim() : '';
+    const bannerUrl = item.querySelector('.p-banner') ? item.querySelector('.p-banner').value.trim() : '';
+    const bio = item.querySelector('.p-bio') ? item.querySelector('.p-bio').value : '';
+    const orderEl = item.querySelector('.p-order');
+    const order = orderEl ? (parseInt(orderEl.value.trim()) || 99) : 99;
+
+    const socials = {};
+    item.querySelectorAll('input[class^="p-social-"]').forEach(input => {
+        const platform = input.className.replace('p-social-', '');
+        if (input.value.trim() !== '') {
+            socials[platform] = input.value.trim();
+        }
+    });
+
+    const data = {
+        name: name || 'LABEL PARTNER',
+        tagline: tagline || 'OFFICIAL LABEL ALLIANCE',
+        logo_url: logoUrl || 'assets/staff/default.png',
+        avatar_url: logoUrl || 'assets/staff/default.png',
+        banner_url: bannerUrl || 'assets/cover.png',
+        bio: bio,
+        order: order,
+        socials: socials
+    };
+
+    db.ref('partner_status/' + id).update(data).then(() => {
+        showToast(`PARTNER SYNC SUCCESSFUL: ${name || id}`);
+        bumpSiteVersion();
+        loadStaff();
+    }).catch(err => {
+        showToast('SYNC ERROR: ' + err.message, 'error');
+    });
+};
+
 window.removeStaff = function (discordId, isPartner) {
     if (confirm('SYSTEM OVERRIDE: Purge this personnel record from the transmission?')) {
         const path = isPartner ? 'partner_status/' : 'staff_status/';
         db.ref(path + discordId).remove().then(() => {
-            showToast('PERSONNEL RECORD PURGED.');
+            showToast('RECORD PURGED.');
             loadStaff(); // Refresh view
         }).catch(err => {
             showToast('DELETE ERROR: ' + err.message, 'error');
@@ -1328,7 +1445,7 @@ function loadStaff() {
     db.ref('staff_status').once('value').then(snapshot => {
         const staffData = snapshot.val() || {};
         
-        // 2. Load Partners (partner_status/ path — separate, no hardcoded IDs)
+        // 2. Load Partners (partner_status/ path)
         db.ref('partner_status').once('value').then(pSnapshot => {
             const partnerData = pSnapshot.val() || {};
             
@@ -1353,7 +1470,7 @@ function loadStaff() {
             });
             sortedPartners.forEach(([id, partner]) => {
                 if (partnersContainer) {
-                    partnersContainer.appendChild(createStaffEditor(partner, id, true));
+                    partnersContainer.appendChild(createPartnerEditor(partner, id));
                 }
             });
             
@@ -1376,9 +1493,11 @@ function loadStaff() {
 }
 
 function saveStaff() {
-    const items = document.querySelectorAll('.staff-editor-item');
-    if (items.length === 0) {
-        alert('NO PERSONNEL RECORDS FOUND TO SYNC.');
+    const staffItems = document.querySelectorAll('.staff-editor-item');
+    const partnerItems = document.querySelectorAll('.partner-editor-item');
+
+    if (staffItems.length === 0 && partnerItems.length === 0) {
+        alert('NO PERSONNEL OR PARTNER RECORDS FOUND TO SYNC.');
         return;
     }
 
@@ -1387,12 +1506,10 @@ function saveStaff() {
 
     const promises = [];
 
-    items.forEach(item => {
+    // Sync Staff items
+    staffItems.forEach(item => {
         const id = item.dataset.discordId;
         if (!id) return;
-
-        const isPartner = item.dataset.isPartner === 'true';
-        const path = isPartner ? 'partner_status/' : 'staff_status/';
 
         const bio     = item.querySelector('.s-bio') ? item.querySelector('.s-bio').value : '';
         const orderEl = item.querySelector('.s-order');
@@ -1406,18 +1523,44 @@ function saveStaff() {
             }
         });
 
-        // ONLY update bio, order, and socials — NEVER overwrite avatar_url, decoration_url, name, status
-        const updates = {
+        promises.push(db.ref('staff_status/' + id).update({ bio: bio, order: order, socials: socials }));
+    });
+
+    // Sync Partner items
+    partnerItems.forEach(item => {
+        const id = item.dataset.partnerId;
+        if (!id) return;
+
+        const name = item.querySelector('.p-name') ? item.querySelector('.p-name').value.trim() : '';
+        const tagline = item.querySelector('.p-tagline') ? item.querySelector('.p-tagline').value.trim() : '';
+        const logoUrl = item.querySelector('.p-logo') ? item.querySelector('.p-logo').value.trim() : '';
+        const bannerUrl = item.querySelector('.p-banner') ? item.querySelector('.p-banner').value.trim() : '';
+        const bio = item.querySelector('.p-bio') ? item.querySelector('.p-bio').value : '';
+        const orderEl = item.querySelector('.p-order');
+        const order = orderEl ? (parseInt(orderEl.value.trim()) || 99) : 99;
+
+        const socials = {};
+        item.querySelectorAll('input[class^="p-social-"]').forEach(input => {
+            const platform = input.className.replace('p-social-', '');
+            if (input.value.trim() !== '') {
+                socials[platform] = input.value.trim();
+            }
+        });
+
+        promises.push(db.ref('partner_status/' + id).update({
+            name: name || 'LABEL PARTNER',
+            tagline: tagline || 'OFFICIAL LABEL ALLIANCE',
+            logo_url: logoUrl || 'assets/staff/default.png',
+            avatar_url: logoUrl || 'assets/staff/default.png',
+            banner_url: bannerUrl || 'assets/cover.png',
             bio: bio,
             order: order,
             socials: socials
-        };
-
-        promises.push(db.ref(path + id).update(updates));
+        }));
     });
 
     Promise.all(promises).then(() => {
-        showToast('ALL PROFILES SYNCED (BOT AVATARS & STATUS PRESERVED).');
+        showToast('ALL STAFF & PARTNERS SYNCED TO FIREBASE.');
         showSaveMsg('save-msg-staff');
         if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-upload"></i> SYNC ALL PROFILES TO SERVER';
         bumpSiteVersion();
