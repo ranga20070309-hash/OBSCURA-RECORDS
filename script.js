@@ -1177,31 +1177,43 @@ const initPortal = () => {
             ref.on('value', snap => applyData(snap.val()));
         }
 
-        // --- DYNAMIC STAFF GRID: Render all from Firebase staff_status/ ---
+        // --- DYNAMIC STAFF GRID: Render all from Firebase staff_status/ (Sorted by hierarchy order) ---
         const staffGrid = document.getElementById('staff-grid');
         if (staffGrid) {
             db.ref('staff_status').on('value', snapshot => {
                 staffGrid.innerHTML = '';
                 const allStaff = snapshot.val() || {};
-                Object.entries(allStaff).forEach(([id, data]) => {
+                const sortedStaff = Object.entries(allStaff).sort((a, b) => {
+                    const orderA = (a[1] && typeof a[1].order === 'number') ? a[1].order : 99;
+                    const orderB = (b[1] && typeof b[1].order === 'number') ? b[1].order : 99;
+                    return orderA - orderB;
+                });
+
+                sortedStaff.forEach(([id, data]) => {
                     createStaffCard(id, data, staffGrid, false);
                 });
-                if (Object.keys(allStaff).length === 0) {
+                if (sortedStaff.length === 0) {
                     staffGrid.innerHTML = '<p style="opacity:0.4; text-align:center; padding:4rem; font-family:monospace;">No staff records found.</p>';
                 }
             });
         }
 
-        // --- DYNAMIC PARTNERS GRID: Render all from Firebase partner_status/ ---
+        // --- DYNAMIC PARTNERS GRID: Render all from Firebase partner_status/ (Sorted by hierarchy order) ---
         const partnersGrid = document.getElementById('partners-grid');
         if (partnersGrid) {
             db.ref('partner_status').on('value', snapshot => {
                 partnersGrid.innerHTML = '';
                 const allPartners = snapshot.val() || {};
-                Object.entries(allPartners).forEach(([id, data]) => {
+                const sortedPartners = Object.entries(allPartners).sort((a, b) => {
+                    const orderA = (a[1] && typeof a[1].order === 'number') ? a[1].order : 99;
+                    const orderB = (b[1] && typeof b[1].order === 'number') ? b[1].order : 99;
+                    return orderA - orderB;
+                });
+
+                sortedPartners.forEach(([id, data]) => {
                     createStaffCard(id, data, partnersGrid, true);
                 });
-                if (Object.keys(allPartners).length === 0) {
+                if (sortedPartners.length === 0) {
                     partnersGrid.innerHTML = '<p style="opacity:0.4; text-align:center; padding:4rem; font-family:monospace;">No partner records found.</p>';
                 }
             });
