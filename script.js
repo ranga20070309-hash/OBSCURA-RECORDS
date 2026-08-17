@@ -1121,10 +1121,11 @@ const initPortal = () => {
                 const status = (d.status || 'offline').toLowerCase();
                 statusEl.textContent = status.toUpperCase();
                 statusEl.className = `status-indicator ${status}`;
-                if (d.avatar_url) {
-                    avatar.style.backgroundImage = `url(${d.avatar_url})`;
-                    avatar.style.backgroundSize = 'cover';
-                }
+                const avatarSrc = (d.avatar_url && d.avatar_url.trim() !== '') ? d.avatar_url : 'assets/staff/default.png';
+                avatar.style.backgroundImage = `url("${avatarSrc}")`;
+                avatar.style.backgroundSize = 'cover';
+                avatar.style.backgroundPosition = 'center';
+
                 if (d.decoration_url && d.decoration_url !== '') {
                     decoration.src = d.decoration_url;
                     decoration.style.display = 'block';
@@ -1146,7 +1147,11 @@ const initPortal = () => {
                     if (mName)   mName.textContent   = d.name || nameEl.textContent;
                     if (mStatus) { mStatus.textContent = (d.status || 'OFFLINE').toUpperCase(); mStatus.className = `status-indicator ${(d.status || 'offline').toLowerCase()}`; }
                     if (mBio)    mBio.textContent    = d.bio || (isPartner ? 'Label partner profile.' : 'Accessing encrypted artist profile...');
-                    if (d.avatar_url && mImg) { mImg.style.backgroundImage = `url(${d.avatar_url})`; mImg.style.backgroundSize = 'cover'; }
+                    if (mImg) {
+                        mImg.style.backgroundImage = `url("${avatarSrc}")`;
+                        mImg.style.backgroundSize = 'cover';
+                        mImg.style.backgroundPosition = 'center';
+                    }
                     if (mDecor) { if (d.decoration_url) { mDecor.src = d.decoration_url; mDecor.style.display = 'block'; } else { mDecor.style.display = 'none'; } }
                     if (mLinks) {
                         mLinks.innerHTML = '';
