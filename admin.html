@@ -642,7 +642,7 @@
                 </div>
 
                 <div class="btn-group mb-2"
-                    style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2.5rem;">
+                    style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2.5rem; flex-wrap: wrap;">
                     <button class="save-btn" id="save-staff-main"><i class="fas fa-upload"></i> SYNC ALL PROFILES TO
                         SERVER</button>
                     <button class="action-btn" id="init-staff-btn"
@@ -653,6 +653,12 @@
                 </div>
 
                 <h3 class="section-subheader">LABEL STAFF</h3>
+                <div style="margin-bottom: 1.5rem;">
+                    <button class="action-btn" id="add-staff-btn"
+                        style="background: rgba(0, 240, 255, 0.08); border: 1.5px solid var(--primary); color: var(--primary); padding: 1rem 1.8rem; border-radius: 12px; cursor: pointer; font-family: inherit; font-size: 0.78rem; letter-spacing: 0.1rem; font-weight: 700; transition: 0.3s;">
+                        <i class="fas fa-user-plus"></i> ADD NEW STAFF MEMBER
+                    </button>
+                </div>
                 <div id="staff-container" class="releases-list">
                     <!-- Dynamic staff forms will compile here -->
                     <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Initializing neural link to staff
@@ -660,6 +666,12 @@
                 </div>
 
                 <h3 class="section-subheader" style="margin-top: 4rem;">LABEL PARTNERS</h3>
+                <div style="margin-bottom: 1.5rem;">
+                    <button class="action-btn" id="add-partner-btn"
+                        style="background: rgba(255, 0, 200, 0.08); border: 1.5px solid var(--secondary); color: var(--secondary); padding: 1rem 1.8rem; border-radius: 12px; cursor: pointer; font-family: inherit; font-size: 0.78rem; letter-spacing: 0.1rem; font-weight: 700; transition: 0.3s;">
+                        <i class="fas fa-handshake"></i> ADD NEW PARTNER
+                    </button>
+                </div>
                 <div id="partners-container" class="releases-list">
                     <!-- Dynamic partner forms will compile here -->
                     <p style="opacity: 0.5; font-style: italic; padding: 2rem;">Initializing neural link to partner
@@ -816,23 +828,118 @@
         </div>
     </div>
 
-    <script src="admin.js?v=4.8"></script>
+    <!-- Add Staff / Partner Modal -->
+    <div id="add-member-modal" style="display:none; position:fixed; inset:0; z-index:100000; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); align-items:center; justify-content:center;">
+        <div style="background: rgba(15,15,20,0.98); border: 1px solid var(--primary); border-radius: 24px; padding: 3rem; max-width: 520px; width: 90%; box-shadow: 0 0 60px var(--primary-glow); position: relative;">
+            <button onclick="document.getElementById('add-member-modal').style.display='none'" style="position:absolute; top:1.5rem; right:1.5rem; background:none; border:none; color:rgba(255,255,255,0.4); font-size:1.5rem; cursor:pointer;">&#10005;</button>
+            <h3 id="add-member-modal-title" style="font-family:'Syncopate',sans-serif; font-size:0.9rem; letter-spacing:0.3rem; color:var(--primary); margin-bottom:1.5rem;"><i class="fas fa-user-plus"></i> ADD NEW PERSONNEL</h3>
+
+            <!-- Bot info banner -->
+            <div style="background: rgba(88,101,242,0.1); border: 1px solid rgba(88,101,242,0.3); border-radius: 10px; padding: 0.9rem 1.2rem; margin-bottom: 1.8rem; display: flex; gap: 0.8rem; align-items: flex-start; font-size: 0.75rem; color: rgba(255,255,255,0.7); line-height: 1.5;">
+                <i class="fab fa-discord" style="color:#5865F2; margin-top:0.1rem; flex-shrink:0;"></i>
+                <span>Profile picture, avatar frame, display name and Discord status are <strong style="color:#fff;">automatically synced by the bot</strong>. Just enter the Discord ID and the bot handles the rest.</span>
+            </div>
+
+            <div class="form-grid">
+                <div class="input-group full">
+                    <label>DISCORD ID <span style="color:var(--secondary);">*</span></label>
+                    <p class="field-desc">Right-click the user in Discord &rarr; Copy User ID (developer mode must be on).</p>
+                    <input type="text" id="new-member-id" placeholder="e.g. 1296819659131326556" maxlength="20">
+                </div>
+                <div class="input-group full">
+                    <label>DISPLAY NAME <span style="opacity:0.5; font-size:0.7rem;">(bot will overwrite)</span></label>
+                    <input type="text" id="new-member-name" placeholder="e.g. SVYUXU (temporary until bot syncs)">
+                </div>
+                <div class="input-group full">
+                    <label>BIO / ROLE</label>
+                    <input type="text" id="new-member-bio" placeholder="e.g. CORE STAFF, LABEL PARTNER...">
+                </div>
+                <div class="input-group full">
+                    <label>TYPE</label>
+                    <select id="new-member-type">
+                        <option value="staff">STAFF MEMBER</option>
+                        <option value="partner">LABEL PARTNER</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display:flex; gap:1rem; margin-top:2rem;">
+                <button onclick="confirmAddMember()" style="flex:1; background:var(--primary); color:#000; padding:1.2rem; border:none; border-radius:12px; font-family:inherit; font-weight:700; font-size:0.85rem; letter-spacing:0.1rem; cursor:pointer;"><i class="fas fa-upload"></i> CREATE &amp; SYNC</button>
+                <button onclick="document.getElementById('add-member-modal').style.display='none'" style="flex:1; background:rgba(255,255,255,0.05); color:#fff; padding:1.2rem; border:1px solid rgba(255,255,255,0.1); border-radius:12px; font-family:inherit; font-weight:700; font-size:0.85rem; letter-spacing:0.1rem; cursor:pointer;">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js?v=4.9"></script>
     <script>
-        // Emergency Cache-Bypass for Staff Management
-        function removeStaff(discordId) {
+        // FIXED: removeStaff now correctly routes partner vs staff
+        function removeStaff(discordId, isPartner) {
             if (confirm('SYSTEM OVERRIDE: Purge this personnel record from the transmission?')) {
                 if (typeof firebase !== 'undefined') {
                     const db = firebase.database();
-                    db.ref('staff_status/' + discordId).remove().then(() => {
-                        alert('Personnel record purged successfully.');
+                    const path = isPartner ? 'partner_status/' : 'staff_status/';
+                    db.ref(path + discordId).remove().then(() => {
+                        if (typeof showToast === 'function') showToast('PERSONNEL RECORD PURGED.');
                         if (typeof loadStaff === 'function') loadStaff();
                         else window.location.reload();
+                    }).catch(err => {
+                        if (typeof showToast === 'function') showToast('DELETE ERROR: ' + err.message, 'error');
                     });
                 }
             }
         }
 
+        function openAddModal(type) {
+            document.getElementById('new-member-id').value = '';
+            document.getElementById('new-member-name').value = '';
+            document.getElementById('new-member-bio').value = type === 'partner' ? 'LABEL PARTNER' : 'CORE STAFF';
+            document.getElementById('new-member-type').value = type;
+            const title = document.getElementById('add-member-modal-title');
+            title.innerHTML = type === 'partner'
+                ? '<i class="fas fa-handshake"></i> ADD NEW PARTNER'
+                : '<i class="fas fa-user-plus"></i> ADD NEW STAFF MEMBER';
+            document.getElementById('add-member-modal').style.display = 'flex';
+        }
+
+        function confirmAddMember() {
+            const discordId = document.getElementById('new-member-id').value.trim();
+            const name      = document.getElementById('new-member-name').value.trim();
+            const bio       = document.getElementById('new-member-bio').value.trim();
+            const type      = document.getElementById('new-member-type').value;
+
+            if (!discordId || discordId.length < 10) {
+                alert('INVALID DISCORD ID — must be an 18-digit user ID.');
+                return;
+            }
+
+            if (typeof firebase !== 'undefined') {
+                const db = firebase.database();
+                const path = type === 'partner' ? 'partner_status/' : 'staff_status/';
+                // avatar_url, decoration_url, and status will be set/overwritten by the Discord bot
+                const record = {
+                    name: name ? name.toUpperCase() : (type === 'partner' ? 'PARTNER' : 'STAFF'),
+                    status: 'offline',
+                    bio: bio || (type === 'partner' ? 'LABEL PARTNER' : 'CORE STAFF'),
+                    socials: {}
+                };
+                db.ref(path + discordId).set(record).then(() => {
+                    document.getElementById('add-member-modal').style.display = 'none';
+                    if (typeof showToast === 'function') showToast(type.toUpperCase() + ' ADDED — BOT WILL SYNC AVATAR & STATUS AUTOMATICALLY.');
+                    if (typeof loadStaff === 'function') loadStaff();
+                }).catch(err => {
+                    alert('SYNC ERROR: ' + err.message);
+                });
+            } else {
+                alert('Firebase not ready. Try again.');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            const addStaffBtn = document.getElementById('add-staff-btn');
+            if (addStaffBtn) addStaffBtn.onclick = () => openAddModal('staff');
+
+            const addPartnerBtn = document.getElementById('add-partner-btn');
+            if (addPartnerBtn) addPartnerBtn.onclick = () => openAddModal('partner');
+
             const btn = document.getElementById('init-staff-btn');
             if (btn) {
                 btn.onclick = () => {
@@ -841,14 +948,16 @@
                             "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
                             "1126206273722011708": { name: "RANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
                             "1145271334922879011": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                            "1099844087961632849": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                            "1466152706145128659": { name: "Itx Record Label", status: "offline", bio: "LABEL PARTNER", avatar_url: "assets/staff/default.png" }
+                            "1099844087961632849": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" }
                         };
-
+                        const basePartners = {
+                            "1466152706145128659": { name: "ITX RECORD LABEL", status: "offline", bio: "LABEL PARTNER", avatar_url: "assets/staff/default.png" }
+                        };
                         if (typeof firebase !== 'undefined') {
                             const db = firebase.database();
-                            db.ref('staff_status').update(baseStaff).then(() => {
-                                alert('SUCCESS: Personnel synced! RELOADING...');
+                            db.ref('staff_status').update(baseStaff);
+                            db.ref('partner_status').update(basePartners).then(() => {
+                                alert('SUCCESS: Personnel & Partners synced! RELOADING...');
                                 window.location.reload();
                             });
                         }
