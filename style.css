@@ -312,16 +312,23 @@ header {
     cursor: pointer;
 }
 
+.nav-links {
+    display: flex;
+    align-items: center;
+}
+
 .nav-links a,
 .nav-links .nav-item {
     text-decoration: none;
     color: var(--text-primary);
-    margin: 0 1.5rem;
-    font-size: 0.9rem;
-    font-weight: 500;
+    margin: 0 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
     letter-spacing: 0.1rem;
-    transition: color 0.3s;
+    transition: all 0.3s ease;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
 }
 
 .nav-links a:hover,
@@ -3463,13 +3470,16 @@ textarea.real-input:focus {
     position: relative;
     display: inline-flex;
     align-items: center;
+    margin-left: 0.5rem;
 }
 
 .cyber-auth-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
-    padding: 0.55rem 1.1rem;
+    height: 36px;
+    padding: 0 1.1rem;
     background: rgba(0, 240, 255, 0.06);
     border: 1px solid rgba(0, 240, 255, 0.35);
     border-radius: 6px;
@@ -3482,6 +3492,8 @@ textarea.real-input:focus {
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 0 15px rgba(0, 240, 255, 0.12);
+    vertical-align: middle;
+    box-sizing: border-box;
 }
 
 .cyber-auth-btn:hover {
@@ -3494,7 +3506,8 @@ textarea.real-input:focus {
 .cyber-auth-btn.full-width {
     width: 100%;
     justify-content: center;
-    padding: 0.8rem 1rem;
+    height: 42px;
+    padding: 0 1rem;
 }
 
 /* --- Beta Badge --- */
@@ -3510,6 +3523,7 @@ textarea.real-input:focus {
     font-weight: 800;
     letter-spacing: 0.08rem;
     color: #00f0ff;
+    line-height: 1;
 }
 
 .beta-dot {
@@ -3531,7 +3545,8 @@ textarea.real-input:focus {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    padding: 0.35rem 0.85rem;
+    height: 36px;
+    padding: 0 0.9rem;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(0, 240, 255, 0.25);
     border-radius: 30px;
@@ -3539,6 +3554,8 @@ textarea.real-input:focus {
     transition: all 0.3s ease;
     user-select: none;
     position: relative;
+    box-sizing: border-box;
+    vertical-align: middle;
 }
 
 .artist-profile-badge:hover {
