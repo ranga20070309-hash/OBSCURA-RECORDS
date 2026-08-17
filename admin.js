@@ -1381,11 +1381,23 @@ function saveStaff() {
         alert('NO PERSONNEL RECORDS FOUND TO SYNC.');
         return;
     }
-    const updates = {};
+
+    const saveBtn = document.getElementById('save-staff-main');
+    if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SYNCING ALL...';
+
+    const promises = [];
+
     items.forEach(item => {
         const id = item.dataset.discordId;
-        const bio = item.querySelector('.s-bio').value;
-        const avatar = item.querySelector('.s-avatar') ? item.querySelector('.s-avatar').value : '';
+        if (!id) return;
+
+        const isPartner = item.dataset.isPartner === 'true';
+        const path = isPartner ? 'partner_status/' : 'staff_status/';
+
+        const bio     = item.querySelector('.s-bio') ? item.querySelector('.s-bio').value : '';
+        const orderEl = item.querySelector('.s-order');
+        const order   = orderEl ? (parseInt(orderEl.value.trim()) || 99) : 99;
+
         const socials = {};
         item.querySelectorAll('input[class^="s-social-"]').forEach(input => {
             const platform = input.className.replace('s-social-', '');
@@ -1393,17 +1405,26 @@ function saveStaff() {
                 socials[platform] = input.value.trim();
             }
         });
-        updates[id + '/bio'] = bio;
-        updates[id + '/avatar_url'] = avatar;
-        updates[id + '/socials'] = socials;
+
+        // ONLY update bio, order, and socials — NEVER overwrite avatar_url, decoration_url, name, status
+        const updates = {
+            bio: bio,
+            order: order,
+            socials: socials
+        };
+
+        promises.push(db.ref(path + id).update(updates));
     });
-    db.ref('staff_status').update(updates).then(() => {
-        showToast('STAFF DIRECTORY DEPLOYED SUCCESSFULLY.');
+
+    Promise.all(promises).then(() => {
+        showToast('ALL PROFILES SYNCED (BOT AVATARS & STATUS PRESERVED).');
         showSaveMsg('save-msg-staff');
+        if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-upload"></i> SYNC ALL PROFILES TO SERVER';
         bumpSiteVersion();
         loadStaff();
     }).catch(err => {
-        showToast('CRITICAL SYNC ERROR: CHECK CONNECTION', 'error');
+        showToast('CRITICAL SYNC ERROR: ' + err.message, 'error');
+        if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-upload"></i> RETRY SYNC ALL';
     });
 }
 
@@ -1415,25 +1436,41 @@ const saveReleasesBtn = document.getElementById('save-releases');
 const initStaffBtn = document.getElementById('init-staff-btn');
 if (initStaffBtn) {
     initStaffBtn.addEventListener('click', () => {
-        if (confirm('Initialize base staff records? This will only add missing entries and WON\'T overwrite existing avatars.')) {
+        if (confirm('Initialize base personnel records? Missing records will be added without overwriting bot avatars.')) {
             const baseStaff = {
-                "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                "1126206273722011708": { name: "RANGA", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                "1145271334922879011": { name: "NEIDRAKE", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                "1099844087961632849": { name: "FL4ME", status: "offline", bio: "CORE STAFF", avatar_url: "assets/staff/default.png" },
-                "1466152706145128659": { name: "Itx Record Label", status: "offline", bio: "LABEL PARTNER", avatar_url: "assets/staff/default.png" }
+                "1296819659131326556": { name: "SVYUXU", status: "offline", bio: "OWNER / FOUNDER", order: 1, socials: {} },
+                "1126206273722011708": { name: "RANGA", status: "offline", bio: "LEAD ARCHITECT", order: 2, socials: {} },
+                "1145271334922879011": { name: "NEIDRAKE", status: "offline", bio: "A&R DIRECTIVE", order: 3, socials: {} },
+                "1099844087961632849": { name: "FL4ME", status: "offline", bio: "CORE STAFF", order: 4, socials: {} }
+            };
+            const basePartners = {
+                "1466152706145128659": { name: "ITX RECORD LABEL", status: "offline", bio: "LABEL PARTNER", order: 1, socials: {} }
             };
 
+            const promises = [];
             Object.entries(baseStaff).forEach(([id, staff]) => {
-                db.ref('staff_status/' + id).once('value').then(snap => {
-                    if (!snap.exists()) {
-                        db.ref('staff_status/' + id).set(staff);
-                    }
-                });
+                promises.push(
+                    db.ref('staff_status/' + id).once('value').then(snap => {
+                        if (!snap.exists()) {
+                            return db.ref('staff_status/' + id).set(staff);
+                        }
+                    })
+                );
+            });
+            Object.entries(basePartners).forEach(([id, partner]) => {
+                promises.push(
+                    db.ref('partner_status/' + id).once('value').then(snap => {
+                        if (!snap.exists()) {
+                            return db.ref('partner_status/' + id).set(partner);
+                        }
+                    })
+                );
             });
 
-            alert('Safe initialization sequence initiated. Reloading in 1s...');
-            setTimeout(() => window.location.reload(), 1000);
+            Promise.all(promises).then(() => {
+                showToast('BASE PERSONNEL INITIALIZED.');
+                loadStaff();
+            });
         }
     });
 }
