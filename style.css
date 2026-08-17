@@ -1606,179 +1606,102 @@ section {
 }
 
 /* =====================================================
-   LABEL PARTNERS SHOWCASE (CUSTOM LUXURY DESIGN)
+   LABEL PARTNERS SHOWCASE (UNIFIED WITH STAFF CARD STYLE)
    ===================================================== */
 #partners-grid {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     align-items: stretch;
-    gap: 3rem;
+    gap: 2.5rem;
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
-    padding: 1.5rem 0;
+    padding: 1rem 0;
     min-height: 100px;
 }
 
 .partner-card {
-    flex: 0 0 380px;
-    max-width: 440px;
+    flex: 0 0 290px;
+    max-width: 320px;
     width: 100%;
-    border-radius: 24px;
-    background: rgba(20, 15, 30, 0.65);
-    backdrop-filter: blur(16px);
+    padding: 3rem 2rem;
+    border-radius: 20px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
     border: 1px solid rgba(255, 0, 200, 0.2);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 0, 200, 0.04);
-    overflow: hidden;
+    text-align: center;
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s, box-shadow 0.4s;
     cursor: pointer;
+    min-height: 440px;
     display: flex;
     flex-direction: column;
-    position: relative;
+    justify-content: flex-start;
+    align-items: center;
     box-sizing: border-box;
+    position: relative;
 }
 
 .partner-card:hover {
-    transform: translateY(-8px);
+    transform: translateY(-10px);
     border-color: var(--accent-magenta);
-    box-shadow: 0 15px 50px rgba(255, 0, 200, 0.25), inset 0 0 30px rgba(255, 0, 200, 0.08);
+    box-shadow: 0 0 35px rgba(255, 0, 200, 0.35);
 }
 
-.partner-banner-wrapper {
-    width: 100%;
+.partner-card .avatar-wrapper {
+    position: relative;
+    width: 150px;
     height: 150px;
-    position: relative;
+    margin: 0 auto 1.5rem;
+}
+
+.partner-card .artist-img {
+    width: 118px;
+    height: 118px;
+    border-radius: 50%;
     background: #0d0b18;
-    overflow: hidden;
-}
-
-.partner-banner-img {
-    width: 100%;
-    height: 100%;
+    border: 2px solid var(--accent-magenta);
+    box-shadow: 0 0 22px rgba(255, 0, 200, 0.4);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
     background-size: cover;
     background-position: center;
-    transition: transform 0.6s ease;
 }
 
-.partner-card:hover .partner-banner-img {
-    transform: scale(1.06);
-}
-
-.partner-banner-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(20, 15, 30, 0.95) 100%);
-}
-
-.partner-badge {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: rgba(0, 0, 0, 0.65);
-    border: 1px solid var(--accent-magenta);
-    color: var(--accent-magenta);
-    font-size: 0.6rem;
-    letter-spacing: 0.15rem;
-    padding: 0.35rem 0.8rem;
-    border-radius: 20px;
+.partner-card h4 {
     font-family: var(--font-heading);
-    font-weight: 700;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 0 15px rgba(255, 0, 200, 0.3);
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    color: #fff;
+    letter-spacing: 0.05rem;
 }
 
-.partner-body {
-    padding: 0 2rem 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    margin-top: -50px;
-    position: relative;
-    z-index: 2;
-    flex-grow: 1;
-}
-
-.partner-logo-wrapper {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    padding: 4px;
-    background: linear-gradient(135deg, var(--accent-magenta), var(--accent-blue));
-    box-shadow: 0 0 25px rgba(255, 0, 200, 0.35);
-    margin-bottom: 1.2rem;
-    flex-shrink: 0;
-}
-
-.partner-logo-img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background-size: cover;
-    background-position: center;
-    background-color: #0d0b18;
-    border: 2px solid #0a0a14;
-}
-
-.partner-name {
-    font-family: var(--font-heading);
-    font-size: 1.35rem;
-    letter-spacing: 0.1rem;
-    margin-bottom: 0.4rem;
-    color: #ffffff;
-}
-
-.partner-tagline {
-    font-size: 0.75rem;
+.partner-card .partner-tagline {
+    font-size: 0.72rem;
     color: var(--accent-magenta);
     letter-spacing: 0.1rem;
     text-transform: uppercase;
-    font-weight: 600;
-    margin-bottom: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    background: rgba(255, 0, 200, 0.08);
+    border: 1px solid rgba(255, 0, 200, 0.25);
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    display: inline-block;
 }
 
-.partner-bio-text {
-    font-size: 0.85rem;
-    line-height: 1.6;
+.partner-card .artist-loc {
+    font-size: 0.68rem;
+    letter-spacing: 0.12rem;
     color: var(--text-secondary);
-    margin-bottom: 1.5rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.partner-socials-row {
-    display: flex;
-    gap: 0.6rem;
-    justify-content: center;
-    flex-wrap: wrap;
+    text-transform: uppercase;
     margin-top: auto;
-}
-
-.partner-social-pill {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    text-decoration: none;
-}
-
-.partner-social-pill:hover {
-    background: var(--accent-magenta);
-    border-color: var(--accent-magenta);
-    color: #fff;
-    transform: translateY(-3px);
-    box-shadow: 0 0 15px rgba(255, 0, 200, 0.5);
+    gap: 0.4rem;
 }
 
 /* Artist Status & Discord Sync */
@@ -2712,31 +2635,96 @@ footer {
     }
 }
 
-/* --- ARTIST DETAIL MODAL STYLES --- */
+/* --- ARTIST DETAIL MODAL STYLES (WITH TOP PROFILE BANNER) --- */
 .artist-modal-content {
-    max-width: 600px;
+    max-width: 620px;
     max-height: 88vh;
     overflow-y: auto;
-    padding: 3.5rem;
+    padding: 0 0 3rem 0;
+    border-radius: 28px;
+    position: relative;
+    overflow-x: hidden;
+}
+
+.artist-modal-banner {
+    width: 100%;
+    height: 170px;
+    position: relative;
+    background: #0d0b18;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.artist-modal-banner-img {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.6s ease;
+}
+
+.artist-modal-content:hover .artist-modal-banner-img {
+    transform: scale(1.04);
+}
+
+.artist-modal-banner-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(10, 10, 15, 0.8) 75%, rgba(10, 10, 15, 1) 100%);
+}
+
+.artist-modal-inner {
+    padding: 0 3rem;
+    position: relative;
+    z-index: 2;
 }
 
 .artist-modal-header {
     display: flex;
     align-items: center;
-    gap: 2.5rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: -50px;
+    position: relative;
+    z-index: 3;
+}
+
+.artist-modal-content .close-modal {
+    top: 1.2rem;
+    right: 1.5rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    opacity: 0.85;
+    z-index: 10;
+}
+
+.artist-modal-content .close-modal:hover {
+    opacity: 1;
+    background: rgba(0, 240, 255, 0.2);
+    border-color: var(--accent-blue);
+    color: #fff;
+    transform: scale(1.1);
 }
 
 .artist-modal-img-wrapper {
     flex-shrink: 0;
-    box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.25);
     border-radius: 50%;
     border: 2px solid var(--accent-blue);
+    background: #0a0a10;
 }
 
 .artist-modal-title .section-title {
-    letter-spacing: 0.2rem;
+    letter-spacing: 0.15rem;
     text-transform: uppercase;
 }
 
@@ -2762,14 +2750,15 @@ footer {
 }
 
 @media (max-width: 600px) {
-    .artist-modal-content {
-        padding: 2rem 1.5rem;
+    .artist-modal-inner {
+        padding: 0 1.5rem;
     }
 
     .artist-modal-header {
         flex-direction: column;
         text-align: center;
-        gap: 1.5rem;
+        gap: 1.2rem;
+        margin-top: -40px;
     }
 
     .artist-modal-title {
