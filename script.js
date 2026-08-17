@@ -2623,11 +2623,22 @@ function initArtistPortalEngine() {
             // Listen to User Encrypted Chat Stream
             listenToUserChat(user);
         } else {
-            // User Logged Out
+            // User Logged Out / Unauthenticated
             if (signinBtn) signinBtn.style.display = 'inline-flex';
             if (profileBadge) profileBadge.style.display = 'none';
             if (sideSigninBtn) sideSigninBtn.style.display = 'block';
             if (sideProfileCard) sideProfileCard.style.display = 'none';
+
+            // Clear identity from DOM
+            if (navName) navName.textContent = 'ARTIST';
+            if (dropdownEmail) dropdownEmail.textContent = '--';
+            if (sideName) sideName.textContent = '--';
+            if (sideEmail) sideEmail.textContent = '--';
+            if (dashUserName) dashUserName.textContent = '--';
+            if (dashUserEmail) dashUserEmail.textContent = '--';
+            if (dashUserUid) dashUserUid.textContent = '--';
+            if (dashUserAvatar) dashUserAvatar.src = 'assets/OCR.png';
+            if (navAvatar) navAvatar.src = 'assets/OCR.png';
 
             if (submissionsListenerRef) submissionsListenerRef.off();
             if (chatListenerRef) chatListenerRef.off();
