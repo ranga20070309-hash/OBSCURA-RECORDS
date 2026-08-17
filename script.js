@@ -2881,10 +2881,9 @@ function initArtistPortalEngine() {
 
             if (threadChatInput) threadChatInput.value = '';
 
-            // 📧 Email notification to business email
+            // 📧 Email notification to business email via Vercel Serverless Function
             try {
-                const serverBase = window.location.hostname === 'localhost' ? 'http://localhost:3001' : 'https://obscura-records-server.onrender.com';
-                await fetch(`${serverBase}/api/artist-message-notify`, {
+                await fetch('/api/artist-message', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -2895,7 +2894,9 @@ function initArtistPortalEngine() {
                         subId: activeThreadId
                     })
                 });
-            } catch (_) { /* silent — message already saved to DB */ }
+            } catch (err) {
+                console.warn("Email notification notice:", err.message);
+            }
         });
     }
 
