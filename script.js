@@ -1088,9 +1088,101 @@ const initPortal = () => {
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // --- UNIFIED PROFILE DETAIL MODAL (WITH TOP BANNER) ---
+        function openProfileModal(opts) {
+            const modal      = document.getElementById('artist-modal');
+            const mBanner    = document.getElementById('artist-modal-banner');
+            const mBannerImg = document.getElementById('artist-modal-banner-img');
+            const mName      = document.getElementById('artist-modal-name');
+            const mStatus    = document.getElementById('artist-modal-status');
+            const mBio       = document.getElementById('artist-modal-bio');
+            const mImg       = document.getElementById('artist-modal-img');
+            const mDecor     = document.getElementById('artist-modal-decoration');
+            const mLinks     = document.getElementById('artist-modal-links');
+            if (!modal) return;
+
+            if (typeof playBleep === 'function') playBleep(700, 'sine', 0.1);
+
+            // 1. Dynamic Profile Banner
+            const bannerUrl = (opts.bannerUrl && opts.bannerUrl.trim() !== '') ? opts.bannerUrl : 'assets/cover.png';
+            if (mBanner && mBannerImg) {
+                mBannerImg.style.backgroundImage = `url("${bannerUrl}")`;
+                mBanner.style.display = 'block';
+            }
+
+            // 2. Name
+            if (mName) mName.textContent = opts.name || 'PERSONNEL PROFILE';
+
+            // 3. Status Indicator
+            if (mStatus) {
+                if (opts.isPartner) {
+                    mStatus.textContent = 'OFFICIAL PARTNER';
+                    mStatus.className = 'status-indicator';
+                    mStatus.style.color = 'var(--accent-magenta)';
+                    mStatus.style.borderColor = 'rgba(255, 0, 200, 0.4)';
+                    mStatus.style.background = 'rgba(255, 0, 200, 0.1)';
+                } else {
+                    mStatus.textContent = (opts.status || 'OFFLINE').toUpperCase();
+                    mStatus.className = `status-indicator ${opts.statusClass || 'offline'}`;
+                    mStatus.style.color = '';
+                    mStatus.style.borderColor = '';
+                    mStatus.style.background = '';
+                }
+            }
+
+            // 4. Biography
+            if (mBio) mBio.textContent = opts.bio || (opts.isPartner ? 'Official record label alliance transmission.' : 'Accessing encrypted artist profile...');
+
+            // 5. Avatar / Logo Image
+            if (mImg) {
+                const avatarUrl = (opts.avatarUrl && opts.avatarUrl.trim() !== '') ? opts.avatarUrl : 'assets/staff/default.png';
+                mImg.style.backgroundImage = `url("${avatarUrl}")`;
+                mImg.style.backgroundSize = 'cover';
+                mImg.style.backgroundPosition = 'center';
+                mImg.style.borderColor = opts.isPartner ? 'var(--accent-magenta)' : 'var(--accent-blue)';
+                mImg.style.boxShadow = opts.isPartner ? '0 0 25px rgba(255, 0, 200, 0.4)' : '0 0 20px rgba(0, 240, 255, 0.4)';
+            }
+
+            // 6. Discord Avatar Frame / Decoration
+            if (mDecor) {
+                if (opts.decorationUrl) {
+                    mDecor.src = opts.decorationUrl;
+                    mDecor.style.display = 'block';
+                } else {
+                    mDecor.style.display = 'none';
+                }
+            }
+
+            // 7. Social Links
+            if (mLinks) {
+                mLinks.innerHTML = '';
+                if (opts.socials) {
+                    Object.entries(opts.socials).forEach(([platform, url]) => {
+                        if (!url || url.trim() === '') return;
+                        let icon = 'fas fa-link';
+                        const p = platform.toLowerCase();
+                        if (p === 'instagram') icon = 'fab fa-instagram';
+                        else if (p === 'spotify') icon = 'fab fa-spotify';
+                        else if (p === 'apple') icon = 'fa-brands fa-apple';
+                        else if (p === 'facebook') icon = 'fa-brands fa-facebook-f';
+                        else if (p === 'youtube') icon = 'fab fa-youtube';
+                        else if (p === 'tiktok') icon = 'fab fa-tiktok';
+                        else if (p === 'twitter' || p === 'x') icon = 'fab fa-x-twitter';
+                        else if (p === 'soundcloud') icon = 'fab fa-soundcloud';
+                        else if (p === 'website' || p === 'web') icon = 'fas fa-globe';
+                        mLinks.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" class="platform-link" style="${opts.isPartner ? 'background:rgba(255,0,200,0.08); border-color:rgba(255,0,200,0.25);' : ''}"><i class="${icon}"></i></a>`);
+                    });
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.classList.add('no-scroll');
+            document.documentElement.classList.add('no-scroll');
+        }
+
         // --- DYNAMIC STAFF CARD BUILDER ---
         function createStaffCard(discordId, data, gridEl, isPartner) {
-            // Build card element
+            // Build card element (identical size & style to partner cards)
             const item = document.createElement('div');
             item.className = 'artist-item glass';
             item.dataset[isPartner ? 'partnerId' : 'discordId'] = discordId;
@@ -1132,47 +1224,21 @@ const initPortal = () => {
                 } else {
                     decoration.style.display = 'none';
                 }
+
                 // Modal click
                 item.style.cursor = 'pointer';
                 item.onclick = () => {
-                    const modal  = document.getElementById('artist-modal');
-                    const mName  = document.getElementById('artist-modal-name');
-                    const mStatus= document.getElementById('artist-modal-status');
-                    const mBio   = document.getElementById('artist-modal-bio');
-                    const mImg   = document.getElementById('artist-modal-img');
-                    const mDecor = document.getElementById('artist-modal-decoration');
-                    const mLinks = document.getElementById('artist-modal-links');
-                    if (!modal) return;
-                    if (typeof playBleep === 'function') playBleep(700, 'sine', 0.1);
-                    if (mName)   mName.textContent   = d.name || nameEl.textContent;
-                    if (mStatus) { mStatus.textContent = (d.status || 'OFFLINE').toUpperCase(); mStatus.className = `status-indicator ${(d.status || 'offline').toLowerCase()}`; }
-                    if (mBio)    mBio.textContent    = d.bio || (isPartner ? 'Label partner profile.' : 'Accessing encrypted artist profile...');
-                    if (mImg) {
-                        mImg.style.backgroundImage = `url("${avatarSrc}")`;
-                        mImg.style.backgroundSize = 'cover';
-                        mImg.style.backgroundPosition = 'center';
-                    }
-                    if (mDecor) { if (d.decoration_url) { mDecor.src = d.decoration_url; mDecor.style.display = 'block'; } else { mDecor.style.display = 'none'; } }
-                    if (mLinks) {
-                        mLinks.innerHTML = '';
-                        if (d.socials) {
-                            Object.entries(d.socials).forEach(([platform, url]) => {
-                                let icon = 'fas fa-link';
-                                const p = platform.toLowerCase();
-                                if (p === 'instagram') icon = 'fab fa-instagram';
-                                else if (p === 'spotify')  icon = 'fab fa-spotify';
-                                else if (p === 'apple')    icon = 'fa-brands fa-apple';
-                                else if (p === 'facebook') icon = 'fa-brands fa-facebook-f';
-                                else if (p === 'youtube')  icon = 'fab fa-youtube';
-                                else if (p === 'tiktok')   icon = 'fab fa-tiktok';
-                                else if (p === 'twitter' || p === 'x') icon = 'fab fa-x-twitter';
-                                mLinks.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" class="platform-link"><i class="${icon}"></i></a>`);
-                            });
-                        }
-                    }
-                    modal.classList.add('active');
-                    document.body.classList.add('no-scroll');
-                    document.documentElement.classList.add('no-scroll');
+                    openProfileModal({
+                        name: d.name || nameEl.textContent,
+                        status: (d.status || 'OFFLINE').toUpperCase(),
+                        statusClass: status,
+                        bio: d.bio || 'Accessing encrypted artist profile...',
+                        avatarUrl: avatarSrc,
+                        decorationUrl: d.decoration_url,
+                        bannerUrl: d.banner_url || 'assets/cover.png',
+                        socials: d.socials,
+                        isPartner: false
+                    });
                 };
             };
             applyData(data);
@@ -1203,10 +1269,10 @@ const initPortal = () => {
             });
         }
 
-        // --- DYNAMIC PARTNER CARD BUILDER (CUSTOM LUXURY DESIGN) ---
+        // --- DYNAMIC PARTNER CARD BUILDER (SAME SIZE & CARD STYLE AS STAFF) ---
         function createPartnerCard(partnerId, data, gridEl) {
             const item = document.createElement('div');
-            item.className = 'partner-card';
+            item.className = 'partner-card glass';
             item.dataset.partnerId = partnerId;
 
             const bannerUrl = (data.banner_url && data.banner_url.trim() !== '') ? data.banner_url : 'assets/cover.png';
@@ -1215,92 +1281,27 @@ const initPortal = () => {
             const name = data.name || 'LABEL PARTNER';
             const bio = data.bio || 'Encrypted record label partnership transmission.';
 
-            // Socials
-            let socialsHtml = '';
-            if (data.socials) {
-                Object.entries(data.socials).forEach(([platform, url]) => {
-                    if (!url || url.trim() === '') return;
-                    let icon = 'fas fa-link';
-                    const p = platform.toLowerCase();
-                    if (p === 'instagram') icon = 'fab fa-instagram';
-                    else if (p === 'spotify') icon = 'fab fa-spotify';
-                    else if (p === 'apple') icon = 'fa-brands fa-apple';
-                    else if (p === 'facebook') icon = 'fa-brands fa-facebook-f';
-                    else if (p === 'youtube') icon = 'fab fa-youtube';
-                    else if (p === 'tiktok') icon = 'fab fa-tiktok';
-                    else if (p === 'twitter' || p === 'x') icon = 'fab fa-x-twitter';
-                    else if (p === 'soundcloud') icon = 'fab fa-soundcloud';
-                    else if (p === 'website' || p === 'web') icon = 'fas fa-globe';
-                    socialsHtml += `<a href="${url}" target="_blank" class="partner-social-pill" onclick="event.stopPropagation();" title="${platform.toUpperCase()}"><i class="${icon}"></i></a>`;
-                });
-            }
-
             item.innerHTML = `
-                <div class="partner-banner-wrapper">
-                    <div class="partner-banner-img" style="background-image: url('${bannerUrl}');"></div>
-                    <div class="partner-banner-overlay"></div>
-                    <span class="partner-badge"><i class="fas fa-handshake"></i> PARTNER</span>
+                <div class="avatar-wrapper">
+                    <div class="artist-img" style="background-image: url('${logoUrl}');"></div>
                 </div>
-                <div class="partner-body">
-                    <div class="partner-logo-wrapper">
-                        <div class="partner-logo-img" style="background-image: url('${logoUrl}');"></div>
-                    </div>
-                    <h3 class="partner-name">${name}</h3>
-                    <div class="partner-tagline">${tagline}</div>
-                    <p class="partner-bio-text">${bio}</p>
-                    <div class="partner-socials-row">
-                        ${socialsHtml}
-                    </div>
-                </div>
+                <h4>${name}</h4>
+                <div class="partner-tagline">${tagline}</div>
+                <span class="artist-loc"><i class="fas fa-handshake" style="color:var(--accent-magenta);"></i> LABEL PARTNER</span>
             `;
 
-            // Modal click handler for Partner
+            // Modal click handler for Partner (Displays Banner at Top)
             item.onclick = () => {
-                const modal = document.getElementById('artist-modal');
-                const mName = document.getElementById('artist-modal-name');
-                const mStatus = document.getElementById('artist-modal-status');
-                const mBio = document.getElementById('artist-modal-bio');
-                const mImg = document.getElementById('artist-modal-img');
-                const mDecor = document.getElementById('artist-modal-decoration');
-                const mLinks = document.getElementById('artist-modal-links');
-                if (!modal) return;
-                if (typeof playBleep === 'function') playBleep(700, 'sine', 0.1);
-                if (mName) mName.textContent = name;
-                if (mStatus) {
-                    mStatus.textContent = 'OFFICIAL PARTNER';
-                    mStatus.className = 'status-indicator';
-                    mStatus.style.color = 'var(--accent-magenta)';
-                }
-                if (mBio) mBio.textContent = bio;
-                if (mImg) {
-                    mImg.style.backgroundImage = `url("${logoUrl}")`;
-                    mImg.style.backgroundSize = 'cover';
-                    mImg.style.backgroundPosition = 'center';
-                }
-                if (mDecor) mDecor.style.display = 'none';
-                if (mLinks) {
-                    mLinks.innerHTML = '';
-                    if (data.socials) {
-                        Object.entries(data.socials).forEach(([platform, url]) => {
-                            if (!url) return;
-                            let icon = 'fas fa-link';
-                            const p = platform.toLowerCase();
-                            if (p === 'instagram') icon = 'fab fa-instagram';
-                            else if (p === 'spotify') icon = 'fab fa-spotify';
-                            else if (p === 'apple') icon = 'fa-brands fa-apple';
-                            else if (p === 'facebook') icon = 'fa-brands fa-facebook-f';
-                            else if (p === 'youtube') icon = 'fab fa-youtube';
-                            else if (p === 'tiktok') icon = 'fab fa-tiktok';
-                            else if (p === 'twitter' || p === 'x') icon = 'fab fa-x-twitter';
-                            else if (p === 'soundcloud') icon = 'fab fa-soundcloud';
-                            else if (p === 'website' || p === 'web') icon = 'fas fa-globe';
-                            mLinks.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" class="platform-link"><i class="${icon}"></i></a>`);
-                        });
-                    }
-                }
-                modal.classList.add('active');
-                document.body.classList.add('no-scroll');
-                document.documentElement.classList.add('no-scroll');
+                openProfileModal({
+                    name: name,
+                    status: 'LABEL PARTNER',
+                    statusClass: 'partner',
+                    bio: bio,
+                    avatarUrl: logoUrl,
+                    bannerUrl: bannerUrl,
+                    socials: data.socials,
+                    isPartner: true
+                });
             };
 
             gridEl.appendChild(item);
