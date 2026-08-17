@@ -1605,10 +1605,180 @@ section {
     border-radius: 5px;
 }
 
-/* Partners grid — ensures solo card is always centered */
+/* =====================================================
+   LABEL PARTNERS SHOWCASE (CUSTOM LUXURY DESIGN)
+   ===================================================== */
 #partners-grid {
+    display: flex;
+    flex-wrap: wrap;
     justify-content: center;
+    align-items: stretch;
+    gap: 3rem;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem 0;
     min-height: 100px;
+}
+
+.partner-card {
+    flex: 0 0 380px;
+    max-width: 440px;
+    width: 100%;
+    border-radius: 24px;
+    background: rgba(20, 15, 30, 0.65);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 0, 200, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 0, 200, 0.04);
+    overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s, box-shadow 0.4s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.partner-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--accent-magenta);
+    box-shadow: 0 15px 50px rgba(255, 0, 200, 0.25), inset 0 0 30px rgba(255, 0, 200, 0.08);
+}
+
+.partner-banner-wrapper {
+    width: 100%;
+    height: 150px;
+    position: relative;
+    background: #0d0b18;
+    overflow: hidden;
+}
+
+.partner-banner-img {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.6s ease;
+}
+
+.partner-card:hover .partner-banner-img {
+    transform: scale(1.06);
+}
+
+.partner-banner-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(20, 15, 30, 0.95) 100%);
+}
+
+.partner-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid var(--accent-magenta);
+    color: var(--accent-magenta);
+    font-size: 0.6rem;
+    letter-spacing: 0.15rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 15px rgba(255, 0, 200, 0.3);
+}
+
+.partner-body {
+    padding: 0 2rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: -50px;
+    position: relative;
+    z-index: 2;
+    flex-grow: 1;
+}
+
+.partner-logo-wrapper {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    padding: 4px;
+    background: linear-gradient(135deg, var(--accent-magenta), var(--accent-blue));
+    box-shadow: 0 0 25px rgba(255, 0, 200, 0.35);
+    margin-bottom: 1.2rem;
+    flex-shrink: 0;
+}
+
+.partner-logo-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-color: #0d0b18;
+    border: 2px solid #0a0a14;
+}
+
+.partner-name {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    letter-spacing: 0.1rem;
+    margin-bottom: 0.4rem;
+    color: #ffffff;
+}
+
+.partner-tagline {
+    font-size: 0.75rem;
+    color: var(--accent-magenta);
+    letter-spacing: 0.1rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.partner-bio-text {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.partner-socials-row {
+    display: flex;
+    gap: 0.6rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: auto;
+}
+
+.partner-social-pill {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.partner-social-pill:hover {
+    background: var(--accent-magenta);
+    border-color: var(--accent-magenta);
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 0 15px rgba(255, 0, 200, 0.5);
 }
 
 /* Artist Status & Discord Sync */
