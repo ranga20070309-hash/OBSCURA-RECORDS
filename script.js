@@ -1203,6 +1203,109 @@ const initPortal = () => {
             });
         }
 
+        // --- DYNAMIC PARTNER CARD BUILDER (CUSTOM LUXURY DESIGN) ---
+        function createPartnerCard(partnerId, data, gridEl) {
+            const item = document.createElement('div');
+            item.className = 'partner-card';
+            item.dataset.partnerId = partnerId;
+
+            const bannerUrl = (data.banner_url && data.banner_url.trim() !== '') ? data.banner_url : 'assets/cover.png';
+            const logoUrl = (data.logo_url && data.logo_url.trim() !== '') ? data.logo_url : (data.avatar_url && data.avatar_url.trim() !== '' ? data.avatar_url : 'assets/staff/default.png');
+            const tagline = data.tagline || 'OFFICIAL LABEL ALLIANCE';
+            const name = data.name || 'LABEL PARTNER';
+            const bio = data.bio || 'Encrypted record label partnership transmission.';
+
+            // Socials
+            let socialsHtml = '';
+            if (data.socials) {
+                Object.entries(data.socials).forEach(([platform, url]) => {
+                    if (!url || url.trim() === '') return;
+                    let icon = 'fas fa-link';
+                    const p = platform.toLowerCase();
+                    if (p === 'instagram') icon = 'fab fa-instagram';
+                    else if (p === 'spotify') icon = 'fab fa-spotify';
+                    else if (p === 'apple') icon = 'fa-brands fa-apple';
+                    else if (p === 'facebook') icon = 'fa-brands fa-facebook-f';
+                    else if (p === 'youtube') icon = 'fab fa-youtube';
+                    else if (p === 'tiktok') icon = 'fab fa-tiktok';
+                    else if (p === 'twitter' || p === 'x') icon = 'fab fa-x-twitter';
+                    else if (p === 'soundcloud') icon = 'fab fa-soundcloud';
+                    else if (p === 'website' || p === 'web') icon = 'fas fa-globe';
+                    socialsHtml += `<a href="${url}" target="_blank" class="partner-social-pill" onclick="event.stopPropagation();" title="${platform.toUpperCase()}"><i class="${icon}"></i></a>`;
+                });
+            }
+
+            item.innerHTML = `
+                <div class="partner-banner-wrapper">
+                    <div class="partner-banner-img" style="background-image: url('${bannerUrl}');"></div>
+                    <div class="partner-banner-overlay"></div>
+                    <span class="partner-badge"><i class="fas fa-handshake"></i> PARTNER</span>
+                </div>
+                <div class="partner-body">
+                    <div class="partner-logo-wrapper">
+                        <div class="partner-logo-img" style="background-image: url('${logoUrl}');"></div>
+                    </div>
+                    <h3 class="partner-name">${name}</h3>
+                    <div class="partner-tagline">${tagline}</div>
+                    <p class="partner-bio-text">${bio}</p>
+                    <div class="partner-socials-row">
+                        ${socialsHtml}
+                    </div>
+                </div>
+            `;
+
+            // Modal click handler for Partner
+            item.onclick = () => {
+                const modal = document.getElementById('artist-modal');
+                const mName = document.getElementById('artist-modal-name');
+                const mStatus = document.getElementById('artist-modal-status');
+                const mBio = document.getElementById('artist-modal-bio');
+                const mImg = document.getElementById('artist-modal-img');
+                const mDecor = document.getElementById('artist-modal-decoration');
+                const mLinks = document.getElementById('artist-modal-links');
+                if (!modal) return;
+                if (typeof playBleep === 'function') playBleep(700, 'sine', 0.1);
+                if (mName) mName.textContent = name;
+                if (mStatus) {
+                    mStatus.textContent = 'OFFICIAL PARTNER';
+                    mStatus.className = 'status-indicator';
+                    mStatus.style.color = 'var(--accent-magenta)';
+                }
+                if (mBio) mBio.textContent = bio;
+                if (mImg) {
+                    mImg.style.backgroundImage = `url("${logoUrl}")`;
+                    mImg.style.backgroundSize = 'cover';
+                    mImg.style.backgroundPosition = 'center';
+                }
+                if (mDecor) mDecor.style.display = 'none';
+                if (mLinks) {
+                    mLinks.innerHTML = '';
+                    if (data.socials) {
+                        Object.entries(data.socials).forEach(([platform, url]) => {
+                            if (!url) return;
+                            let icon = 'fas fa-link';
+                            const p = platform.toLowerCase();
+                            if (p === 'instagram') icon = 'fab fa-instagram';
+                            else if (p === 'spotify') icon = 'fab fa-spotify';
+                            else if (p === 'apple') icon = 'fa-brands fa-apple';
+                            else if (p === 'facebook') icon = 'fa-brands fa-facebook-f';
+                            else if (p === 'youtube') icon = 'fab fa-youtube';
+                            else if (p === 'tiktok') icon = 'fab fa-tiktok';
+                            else if (p === 'twitter' || p === 'x') icon = 'fab fa-x-twitter';
+                            else if (p === 'soundcloud') icon = 'fab fa-soundcloud';
+                            else if (p === 'website' || p === 'web') icon = 'fas fa-globe';
+                            mLinks.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" class="platform-link"><i class="${icon}"></i></a>`);
+                        });
+                    }
+                }
+                modal.classList.add('active');
+                document.body.classList.add('no-scroll');
+                document.documentElement.classList.add('no-scroll');
+            };
+
+            gridEl.appendChild(item);
+        }
+
         // --- DYNAMIC PARTNERS GRID: Render all from Firebase partner_status/ (Sorted by hierarchy order) ---
         const partnersGrid = document.getElementById('partners-grid');
         if (partnersGrid) {
@@ -1216,7 +1319,7 @@ const initPortal = () => {
                 });
 
                 sortedPartners.forEach(([id, data]) => {
-                    createStaffCard(id, data, partnersGrid, true);
+                    createPartnerCard(id, data, partnersGrid);
                 });
                 if (sortedPartners.length === 0) {
                     partnersGrid.innerHTML = '<p style="opacity:0.4; text-align:center; padding:4rem; font-family:monospace;">No partner records found.</p>';
