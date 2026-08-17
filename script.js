@@ -2677,7 +2677,11 @@ function initArtistPortalEngine() {
         });
     }
 
-    // 7. Live Submissions Listener (Filtered by UID or Email)
+    // ==========================================================
+    // 7. LIVE SUBMISSIONS LISTENER (List Layout)
+    // ==========================================================
+    let mySubsData = []; // cached for thread-list rebuilding
+
     function listenToUserSubmissions(user) {
         if (!dashSubmissionsList) return;
         if (submissionsListenerRef) submissionsListenerRef.off();
@@ -2687,88 +2691,245 @@ function initArtistPortalEngine() {
             const data = snapshot.val();
             dashSubmissionsList.innerHTML = '';
 
-            if (!data) {
-                renderEmptySubmissions();
-                return;
-            }
+            if (!data) { renderEmptySubmissions(); return; }
 
             let mySubs = [];
             Object.keys(data).forEach(key => {
                 const sub = data[key];
-                // Match by userId or userEmail
                 const isMatch = (sub.userId && sub.userId === user.uid) ||
                                 (sub.userEmail && sub.userEmail.toLowerCase() === (user.email || '').toLowerCase()) ||
                                 (sub.email && sub.email.toLowerCase() === (user.email || '').toLowerCase());
-                if (isMatch) {
-                    mySubs.push({ id: key, ...sub });
-                }
+                if (isMatch) mySubs.push({ id: key, ...sub });
             });
 
-            // Update badge count
             if (dashSubCount) dashSubCount.textContent = mySubs.length;
+            if (mySubs.length === 0) { renderEmptySubmissions(); return; }
 
-            if (mySubs.length === 0) {
-                renderEmptySubmissions();
-                return;
-            }
+            mySubs.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            mySubsData = mySubs;
 
-            // Sort newest first
-            mySubs.sort((a, b) => {
-                const timeA = a.timestamp || 0;
-                const timeB = b.timestamp || 0;
-                return timeB - timeA;
-            });
-
+            // Build list rows
             mySubs.forEach(sub => {
-                const card = document.createElement('div');
-                card.className = 'dash-sub-card';
-
                 const status = (sub.status || 'PENDING').toUpperCase();
-                let statusBadgeClass = 'badge-pending';
-                let statusText = 'PENDING';
+                let badgeClass = 'badge-pending';
+                let statusLabel = 'PENDING';
+                if (status === 'UNDER_REVIEW' || status === 'REVIEW') { badgeClass = 'badge-review'; statusLabel = 'UNDER REVIEW'; }
+                else if (status === 'ACCEPTED') { badgeClass = 'badge-accepted'; statusLabel = 'ACCEPTED'; }
+                else if (status === 'DECLINED' || status === 'ARCHIVED') { badgeClass = 'badge-declined'; statusLabel = 'ARCHIVED'; }
 
-                if (status === 'UNDER_REVIEW' || status === 'REVIEW') {
-                    statusBadgeClass = 'badge-review';
-                    statusText = 'UNDER REVIEW';
-                } else if (status === 'ACCEPTED') {
-                    statusBadgeClass = 'badge-accepted';
-                    statusText = 'ACCEPTED';
-                } else if (status === 'DECLINED' || status === 'ARCHIVED') {
-                    statusBadgeClass = 'badge-declined';
-                    statusText = 'ARCHIVED';
-                }
-
-                card.innerHTML = `
-                    <div class="dash-sub-header">
-                        <div class="dash-sub-title">${sub.artist || sub.name || 'UNTITLED DEMO'}</div>
-                        <span class="dash-status-badge ${statusBadgeClass}">
-                            <span class="dot"></span> ${statusText}
-                        </span>
+                const row = document.createElement('div');
+                row.className = 'dash-sub-row';
+                row.innerHTML = `
+                    <div class="sub-row-left">
+                        <div class="sub-row-title">${sub.artist || sub.name || 'UNTITLED DEMO'}</div>
+                        <div class="sub-row-meta">
+                            <span>${sub.genre || 'ELECTRONIC'}</span>
+                            <span>•</span>
+                            <span>${sub.date || 'RECENT'}</span>
+                        </div>
                     </div>
-                    <div class="dash-sub-meta">
-                        <span class="dash-sub-genre">${sub.genre || 'ELECTRONIC'}</span>
-                        <span class="dash-sub-date">${sub.date || 'RECENT TRANSMISSION'}</span>
-                    </div>
-                    <div class="dash-sub-actions">
-                        ${sub.link && sub.link !== '#' ? `<a href="${sub.link}" target="_blank" class="dash-sub-link-btn"><i class="fas fa-play"></i> LISTEN</a>` : ''}
-                        <button class="dash-sub-chat-btn" onclick="openDemoThread('${sub.id}', '${(sub.artist || sub.name || 'Demo').replace(/'/g, "\\'")}')">
-                            <i class="fas fa-comments"></i> MESSAGE A&R
-                        </button>
+                    <div class="sub-row-right">
+                        <span class="dash-status-badge ${badgeClass}"><span class="dot"></span> ${statusLabel}</span>
+                        <div class="sub-row-actions">
+                            ${sub.link && sub.link !== '#' ? `<a href="${sub.link}" target="_blank" class="sub-action-btn listen-btn" title="Listen"><i class="fas fa-play"></i></a>` : ''}
+                            <button class="sub-action-btn chat-btn" title="Message A&R" onclick="openThread('${sub.id}')">
+                                <i class="fas fa-comments"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
-                dashSubmissionsList.appendChild(card);
+                dashSubmissionsList.appendChild(row);
             });
+
+            // Also rebuild the thread-list in A&R tab
+            rebuildThreadList(mySubs);
         });
     }
 
-    // Direct Thread Switcher
-    window.openDemoThread = function(subId, trackTitle) {
+    // ==========================================================
+    // THREAD LIST (index of threads inside A&R tab)
+    // ==========================================================
+    function rebuildThreadList(subs) {
+        const threadList = document.getElementById('thread-list');
+        if (!threadList) return;
+        threadList.innerHTML = '';
+        if (!subs || subs.length === 0) return;
+
+        const hint = document.querySelector('.thread-select-hint');
+        if (hint) hint.style.display = subs.length ? 'none' : 'flex';
+
+        subs.forEach(sub => {
+            const status = (sub.status || 'PENDING').toUpperCase();
+            let badgeClass = 'badge-pending', statusLabel = 'PENDING';
+            if (status === 'UNDER_REVIEW' || status === 'REVIEW') { badgeClass = 'badge-review'; statusLabel = 'UNDER REVIEW'; }
+            else if (status === 'ACCEPTED') { badgeClass = 'badge-accepted'; statusLabel = 'ACCEPTED'; }
+            else if (status === 'DECLINED' || status === 'ARCHIVED') { badgeClass = 'badge-declined'; statusLabel = 'ARCHIVED'; }
+
+            const btn = document.createElement('button');
+            btn.className = 'thread-list-item';
+            btn.onclick = () => openThread(sub.id);
+            btn.innerHTML = `
+                <div class="tli-left">
+                    <i class="fas fa-comments tli-icon"></i>
+                    <div>
+                        <div class="tli-title">${sub.artist || sub.name || 'UNTITLED DEMO'}</div>
+                        <div class="tli-meta">${sub.genre || 'ELECTRONIC'} • ${sub.date || 'RECENT'}</div>
+                    </div>
+                </div>
+                <span class="dash-status-badge ${badgeClass}" style="font-size:0.55rem;"><span class="dot"></span> ${statusLabel}</span>
+            `;
+            threadList.appendChild(btn);
+        });
+    }
+
+    // ==========================================================
+    // OPEN / CLOSE THREAD
+    // ==========================================================
+    let activeThreadId = null;
+    let activeThreadListener = null;
+
+    window.openThread = function(subId) {
+        const sub = mySubsData.find(s => s.id === subId);
+        if (!sub) return;
+        activeThreadId = subId;
+
+        // Switch to A&R tab if not already
         switchTab('inquiries-tab');
-        if (dashChatInput) {
-            dashChatInput.value = `[RE: ${trackTitle}] `;
-            dashChatInput.focus();
+
+        // Update thread header
+        const titleEl = document.getElementById('thread-track-title');
+        const metaEl = document.getElementById('thread-track-meta');
+        const statusEl = document.getElementById('thread-status-badge');
+        if (titleEl) titleEl.textContent = sub.artist || sub.name || 'UNTITLED DEMO';
+        if (metaEl) metaEl.textContent = (sub.genre || 'ELECTRONIC') + ' • ' + (sub.date || 'RECENT');
+
+        if (statusEl) {
+            const status = (sub.status || 'PENDING').toUpperCase();
+            let badgeClass = 'badge-pending', statusLabel = 'PENDING';
+            if (status === 'UNDER_REVIEW' || status === 'REVIEW') { badgeClass = 'badge-review'; statusLabel = 'UNDER REVIEW'; }
+            else if (status === 'ACCEPTED') { badgeClass = 'badge-accepted'; statusLabel = 'ACCEPTED'; }
+            else if (status === 'DECLINED' || status === 'ARCHIVED') { badgeClass = 'badge-declined'; statusLabel = 'ARCHIVED'; }
+            statusEl.className = `dash-status-badge ${badgeClass}`;
+            statusEl.innerHTML = `<span class="dot"></span> ${statusLabel}`;
         }
+
+        // Show active thread, hide selector
+        document.getElementById('thread-selector').style.display = 'none';
+        document.getElementById('active-thread').style.display = 'flex';
+
+        // Listen to this thread's messages
+        const threadStream = document.getElementById('thread-chat-stream');
+        if (activeThreadListener) activeThreadListener.off();
+        activeThreadListener = db.ref(`siteData/conversations/${currentArtistUser.uid}/threads/${subId}/messages`);
+        activeThreadListener.on('value', (snapshot) => {
+            renderThreadMessages(snapshot.val(), threadStream);
+        });
+
+        // Focus input
+        const input = document.getElementById('thread-chat-input');
+        if (input) setTimeout(() => input.focus(), 100);
     };
+
+    window.closeThread = function() {
+        if (activeThreadListener) { activeThreadListener.off(); activeThreadListener = null; }
+        activeThreadId = null;
+        document.getElementById('thread-selector').style.display = 'block';
+        document.getElementById('active-thread').style.display = 'none';
+    };
+
+    // ==========================================================
+    // SEND MESSAGE IN THREAD + EMAIL NOTIFICATION
+    // ==========================================================
+    const threadChatForm = document.getElementById('thread-chat-form');
+    const threadChatInput = document.getElementById('thread-chat-input');
+
+    if (threadChatForm) {
+        threadChatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = threadChatInput ? threadChatInput.value.trim() : '';
+            if (!text || !currentArtistUser || !activeThreadId) return;
+
+            const sub = mySubsData.find(s => s.id === activeThreadId);
+            const trackTitle = sub ? (sub.artist || sub.name || 'UNTITLED DEMO') : 'DEMO';
+
+            const msgRef = db.ref(`siteData/conversations/${currentArtistUser.uid}/threads/${activeThreadId}/messages`).push();
+            await msgRef.set({
+                sender: 'artist',
+                senderName: currentArtistUser.displayName || 'Producer',
+                text: text,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+
+            // Update thread meta for admin inbox
+            await db.ref(`siteData/conversations/${currentArtistUser.uid}/threads/${activeThreadId}/meta`).update({
+                artistName: currentArtistUser.displayName || 'Unknown Artist',
+                artistEmail: currentArtistUser.email || '',
+                trackTitle: trackTitle,
+                subId: activeThreadId,
+                lastMessage: text,
+                lastUpdated: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            // Update top-level user meta for admin conversation list
+            await db.ref(`siteData/conversations/${currentArtistUser.uid}/meta`).update({
+                artistName: currentArtistUser.displayName || 'Unknown Artist',
+                artistEmail: currentArtistUser.email || '',
+                lastMessage: `[${trackTitle}] ${text}`,
+                lastUpdated: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            if (threadChatInput) threadChatInput.value = '';
+
+            // 📧 Email notification to business email
+            try {
+                const serverBase = window.location.hostname === 'localhost' ? 'http://localhost:3001' : 'https://obscura-records-server.onrender.com';
+                await fetch(`${serverBase}/api/artist-message-notify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        artistName: currentArtistUser.displayName || 'Producer',
+                        artistEmail: currentArtistUser.email || '',
+                        trackTitle: trackTitle,
+                        messageText: text,
+                        subId: activeThreadId
+                    })
+                });
+            } catch (_) { /* silent — message already saved to DB */ }
+        });
+    }
+
+    // ==========================================================
+    // RENDER THREAD MESSAGES
+    // ==========================================================
+    function renderThreadMessages(data, container) {
+        if (!container) return;
+        if (!data) {
+            container.innerHTML = `<div class="chat-empty-hint"><p>Encrypted channel open. Send your first message to A&R Command.</p></div>`;
+            return;
+        }
+        let html = '';
+        Object.keys(data).forEach(k => {
+            const msg = data[k];
+            const isArtist = msg.sender === 'artist';
+            html += `
+                <div class="dash-chat-message ${isArtist ? 'artist' : 'staff'}">
+                    <div class="chat-sender-tag">
+                        ${isArtist ? `<i class="fas fa-user"></i> ${msg.senderName || 'PRODUCER'}` : '<i class="fas fa-shield-alt"></i> OBSCURA A&R'}
+                    </div>
+                    <div class="chat-msg-body">${msg.text}</div>
+                    <span class="chat-meta">${msg.date || ''}</span>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // ==========================================================
+    // ALSO WIRE openDemoThread from submissions list
+    // ==========================================================
+    window.openDemoThread = function(subId) { openThread(subId); };
 
     function renderEmptySubmissions() {
         if (dashSubCount) dashSubCount.textContent = '0';
@@ -2783,74 +2944,12 @@ function initArtistPortalEngine() {
                 </div>
             `;
         }
+        rebuildThreadList([]);
     }
 
-    // 8. Live Encrypted Chat Stream
-    function listenToUserChat(user) {
-        if (!dashChatStream) return;
-        if (chatListenerRef) chatListenerRef.off();
+    // legacy listenToUserChat no-op (threads are per-submission now)
+    function listenToUserChat(user) { /* per-submission threads handle chat */ }
 
-        chatListenerRef = db.ref(`siteData/conversations/${user.uid}/messages`);
-        chatListenerRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            renderChatMessages(data);
-        });
-    }
-
-    if (dashChatForm) {
-        dashChatForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const text = dashChatInput.value.trim();
-            if (!text || !currentArtistUser) return;
-
-            const msgRef = db.ref(`siteData/conversations/${currentArtistUser.uid}/messages`).push();
-            msgRef.set({
-                sender: 'artist',
-                text: text,
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }).then(() => {
-                dashChatInput.value = '';
-                // Update meta for admin inbox
-                db.ref(`siteData/conversations/${currentArtistUser.uid}/meta`).update({
-                    artistName: currentArtistUser.displayName || 'Unknown Artist',
-                    artistEmail: currentArtistUser.email || '',
-                    lastMessage: text,
-                    lastUpdated: firebase.database.ServerValue.TIMESTAMP
-                });
-            });
-        });
-    }
-
-    function renderChatMessages(data) {
-        if (!dashChatStream) return;
-        if (!data) {
-            dashChatStream.innerHTML = `
-                <div class="chat-empty-hint">
-                    <p>Direct encrypted channel open. Dispatch your first communique to A&R Command.</p>
-                </div>
-            `;
-            return;
-        }
-
-        let msgsHtml = '';
-        Object.keys(data).forEach(k => {
-            const msg = data[k];
-            const isArtist = msg.sender === 'artist';
-            msgsHtml += `
-                <div class="dash-chat-message ${isArtist ? 'artist' : 'staff'}">
-                    <div class="chat-sender-tag">
-                        ${isArtist ? '<i class="fas fa-user"></i> PRODUCER' : '<i class="fas fa-shield-alt"></i> OBSCURA A&R'}
-                    </div>
-                    <div>${msg.text}</div>
-                    <span class="chat-meta">${msg.date || ''}</span>
-                </div>
-            `;
-        });
-
-        dashChatStream.innerHTML = msgsHtml;
-        dashChatStream.scrollTop = dashChatStream.scrollHeight;
-    }
 }
 
 // Start Artist Engine
