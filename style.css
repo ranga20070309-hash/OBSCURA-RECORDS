@@ -1474,26 +1474,32 @@ section {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 3.5rem;
-    /* Increased gap for better distance */
+    align-items: stretch;
+    gap: 2.5rem;
     width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem 0;
 }
 
 .artist-item {
-    flex: 0 1 320px;
-    padding: 3rem 2.5rem;
+    flex: 0 0 290px;
+    max-width: 320px;
+    width: 100%;
+    padding: 3rem 2rem;
     border-radius: 20px;
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
     text-align: center;
-    transition: transform 0.4s, border-color 0.4s;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s, box-shadow 0.4s;
     cursor: default;
     min-height: 440px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
+    box-sizing: border-box;
 }
 
 .artist-item:hover {
