@@ -798,7 +798,7 @@ const initPortal = () => {
 
                 // Formatted for EmailJS (Labeled list for a cleaner look)
                 const formattedLinksForEmail = spotifyLinks.length > 0
-                    ? spotifyLinks.map((link, i) => `🔗 [ VIEW PROFILE ${i + 1} ]: ${link}`).join('\n')
+                    ? spotifyLinks.map((link, i) => `ðŸ”— [ VIEW PROFILE ${i + 1} ]: ${link}`).join('\n')
                     : "Not Provided";
 
                 const submission = {
@@ -842,12 +842,12 @@ const initPortal = () => {
                         })
                     });
                     if (emailResult.ok) {
-                        console.log("✅ SYSTEM: Custom Email Backend Dispatched Successfully");
+                        console.log("âœ… SYSTEM: Custom Email Backend Dispatched Successfully");
                     } else {
-                        console.error("❌ ERROR: Custom Email Backend Rejected Request", await emailResult.text());
+                        console.error("âŒ ERROR: Custom Email Backend Rejected Request", await emailResult.text());
                     }
                 } catch (eErr) {
-                    console.error("❌ ERROR: Email Transmission Node Failure", eErr);
+                    console.error("âŒ ERROR: Email Transmission Node Failure", eErr);
                 }
 
                 await firebase.database().ref('siteData/submissions/demo').push(submission);
@@ -927,12 +927,12 @@ const initPortal = () => {
                         })
                     });
                     if (emailResult.ok) {
-                        console.log("✅ SYSTEM: Custom Contact Email Sent");
+                        console.log("âœ… SYSTEM: Custom Contact Email Sent");
                     } else {
-                        console.error("❌ ERROR: Custom Contact Email Failure", await emailResult.text());
+                        console.error("âŒ ERROR: Custom Contact Email Failure", await emailResult.text());
                     }
                 } catch (eErr) {
-                    console.error("❌ ERROR: Contact Email Failure", eErr);
+                    console.error("âŒ ERROR: Contact Email Failure", eErr);
                 }
 
                 contactForm.style.display = 'none';
@@ -1088,238 +1088,186 @@ const initPortal = () => {
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const staffItems = document.querySelectorAll('.artist-item[data-discord-id]');
+        // Helper to get platform font-awesome icon
+        const getPlatformIcon = (platform) => {
+            const p = (platform || '').toLowerCase();
+            if (p === 'instagram') return 'fab fa-instagram';
+            if (p === 'spotify') return 'fab fa-spotify';
+            if (p === 'apple') return 'fa-brands fa-apple';
+            if (p === 'facebook') return 'fa-brands fa-facebook-f';
+            if (p === 'youtube') return 'fab fa-youtube';
+            if (p === 'tiktok') return 'fab fa-tiktok';
+            if (p === 'twitter' || p === 'x') return 'fab fa-x-twitter';
+            if (p === 'discord') return 'fab fa-discord';
+            return 'fas fa-link';
+        };
 
-        staffItems.forEach(item => {
-            const discordId = item.getAttribute('data-discord-id');
-            const nameLabel = item.querySelector('h4').textContent;
-            const statusIndicator = item.querySelector('.status-indicator');
-            const avatar = item.querySelector('.artist-img');
+        // Open Profile Modal Helper
+        const openPersonnelModal = (data, fallbackName, isPartner = false) => {
+            const modal = document.getElementById('artist-modal');
+            const mName = document.getElementById('artist-modal-name');
+            const mStatus = document.getElementById('artist-modal-status');
+            const mBio = document.getElementById('artist-modal-bio');
+            const mImg = document.getElementById('artist-modal-img');
+            const mDecor = document.getElementById('artist-modal-decoration');
+            const mLinks = document.getElementById('artist-modal-links');
 
-            // Listen for Real-Time updates
-            const staffRef = db.ref('staff_status/' + discordId);
-            staffRef.on('value', (snapshot) => {
-                const data = snapshot.val();
+            if (!modal) return;
+            if (typeof playBleep === 'function') playBleep(700, 'sine', 0.1);
 
-                if (data) {
-                    // --- Update Name (Live) ---
-                    if (data.name) {
-                        item.querySelector('h4').textContent = data.name;
-                    }
-
-                    const status = (data.status || 'offline').toLowerCase();
-                    statusIndicator.textContent = status.toUpperCase();
-                    statusIndicator.className = `status-indicator ${status}`;
-
-                    if (data.avatar_url) {
-                        avatar.style.backgroundImage = `url(${data.avatar_url})`;
-                        avatar.style.backgroundSize = 'cover';
-                    }
-
-                    // --- Discord Avatar Decoration (Frame) ---
-                    const decoration = item.querySelector('.avatar-decoration');
-                    if (data.decoration_url && data.decoration_url !== "") {
-                        decoration.src = data.decoration_url;
-                        decoration.style.display = 'block';
-                    } else {
-                        decoration.style.display = 'none';
-                    }
-
-                    // --- MODAL CLICK HANDLER (INTEGRATED) ---
-                    item.style.cursor = 'pointer';
-                    item.onclick = () => {
-                        const modal = document.getElementById('artist-modal');
-                        const mName = document.getElementById('artist-modal-name');
-                        const mStatus = document.getElementById('artist-modal-status');
-                        const mBio = document.getElementById('artist-modal-bio');
-                        const mImg = document.getElementById('artist-modal-img');
-                        const mDecor = document.getElementById('artist-modal-decoration');
-                        const mLinks = document.getElementById('artist-modal-links');
-
-                        if (!modal) return;
-
-                        playBleep(700, 'sine', 0.1);
-                        mName.textContent = data.name || nameLabel;
-                        mStatus.textContent = (data.status || 'OFFLINE').toUpperCase();
-                        mStatus.className = `status-indicator ${(data.status || 'offline').toLowerCase()}`;
-                        mBio.textContent = data.bio || "Accessing encrypted artist profile... no secondary transmission found.";
-
-                        if (data.avatar_url) {
-                            mImg.style.backgroundImage = `url(${data.avatar_url})`;
-                            mImg.style.backgroundSize = 'cover';
-                        }
-
-                        if (data.decoration_url) {
-                            mDecor.src = data.decoration_url;
-                            mDecor.style.display = 'block';
-                        } else {
-                            mDecor.style.display = 'none';
-                        }
-
-                        // Populate Social Links
-                        mLinks.innerHTML = '';
-                        if (data.socials) {
-                            Object.entries(data.socials).forEach(([platform, url]) => {
-                                let icon = 'link';
-                                if (platform === 'instagram') icon = 'fab fa-instagram';
-                                else if (platform === 'spotify') icon = 'fab fa-spotify';
-                                else if (platform === 'apple') icon = 'fa-brands fa-apple';
-                                else if (platform === 'facebook') icon = 'fa-brands fa-facebook-f';
-                                else if (platform === 'youtube') icon = 'fab fa-youtube';
-                                else if (platform === 'tiktok') icon = 'fab fa-tiktok';
-                                else if (platform === 'twitter' || platform === 'x') icon = 'fab fa-x-twitter';
-
-                                mLinks.insertAdjacentHTML('beforeend', `
-                                    <a href="${url}" target="_blank" class="platform-link">
-                                        <i class="${icon}"></i>
-                                    </a>
-                                `);
-                            });
-                        }
-
-                        modal.classList.add('active');
-                        document.body.classList.add('no-scroll');
-                        document.documentElement.classList.add('no-scroll');
-                    };
+            if (mName) mName.textContent = data.name || fallbackName || 'PERSONNEL';
+            
+            if (mStatus) {
+                if (isPartner) {
+                    mStatus.textContent = (data.role || 'LABEL PARTNER').toUpperCase();
+                    mStatus.className = 'staff-role-badge partner-badge';
+                    mStatus.style.marginTop = '0.5rem';
                 } else {
-                    console.warn(`No status data found for ${nameLabel}`);
-                    statusIndicator.textContent = "OFFLINE";
-                    statusIndicator.className = "status-indicator offline";
+                    const st = (data.status || 'OFFLINE').toLowerCase();
+                    mStatus.textContent = st.toUpperCase();
+                    mStatus.className = `status-indicator ${st}`;
+                    mStatus.style.marginTop = '0.5rem';
                 }
-            }, (error) => {
-                console.error(`Firebase Sync Error for ${nameLabel}:`, error);
+            }
+
+            if (mBio) mBio.textContent = data.bio || (isPartner ? "Official label partner and collaborator profile." : "Accessing encrypted staff profile... no secondary transmission found.");
+
+            if (data.avatar_url && mImg) {
+                mImg.style.backgroundImage = `url(${data.avatar_url})`;
+                mImg.style.backgroundSize = 'cover';
+            }
+
+            if (mDecor) {
+                if (data.decoration_url && data.decoration_url !== '' && !isPartner) {
+                    mDecor.src = data.decoration_url;
+                    mDecor.style.display = 'block';
+                } else {
+                    mDecor.style.display = 'none';
+                }
+            }
+
+            if (mLinks) {
+                mLinks.innerHTML = '';
+                // Optional Discord Connect Link
+                if (data.discord_link) {
+                    mLinks.insertAdjacentHTML('beforeend', `
+                        <a href="${data.discord_link}" target="_blank" class="platform-link" title="Connect on Discord" style="background:#5865F2;border-color:#5865F2;color:#fff;">
+                            <i class="fab fa-discord"></i>
+                        </a>
+                    `);
+                }
+                if (data.socials) {
+                    Object.entries(data.socials).forEach(([platform, url]) => {
+                        if (!url || url === '#') return;
+                        mLinks.insertAdjacentHTML('beforeend', `
+                            <a href="${url}" target="_blank" class="platform-link" title="${platform}">
+                                <i class="${getPlatformIcon(platform)}"></i>
+                            </a>
+                        `);
+                    });
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.classList.add('no-scroll');
+            document.documentElement.classList.add('no-scroll');
+        };
+
+        // =====================================================
+        // REALTIME STAFF DIRECTORY SYNC (staff_status/ in Firebase)
+        // =====================================================
+        const staffGrid = document.querySelector('#artists .artists-grid');
+        const staffRef = db.ref('staff_status');
+
+        staffRef.on('value', (snapshot) => {
+            const staffData = snapshot.val();
+            if (!staffData || !staffGrid) return;
+
+            // Render all dynamic staff cards
+            staffGrid.innerHTML = '';
+            Object.entries(staffData).forEach(([discordId, data]) => {
+                const status = (data.status || 'offline').toLowerCase();
+                const avatar = data.avatar_url || 'assets/staff/default.png';
+                const role = data.role || 'CORE STAFF';
+                const name = data.name || 'UNKNOWN';
+                const hasDecor = data.decoration_url && data.decoration_url !== '';
+
+                const card = document.createElement('div');
+                card.className = 'artist-item glass';
+                card.dataset.discordId = discordId;
+                card.innerHTML = `
+                    <div class="avatar-wrapper">
+                        <div class="artist-img ${status}" style="background-image: url('${avatar}');"></div>
+                        <img src="${hasDecor ? data.decoration_url : ''}" class="avatar-decoration" alt="Frame" style="display: ${hasDecor ? 'block' : 'none'};">
+                    </div>
+                    <h4>${name}</h4>
+                    <span class="staff-role-badge">${role}</span>
+                    <p>Status: <span class="status-indicator ${status}">${status.toUpperCase()}</span></p>
+                    <span class="artist-loc">Discord Presence</span>
+                `;
+
+                card.addEventListener('click', () => openPersonnelModal(data, name, false));
+                staffGrid.appendChild(card);
             });
+        }, (error) => {
+            console.error('[STAFF SYNC ERROR]', error);
         });
 
         // =====================================================
-        // PARTNER STATUS SYNC (partner_status/ Firebase path)
+        // REALTIME PARTNER DIRECTORY SYNC (partner_status/ in Firebase)
+        // (NO Discord status required — prominent details & links)
         // =====================================================
-        const partnerItems = document.querySelectorAll('.artist-item[data-partner-id]');
+        const partnersGrid = document.querySelector('#partners .artists-grid');
+        const partnerRef = db.ref('partner_status');
 
-        if (partnerItems.length > 0) {
-            partnerItems.forEach(item => {
-                const partnerId = item.getAttribute('data-partner-id');
-                const statusIndicator = item.querySelector('.status-indicator');
-                const avatar = item.querySelector('.artist-img');
-                const nameHeader = item.querySelector('h4');
+        partnerRef.on('value', (snapshot) => {
+            const partnerData = snapshot.val();
+            if (!partnersGrid) return;
+            if (!partnerData || Object.keys(partnerData).length === 0) return;
 
-                // Set initial fallback so it doesn't stay on LOADING forever
-                if (statusIndicator && statusIndicator.textContent === 'LOADING...') {
-                    statusIndicator.textContent = 'OFFLINE';
-                    statusIndicator.className = 'status-indicator offline';
+            partnersGrid.innerHTML = '';
+            Object.entries(partnerData).forEach(([partnerId, data]) => {
+                const avatar = data.avatar_url || 'assets/staff/default.png';
+                const name = data.name || 'PARTNER';
+                const role = data.role || 'LABEL PARTNER';
+                const bio = data.bio || 'Official label partner and collaborator.';
+
+                // Build social icons for card
+                let socialLinksHtml = '';
+                if (data.discord_link) {
+                    socialLinksHtml += `<a href="${data.discord_link}" target="_blank" class="platform-link" style="background:#5865F2;border-color:#5865F2;"><i class="fab fa-discord"></i></a>`;
+                }
+                if (data.socials) {
+                    Object.entries(data.socials).forEach(([p, u]) => {
+                        if (u && u !== '#') {
+                            socialLinksHtml += `<a href="${u}" target="_blank" class="platform-link"><i class="${getPlatformIcon(p)}"></i></a>`;
+                        }
+                    });
                 }
 
-                const partnerRef = db.ref('partner_status/' + partnerId);
-                partnerRef.on('value', (snapshot) => {
-                    const data = snapshot.val();
+                const card = document.createElement('div');
+                card.className = 'artist-item glass partner-card';
+                card.dataset.partnerId = partnerId;
+                card.innerHTML = `
+                    <div class="avatar-wrapper">
+                        <div class="artist-img" style="background-image: url('${avatar}');"></div>
+                    </div>
+                    <h4>${name}</h4>
+                    <span class="staff-role-badge partner-badge">${role}</span>
+                    <p class="partner-bio-preview">${bio}</p>
+                    ${socialLinksHtml ? `<div class="partner-card-socials">${socialLinksHtml}</div>` : ''}
+                `;
 
-                    if (data) {
-                        // Update display name
-                        if (data.name && nameHeader) {
-                            nameHeader.textContent = data.name;
-                        }
-
-                        // Update Status
-                        const status = (data.status || 'offline').toLowerCase();
-                        if (statusIndicator) {
-                            statusIndicator.textContent = status.toUpperCase();
-                            statusIndicator.className = `status-indicator ${status}`;
-                        }
-
-                        // Update Avatar
-                        if (data.avatar_url && avatar) {
-                            avatar.style.backgroundImage = `url(${data.avatar_url})`;
-                            avatar.style.backgroundSize = 'cover';
-                        }
-
-                        // Update Decoration
-                        const decoration = item.querySelector('.avatar-decoration');
-                        if (decoration) {
-                            if (data.decoration_url && data.decoration_url !== '') {
-                                decoration.src = data.decoration_url;
-                                decoration.style.display = 'block';
-                            } else {
-                                decoration.style.display = 'none';
-                            }
-                        }
-
-                        // Modal Setup
-                        item.style.cursor = 'pointer';
-                        item.onclick = () => {
-                            const modal = document.getElementById('artist-modal');
-                            const mName = document.getElementById('artist-modal-name');
-                            const mStatus = document.getElementById('artist-modal-status');
-                            const mBio = document.getElementById('artist-modal-bio');
-                            const mImg = document.getElementById('artist-modal-img');
-                            const mDecor = document.getElementById('artist-modal-decoration');
-                            const mLinks = document.getElementById('artist-modal-links');
-
-                            if (!modal) return;
-
-                            if (typeof playBleep === 'function') playBleep(700, 'sine', 0.1);
-                            
-                            if (mName) mName.textContent = data.name || (nameHeader ? nameHeader.textContent : 'Partner');
-                            if (mStatus) {
-                                mStatus.textContent = (data.status || 'OFFLINE').toUpperCase();
-                                mStatus.className = `status-indicator ${(data.status || 'offline').toLowerCase()}`;
-                            }
-                            if (mBio) mBio.textContent = data.bio || "Label partner profile — encrypted transmission.";
-
-                            if (data.avatar_url && mImg) {
-                                mImg.style.backgroundImage = `url(${data.avatar_url})`;
-                                mImg.style.backgroundSize = 'cover';
-                            }
-
-                            if (mDecor) {
-                                if (data.decoration_url) {
-                                    mDecor.src = data.decoration_url;
-                                    mDecor.style.display = 'block';
-                                } else {
-                                    mDecor.style.display = 'none';
-                                }
-                            }
-
-                            if (mLinks) {
-                                mLinks.innerHTML = '';
-                                if (data.socials) {
-                                    Object.entries(data.socials).forEach(([platform, url]) => {
-                                        let icon = 'link';
-                                        const p = platform.toLowerCase();
-                                        if (p === 'instagram') icon = 'fab fa-instagram';
-                                        else if (p === 'spotify') icon = 'fab fa-spotify';
-                                        else if (p === 'apple') icon = 'fa-brands fa-apple';
-                                        else if (p === 'facebook') icon = 'fa-brands fa-facebook-f';
-                                        else if (p === 'youtube') icon = 'fab fa-youtube';
-                                        else if (p === 'tiktok') icon = 'fab fa-tiktok';
-                                        else if (p === 'twitter' || p === 'x') icon = 'fab fa-x-twitter';
-
-                                        mLinks.insertAdjacentHTML('beforeend', `
-                                            <a href="${url}" target="_blank" class="platform-link">
-                                                <i class="${icon}"></i>
-                                            </a>
-                                        `);
-                                    });
-                                }
-                            }
-
-                            modal.classList.add('active');
-                            document.body.classList.add('no-scroll');
-                            document.documentElement.classList.add('no-scroll');
-                        };
-
-                    } else {
-                        // Data is null, person might never have been online since bot update
-                        if (statusIndicator) {
-                            statusIndicator.textContent = 'OFFLINE';
-                            statusIndicator.className = 'status-indicator offline';
-                        }
-                    }
-                }, (error) => {
-                    console.error(`[PARTNER SYNC ERROR] ID: ${partnerId}`, error);
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.platform-link')) return; // Allow direct link clicks
+                    openPersonnelModal(data, name, true);
                 });
-            });
-        }
 
+                partnersGrid.appendChild(card);
+            });
+        }, (error) => {
+            console.error('[PARTNER SYNC ERROR]', error);
+        });
 
     } else {
         console.error("Firebase SDK not loaded! Check index.html scripts.");
