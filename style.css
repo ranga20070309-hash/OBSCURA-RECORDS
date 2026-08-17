@@ -2715,6 +2715,8 @@ footer {
 /* --- ARTIST DETAIL MODAL STYLES --- */
 .artist-modal-content {
     max-width: 600px;
+    max-height: 88vh;
+    overflow-y: auto;
     padding: 3.5rem;
 }
 
