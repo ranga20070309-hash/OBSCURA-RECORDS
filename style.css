@@ -1493,7 +1493,7 @@ section {
     border: 1px solid var(--glass-border);
     text-align: center;
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s, box-shadow 0.4s;
-    cursor: default;
+    cursor: pointer;
     min-height: 440px;
     display: flex;
     flex-direction: column;
