@@ -142,6 +142,7 @@ module.exports = async (req, res) => {
                 </div>
             `,
             headers: {
+                'Message-ID': `<demo-${subKey || 'general'}@obscurarecord.com>`,
                 'X-Priority': '1 (Highest)',
                 'X-MSMail-Priority': 'High',
                 'Importance': 'High'
