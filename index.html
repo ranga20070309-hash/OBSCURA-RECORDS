@@ -1055,6 +1055,13 @@
             <div class="modal-overlay"></div>
             <div class="modal-content glass artist-modal-content">
                 <button class="close-modal">&times;</button>
+                
+                <!-- Dynamic Profile Banner (Staff & Partner) -->
+                <div class="artist-modal-banner" id="artist-modal-banner">
+                    <div id="artist-modal-banner-img" class="artist-modal-banner-img"></div>
+                    <div class="artist-modal-banner-overlay"></div>
+                </div>
+
                 <div class="artist-modal-inner">
                     <div class="artist-modal-header">
                         <div class="artist-modal-img-wrapper" style="width: 120px; height: 120px; position: relative;">
@@ -1076,7 +1083,7 @@
                             style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary);">Accessing
                             encrypted artist profile... no secondary transmission found.</p>
                         <div id="artist-modal-links" class="artist-modal-links"
-                            style="display: flex; gap: 1rem; margin-top: 2rem;">
+                            style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
                             <!-- Dynamic Links -->
                         </div>
                     </div>
