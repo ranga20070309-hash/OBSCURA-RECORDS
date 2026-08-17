@@ -78,10 +78,12 @@ window.saveIndividualStaff = function (discordId) {
     const saveBtn = item.querySelector('.save-btn-staff');
     if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SYNCING...';
 
-    // Save bio, order + socials — name, avatar, decoration come from the Discord bot
-    const bio     = item.querySelector('.s-bio') ? item.querySelector('.s-bio').value : '';
-    const orderEl = item.querySelector('.s-order');
-    const order   = orderEl ? (parseInt(orderEl.value.trim()) || 99) : 99;
+    // Save bio, order, avatar + socials — name and status come from Discord bot if not overridden
+    const bio         = item.querySelector('.s-bio') ? item.querySelector('.s-bio').value : '';
+    const avatarInput = item.querySelector('.s-avatar');
+    const avatarUrl   = avatarInput ? avatarInput.value.trim() : '';
+    const orderEl     = item.querySelector('.s-order');
+    const order       = orderEl ? (parseInt(orderEl.value.trim()) || 99) : 99;
 
     const socials = {};
     item.querySelectorAll('input[class^="s-social-"]').forEach(input => {
@@ -92,13 +94,16 @@ window.saveIndividualStaff = function (discordId) {
     });
     
     const data = { bio: bio, order: order, socials: socials };
+    if (avatarUrl) {
+        data.avatar_url = avatarUrl;
+    }
     
     const isPartner = item.dataset.isPartner === 'true';
     const path = isPartner ? 'partner_status/' : 'staff_status/';
 
     db.ref(path + discordId).update(data).then(() => {
         showToast(`${isPartner ? 'PARTNER' : 'PERSONNEL'} SYNC SUCCESSFUL (ORDER #${order}): ${discordId}`);
-        if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> SYNC BIO, ORDER & LINKS';
+        if(saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> SYNC PROFILE & LINKS';
         bumpSiteVersion();
         loadStaff();
     }).catch(err => {
@@ -1264,13 +1269,14 @@ function createStaffEditor(staff, discordId, isPartner) {
     // Bot-provided fields shown as read-only info (name, avatar, decoration, status)
     const currentStatus = (staff.status || 'offline').toLowerCase();
     const statusColor = currentStatus === 'online' ? '#23d18b' : currentStatus === 'idle' ? '#f0b429' : currentStatus === 'dnd' ? '#ff4444' : '#555';
+    const avatarUrl = staff.avatar_url || 'assets/staff/default.png';
 
     div.innerHTML = `
         <button class="delete-btn" onclick="removeStaff('${discordId}', ${isPartner})"><i class="fas fa-trash"></i></button>
         <div class="staff-header-row">
             <div class="staff-meta-main">
                 <div style="position:relative; width:80px; height:80px; flex-shrink:0;">
-                    <div class="staff-avatar-circle" style="background-image: url(${staff.avatar_url || 'assets/staff/default.png'}); border-color: ${typeBadgeColor}; width:80px; height:80px;"></div>
+                    <div class="staff-avatar-circle" style="background-image: url(${avatarUrl}); border-color: ${typeBadgeColor}; width:80px; height:80px;"></div>
                     <span style="position:absolute; bottom:2px; right:2px; width:14px; height:14px; background:${statusColor}; border-radius:50%; border:2px solid #0a0a0a;"></span>
                 </div>
                 <div>
@@ -1280,13 +1286,22 @@ function createStaffEditor(staff, discordId, isPartner) {
                     <small>SEC_ID: ${discordId}</small>
                     <div style="margin-top:0.4rem; display:flex; gap:0.5rem; align-items:center; opacity:0.5; font-size:0.7rem; font-family:monospace;">
                         <i class="fab fa-discord" style="color:#5865F2;"></i>
-                        NAME, AVATAR &amp; STATUS AUTO-SYNCED BY BOT
+                        NAME, AVATAR &amp; STATUS AUTO-SYNCED BY BOT (OR CUSTOM OVERRIDE BELOW)
                     </div>
                 </div>
             </div>
-            <button class="save-btn save-btn-staff" onclick="saveIndividualStaff('${discordId}')"><i class="fas fa-save"></i> SYNC BIO, ORDER &amp; LINKS</button>
+            <button class="save-btn save-btn-staff" onclick="saveIndividualStaff('${discordId}')"><i class="fas fa-save"></i> SYNC PROFILE &amp; LINKS</button>
         </div>
         <div class="form-grid">
+            <div class="input-group full">
+                <label>PROFILE PICTURE / AVATAR</label>
+                <p class="field-desc">Browse local photo from your computer or paste image URL (Leave blank for Discord bot sync).</p>
+                <div style="display: flex; gap: 0.5rem; align-items: center; position: relative;">
+                    <input type="text" class="s-avatar" id="input-s-avatar-${discordId}" value="${staff.avatar_url || ''}" placeholder="Leave blank for Discord bot sync, or browse local image" oninput="updateStaffAvatarPreview('${discordId}', this.value)">
+                    <button type="button" class="action-btn-mini" onclick="triggerStaffAvatarUpload('${discordId}')" title="Browse local photo"><i class="fas fa-folder-open"></i></button>
+                    <input type="file" id="file-s-avatar-${discordId}" style="display:none" onchange="handleStaffAvatarFile(this, '${discordId}')" accept="image/*">
+                </div>
+            </div>
             <div class="input-group full">
                 <label>HIERARCHY ORDER (1 = TOP / OWNER, 2 = ADMIN, 3 = A&R, etc.)</label>
                 <p class="field-desc">Lower numbers appear first on the site (e.g. 1 = Owner, 2 = Admin 1, 3 = Admin 2, 4 = A&R, 5-7 = Designers).</p>
@@ -1294,7 +1309,7 @@ function createStaffEditor(staff, discordId, isPartner) {
             </div>
             <div class="input-group full">
                 <label>PERSONNEL BIOGRAPHY</label>
-                <p class="field-desc">Write a short bio. Name, avatar, and status come automatically from Discord bot.</p>
+                <p class="field-desc">Write a short bio. Name, avatar, and status come automatically from Discord bot or custom override.</p>
                 <textarea class="s-bio">${staff.bio || ''}</textarea>
             </div>
             <h4 class="form-sub-header">BROADCAST CHANNELS</h4>
@@ -1303,6 +1318,35 @@ function createStaffEditor(staff, discordId, isPartner) {
     `;
     return div;
 }
+
+// Staff Avatar Upload Handlers
+window.triggerStaffAvatarUpload = function(discordId) {
+    const fileInput = document.getElementById(`file-s-avatar-${discordId}`);
+    if (fileInput) fileInput.click();
+};
+
+window.handleStaffAvatarFile = function(input, discordId) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const avatarInput = document.getElementById(`input-s-avatar-${discordId}`);
+            if (avatarInput) avatarInput.value = e.target.result;
+            window.updateStaffAvatarPreview(discordId, e.target.result);
+            showToast("STAFF PHOTO ENCODED.");
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+};
+
+window.updateStaffAvatarPreview = function(discordId, url) {
+    const item = document.querySelector(`.staff-editor-item[data-discord-id="${discordId}"]`);
+    if (item) {
+        const circle = item.querySelector('.staff-avatar-circle');
+        if (circle) {
+            circle.style.backgroundImage = `url(${url || 'assets/staff/default.png'})`;
+        }
+    }
+};
 
 // --- PARTNER LABEL EDITOR PANEL (CUSTOM LUXURY DESIGN) ---
 function createPartnerEditor(partner, id) {
@@ -1356,12 +1400,22 @@ function createPartnerEditor(partner, id) {
                 <input type="text" class="p-tagline" value="${partner.tagline || ''}" placeholder="e.g. ELECTRONIC & BASS AUDIO ALLIANCE">
             </div>
             <div class="input-group full">
-                <label>LOGO IMAGE URL</label>
-                <input type="text" class="p-logo" value="${partner.logo_url || partner.avatar_url || ''}" placeholder="https://... (Direct image URL for Logo)">
+                <label>LOGO IMAGE SOURCE</label>
+                <p class="field-desc">Browse local photo from your computer or paste direct image URL for Logo.</p>
+                <div style="display: flex; gap: 0.5rem; align-items: center; position: relative;">
+                    <input type="text" class="p-logo" id="input-p-logo-${id}" value="${partner.logo_url || partner.avatar_url || ''}" placeholder="https://... or browse local image" oninput="updatePartnerLogoPreview('${id}', this.value)">
+                    <button type="button" class="action-btn-mini" onclick="triggerPartnerLogoUpload('${id}')" title="Browse local photo"><i class="fas fa-folder-open"></i></button>
+                    <input type="file" id="file-p-logo-${id}" style="display:none" onchange="handlePartnerLogoFile(this, '${id}')" accept="image/*">
+                </div>
             </div>
             <div class="input-group full">
-                <label>BANNER / COVER IMAGE URL</label>
-                <input type="text" class="p-banner" value="${partner.banner_url || ''}" placeholder="https://... (Direct image URL for Wide Banner)">
+                <label>BANNER / COVER IMAGE SOURCE</label>
+                <p class="field-desc">Browse local photo from your computer or paste direct image URL for Wide Banner.</p>
+                <div style="display: flex; gap: 0.5rem; align-items: center; position: relative;">
+                    <input type="text" class="p-banner" id="input-p-banner-${id}" value="${partner.banner_url || ''}" placeholder="https://... or browse local image">
+                    <button type="button" class="action-btn-mini" onclick="triggerPartnerBannerUpload('${id}')" title="Browse local photo"><i class="fas fa-folder-open"></i></button>
+                    <input type="file" id="file-p-banner-${id}" style="display:none" onchange="handlePartnerBannerFile(this, '${id}')" accept="image/*">
+                </div>
             </div>
             <div class="input-group full">
                 <label>HIERARCHY ORDER (1 = FIRST, 2, 3...)</label>
@@ -1377,6 +1431,52 @@ function createPartnerEditor(partner, id) {
     `;
     return div;
 }
+
+// Partner Photo Upload Handlers
+window.triggerPartnerLogoUpload = function(id) {
+    const fileInput = document.getElementById(`file-p-logo-${id}`);
+    if (fileInput) fileInput.click();
+};
+
+window.handlePartnerLogoFile = function(input, id) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const logoInput = document.getElementById(`input-p-logo-${id}`);
+            if (logoInput) logoInput.value = e.target.result;
+            window.updatePartnerLogoPreview(id, e.target.result);
+            showToast("PARTNER LOGO PHOTO ENCODED.");
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+};
+
+window.updatePartnerLogoPreview = function(id, url) {
+    const item = document.querySelector(`.partner-editor-item[data-partner-id="${id}"]`);
+    if (item) {
+        const circle = item.querySelector('.staff-avatar-circle');
+        if (circle) {
+            circle.style.backgroundImage = `url(${url || 'assets/staff/default.png'})`;
+        }
+    }
+};
+
+window.triggerPartnerBannerUpload = function(id) {
+    const fileInput = document.getElementById(`file-p-banner-${id}`);
+    if (fileInput) fileInput.click();
+};
+
+window.handlePartnerBannerFile = function(input, id) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const bannerInput = document.getElementById(`input-p-banner-${id}`);
+            if (bannerInput) bannerInput.value = e.target.result;
+            showToast("PARTNER BANNER PHOTO ENCODED.");
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+};
 
 window.saveIndividualPartner = function(id) {
     const item = document.querySelector(`.partner-editor-item[data-partner-id="${id}"]`);
@@ -1511,9 +1611,11 @@ function saveStaff() {
         const id = item.dataset.discordId;
         if (!id) return;
 
-        const bio     = item.querySelector('.s-bio') ? item.querySelector('.s-bio').value : '';
-        const orderEl = item.querySelector('.s-order');
-        const order   = orderEl ? (parseInt(orderEl.value.trim()) || 99) : 99;
+        const bio         = item.querySelector('.s-bio') ? item.querySelector('.s-bio').value : '';
+        const avatarInput = item.querySelector('.s-avatar');
+        const avatarUrl   = avatarInput ? avatarInput.value.trim() : '';
+        const orderEl     = item.querySelector('.s-order');
+        const order       = orderEl ? (parseInt(orderEl.value.trim()) || 99) : 99;
 
         const socials = {};
         item.querySelectorAll('input[class^="s-social-"]').forEach(input => {
@@ -1523,7 +1625,12 @@ function saveStaff() {
             }
         });
 
-        promises.push(db.ref('staff_status/' + id).update({ bio: bio, order: order, socials: socials }));
+        const updateObj = { bio: bio, order: order, socials: socials };
+        if (avatarUrl) {
+            updateObj.avatar_url = avatarUrl;
+        }
+
+        promises.push(db.ref('staff_status/' + id).update(updateObj));
     });
 
     // Sync Partner items
