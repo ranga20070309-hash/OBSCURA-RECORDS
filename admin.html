@@ -856,7 +856,11 @@
                 </div>
                 <div class="input-group full">
                     <label>BIO / ROLE</label>
-                    <input type="text" id="new-member-bio" placeholder="e.g. CORE STAFF, LABEL PARTNER...">
+                    <input type="text" id="new-member-bio" placeholder="e.g. OWNER, LEAD PRODUCER, A&R, DESIGNER...">
+                </div>
+                <div class="input-group full">
+                    <label>HIERARCHY ORDER (1 = TOP / OWNER, 2 = ADMIN, 3 = A&R, etc.)</label>
+                    <input type="number" id="new-member-order" placeholder="e.g. 1" value="1" min="1" max="99">
                 </div>
                 <div class="input-group full">
                     <label>TYPE</label>
@@ -915,6 +919,7 @@
             document.getElementById('new-member-id').value = '';
             document.getElementById('new-member-name').value = '';
             document.getElementById('new-member-bio').value = type === 'partner' ? 'LABEL PARTNER' : 'CORE STAFF';
+            document.getElementById('new-member-order').value = '1';
             document.getElementById('new-member-type').value = type;
             const title = document.getElementById('add-member-modal-title');
             title.innerHTML = type === 'partner'
@@ -927,6 +932,8 @@
             const discordId = document.getElementById('new-member-id').value.trim();
             const name      = document.getElementById('new-member-name').value.trim();
             const bio       = document.getElementById('new-member-bio').value.trim();
+            const orderRaw  = document.getElementById('new-member-order').value.trim();
+            const order     = parseInt(orderRaw) || 99;
             const type      = document.getElementById('new-member-type').value;
 
             if (!discordId || discordId.length < 10) {
@@ -943,9 +950,9 @@
                 ref.once('value').then(snap => {
                     if (snap.exists()) {
                         // Record exists (bot may have already populated avatar/status)
-                        // ONLY update bio + placeholder name if empty — never overwrite bot fields
+                        // ONLY update bio/order + placeholder name if empty — never overwrite bot fields
                         const existing = snap.val();
-                        const updates = {};
+                        const updates = { order: order };
                         if (bio) updates.bio = bio;
                         if (name && !existing.name) updates.name = name.toUpperCase();
                         if (!existing.socials)       updates.socials = {};
@@ -962,12 +969,13 @@
                             name:   name ? name.toUpperCase() : (type === 'partner' ? 'PARTNER' : 'STAFF'),
                             status: 'offline',
                             bio:    bio || (type === 'partner' ? 'LABEL PARTNER' : 'CORE STAFF'),
+                            order:  order,
                             socials: {}
                             // avatar_url & decoration_url intentionally omitted — bot sets these
                         };
                         ref.set(record).then(() => {
                             document.getElementById('add-member-modal').style.display = 'none';
-                            if (typeof showToast === 'function') showToast(type.toUpperCase() + ' ADDED — BOT WILL AUTO-SYNC AVATAR & STATUS.');
+                            if (typeof showToast === 'function') showToast(type.toUpperCase() + ' ADDED (ORDER #' + order + ') — BOT WILL AUTO-SYNC AVATAR & STATUS.');
                             if (typeof loadStaff === 'function') loadStaff();
                         }).catch(err => alert('SYNC ERROR: ' + err.message));
                     }
