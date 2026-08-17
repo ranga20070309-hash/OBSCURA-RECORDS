@@ -2465,16 +2465,29 @@ function initArtistPortalEngine() {
     let submissionsListenerRef = null;
     let chatListenerRef = null;
 
-    // 1. Google Sign-In Trigger (Redirect mode — bypasses popup referrer blocking)
+    // 1. Google Sign-In Trigger (Popup Mode — Instant authentication without page reload)
     const handleGoogleSignIn = () => {
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
-        auth.signInWithRedirect(provider).catch((error) => {
-            console.error("Authentication Redirect Error:", error.message);
-        });
+
+        auth.signInWithPopup(provider)
+            .then((result) => {
+                if (result && result.user) {
+                    console.log("Artist Authenticated:", result.user.displayName);
+                    syncUserProfile(result.user);
+                }
+            })
+            .catch((error) => {
+                if (error.code === 'auth/popup-blocked') {
+                    // Fallback to redirect if popup was blocked by browser
+                    auth.signInWithRedirect(provider);
+                } else if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+                    console.error("Authentication Error:", error.message);
+                }
+            });
     };
 
-    // Handle Redirect Result on page load
+    // Handle Redirect Result if redirect was used
     auth.getRedirectResult().then((result) => {
         if (result && result.user) {
             console.log("Artist Authenticated via Redirect:", result.user.displayName);
@@ -2590,11 +2603,12 @@ function initArtistPortalEngine() {
         };
     });
 
-    // 6. Listen for Firebase Auth State Changes (Strictly for Google Auth Artists)
+    // 6. Listen for Firebase Auth State Changes
     auth.onAuthStateChanged((user) => {
-        const isGoogleArtist = user && user.providerData && user.providerData.some(p => p.providerId === 'google.com');
+        // Authenticate any valid user, excluding admin portal email
+        const isArtistUser = user && (!user.email || !user.email.toLowerCase().startsWith('admin@'));
 
-        if (isGoogleArtist) {
+        if (isArtistUser) {
             currentArtistUser = user;
             // Update Navigation & Profile UI
             if (signinBtn) signinBtn.style.display = 'none';
