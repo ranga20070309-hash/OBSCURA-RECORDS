@@ -3999,24 +3999,33 @@ textarea.real-input:focus {
     font-weight: 700;
 }
 
-.dash-sub-date {
+.dash-sub-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     font-size: 0.62rem;
     color: rgba(255, 255, 255, 0.4);
     font-family: monospace;
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
+}
+
+.dash-sub-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
 }
 
 .dash-sub-link-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0.55rem;
+    gap: 0.4rem;
+    flex: 1;
+    padding: 0.5rem;
     background: rgba(0, 240, 255, 0.08);
     border: 1px solid rgba(0, 240, 255, 0.3);
     color: #00f0ff;
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     font-weight: 700;
     text-decoration: none;
     border-radius: 6px;
@@ -4026,6 +4035,28 @@ textarea.real-input:focus {
 .dash-sub-link-btn:hover {
     background: #00f0ff;
     color: #000000;
+}
+
+.dash-sub-chat-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    flex: 1;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dash-sub-chat-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #ffffff;
 }
 
 .dash-empty-state {
