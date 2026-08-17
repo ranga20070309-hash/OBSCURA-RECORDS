@@ -1488,12 +1488,12 @@ section {
     width: 100%;
     padding: 3rem 2rem;
     border-radius: 24px;
-    background: radial-gradient(circle at 50% 0%, rgba(22, 18, 42, 0.75) 0%, rgba(10, 10, 18, 0.88) 100%);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(10, 10, 18, 0.72);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
     text-align: center;
-    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.45s, box-shadow 0.45s, background 0.45s;
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s, box-shadow 0.4s, background 0.4s;
     cursor: pointer;
     min-height: 440px;
     display: flex;
@@ -1506,25 +1506,25 @@ section {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.02);
 }
 
-/* Cosmic Animated Nebula Border Stream */
+/* Obscura Cyber-Cyan & Purple Glowing Border Stream */
 .artist-item::before {
     content: '';
     position: absolute;
     inset: -1px;
     border-radius: 24px;
     padding: 1.5px;
-    background: linear-gradient(135deg, rgba(0, 240, 255, 0.7), rgba(168, 85, 247, 0.5), rgba(255, 0, 128, 0.7), rgba(0, 240, 255, 0.7));
-    background-size: 300% 300%;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-blue));
+    background-size: 200% 200%;
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0;
-    transition: opacity 0.5s ease;
+    transition: opacity 0.45s ease;
     pointer-events: none;
     z-index: 2;
 }
 
-/* Cosmic Diagonal Holographic Light Sweep */
+/* Obscura Starlight Holographic Beam Sweep */
 .artist-item::after {
     content: '';
     position: absolute;
@@ -1535,13 +1535,13 @@ section {
     background: linear-gradient(
         60deg,
         transparent 35%,
-        rgba(0, 240, 255, 0.06) 45%,
-        rgba(255, 0, 200, 0.12) 50%,
-        rgba(0, 240, 255, 0.06) 55%,
+        rgba(0, 240, 255, 0.04) 45%,
+        rgba(0, 240, 255, 0.12) 50%,
+        rgba(0, 240, 255, 0.04) 55%,
         transparent 65%
     );
     transform: rotate(-25deg) translateY(-100%);
-    transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.85s ease;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
     opacity: 0;
     pointer-events: none;
     z-index: 0;
@@ -1549,13 +1549,14 @@ section {
 
 .artist-item:hover {
     transform: translateY(-12px) scale(1.02);
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 35px rgba(0, 240, 255, 0.22), 0 0 60px rgba(168, 85, 247, 0.15), inset 0 0 25px rgba(0, 240, 255, 0.06);
-    border-color: rgba(0, 240, 255, 0.3);
+    background: rgba(12, 12, 24, 0.85);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 240, 255, 0.3), inset 0 0 20px rgba(0, 240, 255, 0.05);
+    border-color: rgba(0, 240, 255, 0.4);
 }
 
 .artist-item:hover::before {
     opacity: 1;
-    animation: cosmicBorderStream 4s linear infinite;
+    animation: cosmicBorderStream 3s linear infinite;
 }
 
 .artist-item:hover::after {
