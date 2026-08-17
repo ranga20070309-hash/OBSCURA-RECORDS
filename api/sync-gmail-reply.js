@@ -3,6 +3,25 @@ const axios = require('axios');
 const RTDB_URL = "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app";
 const SYNC_SECRET = process.env.SYNC_SECRET || "OBSCURA_GMAIL_SYNC_KEY";
 
+function cleanMessageContent(rawText) {
+    if (!rawText) return '';
+    let clean = String(rawText);
+    
+    // 1. Remove quotes (e.g. On Mon, Aug 17... wrote:)
+    clean = clean.split(/On .* wrote:/i)[0];
+    clean = clean.split(/---/)[0];
+    clean = clean.split(/_{3,}/)[0];
+
+    // 2. Remove "ArtistName (email) sent a message:" or "replied in A&R Direct Line:" prefixes
+    clean = clean.replace(/^[^\n\r]+(?:sent a message:|replied in A&R Direct Line:)\s*/i, '');
+
+    // 3. Remove "Track: ... | Submission ID: ..." footers
+    clean = clean.replace(/Track:\s*[^\n\r]+\|\s*Submission ID:\s*[^\n\r]+/ig, '');
+
+    // 4. Remove leading/trailing whitespace
+    return clean.trim();
+}
+
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -32,7 +51,11 @@ module.exports = async (req, res) => {
     }
 
     const cleanSubId = String(subId).trim();
-    const cleanText = String(replyText).trim();
+    const cleanText = cleanMessageContent(replyText);
+
+    if (!cleanText) {
+        return res.status(200).json({ message: 'Empty or template content skipped.' });
+    }
 
     try {
         // 1. Find the submission in Firebase to get the artist's userId
