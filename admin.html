@@ -838,33 +838,51 @@
             <button onclick="document.getElementById('add-member-modal').style.display='none'" style="position:absolute; top:1.5rem; right:1.5rem; background:none; border:none; color:rgba(255,255,255,0.4); font-size:1.5rem; cursor:pointer;">&#10005;</button>
             <h3 id="add-member-modal-title" style="font-family:'Syncopate',sans-serif; font-size:0.9rem; letter-spacing:0.3rem; color:var(--primary); margin-bottom:1.5rem;"><i class="fas fa-user-plus"></i> ADD NEW PERSONNEL</h3>
 
-            <!-- Bot info banner -->
-            <div style="background: rgba(88,101,242,0.1); border: 1px solid rgba(88,101,242,0.3); border-radius: 10px; padding: 0.9rem 1.2rem; margin-bottom: 1.8rem; display: flex; gap: 0.8rem; align-items: flex-start; font-size: 0.75rem; color: rgba(255,255,255,0.7); line-height: 1.5;">
+            <!-- Bot info banner (Staff only) -->
+            <div id="modal-bot-banner" style="background: rgba(88,101,242,0.1); border: 1px solid rgba(88,101,242,0.3); border-radius: 10px; padding: 0.9rem 1.2rem; margin-bottom: 1.8rem; display: flex; gap: 0.8rem; align-items: flex-start; font-size: 0.75rem; color: rgba(255,255,255,0.7); line-height: 1.5;">
                 <i class="fab fa-discord" style="color:#5865F2; margin-top:0.1rem; flex-shrink:0;"></i>
                 <span>Profile picture, avatar frame, display name and Discord status are <strong style="color:#fff;">automatically synced by the bot</strong>. Just enter the Discord ID and the bot handles the rest.</span>
             </div>
 
+            <!-- Partner info banner (Partner only) -->
+            <div id="modal-partner-banner" style="display:none; background: rgba(255,0,200,0.08); border: 1px solid rgba(255,0,200,0.3); border-radius: 10px; padding: 0.9rem 1.2rem; margin-bottom: 1.8rem; font-size: 0.75rem; color: rgba(255,255,255,0.8); line-height: 1.5;">
+                <i class="fas fa-handshake" style="color:var(--accent-magenta); margin-right:0.4rem;"></i>
+                <span>Custom Label Showcase: Enter brand banner, label logo, tagline and social links. No bot presence required.</span>
+            </div>
+
             <div class="form-grid">
                 <div class="input-group full">
-                    <label>DISCORD ID <span style="color:var(--secondary);">*</span></label>
-                    <p class="field-desc">Right-click the user in Discord &rarr; Copy User ID (developer mode must be on).</p>
-                    <input type="text" id="new-member-id" placeholder="e.g. 1296819659131326556" maxlength="20">
+                    <label id="lbl-member-id">IDENTIFIER / DISCORD ID <span style="color:var(--secondary);">*</span></label>
+                    <p class="field-desc" id="desc-member-id">For staff, use Discord ID. For partners, enter unique identifier (e.g. itx-records).</p>
+                    <input type="text" id="new-member-id" placeholder="e.g. 1296819659131326556 or itx-records" maxlength="32">
                 </div>
                 <div class="input-group full">
-                    <label>DISPLAY NAME <span style="opacity:0.5; font-size:0.7rem;">(bot will overwrite)</span></label>
-                    <input type="text" id="new-member-name" placeholder="e.g. SVYUXU (temporary until bot syncs)">
+                    <label id="lbl-member-name">DISPLAY NAME / LABEL NAME <span style="color:var(--secondary);">*</span></label>
+                    <input type="text" id="new-member-name" placeholder="e.g. ITX RECORD LABEL">
+                </div>
+                <div class="input-group full" id="partner-tagline-group" style="display:none;">
+                    <label>LABEL TAGLINE / GENRE</label>
+                    <input type="text" id="new-partner-tagline" placeholder="e.g. ELECTRONIC & BASS AUDIO ALLIANCE">
+                </div>
+                <div class="input-group full" id="partner-logo-group" style="display:none;">
+                    <label>LABEL LOGO URL</label>
+                    <input type="text" id="new-partner-logo" placeholder="https://... (Image link for logo)">
+                </div>
+                <div class="input-group full" id="partner-banner-group" style="display:none;">
+                    <label>LABEL BANNER / COVER URL</label>
+                    <input type="text" id="new-partner-banner" placeholder="https://... (Wide background banner image)">
                 </div>
                 <div class="input-group full">
-                    <label>BIO / ROLE</label>
-                    <input type="text" id="new-member-bio" placeholder="e.g. OWNER, LEAD PRODUCER, A&R, DESIGNER...">
+                    <label>DESCRIPTION / BIO</label>
+                    <input type="text" id="new-member-bio" placeholder="e.g. Official partner label specializing in futuristic sound...">
                 </div>
                 <div class="input-group full">
-                    <label>HIERARCHY ORDER (1 = TOP / OWNER, 2 = ADMIN, 3 = A&R, etc.)</label>
+                    <label>HIERARCHY ORDER (1 = TOP / FIRST, 2, 3...)</label>
                     <input type="number" id="new-member-order" placeholder="e.g. 1" value="1" min="1" max="99">
                 </div>
                 <div class="input-group full">
                     <label>TYPE</label>
-                    <select id="new-member-type">
+                    <select id="new-member-type" onchange="toggleModalType(this.value)">
                         <option value="staff">STAFF MEMBER</option>
                         <option value="partner">LABEL PARTNER</option>
                     </select>
@@ -877,7 +895,7 @@
         </div>
     </div>
 
-    <script src="admin.js?v=65.0"></script>
+    <script src="admin.js?v=70.0"></script>
     <script>
         // FIXED: removeStaff now correctly routes partner vs staff
         function removeStaff(discordId, isPartner) {
@@ -915,71 +933,104 @@
             }
         }
 
+        function toggleModalType(type) {
+            const isPartner = type === 'partner';
+            document.getElementById('modal-bot-banner').style.display = isPartner ? 'none' : 'flex';
+            document.getElementById('modal-partner-banner').style.display = isPartner ? 'block' : 'none';
+            document.getElementById('partner-tagline-group').style.display = isPartner ? 'block' : 'none';
+            document.getElementById('partner-logo-group').style.display = isPartner ? 'block' : 'none';
+            document.getElementById('partner-banner-group').style.display = isPartner ? 'block' : 'none';
+            document.getElementById('lbl-member-id').innerHTML = isPartner ? 'PARTNER ID / SLUG <span style="color:var(--secondary);">*</span>' : 'DISCORD ID <span style="color:var(--secondary);">*</span>';
+            document.getElementById('desc-member-id').innerText = isPartner ? 'Unique ID for this label partner (e.g. itx-records).' : 'Right-click user in Discord -> Copy User ID.';
+        }
+
         function openAddModal(type) {
             document.getElementById('new-member-id').value = '';
             document.getElementById('new-member-name').value = '';
-            document.getElementById('new-member-bio').value = type === 'partner' ? 'LABEL PARTNER' : 'CORE STAFF';
+            document.getElementById('new-member-bio').value = type === 'partner' ? 'Official partner label alliance.' : 'CORE STAFF';
+            document.getElementById('new-partner-tagline').value = type === 'partner' ? 'ELECTRONIC & BASS AUDIO ALLIANCE' : '';
+            document.getElementById('new-partner-logo').value = '';
+            document.getElementById('new-partner-banner').value = '';
             document.getElementById('new-member-order').value = '1';
             document.getElementById('new-member-type').value = type;
+            toggleModalType(type);
+
             const title = document.getElementById('add-member-modal-title');
             title.innerHTML = type === 'partner'
-                ? '<i class="fas fa-handshake"></i> ADD NEW PARTNER'
+                ? '<i class="fas fa-handshake"></i> ADD NEW LABEL PARTNER'
                 : '<i class="fas fa-user-plus"></i> ADD NEW STAFF MEMBER';
             document.getElementById('add-member-modal').style.display = 'flex';
         }
 
         function confirmAddMember() {
-            const discordId = document.getElementById('new-member-id').value.trim();
+            const id        = document.getElementById('new-member-id').value.trim();
             const name      = document.getElementById('new-member-name').value.trim();
             const bio       = document.getElementById('new-member-bio').value.trim();
+            const tagline   = document.getElementById('new-partner-tagline').value.trim();
+            const logoUrl   = document.getElementById('new-partner-logo').value.trim();
+            const bannerUrl = document.getElementById('new-partner-banner').value.trim();
             const orderRaw  = document.getElementById('new-member-order').value.trim();
             const order     = parseInt(orderRaw) || 99;
             const type      = document.getElementById('new-member-type').value;
 
-            if (!discordId || discordId.length < 10) {
-                alert('INVALID DISCORD ID — must be an 18-digit user ID.');
+            if (!id || id.length < 2) {
+                alert('INVALID IDENTIFIER — please provide a valid ID.');
                 return;
             }
 
             if (typeof firebase !== 'undefined') {
                 const db = firebase.database();
                 const path = type === 'partner' ? 'partner_status/' : 'staff_status/';
-                const ref  = db.ref(path + discordId);
+                const ref  = db.ref(path + id);
 
-                // SAFE MERGE: Check if record already exists first
-                ref.once('value').then(snap => {
-                    if (snap.exists()) {
-                        // Record exists (bot may have already populated avatar/status)
-                        // ONLY update bio/order + placeholder name if empty — never overwrite bot fields
-                        const existing = snap.val();
-                        const updates = { order: order };
-                        if (bio) updates.bio = bio;
-                        if (name && !existing.name) updates.name = name.toUpperCase();
-                        if (!existing.socials)       updates.socials = {};
+                if (type === 'partner') {
+                    // Full custom record for partner
+                    const partnerRecord = {
+                        name: name ? name.toUpperCase() : 'LABEL PARTNER',
+                        tagline: tagline || 'OFFICIAL LABEL ALLIANCE',
+                        logo_url: logoUrl || 'assets/staff/default.png',
+                        avatar_url: logoUrl || 'assets/staff/default.png',
+                        banner_url: bannerUrl || 'assets/cover.png',
+                        bio: bio || 'Official record label alliance.',
+                        order: order,
+                        socials: {}
+                    };
+                    ref.set(partnerRecord).then(() => {
+                        document.getElementById('add-member-modal').style.display = 'none';
+                        if (typeof showToast === 'function') showToast('PARTNER LABEL ADDED SUCCESSFULLY.');
+                        if (typeof loadStaff === 'function') loadStaff();
+                    }).catch(err => alert('SYNC ERROR: ' + err.message));
+                } else {
+                    // Staff record (bot auto-syncs avatar)
+                    ref.once('value').then(snap => {
+                        if (snap.exists()) {
+                            const existing = snap.val();
+                            const updates = { order: order };
+                            if (bio) updates.bio = bio;
+                            if (name && !existing.name) updates.name = name.toUpperCase();
+                            if (!existing.socials) updates.socials = {};
 
-                        ref.update(updates).then(() => {
-                            document.getElementById('add-member-modal').style.display = 'none';
-                            if (typeof showToast === 'function') showToast('RECORD UPDATED — BOT DATA PRESERVED.');
-                            if (typeof loadStaff === 'function') loadStaff();
-                        }).catch(err => alert('UPDATE ERROR: ' + err.message));
-
-                    } else {
-                        // New record — create minimal placeholder, bot will fill avatar/status
-                        const record = {
-                            name:   name ? name.toUpperCase() : (type === 'partner' ? 'PARTNER' : 'STAFF'),
-                            status: 'offline',
-                            bio:    bio || (type === 'partner' ? 'LABEL PARTNER' : 'CORE STAFF'),
-                            order:  order,
-                            socials: {}
-                            // avatar_url & decoration_url intentionally omitted — bot sets these
-                        };
-                        ref.set(record).then(() => {
-                            document.getElementById('add-member-modal').style.display = 'none';
-                            if (typeof showToast === 'function') showToast(type.toUpperCase() + ' ADDED (ORDER #' + order + ') — BOT WILL AUTO-SYNC AVATAR & STATUS.');
-                            if (typeof loadStaff === 'function') loadStaff();
-                        }).catch(err => alert('SYNC ERROR: ' + err.message));
-                    }
-                });
+                            ref.update(updates).then(() => {
+                                document.getElementById('add-member-modal').style.display = 'none';
+                                if (typeof showToast === 'function') showToast('RECORD UPDATED.');
+                                if (typeof loadStaff === 'function') loadStaff();
+                            }).catch(err => alert('UPDATE ERROR: ' + err.message));
+                        } else {
+                            const record = {
+                                name: name ? name.toUpperCase() : 'STAFF',
+                                status: 'offline',
+                                bio: bio || 'CORE STAFF',
+                                order: order,
+                                socials: {}
+                            };
+                            ref.set(record).then(() => {
+                                document.getElementById('add-member-modal').style.display = 'none';
+                                if (typeof showToast === 'function') showToast('STAFF ADDED (ORDER #' + order + ').');
+                                if (typeof loadStaff === 'function') loadStaff();
+                            }).catch(err => alert('SYNC ERROR: ' + err.message));
+                        }
+                    });
+                }
             } else {
                 alert('Firebase not ready. Try again.');
             }
