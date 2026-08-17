@@ -1269,33 +1269,35 @@ const initPortal = () => {
             });
         }
 
-        // --- DYNAMIC PARTNER CARD BUILDER (SAME SIZE & CARD STYLE AS STAFF) ---
+        // --- DYNAMIC PARTNER CARD BUILDER (100% EXACT COPY OF STAFF CARD DESIGN) ---
         function createPartnerCard(partnerId, data, gridEl) {
             const item = document.createElement('div');
-            item.className = 'partner-card glass';
+            item.className = 'artist-item glass';
             item.dataset.partnerId = partnerId;
 
             const bannerUrl = (data.banner_url && data.banner_url.trim() !== '') ? data.banner_url : 'assets/cover.png';
             const logoUrl = (data.logo_url && data.logo_url.trim() !== '') ? data.logo_url : (data.avatar_url && data.avatar_url.trim() !== '' ? data.avatar_url : 'assets/staff/default.png');
-            const tagline = data.tagline || 'OFFICIAL LABEL ALLIANCE';
+            const tagline = data.tagline || 'Label Partner';
             const name = data.name || 'LABEL PARTNER';
             const bio = data.bio || 'Encrypted record label partnership transmission.';
 
             item.innerHTML = `
                 <div class="avatar-wrapper">
-                    <div class="artist-img" style="background-image: url('${logoUrl}');"></div>
+                    <div class="artist-img" style="background-image: url('${logoUrl}'); background-size: cover; background-position: center;"></div>
+                    <img src="" class="avatar-decoration" alt="Frame" style="display:none;">
                 </div>
                 <h4>${name}</h4>
-                <div class="partner-tagline">${tagline}</div>
-                <span class="artist-loc"><i class="fas fa-handshake" style="color:var(--accent-magenta);"></i> LABEL PARTNER</span>
+                <p>Status: <span class="status-indicator online">PARTNER</span></p>
+                <span class="artist-loc">${tagline}</span>
             `;
 
-            // Modal click handler for Partner (Displays Banner at Top)
+            // Modal click handler for Partner (Displays Banner at Top of Modal)
+            item.style.cursor = 'pointer';
             item.onclick = () => {
                 openProfileModal({
                     name: name,
                     status: 'LABEL PARTNER',
-                    statusClass: 'partner',
+                    statusClass: 'online',
                     bio: bio,
                     avatarUrl: logoUrl,
                     bannerUrl: bannerUrl,
