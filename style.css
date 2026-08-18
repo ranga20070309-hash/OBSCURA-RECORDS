@@ -3798,3 +3798,549 @@ textarea.real-input:focus {
     gap: 1.5rem;
     flex-wrap: wrap;
 }
+
+/* ==========================================================================
+   FEATURE 4: CYBERPUNK UI SFX TOGGLE BUTTON
+   ========================================================================== */
+.sfx-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.9rem;
+    background: rgba(0, 240, 255, 0.06);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    border-radius: 20px;
+    color: var(--accent-blue);
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08rem;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+    margin-right: 0.5rem;
+}
+
+.sfx-toggle-btn:hover {
+    background: rgba(0, 240, 255, 0.15);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.sfx-toggle-btn.sfx-muted {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.4);
+    box-shadow: none;
+}
+
+.sfx-toggle-btn.sfx-muted i {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* ==========================================================================
+   FEATURE 2: 3D HOLOGRAPHIC VINYL RECORD HOVER ANIMATION
+   ========================================================================== */
+.release-cover-large {
+    position: relative;
+    overflow: hidden;
+    perspective: 1200px;
+}
+
+.vinyl-disc {
+    position: absolute;
+    top: 10%;
+    right: 5%;
+    width: 80%;
+    height: 80%;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, #151518 0%, #08080a 35%, #18181f 55%, #050508 75%, #000 100%);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        0 0 20px rgba(0, 0, 0, 0.9),
+        inset 0 0 15px rgba(0, 240, 255, 0.2),
+        inset 0 0 5px rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    pointer-events: none;
+    transform: translateX(0) rotate(0deg) scale(0.92);
+    transition: transform 0.65s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.5s ease;
+    opacity: 0.85;
+}
+
+.vinyl-grooves {
+    position: absolute;
+    inset: 10px;
+    border-radius: 50%;
+    background: repeating-radial-gradient(
+        circle at center,
+        rgba(255, 255, 255, 0.04) 0px,
+        rgba(255, 255, 255, 0.04) 1px,
+        transparent 2px,
+        transparent 5px
+    );
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.vinyl-grooves::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        rgba(0, 240, 255, 0.12) 60deg,
+        transparent 120deg,
+        rgba(157, 0, 255, 0.12) 240deg,
+        transparent 300deg,
+        rgba(0, 240, 255, 0.12) 360deg
+    );
+    pointer-events: none;
+}
+
+.vinyl-label {
+    position: relative;
+    width: 34%;
+    height: 34%;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--accent-blue);
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+    z-index: 3;
+    background: #000;
+}
+
+.vinyl-label img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vinyl-label::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 7px;
+    height: 7px;
+    background: #000;
+    border: 1.5px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 4px #00f0ff;
+}
+
+/* Hover Slide-out & 3D Spin */
+.release-card-large:hover .vinyl-disc,
+.popular-card:hover .vinyl-disc {
+    transform: translateX(38%) rotate(180deg) scale(0.96);
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.9),
+        0 0 25px rgba(0, 240, 255, 0.35),
+        inset 0 0 15px rgba(0, 240, 255, 0.3);
+    opacity: 1;
+}
+
+.release-card-large:hover .release-cover-large img,
+.popular-card:hover .popular-cover img {
+    transform: translateX(-8%) scale(1.04);
+}
+
+.popular-cover {
+    position: relative;
+    overflow: hidden;
+    perspective: 1200px;
+}
+
+.release-card-large.active-track .vinyl-disc {
+    transform: translateX(38%) scale(0.96);
+    animation: vinylContinuousSpin 3.5s linear infinite;
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.9),
+        0 0 35px rgba(0, 240, 255, 0.6),
+        inset 0 0 20px rgba(157, 0, 255, 0.4);
+    opacity: 1;
+}
+
+@keyframes vinylContinuousSpin {
+    from {
+        transform: translateX(38%) rotate(0deg) scale(0.96);
+    }
+    to {
+        transform: translateX(38%) rotate(360deg) scale(0.96);
+    }
+}
+
+/* ==========================================================================
+   FEATURE 1: FLOATING CYBERPUNK MUSIC PLAYER & REAL-TIME VISUALIZER
+   ========================================================================== */
+.floating-player-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    width: calc(100% - 40px);
+    max-width: 1100px;
+    height: 72px;
+    background: rgba(10, 8, 20, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    border-radius: 18px;
+    padding: 0 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    z-index: 9999;
+    box-shadow: 
+        0 15px 40px rgba(0, 0, 0, 0.8),
+        0 0 30px rgba(0, 240, 255, 0.15),
+        inset 0 0 15px rgba(255, 255, 255, 0.03);
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease, visibility 0.4s;
+}
+
+.floating-player-bar.hidden {
+    transform: translateX(-50%) translateY(120px);
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.fp-glow-stream {
+    position: absolute;
+    top: -1px;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-blue), var(--accent-purple), transparent);
+    box-shadow: 0 0 10px var(--accent-blue);
+    pointer-events: none;
+}
+
+/* Track Info */
+.floating-player-track-info {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-width: 220px;
+    max-width: 260px;
+}
+
+.fp-thumb-wrapper {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+}
+
+.fp-cover-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    position: relative;
+    z-index: 2;
+}
+
+.fp-mini-vinyl {
+    position: absolute;
+    top: 2px;
+    right: -8px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #222 0%, #0a0a0a 60%, #000 100%);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.2);
+}
+
+.floating-player-bar.playing .fp-mini-vinyl {
+    animation: vinylMiniSpin 2.5s linear infinite;
+}
+
+@keyframes vinylMiniSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.fp-vinyl-core {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+}
+
+.fp-text-meta {
+    overflow: hidden;
+}
+
+.fp-track-title {
+    font-family: var(--font-heading);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.05rem;
+}
+
+.fp-track-artist {
+    font-size: 0.72rem;
+    color: var(--accent-blue);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.85;
+    margin-top: 2px;
+}
+
+/* Center Controls & Scrubber */
+.floating-player-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 1;
+    max-width: 440px;
+}
+
+.floating-player-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.fp-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fp-btn:hover {
+    color: var(--accent-blue);
+    transform: scale(1.15);
+}
+
+.fp-play-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    color: #000;
+    font-size: 0.85rem;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+}
+
+.fp-play-btn:hover {
+    background: #fff;
+    box-shadow: 0 0 20px #00f0ff;
+    color: #000;
+}
+
+.floating-player-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+}
+
+.fp-time {
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    color: rgba(255, 255, 255, 0.5);
+    min-width: 28px;
+}
+
+.fp-progress-container {
+    flex: 1;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.fp-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+    border-radius: 10px;
+    box-shadow: 0 0 8px var(--accent-blue);
+    transition: width 0.15s linear;
+}
+
+/* Visualizer Section */
+.floating-player-visualizer-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 2px 8px;
+    height: 42px;
+}
+
+#fp-visualizer-canvas {
+    display: block;
+    width: 130px;
+    height: 34px;
+}
+
+/* Actions & Volume */
+.floating-player-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.fp-volume-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.fp-icon-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.fp-icon-btn:hover {
+    color: var(--accent-blue);
+}
+
+.fp-vol-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 65px;
+    height: 4px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    outline: none;
+    cursor: pointer;
+}
+
+.fp-vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    box-shadow: 0 0 6px var(--accent-blue);
+    cursor: pointer;
+}
+
+.fp-external-links {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.fp-link-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.75rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.fp-link-icon.spotify:hover {
+    background: #1DB954;
+    border-color: #1DB954;
+    box-shadow: 0 0 10px #1DB954;
+    color: #fff;
+}
+
+.fp-link-icon.youtube:hover {
+    background: #FF0000;
+    border-color: #FF0000;
+    box-shadow: 0 0 10px #FF0000;
+    color: #fff;
+}
+
+.close-fp {
+    margin-left: 0.2rem;
+    font-size: 1rem;
+}
+
+/* Mobile Responsiveness for Floating Player */
+@media (max-width: 900px) {
+    .floating-player-visualizer-section {
+        display: none;
+    }
+    .fp-vol-slider {
+        display: none;
+    }
+    .floating-player-bar {
+        height: 66px;
+        padding: 0 0.8rem;
+    }
+    .floating-player-track-info {
+        min-width: 140px;
+        max-width: 180px;
+    }
+}
+
+@media (max-width: 600px) {
+    .floating-player-bar {
+        bottom: 10px;
+        width: calc(100% - 20px);
+        height: 62px;
+        padding: 0 0.6rem;
+        border-radius: 14px;
+    }
+    .floating-player-track-info {
+        min-width: 110px;
+        max-width: 130px;
+    }
+    .fp-thumb-wrapper {
+        width: 38px;
+        height: 38px;
+    }
+    .fp-mini-vinyl {
+        display: none;
+    }
+    .floating-player-controls {
+        gap: 0.5rem;
+    }
+    .fp-play-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.75rem;
+    }
+    .fp-external-links {
+        display: none;
+    }
+}
