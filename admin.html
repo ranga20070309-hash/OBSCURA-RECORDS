@@ -125,7 +125,7 @@
                         <span class="badge count-pill" id="badge-contact-msg">0</span>
                     </a>
                     <a href="#" class="nav-btn" data-target="modals-panel">
-                        <i class="fas fa-window-restore"></i> <span>MODALS & FAQ</span>
+                        <i class="fas fa-window-restore"></i> <span>MODALS, FAQ & FOOTER</span>
                     </a>
 
                     <div class="nav-section-label">SYSTEM & AFFILIATES</div>
@@ -383,39 +383,6 @@
                         </div>
                     </div>
 
-                    <!-- Footer Texts & Copyright Card -->
-                    <div class="cyber-card">
-                        <div class="card-header">
-                            <i class="fas fa-shoe-prints card-icon"></i>
-                            <div>
-                                <h3>FOOTER LINKS & COPYRIGHT</h3>
-                                <p>Text strings for footer navigation and copyright line.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group full">
-                                <label>COPYRIGHT NOTICE</label>
-                                <input type="text" id="site_footerCopyright" value="&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED.">
-                            </div>
-                            <div class="input-group">
-                                <label>FOOTER FAQ TEXT</label>
-                                <input type="text" id="site_footerFaqText" value="FAQ">
-                            </div>
-                            <div class="input-group">
-                                <label>FOOTER DEMO SUBMISSION TEXT</label>
-                                <input type="text" id="site_footerDemoText" value="DEMO SUBMISSION">
-                            </div>
-                            <div class="input-group">
-                                <label>FOOTER CONTACT TEXT</label>
-                                <input type="text" id="site_footerContactText" value="CONTACT US">
-                            </div>
-                            <div class="input-group">
-                                <label>FOOTER PRIVACY TEXT</label>
-                                <input type="text" id="site_footerPrivacyText" value="PRIVACY">
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
 
                 <div class="action-footer">
@@ -440,7 +407,7 @@
                         <i class="fas fa-compact-disc card-icon"></i>
                         <div>
                             <h3 id="release-editor-title">ADD NEW RELEASE</h3>
-                            <p>Enter track metadata and streaming audio identifiers.</p>
+                            <p>Enter track metadata, cover artwork, and streaming audio links.</p>
                         </div>
                         <button type="button" class="close-card-btn" id="close-release-editor">&times;</button>
                     </div>
@@ -451,7 +418,7 @@
                             <input type="text" id="rel_title" placeholder="e.g. CYBERNETIC PULSE">
                         </div>
                         <div class="input-group">
-                            <label><i class="fas fa-user-astronaut"></i> ARTIST NAME(S) *</label>
+                            <label><i class="fas fa-user-astronaut"></i> ARTIST / PRODUCERS *</label>
                             <input type="text" id="rel_artist" placeholder="e.g. SAYURUX ft. OBSCURA">
                         </div>
                         <div class="input-group">
@@ -465,7 +432,7 @@
                         <div class="input-group full">
                             <label><i class="fas fa-image"></i> COVER ARTWORK URL *</label>
                             <div class="input-with-preview">
-                                <input type="text" id="rel_cover" placeholder="https://i.imgur.com/... or assets/covers/...">
+                                <input type="text" id="rel_cover" placeholder="https://i.imgur.com/... or assets/cover.png">
                                 <div class="img-preview-box" id="rel-cover-preview">
                                     <i class="fas fa-image"></i>
                                 </div>
@@ -474,7 +441,7 @@
                         <div class="input-group full">
                             <label><i class="fab fa-youtube"></i> STREAMING AUDIO (YOUTUBE URL OR VIDEO ID) *</label>
                             <input type="text" id="rel_streamUrl" placeholder="https://www.youtube.com/watch?v=XXXXXX or video ID">
-                            <small>Instant audio streaming plays seamlessly through the floating player.</small>
+                            <small>Instant audio streaming plays seamlessly through the floating player on the main site.</small>
                         </div>
                         <div class="input-group">
                             <label><i class="fab fa-spotify"></i> SPOTIFY STREAM LINK</label>
@@ -552,7 +519,7 @@
                         </div>
                         <div class="input-group full">
                             <label>COVER / TEASER ARTWORK URL</label>
-                            <input type="text" id="upc_cover" placeholder="https://i.imgur.com/... or assets/covers/...">
+                            <input type="text" id="upc_cover" placeholder="https://i.imgur.com/... or assets/cover.png">
                         </div>
                     </div>
                     <div class="card-footer-btns">
@@ -566,7 +533,7 @@
                 </div>
             </section>
 
-            <!-- 5. GHOST PRODUCTION PANEL (WITH VISIBILITY SWITCH) -->
+            <!-- 5. GHOST PRODUCTION PANEL (FULL DIRECTIVES & ALL OPTIONS) -->
             <section id="ghost-production-panel" class="panel">
                 <div class="panel-action-bar" style="margin-bottom: 1.5rem;">
                     <div class="section-visibility-group">
@@ -579,46 +546,136 @@
                 </div>
 
                 <div class="card-grid">
+                    
+                    <!-- Core Ghost Directives -->
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-ghost card-icon"></i>
                             <div>
-                                <h3>GHOST PRODUCTION DIRECTIVES & PRICING</h3>
-                                <p>Manage pricing, turnaround timeline, and service features list.</p>
+                                <h3>CORE GHOST PRODUCTION HEADERS & DESCRIPTIONS</h3>
+                                <p>Main titles and explanatory paragraphs displayed in the Ghost Production section.</p>
                             </div>
                         </div>
                         <div class="card-body form-grid">
                             <div class="input-group">
-                                <label>SECTION TITLE (HTML)</label>
-                                <input type="text" id="site_ghostTitle" value="GHOST <span class='accent'>PRODUCTION</span>">
+                                <label>SECTION SUB-HEADING</label>
+                                <input type="text" id="site_ghostDesc" value="Request your custom sound in any style. Secure professional production for a flat fee.">
                             </div>
                             <div class="input-group">
-                                <label>STARTING PRICE TAG</label>
-                                <input type="text" id="site_ghostPrice" value="STARTING AT $299">
+                                <label>SERVICE INNER TITLE</label>
+                                <input type="text" id="site_ghostServiceTitle" value="GHOST PRODUCTION">
+                            </div>
+                            <div class="input-group">
+                                <label>EVENT TAGLINE / BADGE</label>
+                                <input type="text" id="site_ghostTagline" value="EXCLUSIVE EVENT">
                             </div>
                             <div class="input-group full">
-                                <label>SERVICE DESCRIPTION</label>
-                                <textarea id="site_ghostDesc" rows="3">Premium, uncredited, industry-standard electronic music production tailored to your sonic identity.</textarea>
-                            </div>
-                            <div class="input-group">
-                                <label>TURNAROUND TIME</label>
-                                <input type="text" id="site_ghostTurnaround" value="7-14 DAYS ESTIMATED DELIVERY">
-                            </div>
-                            <div class="input-group">
-                                <label>ORDER BUTTON CTA TEXT</label>
-                                <input type="text" id="site_ghostCta" value="REQUEST CUSTOM TRACK">
+                                <label>SERVICE FULL DESCRIPTION</label>
+                                <textarea id="site_ghostServiceDesc" rows="3">Submit your preferred musical style and vision to our portal. Our elite producers will craft a bespoke, professional track tailored specifically to your requirements.</textarea>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Production Tiers Pricing -->
+                    <div class="cyber-card">
+                        <div class="card-header">
+                            <i class="fas fa-tags card-icon"></i>
+                            <div>
+                                <h3>PRODUCTION TIERS & PRICING</h3>
+                                <p>Custom pricing labels for all production duration options.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>30 SECONDS SNIPPET PRICE</label>
+                                <input type="text" id="site_ghostPrice30s" value="$10">
+                            </div>
+                            <div class="input-group">
+                                <label>1 MINUTE COMPOSITION PRICE</label>
+                                <input type="text" id="site_ghostPrice1m" value="$30">
+                            </div>
+                            <div class="input-group">
+                                <label>1 MINUTE + VOCALS PRICE</label>
+                                <input type="text" id="site_ghostPriceVocals" value="$50">
+                            </div>
+                            <div class="input-group">
+                                <label>CUSTOMIZED PACKAGE PRICE</label>
+                                <input type="text" id="site_ghostPriceCustom" value="From $100">
+                            </div>
+                            <div class="input-group full">
+                                <label>ADD-ON: PRO MIX PRICE</label>
+                                <input type="text" id="site_ghostAddonMix" value="+ $20">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Service Features & Delivery Options -->
+                    <div class="cyber-card">
+                        <div class="card-header">
+                            <i class="fas fa-check-double card-icon"></i>
+                            <div>
+                                <h3>CORE FEATURES & DELIVERY TIMELINE</h3>
+                                <p>Feature checklists, revision options, and express delivery pricing.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>FEATURE 1</label>
+                                <input type="text" id="site_ghostFeature1" value="High-Quality WAV Files">
+                            </div>
+                            <div class="input-group">
+                                <label>FEATURE 2</label>
+                                <input type="text" id="site_ghostFeature2" value="24/7 Customer Service">
+                            </div>
+                            <div class="input-group">
+                                <label>FEATURE 3</label>
+                                <input type="text" id="site_ghostFeature3" value="3 Project Revisions">
+                            </div>
+                            <div class="input-group">
+                                <label>ADD-ON: UNLIMITED REVISIONS</label>
+                                <input type="text" id="site_ghostAddonRevisions" value="+ $20">
+                            </div>
+                            <div class="input-group">
+                                <label>3 DAY EXPRESS DELIVERY PRICE</label>
+                                <input type="text" id="site_ghostDelivery3d" value="+ $20">
+                            </div>
+                            <div class="input-group">
+                                <label>5 DAY PRIORITY DELIVERY PRICE</label>
+                                <input type="text" id="site_ghostDelivery5d" value="+ $10">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Special Offer Banner -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-star card-icon"></i>
+                            <div>
+                                <h3>SPECIAL OFFER BANNER</h3>
+                                <p>Highlighted promotional package box inside the ghost section.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>SPECIAL OFFER TITLE</label>
+                                <input type="text" id="site_ghostSpecialTitle" value="SPECIAL OFFER: FULL TRACK">
+                            </div>
+                            <div class="input-group full">
+                                <label>SPECIAL OFFER DESCRIPTION</label>
+                                <textarea id="site_ghostSpecialDesc" rows="2">1 Full Track, Any Style, Mixed & Mastered. MP3 + WAV + MIDI + STEMS + PROJECT FILE</textarea>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="action-footer">
-                    <button class="cyber-btn primary" id="save-ghost-prod"><i class="fas fa-save"></i> SAVE & SYNC GHOST PRODUCTION</button>
+                    <button class="cyber-btn primary" id="save-ghost-prod"><i class="fas fa-save"></i> SAVE & SYNC ALL GHOST PRODUCTION OPTIONS</button>
                     <span id="save-msg-ghost" class="save-status-indicator"></span>
                 </div>
             </section>
 
-            <!-- 6. STAFF & PARTNERS PERSONNEL PANEL (WITH MULTI-SOCIAL LINK BUILDER) -->
+            <!-- 6. STAFF & PARTNERS PERSONNEL PANEL (WITH LOCAL IMAGE BROWSER & MULTI-SOCIALS) -->
             <section id="staff-panel" class="panel">
                 <div class="panel-action-bar">
                     <div class="tab-pill-group">
@@ -634,7 +691,7 @@
                         <i class="fas fa-user-edit card-icon"></i>
                         <div>
                             <h3 id="profile-editor-title">CREATE NEW PROFILE</h3>
-                            <p>Configure personnel details, avatars, and social platform links.</p>
+                            <p>Configure personnel details, local avatar & banner uploads, and social networks.</p>
                         </div>
                         <button type="button" class="close-card-btn" id="close-profile-editor">&times;</button>
                     </div>
@@ -645,6 +702,7 @@
                         <div class="input-group">
                             <label>PROFILE ID / DISCORD USERNAME *</label>
                             <input type="text" id="prof_id" placeholder="e.g. sayurux or partner_id">
+                            <small>Unique identifier for this profile record.</small>
                         </div>
                         <div class="input-group">
                             <label>DISPLAY NAME *</label>
@@ -658,10 +716,37 @@
                             <label>SORT PRIORITY (1 = HIGHEST)</label>
                             <input type="number" id="prof_order" value="1">
                         </div>
+                        
+                        <!-- Profile Avatar Upload / URL -->
                         <div class="input-group full">
-                            <label>AVATAR / LOGO IMAGE URL</label>
-                            <input type="text" id="prof_avatar" placeholder="https://i.imgur.com/... or assets/cover.png">
+                            <label><i class="fas fa-user-circle"></i> PROFILE AVATAR / DP (URL OR BROWSE FROM COMPUTER)</label>
+                            <div class="input-with-preview">
+                                <input type="text" id="prof_avatar" placeholder="https://i.imgur.com/... or paste image URL">
+                                <input type="file" id="prof_avatar_file" accept="image/*" style="display: none;">
+                                <button type="button" class="cyber-btn secondary sm" onclick="document.getElementById('prof_avatar_file').click()">
+                                    <i class="fas fa-folder-open"></i> BROWSE FILE
+                                </button>
+                                <div class="img-preview-box" id="prof-avatar-preview">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Profile Banner Upload / URL -->
+                        <div class="input-group full">
+                            <label><i class="fas fa-image"></i> PROFILE BANNER BACKGROUND (URL OR BROWSE FROM COMPUTER)</label>
+                            <div class="input-with-preview">
+                                <input type="text" id="prof_banner" placeholder="https://i.imgur.com/... or banner image URL">
+                                <input type="file" id="prof_banner_file" accept="image/*" style="display: none;">
+                                <button type="button" class="cyber-btn secondary sm" onclick="document.getElementById('prof_banner_file').click()">
+                                    <i class="fas fa-folder-open"></i> BROWSE FILE
+                                </button>
+                                <div class="img-preview-box" id="prof-banner-preview">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="input-group full">
                             <label>BIOGRAPHY / PROFILE DESCRIPTION</label>
                             <textarea id="prof_bio" rows="3" placeholder="A brief background about this personnel/partner..."></textarea>
@@ -745,42 +830,112 @@
                 </div>
             </section>
 
-            <!-- 9. MODALS, FAQ & POLICIES PANEL -->
+            <!-- 9. MODALS, FAQ & FOOTER PANEL -->
             <section id="modals-panel" class="panel">
                 <div class="card-grid">
                     
+                    <!-- Footer Texts & Copyright Card -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-shoe-prints card-icon"></i>
+                            <div>
+                                <h3>FOOTER NAVIGATION LINKS & COPYRIGHT NOTICE</h3>
+                                <p>Customize the labels and links displayed in the website footer.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group full">
+                                <label>COPYRIGHT NOTICE</label>
+                                <input type="text" id="site_footerCopyright" value="&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED.">
+                            </div>
+                            <div class="input-group">
+                                <label>FOOTER FAQ BUTTON TEXT</label>
+                                <input type="text" id="site_footerFaqText" value="FAQ">
+                            </div>
+                            <div class="input-group">
+                                <label>FOOTER DEMO SUBMISSION TEXT</label>
+                                <input type="text" id="site_footerDemoText" value="DEMO SUBMISSION">
+                            </div>
+                            <div class="input-group">
+                                <label>FOOTER CONTACT BUTTON TEXT</label>
+                                <input type="text" id="site_footerContactText" value="CONTACT US">
+                            </div>
+                            <div class="input-group">
+                                <label>FOOTER PRIVACY BUTTON TEXT</label>
+                                <input type="text" id="site_footerPrivacyText" value="PRIVACY">
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- FAQ Questions & Accordions Editor -->
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-question-circle card-icon"></i>
                             <div>
-                                <h3>FREQUENTLY ASKED QUESTIONS (FAQ)</h3>
-                                <p>Edit questions and answers shown in the interactive FAQ modal.</p>
+                                <h3>FREQUENTLY ASKED QUESTIONS (FAQ ACCORDION)</h3>
+                                <p>Edit questions and answers shown in the interactive FAQ modal popup.</p>
                             </div>
-                            <button class="cyber-btn primary sm" id="btn-add-faq-item"><i class="fas fa-plus"></i> ADD FAQ</button>
+                            <button class="cyber-btn primary sm" id="btn-add-faq-item"><i class="fas fa-plus"></i> ADD FAQ ITEM</button>
                         </div>
                         <div class="card-body" id="faq-admin-container">
                             <!-- Dynamic FAQ Items -->
                         </div>
                     </div>
 
-                    <!-- Privacy & Demo Rules Card -->
+                    <!-- Demo Submission Modal Rules & Texts -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-paper-plane card-icon"></i>
+                            <div>
+                                <h3>DEMO SUBMISSION MODAL RULES & GUIDELINES</h3>
+                                <p>Checklist rules, button texts, and guidelines inside the Send Demo popup.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group full">
+                                <label>RULE 1: TITLE</label>
+                                <input type="text" id="site_formRule1Title" value="Is this track unreleased?">
+                            </div>
+                            <div class="input-group full">
+                                <label>RULE 1: DESCRIPTION</label>
+                                <textarea id="site_formRule1Desc" rows="2">We do NOT accept already-released tracks. Any submissions that have already been published will be automatically declined.</textarea>
+                            </div>
+                            <div class="input-group full">
+                                <label>RULE 2: TITLE</label>
+                                <input type="text" id="site_formRule2Title" value="Track identification">
+                            </div>
+                            <div class="input-group full">
+                                <label>RULE 2: DESCRIPTION</label>
+                                <textarea id="site_formRule2Desc" rows="2">Please provide the title for your track. If you haven't decided on a name yet, a reference title is sufficient so we can identify your submission.</textarea>
+                            </div>
+                            <div class="input-group">
+                                <label>SUBMIT BUTTON TEXT</label>
+                                <input type="text" id="site_formSubmitBtn" value="Initiate Submission">
+                            </div>
+                            <div class="input-group">
+                                <label>DISCORD BUTTON TEXT</label>
+                                <input type="text" id="site_formDiscordBtn" value="Join Discord">
+                            </div>
+                            <div class="input-group full">
+                                <label>MODAL FOOTER RECOMMENDATION NOTE</label>
+                                <input type="text" id="site_formFooterRec" value="[ Highly Recommended: Join the server for real-time frequency tracking ]">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Privacy Policy & Contact Modal Subtexts -->
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-file-contract card-icon"></i>
                             <div>
-                                <h3>MODAL SUBTEXTS, PRIVACY POLICY & DEMO GUIDELINES</h3>
-                                <p>Instructional and legal text payloads displayed in popups.</p>
+                                <h3>PRIVACY POLICY & CONTACT MODAL TEXTS</h3>
+                                <p>Legal and instructional statements presented in modals.</p>
                             </div>
                         </div>
                         <div class="card-body form-grid">
                             <div class="input-group full">
                                 <label>CONTACT MODAL SUBTEXT</label>
-                                <textarea id="site_contactModalSubtext" rows="2">For partnerships, general questions, or portal feedback, reach out via the channels above.</textarea>
-                            </div>
-                            <div class="input-group full">
-                                <label>DEMO REQUIREMENTS & RULES</label>
-                                <textarea id="site_demoDesc" rows="4">We are looking for the next evolution of sound. If your music pushes the boundaries of Funk, Phonk, or Futuristic Electronic music, our portal is open for your transmissions.</textarea>
+                                <textarea id="site_contactModalSubtext" rows="2">Establish a direct frequency with the Obscura Record command center.</textarea>
                             </div>
                             <div class="input-group full">
                                 <label>PRIVACY POLICY CONTENT</label>
@@ -792,7 +947,7 @@
                 </div>
 
                 <div class="action-footer">
-                    <button class="cyber-btn primary" id="save-modals-text"><i class="fas fa-save"></i> SAVE & SYNC MODALS & FAQ</button>
+                    <button class="cyber-btn primary" id="save-modals-text"><i class="fas fa-save"></i> SAVE & SYNC MODALS, FAQ & FOOTER</button>
                     <span id="save-msg-modals" class="save-status-indicator"></span>
                 </div>
             </section>
