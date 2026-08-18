@@ -1583,7 +1583,7 @@ const initPortal = () => {
     if (typeof firebase !== 'undefined') {
         const db = firebase.database();
 
-        // --- STARFIELD CANVAS FOR MAINTENANCE MODE ---
+        // --- DEEP SPACE CONSTELLATION & STARFIELD CANVAS ENGINE ---
         let mCanvasAnimId = null;
         function initSpaceCanvas() {
             const canvas = document.getElementById('m-space-canvas');
@@ -1594,38 +1594,85 @@ const initPortal = () => {
             let height = canvas.height = window.innerHeight;
 
             const stars = [];
-            const numStars = 80;
+            const numStars = 110;
+            const colors = [
+                'rgba(0, 240, 255, ',
+                'rgba(183, 0, 255, ',
+                'rgba(255, 255, 255, ',
+                'rgba(0, 217, 255, '
+            ];
+
             for (let i = 0; i < numStars; i++) {
                 stars.push({
                     x: Math.random() * width,
                     y: Math.random() * height,
-                    radius: Math.random() * 1.3 + 0.3,
-                    alpha: Math.random() * 0.7 + 0.2,
-                    speed: Math.random() * 0.12 + 0.04
+                    radius: Math.random() * 1.5 + 0.4,
+                    baseAlpha: Math.random() * 0.6 + 0.25,
+                    alpha: Math.random() * 0.6 + 0.25,
+                    twinkleSpeed: Math.random() * 0.03 + 0.01,
+                    twinklePhase: Math.random() * Math.PI * 2,
+                    speedY: Math.random() * 0.25 + 0.08,
+                    speedX: (Math.random() - 0.5) * 0.08,
+                    color: colors[Math.floor(Math.random() * colors.length)]
                 });
             }
 
             function render() {
                 ctx.clearRect(0, 0, width, height);
+
+                // Draw Constellation Lines between nearby stars
+                for (let i = 0; i < stars.length; i++) {
+                    for (let j = i + 1; j < stars.length; j++) {
+                        const dx = stars[i].x - stars[j].x;
+                        const dy = stars[i].y - stars[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 85) {
+                            const lineAlpha = (1 - dist / 85) * 0.12;
+                            ctx.beginPath();
+                            ctx.moveTo(stars[i].x, stars[i].y);
+                            ctx.lineTo(stars[j].x, stars[j].y);
+                            ctx.strokeStyle = `rgba(0, 240, 255, ${lineAlpha})`;
+                            ctx.lineWidth = 0.6;
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                // Render Stars with Twinkle
                 stars.forEach(star => {
+                    star.twinklePhase += star.twinkleSpeed;
+                    star.alpha = star.baseAlpha + Math.sin(star.twinklePhase) * 0.25;
+                    star.alpha = Math.max(0.1, Math.min(0.95, star.alpha));
+
                     ctx.beginPath();
                     ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(0, 240, 255, ${star.alpha})`;
+                    ctx.fillStyle = `${star.color}${star.alpha})`;
+                    ctx.shadowBlur = star.radius > 1.2 ? 6 : 0;
+                    ctx.shadowColor = '#00f0ff';
                     ctx.fill();
+                    ctx.shadowBlur = 0;
 
-                    star.y -= star.speed;
+                    star.y -= star.speedY;
+                    star.x += star.speedX;
+
                     if (star.y < 0) {
                         star.y = height;
                         star.x = Math.random() * width;
                     }
+                    if (star.x < 0) star.x = width;
+                    if (star.x > width) star.x = 0;
                 });
+
                 mCanvasAnimId = requestAnimationFrame(render);
             }
 
-            window.addEventListener('resize', () => {
+            const handleResize = () => {
                 width = canvas.width = window.innerWidth;
                 height = canvas.height = window.innerHeight;
-            });
+            };
+
+            window.addEventListener('resize', handleResize);
 
             if (mCanvasAnimId) cancelAnimationFrame(mCanvasAnimId);
             render();
@@ -1732,8 +1779,10 @@ const initPortal = () => {
                         document.documentElement.classList.add('no-scroll', 'maintenance-active');
                         const mTitle = document.getElementById('m-title');
                         const mMsg = document.getElementById('m-msg');
+                        const mTag = document.getElementById('m-status-tag');
                         if (mTitle && data.maintenanceTitle) mTitle.innerHTML = data.maintenanceTitle;
                         if (mMsg && data.maintenanceMsg) mMsg.textContent = data.maintenanceMsg;
+                        if (mTag && data.maintenanceTag) mTag.textContent = data.maintenanceTag;
 
                         initSpaceCanvas();
                     } else {
