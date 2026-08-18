@@ -63,14 +63,28 @@ window.secureNavigate = function(url, key) {
     window.location.href = url;
 };
 
-// --- AUTHENTICATION & LOGIN DECK ---
+// --- FIREBASE AUTHENTICATION & LOGIN DECK ---
 const loginOverlay = document.getElementById('login-overlay');
 const adminWrapper = document.querySelector('.admin-wrapper');
+const rootEmailInput = document.getElementById('root-email-input');
 const rootPassInput = document.getElementById('root-pass-input');
 const loginBtn = document.getElementById('login-btn');
 const loginError = document.getElementById('login-error');
 const togglePwdBtn = document.getElementById('toggle-pwd-btn');
 const adminLogoutBtn = document.getElementById('admin-logout-btn');
+
+let engineInitialized = false;
+
+// Listen to Firebase Auth state
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        sessionStorage.setItem('rootAuth', 'granted');
+        sessionStorage.setItem('adminBypass', 'true');
+        unlockDashboard();
+    } else {
+        lockDashboard();
+    }
+});
 
 // Toggle Password Visibility
 if (togglePwdBtn && rootPassInput) {
@@ -81,64 +95,84 @@ if (togglePwdBtn && rootPassInput) {
     });
 }
 
-// Master pass verification
-function verifyAuth(passphrase) {
-    db.ref('siteData/globals/rootKey').once('value', (snap) => {
-        const validKey = snap.val() || 'ORC ADMINS PASS 2026';
-        if (passphrase.trim() === validKey.trim()) {
-            sessionStorage.setItem('rootAuth', 'granted');
-            sessionStorage.setItem('adminBypass', 'true');
-            unlockDashboard();
-        } else {
-            loginError.style.display = 'block';
-            rootPassInput.value = '';
-            rootPassInput.focus();
-        }
-    }).catch(err => {
-        // Fallback default password
-        if (passphrase.trim() === 'ORC ADMINS PASS 2026') {
-            sessionStorage.setItem('rootAuth', 'granted');
-            sessionStorage.setItem('adminBypass', 'true');
-            unlockDashboard();
-        } else {
+function handleLogin() {
+    const email = rootEmailInput ? rootEmailInput.value.trim() : '';
+    const pass = rootPassInput ? rootPassInput.value.trim() : '';
+
+    if (!email || !pass) {
+        if (loginError) {
+            loginError.textContent = 'PLEASE PROVIDE BOTH ADMIN EMAIL AND PASSWORD.';
             loginError.style.display = 'block';
         }
-    });
+        return;
+    }
+
+    if (loginBtn) {
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AUTHENTICATING...';
+        loginBtn.disabled = true;
+    }
+
+    firebase.auth().signInWithEmailAndPassword(email, pass)
+        .then(() => {
+            if (loginBtn) {
+                loginBtn.innerHTML = '<i class="fas fa-check"></i> ACCESS GRANTED';
+                loginBtn.disabled = false;
+            }
+            if (loginError) loginError.style.display = 'none';
+        })
+        .catch((error) => {
+            console.error("Auth Failure:", error);
+            if (loginBtn) {
+                loginBtn.innerHTML = '<i class="fas fa-unlock-alt"></i> INITIATE ROOT ACCESS';
+                loginBtn.disabled = false;
+            }
+            if (loginError) {
+                loginError.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ACCESS DENIED: ${error.message}`;
+                loginError.style.display = 'block';
+            }
+        });
 }
 
 function unlockDashboard() {
     if (loginOverlay) loginOverlay.style.display = 'none';
     if (adminWrapper) adminWrapper.style.display = 'flex';
-    initDashboardEngine();
+    if (!engineInitialized) {
+        engineInitialized = true;
+        initDashboardEngine();
+    }
 }
 
-if (loginBtn && rootPassInput) {
-    loginBtn.addEventListener('click', () => {
-        verifyAuth(rootPassInput.value);
-    });
-
-    rootPassInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            verifyAuth(rootPassInput.value);
-        }
-    });
+function lockDashboard() {
+    if (loginOverlay) loginOverlay.style.display = 'flex';
+    if (adminWrapper) adminWrapper.style.display = 'none';
 }
+
+if (loginBtn) {
+    loginBtn.addEventListener('click', handleLogin);
+}
+
+[rootEmailInput, rootPassInput].forEach(inp => {
+    if (inp) {
+        inp.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+    }
+});
 
 if (adminLogoutBtn) {
     adminLogoutBtn.addEventListener('click', () => {
-        sessionStorage.removeItem('rootAuth');
-        sessionStorage.removeItem('adminBypass');
-        window.location.reload();
+        if (confirm("Terminate current administrative session?")) {
+            firebase.auth().signOut().then(() => {
+                sessionStorage.removeItem('rootAuth');
+                sessionStorage.removeItem('adminBypass');
+                window.location.reload();
+            });
+        }
     });
 }
 
 // Auto-check session on load
 window.addEventListener('DOMContentLoaded', () => {
-    if (sessionStorage.getItem('rootAuth') === 'granted') {
-        unlockDashboard();
-    } else {
-        if (rootPassInput) rootPassInput.focus();
-    }
     initLoginStarfield();
 });
 
