@@ -509,29 +509,27 @@ function loadPopular() {
         items.forEach((r, i) => {
             const rankFormatted = (i + 1 < 10) ? `0${i + 1}` : `${i + 1}`;
             const card = document.createElement('div');
-            card.className = 'popular-card glass';
+            card.className = 'popular-card release-card-large glass';
             card.innerHTML = `
-                <div class="popular-card-top-row">
-                    <div class="trending-badge"><span class="pulse-dot"></span> TOP #${rankFormatted}</div>
-                    <div class="popular-genre-tag">HOT HIT</div>
-                </div>
-                <div class="popular-cover">
+                <div class="release-cover-large">
                     <div class="vinyl-disc">
                         <div class="vinyl-grooves"></div>
                         <div class="vinyl-label"><img src="${r.image || 'assets/cover.png'}" alt="Vinyl Label"></div>
                     </div>
                     <img src="${r.image || 'assets/cover.png'}" alt="${r.title}">
-                    <div class="popular-overlay">
-                        <div class="play-icon-glow"><i class="fas fa-play"></i></div>
+                    <div class="release-type-badge">HOT #${rankFormatted}</div>
+                    <div class="player-overlay">
+                        <button class="play-btn"><i class="fas fa-play"></i></button>
                     </div>
                 </div>
-                <div class="popular-info">
-                    <h3>${r.title}</h3>
-                    <p class="popular-artist-name"><i class="fas fa-compact-disc"></i> ${r.artist}</p>
-                    <div class="popular-links">
+                <div class="release-info-large">
+                    <span class="track-id">POPULAR HIT <span class="badge">TRENDING</span></span>
+                    <h4>${r.title}</h4>
+                    <div class="producers-text">Artist: <span>${r.artist}</span></div>
+                    <div class="release-actions">
                         ${r.spotify && r.spotify !== '#' ? `<a href="${r.spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
-                        ${r.youtube && r.youtube !== '#' ? `<a href="${r.youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
                         ${r.apple && r.apple !== '#' ? `<a href="${r.apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
+                        ${r.youtube && r.youtube !== '#' ? `<a href="${r.youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
                     </div>
                 </div>
             `;
