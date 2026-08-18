@@ -32,6 +32,8 @@ let isYTApiReady = false;
 let currentPlayingBtn = null;
 let audioTimer = null;
 let previewAudio = new Audio();
+previewAudio.crossOrigin = "anonymous";
+previewAudio.preload = "auto";
 let playbackStartOffset = 0;
 let autoScrollInterval = null;
 const PREVIEW_LIMIT = 30;
@@ -3045,7 +3047,7 @@ if (typeof firebase !== 'undefined') {
 // PORTAL CORE INITIALIZED
 
 // ==========================================================================
-// REAL-TIME AUDIO BASS-REACTIVE AMBIENT LIGHTING ENGINE
+// PURE REAL-TIME AUDIO SUB-BASS & KICK TRANSIENT ANALYZER
 // ==========================================================================
 let ambientAudioCtx = null;
 let audioAnalyser = null;
@@ -3055,6 +3057,7 @@ let isAudioEngineRunning = false;
 let currentBassIntensity = 0;
 let targetBassIntensity = 0;
 let isSiteAudioPlaying = false;
+let rollingBassBaseline = 0;
 
 function getOrCreateAudioContext() {
     if (!ambientAudioCtx) {
@@ -3063,22 +3066,21 @@ function getOrCreateAudioContext() {
             try {
                 ambientAudioCtx = new AudioContextClass();
                 audioAnalyser = ambientAudioCtx.createAnalyser();
-                audioAnalyser.fftSize = 256;
-                audioAnalyser.smoothingTimeConstant = 0.82;
+                audioAnalyser.fftSize = 512; // 512-point FFT gives fine ~43Hz sub-bass frequency resolution
+                audioAnalyser.smoothingTimeConstant = 0.75;
                 audioFreqData = new Uint8Array(audioAnalyser.frequencyBinCount);
 
                 if (previewAudio) {
                     try {
-                        previewAudio.crossOrigin = "anonymous";
                         audioSourceNode = ambientAudioCtx.createMediaElementSource(previewAudio);
                         audioSourceNode.connect(audioAnalyser);
                         audioAnalyser.connect(ambientAudioCtx.destination);
                     } catch (e) {
-                        console.warn("AudioContext source link note:", e);
+                        console.warn("AudioContext source node link:", e);
                     }
                 }
             } catch (err) {
-                console.warn("Web Audio API not allowed or blocked:", err);
+                console.warn("Web Audio API AudioContext note:", err);
             }
         }
     }
@@ -3104,65 +3106,59 @@ function stopBassReactiveEngine() {
 }
 
 function runBassReactiveLoop() {
-    let synthBeatTime = 0;
-    
     function tick() {
         if (!isSiteAudioPlaying) {
-            // Decay to 0 smoothly
-            currentBassIntensity += (0 - currentBassIntensity) * 0.08;
-            if (currentBassIntensity < 0.005) {
+            // Decay cleanly to zero when stopped
+            currentBassIntensity += (0 - currentBassIntensity) * 0.1;
+            if (currentBassIntensity < 0.002) {
                 currentBassIntensity = 0;
                 document.documentElement.style.setProperty('--bass-intensity', '0');
                 document.documentElement.style.setProperty('--bass-scale', '1');
                 isAudioEngineRunning = false;
-                return; // Stop RAF loop when idle to save CPU/GPU
+                return; // Stop RAF loop when idle
             }
         } else {
-            let extractedBass = 0;
-            let hasRealFreqData = false;
+            let trueBassHit = 0;
 
-            // 1. Try real-time Web Audio API low-frequency analysis (20Hz - 140Hz)
+            // 1. TRUE REAL-TIME LOW-FREQUENCY FFT SPECTRUM ANALYSIS (20Hz - 160Hz)
             if (audioAnalyser && audioFreqData && previewAudio && !previewAudio.paused && previewAudio.currentTime > 0) {
                 try {
                     audioAnalyser.getByteFrequencyData(audioFreqData);
-                    // Frequency bins 0..5 represent Sub-Bass & Kick range in a 256-FFT
-                    let bassSum = 0;
-                    const bassBinsCount = 6;
-                    for (let i = 0; i < bassBinsCount; i++) {
-                        bassSum += audioFreqData[i];
+
+                    // Bins 0..4 in 512-FFT (each bin ~43Hz) precisely isolate Sub-Bass & Kicks (20Hz - 170Hz)
+                    let subBassSum = 0;
+                    const bassBins = 4;
+                    for (let i = 0; i < bassBins; i++) {
+                        subBassSum += audioFreqData[i];
                     }
-                    const avgBass = bassSum / (bassBinsCount * 255);
-                    if (avgBass > 0.04) {
-                        // Normalize & punch up dynamic bass range
-                        extractedBass = Math.min(1.0, Math.pow(avgBass * 1.4, 1.35));
-                        hasRealFreqData = true;
+                    const instantBassLevel = subBassSum / bassBins; // 0 to 255
+
+                    // Adaptive dynamic moving average baseline
+                    rollingBassBaseline = (rollingBassBaseline * 0.92) + (instantBassLevel * 0.08);
+
+                    // A genuine Sub-Bass Drop or Kick occurs ONLY when the instantaneous low-frequency energy exceeds the baseline
+                    if (instantBassLevel > 30 && instantBassLevel > (rollingBassBaseline * 1.25)) {
+                        const dynamicPeak = (instantBassLevel - rollingBassBaseline) / (255 - rollingBassBaseline + 1);
+                        trueBassHit = Math.min(1.0, Math.max(0, dynamicPeak * 2.2));
+                    } else {
+                        // Intro / Vocal / Melodic parts without kicks -> ZERO PULSE!
+                        trueBassHit = 0;
                     }
-                } catch (e) {}
+                } catch (e) {
+                    trueBassHit = 0;
+                }
+            } else {
+                // If no direct frequency analysis is available, keep zero pulse (never play fake beats)
+                trueBassHit = 0;
             }
 
-            // 2. Rhythmic Kick & Sub-Bass Generator (for YouTube stream or when Analyser is silent/CORS)
-            if (!hasRealFreqData) {
-                synthBeatTime += 0.016; // ~60fps step
-                // 126 BPM 4/4 electronic cadence (every ~0.476s is a quarter beat kick)
-                const beatDuration = 60 / 126;
-                const beatPhase = (synthBeatTime % beatDuration) / beatDuration;
-                
-                // Exponential kick & bass attack-decay curve
-                let kickPulse = Math.pow(Math.max(0, 1 - beatPhase * 1.8), 2.8);
-                // Dynamic syncopated off-beat sub-bass hum
-                const offbeatPhase = ((synthBeatTime + (beatDuration * 0.5)) % beatDuration) / beatDuration;
-                let subHum = Math.sin(offbeatPhase * Math.PI) * 0.28;
-                
-                extractedBass = Math.min(1.0, kickPulse * 0.85 + Math.max(0, subHum));
-            }
-
-            targetBassIntensity = extractedBass;
-            // Smooth attack and natural kick decay
-            const lerpSpeed = targetBassIntensity > currentBassIntensity ? 0.38 : 0.12;
+            targetBassIntensity = trueBassHit;
+            // Instant punchy attack for kicks, smooth resonant decay for sub-bass rumble
+            const lerpSpeed = targetBassIntensity > currentBassIntensity ? 0.65 : 0.14;
             currentBassIntensity += (targetBassIntensity - currentBassIntensity) * lerpSpeed;
         }
 
-        const scale = 1 + currentBassIntensity * 0.22;
+        const scale = 1 + currentBassIntensity * 0.28;
         document.documentElement.style.setProperty('--bass-intensity', currentBassIntensity.toFixed(3));
         document.documentElement.style.setProperty('--bass-scale', scale.toFixed(3));
 
