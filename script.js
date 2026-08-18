@@ -1105,7 +1105,7 @@ const initPortal = () => {
 
             // 1. Dynamic Profile Banner (Supports Discord Animated GIFs, Image URLs, & Banner Colors)
             const bannerUrl = (opts.bannerUrl && opts.bannerUrl.trim() !== '') ? opts.bannerUrl : '';
-            const bannerColor = opts.bannerColor || '';
+            const bannerColor = (opts.bannerColor && opts.bannerColor.trim() !== '') ? opts.bannerColor : '';
 
             if (mBanner) {
                 if (bannerColor) {
@@ -1116,13 +1116,14 @@ const initPortal = () => {
 
                 if (mBannerImg) {
                     if (bannerUrl) {
-                        mBannerImg.style.backgroundImage = `url("${bannerUrl}")`;
+                        mBannerImg.src = bannerUrl;
                         mBannerImg.style.display = 'block';
                     } else if (bannerColor) {
-                        mBannerImg.style.backgroundImage = `linear-gradient(180deg, ${bannerColor} 0%, rgba(13,11,24,0.9) 100%)`;
-                        mBannerImg.style.display = 'block';
+                        mBannerImg.src = '';
+                        mBannerImg.style.display = 'none';
+                        mBanner.style.background = `linear-gradient(180deg, ${bannerColor} 0%, rgba(13,11,24,0.95) 100%)`;
                     } else {
-                        mBannerImg.style.backgroundImage = `url("assets/cover.png")`;
+                        mBannerImg.src = 'assets/cover.png';
                         mBannerImg.style.display = 'block';
                     }
                 }
