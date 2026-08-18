@@ -144,6 +144,10 @@
                     <span id="open-form" class="nav-item">SEND DEMO</span>
                 </div>
                 <div class="social-menu">
+                    <button id="sfx-toggle-btn" class="sfx-toggle-btn" title="Toggle UI Sound Effects">
+                        <i class="fas fa-volume-up"></i>
+                        <span class="sfx-label">SFX ON</span>
+                    </button>
                     <button id="nav-menu-trigger" class="menu-trigger">
                         <i class="fas fa-ellipsis-v"></i>
                         <span data-sync="navMenuBtn" data-sync-target="text">MENU</span>
@@ -328,6 +332,10 @@
                     <!-- Card 1 -->
                     <div class="release-card-large glass">
                         <div class="release-cover-large">
+                            <div class="vinyl-disc">
+                                <div class="vinyl-grooves"></div>
+                                <div class="vinyl-label"><img src="assets/cover.png" alt="Vinyl Label"></div>
+                            </div>
                             <img src="assets/cover.png" alt="Starlight Syndrome">
                             <div class="release-type-badge">SINGLE</div>
                             <div class="player-overlay">
@@ -349,6 +357,10 @@
                     <!-- Card 2 -->
                     <div class="release-card-large glass">
                         <div class="release-cover-large">
+                            <div class="vinyl-disc">
+                                <div class="vinyl-grooves"></div>
+                                <div class="vinyl-label"><img src="assets/releases/cover_1.png" alt="Vinyl Label"></div>
+                            </div>
                             <img src="assets/releases/cover_1.png" alt="Neutron Pulse"
                                 style="filter: hue-rotate(90deg);">
                             <div class="release-type-badge">EP</div>
@@ -372,6 +384,10 @@
                     <!-- Card 3 -->
                     <div class="release-card-large glass">
                         <div class="release-cover-large">
+                            <div class="vinyl-disc">
+                                <div class="vinyl-grooves"></div>
+                                <div class="vinyl-label"><img src="assets/releases/cover_2.png" alt="Vinyl Label"></div>
+                            </div>
                             <img src="assets/releases/cover_2.png" alt="Void Walker"
                                 style="filter: hue-rotate(180deg) invert(0.2);">
                             <div class="release-type-badge">ALBUM</div>
@@ -395,6 +411,10 @@
                     <!-- Card 4 -->
                     <div class="release-card-large glass">
                         <div class="release-cover-large">
+                            <div class="vinyl-disc">
+                                <div class="vinyl-grooves"></div>
+                                <div class="vinyl-label"><img src="assets/releases/cover_3.png" alt="Vinyl Label"></div>
+                            </div>
                             <img src="assets/releases/cover_3.png" alt="Solar Flare"
                                 style="filter: hue-rotate(270deg) contrast(1.2);">
                             <div class="release-type-badge">SINGLE</div>
@@ -1157,6 +1177,55 @@
                 </div>
             </div>
         </footer>
+
+        <!-- Floating Cyberpunk Music Stream Player & Real-time Visualizer -->
+        <div id="floating-audio-player" class="floating-player-bar hidden">
+            <div class="fp-glow-stream"></div>
+            <div class="floating-player-track-info">
+                <div class="fp-thumb-wrapper">
+                    <img id="fp-thumb" src="assets/OCR.png" alt="Cover" class="fp-cover-img">
+                    <div class="fp-mini-vinyl">
+                        <div class="fp-vinyl-core"></div>
+                    </div>
+                </div>
+                <div class="fp-text-meta">
+                    <div id="fp-title" class="fp-track-title">SELECT A TRANSMISSION</div>
+                    <div id="fp-artist" class="fp-track-artist">OBSCURA RECORD</div>
+                </div>
+            </div>
+            
+            <div class="floating-player-center">
+                <div class="floating-player-controls">
+                    <button id="fp-prev-btn" class="fp-btn" title="Previous Track"><i class="fas fa-step-backward"></i></button>
+                    <button id="fp-play-btn" class="fp-btn fp-play-btn" title="Play / Pause"><i class="fas fa-play"></i></button>
+                    <button id="fp-next-btn" class="fp-btn" title="Next Track"><i class="fas fa-step-forward"></i></button>
+                </div>
+                
+                <div class="floating-player-progress-row">
+                    <span id="fp-current-time" class="fp-time">0:00</span>
+                    <div class="fp-progress-container" id="fp-progress-container">
+                        <div id="fp-progress-bar" class="fp-progress-bar"></div>
+                    </div>
+                    <span id="fp-total-time" class="fp-time">0:30</span>
+                </div>
+            </div>
+            
+            <div class="floating-player-visualizer-section">
+                <canvas id="fp-visualizer-canvas" width="130" height="34"></canvas>
+            </div>
+            
+            <div class="floating-player-actions">
+                <div class="fp-volume-wrapper">
+                    <button id="fp-mute-btn" class="fp-icon-btn" title="Mute/Unmute"><i class="fas fa-volume-up"></i></button>
+                    <input type="range" id="fp-volume-slider" min="0" max="100" value="100" class="fp-vol-slider">
+                </div>
+                <div class="fp-external-links" id="fp-external-links">
+                    <a id="fp-spotify-link" href="#" target="_blank" class="fp-link-icon spotify" title="Listen on Spotify"><i class="fab fa-spotify"></i></a>
+                    <a id="fp-yt-link" href="#" target="_blank" class="fp-link-icon youtube" title="Watch on YouTube"><i class="fab fa-youtube"></i></a>
+                </div>
+                <button id="fp-close-btn" class="fp-icon-btn close-fp" title="Minimize Player"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
     </main>
     <canvas id="data-pulse-canvas" class="data-flow-canvas"></canvas>
 
