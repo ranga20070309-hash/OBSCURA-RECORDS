@@ -2203,16 +2203,19 @@ const initPortal = () => {
             }
 
             items.forEach(item => {
+                const coverImg = item.cover || item.image || 'assets/cover.png';
+                const artistName = item.artist || item.producers || 'UNKNOWN';
+                const statusTag = item.status || 'COMING SOON';
                 const cardHtml = `
                     <div class="release-card-large glass upcoming-card">
-                        <div class="upcoming-status-badge">COMING SOON</div>
+                        <div class="upcoming-status-badge">${statusTag}</div>
                         <div class="release-cover-large">
-                            <img src="${item.image || 'assets/cover.png'}" alt="${item.title}" onerror="this.src='assets/cover.png'">
+                            <img src="${coverImg}" alt="${item.title || 'Teaser'}" onerror="this.src='assets/cover.png'">
                         </div>
                         <div class="release-info-large">
                             ${item.id ? `<span class="track-id">${item.id}</span>` : ''}
                             <h4>${item.title || 'FUTURE TRACK'}</h4>
-                            <div class="producers-text">Produced by: <span>${item.producers || 'UNKNOWN'}</span></div>
+                            <div class="producers-text">Produced by: <span>${artistName}</span></div>
                             ${item.date ? `<div class="upcoming-date-badge"><i class="far fa-calendar-alt"></i> ${item.date}</div>` : ''}
                         </div>
                     </div>
