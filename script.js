@@ -1042,6 +1042,14 @@ const initPortal = () => {
                 }
 
                 await firebase.database().ref('siteData/submissions/demo').push(submission);
+                if (typeof ObscuraTelemetry !== 'undefined') {
+                    ObscuraTelemetry.logEvent('DEMO_SUBMISSION', {
+                        artist: submission.artist,
+                        name: submission.name,
+                        genre: submission.genre,
+                        link: submission.link
+                    });
+                }
 
                 subForm.style.display = 'none';
                 if (subStatus) subStatus.style.display = 'block';
@@ -1104,6 +1112,12 @@ const initPortal = () => {
                 };
 
                 await firebase.database().ref('siteData/submissions/contact').push(data);
+                if (typeof ObscuraTelemetry !== 'undefined') {
+                    ObscuraTelemetry.logEvent('CONTACT_MESSAGE', {
+                        name: data.name,
+                        email: data.email
+                    });
+                }
 
                 // --- CUSTOM BACKEND CONTACT NOTIFICATION ---
                 try {
@@ -2532,8 +2546,13 @@ const initKernelSecurity = () => {
                         if (kmIntegrity) {
                             kmIntegrity.textContent = "CRITICAL ALERT";
                             kmIntegrity.style.color = "#ff0080";
-                            // DEPLOY GLOBAL ALARM TO Firebase
-                            if (typeof firebase !== 'undefined') firebase.database().ref('siteData/security/globalAlarm').set({ active: true, type: 'INJECTION', time: Date.now() });
+                        }
+                        if (typeof ObscuraTelemetry !== 'undefined') {
+                            ObscuraTelemetry.logEvent('INJECTION_ATTEMPT', {
+                                tag: node.tagName,
+                                src: node.src || 'inline',
+                                message: 'Unsolicited script or iframe injection detected.'
+                            });
                         }
                     }
                 });
@@ -2548,45 +2567,11 @@ const initKernelSecurity = () => {
     let detectionHold = true; // Temporary hold to prevent false triggers on load
 
     const reportIntrusion = async (type) => {
-        if (detectionHold) return; // Don't report during initial load cycles
-        
-        let ipData = { ip: "UNKNOWN", loc: "UNKNOWN" };
-        try {
-            const res = await fetch("https://ipapi.co/json/").catch(() => null);
-            if (res && res.ok) {
-                const data = await res.json();
-                ipData.ip = data.ip || "UNKNOWN";
-                ipData.loc = ((data.city || "UNKNOWN") + ", " + (data.country_name || "UNKNOWN")).toUpperCase();
-            }
-        } catch (e) {}
-
-        const systemInfo = {
-            ua: navigator.userAgent,
-            platform: navigator.platform,
-            language: navigator.language,
-            screen: `${window.screen.width}x${window.screen.height}`
-        };
-
-        if (typeof firebase !== 'undefined') {
-            const db = firebase.database();
-            
-            // 1. Trigger the Global Red Alert for Admins
-            db.ref('siteData/security/globalAlarm').set({ 
-                active: true, 
-                type: type, 
-                time: Date.now(),
-                ip: ipData.ip,
-                location: ipData.loc
-            });
-
-            // 2. Log a Permanent Violation Record
-            db.ref('siteData/security/violations').push({
-                type: type,
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                ip: ipData.ip,
-                location: ipData.loc,
-                system: systemInfo,
-                path: window.location.pathname
+        if (detectionHold) return;
+        if (typeof ObscuraTelemetry !== 'undefined') {
+            ObscuraTelemetry.logEvent(type || 'CONSOLE_TAMPER', {
+                message: 'Developer tools or console inspected',
+                windowDelta: `${window.outerWidth - window.innerWidth}x${window.outerHeight - window.innerHeight}`
             });
         }
     };
@@ -2606,7 +2591,7 @@ const initKernelSecurity = () => {
                 kmShield.classList.add('scanning');
             }
             
-            // DEPLOY INTELLIGENT TRACE
+            // DEPLOY INTELLIGENT TRACE & LOG
             reportIntrusion('CONSOLE_TAMPER');
             
             console.warn("%c KERNEL VIOLATION DETECTED: UNAUTHORIZED ACCESS ATTEMPTED ", "background: #ff0080; color: #fff; font-size: 20px; font-weight: bold;");
@@ -2624,8 +2609,188 @@ const initKernelSecurity = () => {
                 }
             }, 5000);
         }
-    }, 1500); // Slightly slower polling frequency for stability
+    }, 1500);
 };
+
+// --- PRO-GRADE SECURITY & VISITOR TELEMETRY ENGINE ---
+const ObscuraTelemetry = (() => {
+    let cachedLocation = null;
+    let isFetchingLocation = false;
+
+    // Detect detailed Device & OS & Browser info
+    const getDeviceInfo = () => {
+        const ua = navigator.userAgent || '';
+        let browser = 'Chrome/Generic';
+        let os = 'Windows 10/11';
+        let type = 'Desktop';
+
+        // Device Type
+        if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+            type = 'Tablet';
+        } else if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/i.test(ua)) {
+            type = 'Mobile';
+        }
+
+        // OS
+        if (/Win(dows )?NT 10\.0/i.test(ua)) os = 'Windows 10/11';
+        else if (/Win(dows )?NT 6\.3/i.test(ua)) os = 'Windows 8.1';
+        else if (/Win(dows )?NT 6\.2/i.test(ua)) os = 'Windows 8';
+        else if (/Win(dows )?NT 6\.1/i.test(ua)) os = 'Windows 7';
+        else if (/Macintosh|Mac OS X/i.test(ua)) os = 'macOS';
+        else if (/Android/i.test(ua)) os = 'Android';
+        else if (/iPhone|iPad|iPod/i.test(ua)) os = 'iOS';
+        else if (/Linux/i.test(ua)) os = 'Linux';
+
+        // Browser
+        if (/Edg\//i.test(ua)) browser = 'Microsoft Edge';
+        else if (/OPR\/|Opera/i.test(ua)) browser = 'Opera';
+        else if (/Chrome\//i.test(ua)) browser = 'Google Chrome';
+        else if (/Firefox\//i.test(ua)) browser = 'Mozilla Firefox';
+        else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) browser = 'Apple Safari';
+
+        return {
+            browser: browser,
+            os: os,
+            type: type,
+            screen: `${window.screen.width}x${window.screen.height}`,
+            viewport: `${window.innerWidth}x${window.innerHeight}`,
+            pixelRatio: window.devicePixelRatio || 1,
+            language: navigator.language || 'en',
+            cores: navigator.hardwareConcurrency || 4,
+            userAgent: ua
+        };
+    };
+
+    // Resolve Geo Location (IP, City, Country, ISP)
+    const resolveLocation = async () => {
+        if (cachedLocation) return cachedLocation;
+        if (isFetchingLocation) return { ip: 'RESOLVING...', city: 'RESOLVING...', country: 'RESOLVING...', countryCode: 'XX', isp: 'ISP' };
+        isFetchingLocation = true;
+
+        try {
+            const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(3500) }).catch(() => null);
+            if (res && res.ok) {
+                const d = await res.json();
+                cachedLocation = {
+                    ip: d.ip || 'UNKNOWN_IP',
+                    city: (d.city || 'UNKNOWN_CITY').toUpperCase(),
+                    region: (d.region || '').toUpperCase(),
+                    country: (d.country_name || 'UNKNOWN_COUNTRY').toUpperCase(),
+                    countryCode: (d.country_code || 'XX').toUpperCase(),
+                    isp: (d.org || d.asn || 'ISP').toUpperCase(),
+                    lat: d.latitude || 0,
+                    lon: d.longitude || 0
+                };
+                isFetchingLocation = false;
+                return cachedLocation;
+            }
+        } catch (e) {}
+
+        try {
+            const fbRes = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(3500) }).catch(() => null);
+            if (fbRes && fbRes.ok) {
+                const d = await fbRes.json();
+                cachedLocation = {
+                    ip: d.ip || 'UNKNOWN_IP',
+                    city: (d.city || 'UNKNOWN_CITY').toUpperCase(),
+                    region: (d.region || '').toUpperCase(),
+                    country: (d.country || 'UNKNOWN_COUNTRY').toUpperCase(),
+                    countryCode: (d.country_code || 'XX').toUpperCase(),
+                    isp: (d.connection ? d.connection.isp || d.connection.org : 'ISP').toUpperCase(),
+                    lat: d.latitude || 0,
+                    lon: d.longitude || 0
+                };
+                isFetchingLocation = false;
+                return cachedLocation;
+            }
+        } catch (e) {}
+
+        cachedLocation = {
+            ip: 'CLIENT_NODE',
+            city: 'CYBERSPACE',
+            region: 'GRID',
+            country: 'EARTH',
+            countryCode: 'UN',
+            isp: 'STARLINK/FIBER',
+            lat: 0,
+            lon: 0
+        };
+        isFetchingLocation = false;
+        return cachedLocation;
+    };
+
+    // Main Log Dispatcher to Firebase
+    const logEvent = async (type, payload = {}) => {
+        if (typeof firebase === 'undefined') return;
+        try {
+            const db = firebase.database();
+            const location = await resolveLocation();
+            const device = getDeviceInfo();
+
+            const entry = {
+                id: 'LOG_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                type: type || 'SYSTEM_EVENT',
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                timeISO: new Date().toISOString(),
+                ip: location.ip,
+                city: location.city,
+                region: location.region,
+                country: location.country,
+                countryCode: location.countryCode,
+                isp: location.isp,
+                device: device,
+                path: window.location.pathname || '/',
+                details: typeof payload === 'string' ? { message: payload } : (payload || {})
+            };
+
+            // Push to primary security logs collection
+            db.ref('siteData/security/logs').push(entry);
+
+            // Also mirror to legacy security_logs for backward compatibility
+            db.ref('security_logs').push({
+                action: `[${type}] ${payload.message || JSON.stringify(payload)}`,
+                timestamp: Date.now(),
+                user: `${location.city}, ${location.country} (${location.ip})`
+            });
+
+            // If security violation or console tamper, raise global alarm
+            if (type === 'CONSOLE_TAMPER' || type === 'INJECTION_ATTEMPT' || type === 'SECURITY_VIOLATION') {
+                db.ref('siteData/security/globalAlarm').set({
+                    active: true,
+                    type: type,
+                    time: Date.now(),
+                    ip: location.ip,
+                    location: `${location.city}, ${location.country}`,
+                    details: payload
+                });
+                // Also push to violations archive
+                db.ref('siteData/security/violations').push(entry);
+            }
+        } catch (err) {
+            console.warn("Telemetry Dispatch Note:", err);
+        }
+    };
+
+    return {
+        getDeviceInfo,
+        resolveLocation,
+        logEvent
+    };
+})();
+
+// Auto-Log Visitor Session (throttled once per session)
+if (!sessionStorage.getItem('obscura_visitor_session_logged')) {
+    sessionStorage.setItem('obscura_visitor_session_logged', 'true');
+    setTimeout(() => {
+        if (typeof ObscuraTelemetry !== 'undefined') {
+            ObscuraTelemetry.logEvent('VISITOR_ACCESS', {
+                referrer: document.referrer || 'DIRECT',
+                screen: `${window.screen.width}x${window.screen.height}`,
+                userAgent: navigator.userAgent
+            });
+        }
+    }, 1500);
+}
 
 // --- FLOATING CYBERPUNK MUSIC PLAYER & VISUALIZER ENGINE ---
 let isFloatingPlayerPlaying = false;
