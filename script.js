@@ -400,12 +400,12 @@ const runIgnition = () => {
     tl.set(entranceScreen, { display: 'none' });
 
     // 5. Main Site Materialization
-    tl.from(".glass-nav", {
-        y: -100,
-        opacity: 0,
-        duration: 1.5,
-        ease: "expo.out"
-    }, "-=1");
+    tl.to(".glass-nav", {
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "power2.out"
+    }, "-=0.5");
 
     tl.from(".hero-content", {
         x: -200,
