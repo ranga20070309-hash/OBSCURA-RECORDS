@@ -45,12 +45,84 @@ const API_BASE_URL = (window.location.hostname === "localhost" || window.locatio
 // --- INITIALIZE GSAP CONFIG (Silence Warnings) ---
 gsap.config({ nullTargetWarn: false });
 
-// --- UI SOUND SYNTHESIZER (Clean Web Audio API) ---
+// --- CYBERPUNK UI SOUND SYNTHESIZER & SFX ENGINE ---
 let audioCtx = null;
+let sfxEnabled = localStorage.getItem('obscura_sfx_enabled') !== 'false';
 
+const updateSFXToggleUI = () => {
+    const sfxBtn = document.getElementById('sfx-toggle-btn');
+    if (!sfxBtn) return;
+    if (sfxEnabled) {
+        sfxBtn.classList.remove('sfx-muted');
+        sfxBtn.innerHTML = '<i class="fas fa-volume-up"></i> <span class="sfx-label">SFX ON</span>';
+    } else {
+        sfxBtn.classList.add('sfx-muted');
+        sfxBtn.innerHTML = '<i class="fas fa-volume-mute"></i> <span class="sfx-label">SFX OFF</span>';
+    }
+};
 
-// UI SOUND SYNTHESIZER (Clean Web Audio API) ---
+const playCyberSFX = (type = 'click') => {
+    if (!sfxEnabled) return;
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        
+        if (type === 'hover') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1400, now);
+            osc.frequency.exponentialRampToValueAtTime(700, now + 0.035);
+            gain.gain.setValueAtTime(0.015, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.035);
+        } else if (type === 'click') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(880, now);
+            osc.frequency.exponentialRampToValueAtTime(220, now + 0.07);
+            gain.gain.setValueAtTime(0.05, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.07);
+        } else if (type === 'whoosh' || type === 'modal') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(250, now);
+            osc.frequency.exponentialRampToValueAtTime(950, now + 0.14);
+            gain.gain.setValueAtTime(0.035, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.14);
+        } else if (type === 'success') {
+            [587.33, 880].forEach((freq, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+                gain.gain.setValueAtTime(0.04, now + idx * 0.07);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.07 + 0.1);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now + idx * 0.07);
+                osc.stop(now + idx * 0.07 + 0.1);
+            });
+        }
+    } catch (e) { }
+};
+
 const playBleep = (freq = 600, type = 'sine', duration = 0.08) => {
+    if (!sfxEnabled) return;
     try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -58,7 +130,7 @@ const playBleep = (freq = 600, type = 'sine', duration = 0.08) => {
         const gain = audioCtx.createGain();
         osc.type = type;
         osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -108,6 +180,7 @@ window.onYouTubeIframeAPIReady = function () {
 function initYTPlayer() {
     if (ytPlayer && isYTApiReady) return;
     try {
+        const isFileProtocol = window.location.protocol === 'file:';
         ytPlayer = new YT.Player('yt-player-container', {
             height: '180',
             width: '320',
@@ -118,7 +191,7 @@ function initYTPlayer() {
                 'rel': 0,
                 'modestbranding': 1,
                 'enablejsapi': 1,
-                'origin': window.location.origin === 'null' ? '*' : window.location.origin
+                'origin': isFileProtocol ? 'https://www.youtube.com' : (window.location.origin === 'null' || !window.location.origin ? '*' : window.location.origin)
             },
             events: {
                 'onReady': () => {
@@ -128,7 +201,7 @@ function initYTPlayer() {
                 },
                 'onStateChange': onPlayerStateChange,
                 'onError': (e) => {
-                    console.warn("YT Playback Blocked in this context (Error Code: " + e.data + ")");
+                    console.warn("YT Playback Note (Error Code: " + e.data + "): Browsers enforce strict cross-origin sandboxing on local file:/// URLs. Run via local server (http://localhost:3000) for full unrestricted streaming.");
                 }
             }
         });
@@ -367,10 +440,15 @@ function startUIPlayback(btn, row, img) {
     if (!btn) return;
     playBleep(800, 'square', 0.1);
     btn.innerHTML = '<i class="fas fa-pause"></i>';
-    row.classList.add('active-track');
+    if (row) row.classList.add('active-track');
 
     gsap.to(btn, { scale: 1.1, boxShadow: '0 0 20px #00f0ff', repeat: -1, yoyo: true, duration: 0.8 });
     if (img) gsap.to(img, { scale: 1.15, duration: 20, ease: "linear", repeat: -1, yoyo: true });
+
+    // Sync Floating Cyberpunk Music Stream Player
+    if (typeof syncFloatingPlayer === 'function') {
+        syncFloatingPlayer(row, btn, true);
+    }
 }
 
 function stopPlayback(btn) {
@@ -400,6 +478,11 @@ function stopPlayback(btn) {
         timeDisplay.style.display = 'none';
         if (audioTimer) clearInterval(audioTimer);
     }
+
+    // Sync Floating Player State to Paused
+    if (typeof syncFloatingPlayer === 'function') {
+        syncFloatingPlayer(parentRow, btn, false);
+    }
 }
 
 // --- POPULAR RELEASES ENGINE ---
@@ -427,6 +510,10 @@ function loadPopular() {
             card.innerHTML = `
                 <div class="trending-badge">TRENDING</div>
                 <div class="popular-cover">
+                    <div class="vinyl-disc">
+                        <div class="vinyl-grooves"></div>
+                        <div class="vinyl-label"><img src="${r.image}" alt="Vinyl Label"></div>
+                    </div>
                     <img src="${r.image}" alt="${r.title}">
                     <div class="popular-overlay">
                         <div class="play-icon-glow"><i class="fas fa-play"></i></div>
@@ -1686,10 +1773,19 @@ const initPortal = () => {
                 const cardHtml = `
                     <div class="release-card-large glass">
                         <div class="release-cover-large">
+                            <div class="vinyl-disc">
+                                <div class="vinyl-grooves"></div>
+                                <div class="vinyl-label"><img src="${release.image || 'assets/cover.png'}" alt="Vinyl Label"></div>
+                            </div>
                             <img src="${release.image || 'assets/cover.png'}" alt="${release.title}">
                             <div class="release-type-badge">${release.type || 'SINGLE'}</div>
                             <div class="player-overlay">
                                 <button class="play-btn" 
+                                    data-title="${(release.title || 'UNKNOWN').replace(/"/g, '&quot;')}"
+                                    data-artist="${(release.producers || 'OBSCURA RECORD').replace(/"/g, '&quot;')}"
+                                    data-image="${release.image || 'assets/cover.png'}"
+                                    data-spotify="${release.spotify || '#'}"
+                                    data-youtube="${release.youtube || '#'}"
                                     data-preview="${release.preview || ''}" 
                                     data-ytid="${ytIdAttr}" 
                                     data-yttype="${ytTypeAttr}">
@@ -1724,7 +1820,8 @@ const initPortal = () => {
 
             trackRows.forEach(row => {
                 const playBtn = row.querySelector('.play-btn');
-                const coverImg = row.querySelector('.release-cover-large img');
+                const coverImg = row.querySelector('.release-cover-large > img');
+                const vinylImg = row.querySelector('.vinyl-label img');
                 const ytLink = row.querySelector('.platform-link.youtube');
                 const spLink = row.querySelector('.platform-link.spotify');
 
@@ -1736,6 +1833,8 @@ const initPortal = () => {
                             if (data.thumbnail_url && coverImg) {
                                 coverImg.src = data.thumbnail_url;
                                 coverImg.style.filter = "none";
+                                if (vinylImg) vinylImg.src = data.thumbnail_url;
+                                if (playBtn) playBtn.setAttribute('data-image', data.thumbnail_url);
                             }
                         }).catch(e => console.warn('Spotify Artwork URL parse failed:', e));
                 }
@@ -1752,8 +1851,11 @@ const initPortal = () => {
                         }
                         // Only set YouTube cover if it hasn't been set by Spotify yet (or if Spotify is still loading, Spotify will safely override)
                         if (videoId && coverImg && coverImg.src.includes('cover')) {
-                            coverImg.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+                            const ytThumb = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+                            coverImg.src = ytThumb;
                             coverImg.style.filter = "none";
+                            if (vinylImg) vinylImg.src = ytThumb;
+                            if (playBtn) playBtn.setAttribute('data-image', ytThumb);
                         }
                     } catch (e) {
                         console.warn('URL Parse Error:', e);
@@ -1856,6 +1958,11 @@ const initPortal = () => {
                     if (playbackStartOffset !== -1) {
                         const elapsed = current - playbackStartOffset;
                         const remaining = PREVIEW_LIMIT - elapsed;
+
+                        // Sync floating player progress bar and elapsed counters
+                        if (typeof updateFloatingPlayerProgress === 'function') {
+                            updateFloatingPlayerProgress(Math.max(0, elapsed), PREVIEW_LIMIT);
+                        }
 
                         if (!isNaN(remaining) && remaining > 0) {
                             const secs = Math.ceil(remaining);
@@ -2426,10 +2533,322 @@ const initKernelSecurity = () => {
     }, 1500); // Slightly slower polling frequency for stability
 };
 
+// --- FLOATING CYBERPUNK MUSIC PLAYER & VISUALIZER ENGINE ---
+let isFloatingPlayerPlaying = false;
+let currentActiveRow = null;
+let fpAutoDismissTimer = null;
+
+function resetFloatingPlayerAutoDismiss() {
+    if (fpAutoDismissTimer) {
+        clearTimeout(fpAutoDismissTimer);
+        fpAutoDismissTimer = null;
+    }
+}
+
+function startFloatingPlayerAutoDismiss(delayMs = 3500) {
+    resetFloatingPlayerAutoDismiss();
+    fpAutoDismissTimer = setTimeout(() => {
+        const fpBar = document.getElementById('floating-audio-player');
+        if (fpBar && !isFloatingPlayerPlaying) {
+            fpBar.classList.add('hidden');
+        }
+    }, delayMs);
+}
+
+function syncFloatingPlayer(row, btn, isPlaying) {
+    const fpBar = document.getElementById('floating-audio-player');
+    if (!fpBar) return;
+
+    if (!row && !btn) {
+        isFloatingPlayerPlaying = isPlaying;
+        const playIcon = document.querySelector('#fp-play-btn i');
+        if (playIcon) playIcon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+        if (isPlaying) {
+            resetFloatingPlayerAutoDismiss();
+            fpBar.classList.remove('hidden');
+            fpBar.classList.add('playing');
+        } else {
+            fpBar.classList.remove('playing');
+            startFloatingPlayerAutoDismiss(3500);
+        }
+        return;
+    }
+
+    currentActiveRow = row;
+    isFloatingPlayerPlaying = isPlaying;
+
+    // Extract Metadata
+    const titleEl = row ? row.querySelector('h4') : null;
+    const prodEl = row ? row.querySelector('.producers-text span') : null;
+    const imgEl = row ? row.querySelector('.release-cover-large > img') : null;
+    const spLink = row ? row.querySelector('.platform-link.spotify') : null;
+    const ytLink = row ? row.querySelector('.platform-link.youtube') : null;
+
+    const trackTitle = (btn && btn.getAttribute('data-title')) || (titleEl ? titleEl.textContent : 'OBSCURA RELEASE');
+    const trackArtist = (btn && btn.getAttribute('data-artist')) || (prodEl ? prodEl.textContent : 'OBSCURA RECORD');
+    const trackImg = (btn && btn.getAttribute('data-image')) || (imgEl ? imgEl.src : 'assets/OCR.png');
+    const spotifyUrl = (btn && btn.getAttribute('data-spotify')) || (spLink ? spLink.href : '#');
+    const ytUrl = (btn && btn.getAttribute('data-youtube')) || (ytLink ? ytLink.href : '#');
+
+    // Update Floating Player DOM
+    const fpTitle = document.getElementById('fp-title');
+    const fpArtist = document.getElementById('fp-artist');
+    const fpThumb = document.getElementById('fp-thumb');
+    const fpSp = document.getElementById('fp-spotify-link');
+    const fpYt = document.getElementById('fp-yt-link');
+    const playIcon = document.querySelector('#fp-play-btn i');
+
+    if (fpTitle) fpTitle.textContent = trackTitle;
+    if (fpArtist) fpArtist.textContent = trackArtist ? `PROD. ${trackArtist.toUpperCase()}` : 'OBSCURA RECORD';
+    if (fpThumb) fpThumb.src = trackImg;
+
+    if (fpSp) {
+        fpSp.href = spotifyUrl && spotifyUrl !== '#' ? spotifyUrl : 'https://open.spotify.com/';
+        fpSp.style.display = spotifyUrl && spotifyUrl !== '#' ? 'flex' : 'none';
+    }
+    if (fpYt) {
+        fpYt.href = ytUrl && ytUrl !== '#' ? ytUrl : 'https://youtube.com/';
+        fpYt.style.display = ytUrl && ytUrl !== '#' ? 'flex' : 'none';
+    }
+
+    if (playIcon) {
+        playIcon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+    }
+
+    if (isPlaying) {
+        resetFloatingPlayerAutoDismiss();
+        fpBar.classList.remove('hidden');
+        fpBar.classList.add('playing');
+    } else {
+        fpBar.classList.remove('playing');
+        startFloatingPlayerAutoDismiss(3500);
+    }
+}
+
+function updateFloatingPlayerProgress(elapsed, total) {
+    const curTimeEl = document.getElementById('fp-current-time');
+    const totTimeEl = document.getElementById('fp-total-time');
+    const progressBar = document.getElementById('fp-progress-bar');
+
+    const curSecs = Math.floor(elapsed);
+    const totSecs = Math.floor(total);
+
+    if (curTimeEl) curTimeEl.textContent = `0:${curSecs.toString().padStart(2, '0')}`;
+    if (totTimeEl) totTimeEl.textContent = `0:${totSecs.toString().padStart(2, '0')}`;
+
+    if (progressBar) {
+        const percent = Math.min(100, Math.max(0, (elapsed / total) * 100));
+        progressBar.style.width = `${percent}%`;
+    }
+}
+
+function stepTrack(direction = 1) {
+    const allPlayBtns = Array.from(document.querySelectorAll('.release-card-large .play-btn'));
+    if (!allPlayBtns.length) return;
+
+    let currentIndex = -1;
+    if (currentPlayingBtn) {
+        currentIndex = allPlayBtns.indexOf(currentPlayingBtn);
+    }
+
+    let nextIndex = currentIndex + direction;
+    if (nextIndex >= allPlayBtns.length) nextIndex = 0;
+    if (nextIndex < 0) nextIndex = allPlayBtns.length - 1;
+
+    const targetBtn = allPlayBtns[nextIndex];
+    if (targetBtn) {
+        targetBtn.click();
+        const parentCard = targetBtn.closest('.release-card-large');
+        if (parentCard) {
+            parentCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    }
+}
+
+function startAudioVisualizer(canvas) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const barCount = 20;
+    const bars = Array.from({ length: barCount }, () => Math.random() * 8 + 4);
+
+    function renderFrame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const width = canvas.width;
+        const height = canvas.height;
+        const barWidth = (width / barCount) - 2;
+
+        for (let i = 0; i < barCount; i++) {
+            if (isFloatingPlayerPlaying) {
+                // Energetic reactive spectrum
+                const target = Math.random() * (height - 6) + 4;
+                bars[i] += (target - bars[i]) * 0.25;
+            } else {
+                // Gentle idle wave
+                const idle = Math.sin((Date.now() / 300) + (i * 0.4)) * 3 + 4;
+                bars[i] += (idle - bars[i]) * 0.1;
+            }
+
+            const barHeight = Math.max(2, bars[i]);
+            const x = i * (barWidth + 2);
+            const y = height - barHeight;
+
+            // Gradient cyan to purple
+            const gradient = ctx.createLinearGradient(0, height, 0, 0);
+            gradient.addColorStop(0, '#00f0ff');
+            gradient.addColorStop(1, '#9d00ff');
+
+            ctx.fillStyle = gradient;
+            ctx.shadowBlur = isFloatingPlayerPlaying ? 8 : 2;
+            ctx.shadowColor = '#00f0ff';
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(x, y, barWidth, barHeight, 2);
+            } else {
+                ctx.rect(x, y, barWidth, barHeight);
+            }
+            ctx.fill();
+        }
+
+        requestAnimationFrame(renderFrame);
+    }
+
+    renderFrame();
+}
+
+function initFloatingPlayer() {
+    const fpBar = document.getElementById('floating-audio-player');
+    if (!fpBar) return;
+
+    const playBtn = document.getElementById('fp-play-btn');
+    const prevBtn = document.getElementById('fp-prev-btn');
+    const nextBtn = document.getElementById('fp-next-btn');
+    const closeBtn = document.getElementById('fp-close-btn');
+    const muteBtn = document.getElementById('fp-mute-btn');
+    const volSlider = document.getElementById('fp-volume-slider');
+    const progressContainer = document.getElementById('fp-progress-container');
+    const canvas = document.getElementById('fp-visualizer-canvas');
+    const sfxBtn = document.getElementById('sfx-toggle-btn');
+
+    if (sfxBtn) {
+        updateSFXToggleUI();
+        sfxBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sfxEnabled = !sfxEnabled;
+            localStorage.setItem('obscura_sfx_enabled', sfxEnabled ? 'true' : 'false');
+            updateSFXToggleUI();
+            if (sfxEnabled) playCyberSFX('success');
+        });
+    }
+
+    if (playBtn) {
+        playBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            if (currentPlayingBtn) {
+                currentPlayingBtn.click();
+            } else {
+                const firstBtn = document.querySelector('.release-card-large .play-btn');
+                if (firstBtn) firstBtn.click();
+            }
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            stepTrack(-1);
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            stepTrack(1);
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            fpBar.classList.add('hidden');
+        });
+    }
+
+    if (volSlider) {
+        volSlider.addEventListener('input', (e) => {
+            const vol = parseFloat(e.target.value) / 100;
+            previewAudio.volume = vol;
+            if (ytPlayer && ytPlayer.setVolume) {
+                ytPlayer.setVolume(vol * 100);
+            }
+            if (muteBtn) {
+                muteBtn.innerHTML = vol === 0 ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+            }
+        });
+    }
+
+    if (muteBtn) {
+        muteBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            if (previewAudio.volume > 0 || (ytPlayer && ytPlayer.isMuted && !ytPlayer.isMuted())) {
+                previewAudio.volume = 0;
+                if (ytPlayer && ytPlayer.mute) ytPlayer.mute();
+                if (volSlider) volSlider.value = 0;
+                muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            } else {
+                previewAudio.volume = 1;
+                if (ytPlayer && ytPlayer.unMute) ytPlayer.unMute();
+                if (volSlider) volSlider.value = 100;
+                muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            }
+        });
+    }
+
+    if (progressContainer) {
+        progressContainer.addEventListener('click', (e) => {
+            playCyberSFX('click');
+            const rect = progressContainer.getBoundingClientRect();
+            const clickPos = (e.clientX - rect.left) / rect.width;
+            const targetTime = clickPos * PREVIEW_LIMIT;
+
+            if (previewAudio && previewAudio.duration) {
+                previewAudio.currentTime = (playbackStartOffset > 0 ? playbackStartOffset : 0) + targetTime;
+            } else if (ytPlayer && ytPlayer.seekTo) {
+                ytPlayer.seekTo((playbackStartOffset > 0 ? playbackStartOffset : 0) + targetTime, true);
+            }
+            updateFloatingPlayerProgress(targetTime, PREVIEW_LIMIT);
+        });
+    }
+
+    startAudioVisualizer(canvas);
+}
+
+function initGlobalSFXListeners() {
+    // Hover SFX on interactive elements
+    const hoverSelectors = '.nav-item, .cta-primary, .platform-link, .release-card-large, .popular-card, .artist-item, .cyber-btn, .close-modal, .menu-trigger, .fp-btn, .slider-nav-btn, .sfx-toggle-btn';
+    
+    document.addEventListener('mouseover', (e) => {
+        const target = e.target.closest(hoverSelectors);
+        if (target && !target.dataset.sfxBound) {
+            target.dataset.sfxBound = "true";
+            target.addEventListener('mouseenter', () => playCyberSFX('hover'));
+        }
+    });
+
+    // Modal open / form triggers
+    document.querySelectorAll('#open-form, #open-form-sidebar, #nav-menu-trigger, .modal-trigger').forEach(el => {
+        el.addEventListener('click', () => playCyberSFX('whoosh'));
+    });
+}
+
 // --- ENGINE INITIALIZATION (STATE-AWARE) ---
 const startEngines = () => {
     initPortal();
     loadPopular();
+    initFloatingPlayer();
+    initGlobalSFXListeners();
 };
 
 if (document.readyState === "loading") {
