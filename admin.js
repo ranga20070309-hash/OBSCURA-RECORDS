@@ -27,6 +27,7 @@ let cachedDemos = {};
 let cachedContacts = {};
 let cachedFAQs = [];
 let currentStaffView = 'staff'; // 'staff' | 'partner'
+let engineInitialized = false;
 
 // --- TOAST NOTIFICATION SYSTEM ---
 function showToast(message, type = 'success') {
@@ -47,14 +48,29 @@ function showToast(message, type = 'success') {
     }, 3500);
 }
 
-// Auto-Versioning (Cache Buster)
-function bumpSiteVersion() {
+// Auto-Versioning (Cache Buster) & Audit Logger
+function bumpSiteVersion(actionDesc) {
     db.ref('siteData/globals/v').transaction((v) => {
         const nextV = (parseFloat(v || 1.0) + 0.1).toFixed(1);
         const display = document.getElementById('display-v');
         if (display) display.textContent = nextV;
         return nextV;
     });
+
+    if (actionDesc) {
+        logSecurityEvent(actionDesc);
+    }
+}
+
+function logSecurityEvent(action) {
+    const user = firebase.auth().currentUser;
+    const email = user ? user.email : 'SYSTEM';
+    const logItem = {
+        action: action,
+        user: email,
+        timestamp: Date.now()
+    };
+    db.ref('security_logs').push(logItem);
 }
 
 // Safe navigation helper
@@ -72,8 +88,6 @@ const loginBtn = document.getElementById('login-btn');
 const loginError = document.getElementById('login-error');
 const togglePwdBtn = document.getElementById('toggle-pwd-btn');
 const adminLogoutBtn = document.getElementById('admin-logout-btn');
-
-let engineInitialized = false;
 
 // Listen to Firebase Auth state
 firebase.auth().onAuthStateChanged((user) => {
@@ -171,11 +185,6 @@ if (adminLogoutBtn) {
     });
 }
 
-// Auto-check session on load
-window.addEventListener('DOMContentLoaded', () => {
-    initLoginStarfield();
-});
-
 // Particle Starfield on Login Screen
 function initLoginStarfield() {
     const canvas = document.getElementById('vibe-canvas');
@@ -223,6 +232,10 @@ function initLoginStarfield() {
     render();
 }
 
+window.addEventListener('DOMContentLoaded', () => {
+    initLoginStarfield();
+});
+
 // --- DASHBOARD ENGINE ---
 function initDashboardEngine() {
     initNavigation();
@@ -234,6 +247,7 @@ function initDashboardEngine() {
     initDemosEngine();
     initContactEngine();
     initModalsEngine();
+    initSecurityLogsEngine();
 }
 
 // --- PANEL NAVIGATION ---
@@ -253,13 +267,13 @@ function initNavigation() {
         'demo-inbox-panel': { title: '<i class="fas fa-inbox"></i> DEMO SUBMISSIONS INBOX', desc: 'Review, stream, analyze link security, and tag artist demo transmissions.' },
         'contact-inbox-panel': { title: '<i class="fas fa-envelope-open-text"></i> CONTACT INQUIRIES', desc: 'Direct communications submitted via the public contact portal.' },
         'modals-panel': { title: '<i class="fas fa-window-restore"></i> MODALS, FAQ & POLICIES', desc: 'Interactive FAQ question/answers accordion and legal policy editor.' },
-        'security-panel': { title: '<i class="fas fa-shield-virus"></i> SECURITY & SYSTEM AUDIT', desc: 'Real-time database connection telemetry and administrative logs.' }
+        'security-panel': { title: '<i class="fas fa-shield-virus"></i> SECURITY & SYSTEM AUDIT', desc: 'Real-time database connection telemetry and administrative audit logs.' }
     };
 
     navBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             const target = btn.dataset.target;
-            if (!target) return; // For external links like StreetX
+            if (!target) return;
             e.preventDefault();
 
             navBtns.forEach(b => b.classList.remove('active'));
@@ -283,13 +297,14 @@ function initGlobalsSync() {
         const data = snap.val() || {};
         cachedGlobals = data;
 
-        // Populate fields
         const map = {
             site_siteTitle: data.siteTitle || "OBSCURA <span>RECORD</span>",
             site_heroTitle: data.heroTitle || "WELCOME TO <span class='accent'>OBSCURA RECORD</span>",
             site_heroDesc: data.heroDesc || "",
             site_archiveTitle: data.archiveTitle || "LABEL <span class='accent'>RELEASES</span>",
             site_archiveDesc: data.archiveDesc || "",
+            site_upcomingTitle: data.upcomingTitle || "UPCOMING <span class='accent'>RELEASES</span>",
+            site_upcomingDesc: data.upcomingDesc || "FUTURE TRANSMISSIONS FROM THE VOID",
             site_staffTitle: data.staffTitle || "OBSCURA <span class='accent'>STAFF</span>",
             site_staffDesc: data.staffDesc || "",
             site_partnersTitle: data.partnersTitle || "LABEL <span class='accent'>PARTNERS</span>",
@@ -298,6 +313,8 @@ function initGlobalsSync() {
             security_rootKey: data.rootKey || "ORC ADMINS PASS 2026",
             site_maintenanceTitle: data.maintenanceTitle || "OBSCURA RECORD // UNDER RENOVATION",
             site_maintenanceMsg: data.maintenanceMsg || "Quantum upgrades in progress.",
+            site_showUpcoming: data.showUpcoming || "Visible",
+            site_showGhostProduction: data.showGhostProduction || "Visible",
             // Nav & Socials
             site_navHome: data.navHome || "HOME",
             site_navReleases: data.navReleases || "RELEASES",
@@ -315,7 +332,13 @@ function initGlobalsSync() {
             site_streetxTitle: data.streetxTitle || "STREETX <span class='accent'>CLOTHING</span>",
             site_streetxDesc: data.streetxDesc || "",
             site_streetxCta: data.streetxCta || "EXPLORE COLLECTION",
-            site_streetxUrl: data.streetxUrl || "streetx-clothing/"
+            site_streetxUrl: data.streetxUrl || "streetx-clothing/",
+            // Footer Texts
+            site_footerCopyright: data.footerCopyright || "&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED.",
+            site_footerFaqText: data.footerFaqText || "FAQ",
+            site_footerDemoText: data.footerDemoText || "DEMO SUBMISSION",
+            site_footerContactText: data.footerContactText || "CONTACT US",
+            site_footerPrivacyText: data.footerPrivacyText || "PRIVACY"
         };
 
         for (const [id, val] of Object.entries(map)) {
@@ -337,6 +360,8 @@ function initGlobalsSync() {
                 heroDesc: document.getElementById('site_heroDesc').value,
                 archiveTitle: document.getElementById('site_archiveTitle').value,
                 archiveDesc: document.getElementById('site_archiveDesc').value,
+                upcomingTitle: document.getElementById('site_upcomingTitle').value,
+                upcomingDesc: document.getElementById('site_upcomingDesc').value,
                 staffTitle: document.getElementById('site_staffTitle').value,
                 staffDesc: document.getElementById('site_staffDesc').value,
                 partnersTitle: document.getElementById('site_partnersTitle').value,
@@ -348,7 +373,7 @@ function initGlobalsSync() {
             };
 
             db.ref('siteData/globals').update(updates).then(() => {
-                bumpSiteVersion();
+                bumpSiteVersion("Updated Global Titles & Settings");
                 showToast("GLOBALS SAVED & SYNCED TO PRODUCTION!");
             }).catch(err => showToast("ERROR: " + err.message, 'error'));
         });
@@ -375,13 +400,41 @@ function initGlobalsSync() {
                 streetxTitle: document.getElementById('site_streetxTitle').value,
                 streetxDesc: document.getElementById('site_streetxDesc').value,
                 streetxCta: document.getElementById('site_streetxCta').value,
-                streetxUrl: document.getElementById('site_streetxUrl').value
+                streetxUrl: document.getElementById('site_streetxUrl').value,
+                footerCopyright: document.getElementById('site_footerCopyright').value,
+                footerFaqText: document.getElementById('site_footerFaqText').value,
+                footerDemoText: document.getElementById('site_footerDemoText').value,
+                footerContactText: document.getElementById('site_footerContactText').value,
+                footerPrivacyText: document.getElementById('site_footerPrivacyText').value
             };
 
             db.ref('siteData/globals').update(updates).then(() => {
-                bumpSiteVersion();
+                bumpSiteVersion("Updated Navigation, Social URLs & Footer");
                 showToast("NAVIGATION & SOCIAL LINKS SYNCHRONIZED!");
             }).catch(err => showToast("ERROR: " + err.message, 'error'));
+        });
+    }
+
+    // Section Visibility Selector Handlers
+    const showUpcomingEl = document.getElementById('site_showUpcoming');
+    if (showUpcomingEl) {
+        showUpcomingEl.addEventListener('change', () => {
+            const val = showUpcomingEl.value;
+            db.ref('siteData/globals/showUpcoming').set(val).then(() => {
+                bumpSiteVersion(`Upcoming Section Set To: ${val}`);
+                showToast(`UPCOMING SECTION IS NOW ${val.toUpperCase()}!`);
+            });
+        });
+    }
+
+    const showGhostEl = document.getElementById('site_showGhostProduction');
+    if (showGhostEl) {
+        showGhostEl.addEventListener('change', () => {
+            const val = showGhostEl.value;
+            db.ref('siteData/globals/showGhostProduction').set(val).then(() => {
+                bumpSiteVersion(`Ghost Production Set To: ${val}`);
+                showToast(`GHOST PRODUCTION IS NOW ${val.toUpperCase()}!`);
+            });
         });
     }
 }
@@ -402,7 +455,7 @@ function initReleasesEngine() {
     if (coverInput && coverPreview) {
         coverInput.addEventListener('input', () => {
             const url = coverInput.value.trim();
-            coverPreview.innerHTML = url ? `<img src="${url}" onerror="this.src=''; this.parentElement.innerHTML='<i class=\\'fas fa-image\\'></i>'">` : '<i class="fas fa-image"></i>';
+            coverPreview.innerHTML = url ? `<img src="${url}" onerror="this.onerror=null; this.src='assets/cover.png';">` : '<i class="fas fa-image"></i>';
         });
     }
 
@@ -457,7 +510,7 @@ function initReleasesEngine() {
             return `
                 <div class="admin-release-card">
                     <div class="rel-card-top">
-                        <img src="${cover}" alt="Artwork" class="rel-thumb" onerror="this.onerror=null; this.src='assets/OCR.png';">
+                        <img src="${cover}" alt="Artwork" class="rel-thumb" onerror="this.onerror=null; this.src='assets/cover.png';">
                         <div class="rel-meta">
                             <h4>${rel.title || 'UNTITLED'}</h4>
                             <div class="rel-artist">${rel.artist || 'UNKNOWN ARTIST'}</div>
@@ -498,7 +551,7 @@ function initReleasesEngine() {
                 artist: artist,
                 catalog: document.getElementById('rel_catalog').value.trim() || 'OCR000',
                 date: document.getElementById('rel_date').value.trim() || '2026',
-                cover: document.getElementById('rel_cover').value.trim() || 'OCR.png',
+                cover: document.getElementById('rel_cover').value.trim() || 'assets/cover.png',
                 streamUrl: document.getElementById('rel_streamUrl').value.trim(),
                 spotifyUrl: document.getElementById('rel_spotifyUrl').value.trim(),
                 soundcloudUrl: document.getElementById('rel_soundcloudUrl').value.trim(),
@@ -514,7 +567,7 @@ function initReleasesEngine() {
             }
 
             db.ref('siteData/releases').set(updatedList).then(() => {
-                bumpSiteVersion();
+                bumpSiteVersion(`Saved Release: ${title}`);
                 showToast("RELEASE SAVED SUCCESSFULLY!");
                 if (editorCard) editorCard.style.display = 'none';
             }).catch(err => showToast("SAVE ERROR: " + err.message, 'error'));
@@ -553,7 +606,7 @@ function initReleasesEngine() {
 
         const updatedList = cachedReleases.filter((_, i) => i !== index);
         db.ref('siteData/releases').set(updatedList).then(() => {
-            bumpSiteVersion();
+            bumpSiteVersion(`Deleted Release: ${rel.title}`);
             showToast("RELEASE DELETED!");
         }).catch(err => showToast("DELETE ERROR: " + err.message, 'error'));
     };
@@ -608,7 +661,7 @@ function initUpcomingEngine() {
         container.innerHTML = cachedUpcoming.map((upc, i) => `
             <div class="admin-upcoming-card">
                 <div class="rel-card-top">
-                    <img src="${upc.cover || 'assets/OCR.png'}" alt="Teaser" class="rel-thumb" onerror="this.onerror=null; this.src='assets/OCR.png';">
+                    <img src="${upc.cover || 'assets/cover.png'}" alt="Teaser" class="rel-thumb" onerror="this.onerror=null; this.src='assets/cover.png';">
                     <div class="rel-meta">
                         <h4>${upc.title || 'UNTITLED TEASER'}</h4>
                         <div class="rel-artist">${upc.artist || 'UNKNOWN'}</div>
@@ -639,7 +692,7 @@ function initUpcomingEngine() {
                 artist: artist,
                 date: document.getElementById('upc_date').value.trim() || 'COMING SOON',
                 status: document.getElementById('upc_status').value,
-                cover: document.getElementById('upc_cover').value.trim() || 'OCR.png'
+                cover: document.getElementById('upc_cover').value.trim() || 'assets/cover.png'
             };
 
             let updatedList = [...cachedUpcoming];
@@ -650,7 +703,7 @@ function initUpcomingEngine() {
             }
 
             db.ref('siteData/upcoming').set(updatedList).then(() => {
-                bumpSiteVersion();
+                bumpSiteVersion(`Updated Upcoming Teaser: ${title}`);
                 showToast("UPCOMING TEASER SAVED!");
                 if (editorCard) editorCard.style.display = 'none';
             }).catch(err => showToast("ERROR: " + err.message, 'error'));
@@ -675,7 +728,7 @@ function initUpcomingEngine() {
         if (!confirm("Delete this upcoming teaser?")) return;
         const updatedList = cachedUpcoming.filter((_, i) => i !== index);
         db.ref('siteData/upcoming').set(updatedList).then(() => {
-            bumpSiteVersion();
+            bumpSiteVersion("Deleted Upcoming Teaser");
             showToast("TEASER DELETED!");
         }).catch(err => showToast("ERROR: " + err.message, 'error'));
     };
@@ -709,18 +762,24 @@ function initGhostProdEngine() {
                 cta: document.getElementById('site_ghostCta').value
             };
             db.ref('siteData/ghostProduction').update(updates).then(() => {
-                bumpSiteVersion();
+                bumpSiteVersion("Updated Ghost Production Directives");
                 showToast("GHOST PRODUCTION DIRECTIVES SAVED!");
             }).catch(err => showToast("ERROR: " + err.message, 'error'));
         });
     }
 }
 
-// --- 6. PERSONNEL & PARTNERS ENGINE ---
+// --- 6. PERSONNEL & PARTNERS ENGINE (WITH PROFILE BUILDER & MULTI-SOCIALS) ---
 function initStaffEngine() {
     const container = document.getElementById('staff-admin-container');
     const tabStaff = document.getElementById('tab-staff-view');
     const tabPartner = document.getElementById('tab-partner-view');
+    const badgeStaff = document.getElementById('badge-staff-count');
+    const btnAddProf = document.getElementById('btn-add-profile');
+    const profEditor = document.getElementById('profile-editor-card');
+    const btnCloseProf = document.getElementById('close-profile-editor');
+    const btnCancelProf = document.getElementById('btn-cancel-profile');
+    const btnSaveProf = document.getElementById('btn-save-profile');
 
     if (tabStaff && tabPartner) {
         tabStaff.addEventListener('click', () => {
@@ -737,94 +796,171 @@ function initStaffEngine() {
         });
     }
 
+    if (btnAddProf && profEditor) {
+        btnAddProf.addEventListener('click', () => {
+            const isPartner = currentStaffView === 'partner';
+            document.getElementById('prof_edit_id').value = '';
+            document.getElementById('prof_is_partner').value = isPartner ? 'true' : 'false';
+            document.getElementById('profile-editor-title').textContent = `CREATE NEW ${isPartner ? 'PARTNER' : 'STAFF'} PROFILE`;
+            
+            ['prof_id', 'prof_name', 'prof_role', 'prof_avatar', 'prof_bio', 'prof_social_insta', 'prof_social_spotify', 'prof_social_soundcloud', 'prof_social_youtube', 'prof_social_twitter', 'prof_social_discord'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            document.getElementById('prof_order').value = '1';
+            profEditor.style.display = 'block';
+            profEditor.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+
+    [btnCloseProf, btnCancelProf].forEach(b => {
+        if (b && profEditor) {
+            b.addEventListener('click', () => profEditor.style.display = 'none');
+        }
+    });
+
     db.ref('staff_status').on('value', (snap) => {
         cachedStaff = snap.val() || {};
+        updateStaffCountBadge();
         if (currentStaffView === 'staff') renderStaffProfiles();
     });
 
     db.ref('partner_status').on('value', (snap) => {
         cachedPartners = snap.val() || {};
+        updateStaffCountBadge();
         if (currentStaffView === 'partner') renderStaffProfiles();
     });
+
+    function updateStaffCountBadge() {
+        if (badgeStaff) {
+            badgeStaff.textContent = Object.keys(cachedStaff).length + Object.keys(cachedPartners).length;
+        }
+    }
 
     function renderStaffProfiles() {
         if (!container) return;
         const isPartner = currentStaffView === 'partner';
         const dataObj = isPartner ? cachedPartners : cachedStaff;
-        const entries = Object.entries(dataObj);
+        const entries = Object.entries(dataObj).sort((a, b) => {
+            const orderA = (a[1] && typeof a[1].order === 'number') ? a[1].order : 99;
+            const orderB = (b[1] && typeof b[1].order === 'number') ? b[1].order : 99;
+            return orderA - orderB;
+        });
 
         if (entries.length === 0) {
-            container.innerHTML = `<div class="loading-state" style="color: var(--text-dim);">NO ${isPartner ? 'PARTNERS' : 'STAFF'} PROFILES FOUND.</div>`;
+            container.innerHTML = `<div class="loading-state" style="color: var(--text-dim);">NO ${isPartner ? 'PARTNERS' : 'STAFF'} PROFILES FOUND. CLICK "ADD NEW PROFILE" TO CREATE ONE.</div>`;
             return;
         }
 
         container.innerHTML = entries.map(([id, p]) => {
-            const avatar = p.avatar_url || 'assets/OCR.png';
+            const avatar = p.avatar_url || 'assets/cover.png';
             const socials = p.socials || {};
             return `
-                <div class="staff-editor-card" data-id="${id}" data-type="${isPartner ? 'partner' : 'staff'}">
+                <div class="staff-editor-card" data-id="${id}">
                     <div class="rel-card-top">
-                        <img src="${avatar}" alt="Avatar" class="rel-thumb" onerror="this.onerror=null; this.src='assets/OCR.png';">
+                        <img src="${avatar}" alt="Avatar" class="rel-thumb" onerror="this.onerror=null; this.src='assets/cover.png';">
                         <div class="rel-meta">
                             <h4>${p.name || id}</h4>
-                            <div class="rel-artist">${p.role || (isPartner ? 'PARTNER' : 'STAFF MEMBER')}</div>
-                            <div class="rel-code">ID: ${id}</div>
+                            <div class="rel-artist">${p.role || (isPartner ? 'PARTNER' : 'STAFF')}</div>
+                            <div class="rel-code">PRIORITY: #${p.order || 99} | ID: ${id}</div>
                         </div>
                     </div>
-                    <div class="form-grid" style="grid-template-columns: 1fr; gap: 0.8rem;">
-                        <div class="input-group">
-                            <label>CUSTOM AVATAR URL</label>
-                            <input type="text" class="st-avatar" value="${p.avatar_url || ''}" placeholder="https://i.imgur.com/...">
-                        </div>
-                        <div class="input-group">
-                            <label>BIOGRAPHY / DESCRIPTION</label>
-                            <textarea class="st-bio" rows="2">${p.bio || ''}</textarea>
-                        </div>
-                        <div class="input-group">
-                            <label>SORT PRIORITY (1 = HIGHEST)</label>
-                            <input type="number" class="st-order" value="${p.order || 99}">
-                        </div>
-                        <div class="input-group">
-                            <label>INSTAGRAM PROFILE</label>
-                            <input type="text" class="st-social-insta" value="${socials.insta || ''}" placeholder="https://instagram.com/...">
-                        </div>
-                        <div class="input-group">
-                            <label>SPOTIFY PROFILE</label>
-                            <input type="text" class="st-social-spotify" value="${socials.spotify || ''}" placeholder="https://spotify.com/...">
-                        </div>
+                    ${p.bio ? `<p style="font-size:0.75rem; color:var(--text-dim); line-height:1.4;">${p.bio}</p>` : ''}
+                    
+                    <div class="rel-card-actions">
+                        <button type="button" class="cyber-btn primary sm" onclick="openProfileEditor('${id}', ${isPartner})">
+                            <i class="fas fa-edit"></i> EDIT
+                        </button>
+                        <button type="button" class="cyber-btn danger sm" onclick="deleteProfile('${id}', ${isPartner})">
+                            <i class="fas fa-trash"></i> DELETE
+                        </button>
                     </div>
-                    <button type="button" class="cyber-btn primary sm" onclick="saveStaffProfile('${id}', ${isPartner})">
-                        <i class="fas fa-save"></i> SYNC PROFILE
-                    </button>
                 </div>
             `;
         }).join('');
     }
 
-    window.saveStaffProfile = function(id, isPartner) {
-        const card = document.querySelector(`.staff-editor-card[data-id="${id}"]`);
-        if (!card) return;
+    if (btnSaveProf) {
+        btnSaveProf.addEventListener('click', () => {
+            const isPartner = document.getElementById('prof_is_partner').value === 'true';
+            const editId = document.getElementById('prof_edit_id').value.trim();
+            const profId = editId || document.getElementById('prof_id').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+            const name = document.getElementById('prof_name').value.trim();
+            const role = document.getElementById('prof_role').value.trim();
 
-        const avatar = card.querySelector('.st-avatar').value.trim();
-        const bio = card.querySelector('.st-bio').value.trim();
-        const order = parseInt(card.querySelector('.st-order').value) || 99;
-        const insta = card.querySelector('.st-social-insta').value.trim();
-        const spotify = card.querySelector('.st-social-spotify').value.trim();
-
-        const data = {
-            avatar_url: avatar,
-            bio: bio,
-            order: order,
-            socials: {
-                insta: insta,
-                spotify: spotify
+            if (!profId || !name) {
+                showToast("PLEASE FILL IN PROFILE ID AND NAME!", 'error');
+                return;
             }
-        };
 
+            const socials = {};
+            const insta = document.getElementById('prof_social_insta').value.trim();
+            const spotify = document.getElementById('prof_social_spotify').value.trim();
+            const soundcloud = document.getElementById('prof_social_soundcloud').value.trim();
+            const youtube = document.getElementById('prof_social_youtube').value.trim();
+            const twitter = document.getElementById('prof_social_twitter').value.trim();
+            const discord = document.getElementById('prof_social_discord').value.trim();
+
+            if (insta) socials.insta = insta;
+            if (spotify) socials.spotify = spotify;
+            if (soundcloud) socials.soundcloud = soundcloud;
+            if (youtube) socials.youtube = youtube;
+            if (twitter) socials.twitter = twitter;
+            if (discord) socials.discord = discord;
+
+            const data = {
+                name: name,
+                role: role,
+                order: parseInt(document.getElementById('prof_order').value) || 99,
+                avatar_url: document.getElementById('prof_avatar').value.trim(),
+                bio: document.getElementById('prof_bio').value.trim(),
+                socials: socials
+            };
+
+            const path = isPartner ? 'partner_status/' : 'staff_status/';
+            db.ref(path + profId).update(data).then(() => {
+                bumpSiteVersion(`Saved Profile: ${name}`);
+                showToast("PROFILE SAVED & SYNCHRONIZED!");
+                if (profEditor) profEditor.style.display = 'none';
+            }).catch(err => showToast("ERROR: " + err.message, 'error'));
+        });
+    }
+
+    window.openProfileEditor = function(id, isPartner) {
+        const dataObj = isPartner ? cachedPartners : cachedStaff;
+        const p = dataObj[id];
+        if (!p || !profEditor) return;
+
+        document.getElementById('prof_edit_id').value = id;
+        document.getElementById('prof_is_partner').value = isPartner ? 'true' : 'false';
+        document.getElementById('profile-editor-title').textContent = `EDIT PROFILE: ${p.name || id}`;
+        
+        document.getElementById('prof_id').value = id;
+        document.getElementById('prof_id').disabled = true; // Key lock
+        document.getElementById('prof_name').value = p.name || '';
+        document.getElementById('prof_role').value = p.role || '';
+        document.getElementById('prof_order').value = p.order || 99;
+        document.getElementById('prof_avatar').value = p.avatar_url || '';
+        document.getElementById('prof_bio').value = p.bio || '';
+
+        const socials = p.socials || {};
+        document.getElementById('prof_social_insta').value = socials.insta || '';
+        document.getElementById('prof_social_spotify').value = socials.spotify || '';
+        document.getElementById('prof_social_soundcloud').value = socials.soundcloud || '';
+        document.getElementById('prof_social_youtube').value = socials.youtube || '';
+        document.getElementById('prof_social_twitter').value = socials.twitter || '';
+        document.getElementById('prof_social_discord').value = socials.discord || '';
+
+        profEditor.style.display = 'block';
+        profEditor.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.deleteProfile = function(id, isPartner) {
+        if (!confirm(`Delete profile "${id}"?`)) return;
         const path = isPartner ? 'partner_status/' : 'staff_status/';
-        db.ref(path + id).update(data).then(() => {
-            bumpSiteVersion();
-            showToast("PROFILE SYNCED SUCCESSFULLY!");
+        db.ref(path + id).remove().then(() => {
+            bumpSiteVersion(`Deleted Profile: ${id}`);
+            showToast("PROFILE DELETED!");
         }).catch(err => showToast("ERROR: " + err.message, 'error'));
     };
 }
@@ -859,7 +995,7 @@ function initDemosEngine() {
         if (!container) return;
         const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
         const filter = filterSelect ? filterSelect.value : 'ALL';
-        const entries = Object.entries(cachedDemos);
+        const entries = Object.entries(cachedDemos).reverse(); // Newest first
 
         const filtered = entries.filter(([id, d]) => {
             const status = (d.status || 'PENDING').toUpperCase();
@@ -978,7 +1114,7 @@ function initContactEngine() {
 
     function renderContactMessages() {
         if (!container) return;
-        const entries = Object.entries(cachedContacts);
+        const entries = Object.entries(cachedContacts).reverse();
 
         if (entries.length === 0) {
             container.innerHTML = `<div class="loading-state" style="color: var(--text-dim);">NO DIRECT INQUIRIES LOGGED.</div>`;
@@ -1036,6 +1172,9 @@ function initModalsEngine() {
         const privacyEl = document.getElementById('site_privacyContent');
         if (privacyEl && data.privacyContent) privacyEl.value = data.privacyContent;
 
+        const contactSubEl = document.getElementById('site_contactModalSubtext');
+        if (contactSubEl && data.contactModalSubtext) contactSubEl.value = data.contactModalSubtext;
+
         renderFaqItems();
     });
 
@@ -1072,7 +1211,6 @@ function initModalsEngine() {
 
     if (btnSaveModals) {
         btnSaveModals.addEventListener('click', () => {
-            // Gather FAQs
             const qInputs = document.querySelectorAll('.faq-q-input');
             const aInputs = document.querySelectorAll('.faq-a-input');
             const newFaqs = [];
@@ -1086,16 +1224,48 @@ function initModalsEngine() {
                 }
             });
 
+            const demoDesc = document.getElementById('site_demoDesc').value;
+            const privacyContent = document.getElementById('site_privacyContent').value;
+            const contactModalSubtext = document.getElementById('site_contactModalSubtext').value;
+
             const updates = {
                 faqs: newFaqs,
-                demoDesc: document.getElementById('site_demoDesc').value,
-                privacyContent: document.getElementById('site_privacyContent').value
+                demoDesc: demoDesc,
+                privacyContent: privacyContent,
+                contactModalSubtext: contactModalSubtext
             };
 
             db.ref('siteData/modals').set(updates).then(() => {
-                bumpSiteVersion();
+                // Also sync to globals
+                db.ref('siteData/globals').update({
+                    demoDesc: demoDesc,
+                    privacyContent: privacyContent,
+                    contactModalSubtext: contactModalSubtext
+                });
+
+                bumpSiteVersion("Updated FAQs, Demo Rules & Privacy Policy");
                 showToast("MODALS & FAQ ACCORDION SAVED!");
             }).catch(err => showToast("ERROR: " + err.message, 'error'));
         });
     }
+}
+
+// --- 10. SECURITY & AUDIT LOGS ENGINE ---
+function initSecurityLogsEngine() {
+    const logsContainer = document.getElementById('security-logs-container');
+    if (!logsContainer) return;
+
+    db.ref('security_logs').limitToLast(25).on('value', (snap) => {
+        const logs = snap.val();
+        if (!logs) return;
+        const entries = Object.values(logs).reverse();
+
+        logsContainer.innerHTML = entries.map(l => `
+            <div class="log-entry">
+                <span class="log-time">[${new Date(l.timestamp).toLocaleTimeString()}]</span>
+                <strong style="color: var(--primary);">${l.action}</strong>
+                <span style="color: var(--text-muted); font-size: 0.7rem;">(by ${l.user || 'ADMIN'})</span>
+            </div>
+        `).join('');
+    });
 }
