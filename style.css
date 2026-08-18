@@ -110,7 +110,62 @@ body.maintenance-active::-webkit-scrollbar {
     height: 100%;
     background: #000;
     /* Deep Black Background */
+    z-index: -3;
+}
+
+/* ==========================================================================
+   REAL-TIME AUDIO BASS-REACTIVE AMBIENT LIGHTING SYSTEM
+   ========================================================================== */
+.ambient-bass-lighting {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
     z-index: -2;
+    overflow: hidden;
+    opacity: 0.15;
+    transition: opacity 0.5s ease;
+    will-change: opacity, transform;
+}
+
+body.audio-playing .ambient-bass-lighting {
+    opacity: 1;
+}
+
+.bass-light-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(85px);
+    pointer-events: none;
+    will-change: transform, opacity;
+    transform: translate(-50%, -50%) scale(var(--bass-scale, 1));
+    transition: transform 0.06s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.06s ease;
+}
+
+.orb-cyan {
+    top: 25%;
+    left: 20%;
+    width: 650px;
+    height: 650px;
+    background: radial-gradient(circle, rgba(0, 240, 255, calc(0.12 + var(--bass-intensity, 0) * 0.48)) 0%, rgba(0, 240, 255, 0.04) 50%, transparent 75%);
+}
+
+.orb-purple {
+    bottom: 20%;
+    right: 20%;
+    width: 780px;
+    height: 780px;
+    background: radial-gradient(circle, rgba(157, 0, 255, calc(0.14 + var(--bass-intensity, 0) * 0.52)) 0%, rgba(112, 0, 255, 0.05) 50%, transparent 75%);
+}
+
+.orb-center-sub {
+    top: 50%;
+    left: 50%;
+    width: 950px;
+    height: 950px;
+    background: radial-gradient(circle, rgba(0, 240, 255, calc(var(--bass-intensity, 0) * 0.28)) 0%, rgba(183, 0, 255, calc(var(--bass-intensity, 0) * 0.22)) 40%, transparent 70%);
 }
 
 .overlay {
@@ -119,12 +174,10 @@ body.maintenance-active::-webkit-scrollbar {
     left: 0;
     width: 100%;
     height: 100%;
-    background: #000;
-    /* PURE BLACK VOID - NO GLOW */
+    background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.85) 100%);
     z-index: -1;
     pointer-events: none;
-    opacity: 0.8;
-    /* Keep some darkness depth */
+    opacity: 0.85;
 }
 
 .noise-overlay {
