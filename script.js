@@ -438,47 +438,7 @@ function getYouTubeID(url) {
     }
 }
 
-// --- DIRECT YOUTUBE AUDIO STREAM RESOLVER (ZERO FIREBASE STORAGE // 100% REAL FFT ANALYSIS) ---
-const ytStreamCache = new Map();
-
-async function fetchYouTubeAudioStream(ytId) {
-    if (!ytId) return null;
-    if (ytStreamCache.has(ytId)) return ytStreamCache.get(ytId);
-
-    const proxyEndpoints = [
-        `https://pipedapi.kavin.rocks/streams/${ytId}`,
-        `https://api.piped.privacydev.net/streams/${ytId}`,
-        `https://invidious.nerdvpn.de/api/v1/videos/${ytId}`,
-        `https://vid.puffyan.us/api/v1/videos/${ytId}`
-    ];
-
-    for (const endpoint of proxyEndpoints) {
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2800);
-            const res = await fetch(endpoint, { signal: controller.signal });
-            clearTimeout(timeoutId);
-            if (res.ok) {
-                const data = await res.json();
-                if (data.audioStreams && data.audioStreams.length > 0) {
-                    const chosen = data.audioStreams[0].url;
-                    ytStreamCache.set(ytId, chosen);
-                    return chosen;
-                }
-                if (data.adaptiveFormats) {
-                    const audioFormat = data.adaptiveFormats.find(f => f.type && f.type.includes('audio'));
-                    if (audioFormat && audioFormat.url) {
-                        ytStreamCache.set(ytId, audioFormat.url);
-                        return audioFormat.url;
-                    }
-                }
-            }
-        } catch (e) {}
-    }
-    return null;
-}
-
-function fallbackToYTPlayer(ytId, ytType, playBtn, row, coverImg, timeDisplay) {
+function playYouTubeTrack(ytId, ytType, playBtn, row, coverImg) {
     if (!isYTApiReady || !ytPlayer) initYTPlayer();
     try {
         if (ytPlayer && ytPlayer.playVideo) {
@@ -496,11 +456,6 @@ function fallbackToYTPlayer(ytId, ytType, playBtn, row, coverImg, timeDisplay) {
     }
     startUIPlayback(playBtn, row, coverImg);
     if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
-    if (timeDisplay) {
-        timeDisplay.style.display = 'block';
-        timeDisplay.textContent = '...';
-        updateTimer(timeDisplay, 'yt');
-    }
 }
 
 function startUIPlayback(btn, row, img) {
@@ -650,20 +605,7 @@ function loadPopular() {
                                 startUIPlayback(playBtn, card, coverImg);
                             });
                         } else if (ytId) {
-                            fetchYouTubeAudioStream(ytId).then(streamUrl => {
-                                if (streamUrl && currentPlayingBtn === playBtn) {
-                                    previewAudio.src = streamUrl;
-                                    previewAudio.play().then(() => {
-                                        startUIPlayback(playBtn, card, coverImg);
-                                    }).catch(() => {
-                                        fallbackToYTPlayer(ytId, ytType, playBtn, card, coverImg, null);
-                                    });
-                                } else {
-                                    fallbackToYTPlayer(ytId, ytType, playBtn, card, coverImg, null);
-                                }
-                            }).catch(() => {
-                                fallbackToYTPlayer(ytId, ytType, playBtn, card, coverImg, null);
-                            });
+                            playYouTubeTrack(ytId, ytType, playBtn, card, coverImg);
                         } else {
                             startUIPlayback(playBtn, card, coverImg);
                         }
@@ -2030,27 +1972,9 @@ const initPortal = () => {
                                     startUIPlayback(playBtn, row, coverImg);
                                 }
                             }
-                            // PRIORITY 2: Direct YouTube Audio Stream (100% Real-Time FFT Bass Analysis, Zero Storage)
+                            // PRIORITY 2: YouTube Fallback (Instant Playback)
                             else if (ytId) {
-                                fetchYouTubeAudioStream(ytId).then(streamUrl => {
-                                    if (streamUrl && currentPlayingBtn === playBtn) {
-                                        previewAudio.src = streamUrl;
-                                        previewAudio.play().then(() => {
-                                            startUIPlayback(playBtn, row, coverImg);
-                                            if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
-                                            if (timeDisplay) {
-                                                timeDisplay.style.display = 'block';
-                                                updateTimer(timeDisplay, 'mp3');
-                                            }
-                                        }).catch(() => {
-                                            fallbackToYTPlayer(ytId, ytType, playBtn, row, coverImg, timeDisplay);
-                                        });
-                                    } else {
-                                        fallbackToYTPlayer(ytId, ytType, playBtn, row, coverImg, timeDisplay);
-                                    }
-                                }).catch(() => {
-                                    fallbackToYTPlayer(ytId, ytType, playBtn, row, coverImg, timeDisplay);
-                                });
+                                playYouTubeTrack(ytId, ytType, playBtn, row, coverImg);
                             } else {
                                 startUIPlayback(playBtn, row, coverImg);
                             }
