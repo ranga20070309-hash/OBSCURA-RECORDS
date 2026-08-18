@@ -1834,21 +1834,294 @@ function initModalsEngine() {
 }
 
 // --- 10. SECURITY & AUDIT LOGS ENGINE ---
+let cachedSecurityLogs = [];
+let cachedViolations = [];
+let currentLogFilter = 'all';
+
 function initSecurityLogsEngine() {
-    const logsContainer = document.getElementById('security-logs-container');
-    if (!logsContainer) return;
+    const liveStreamContainer = document.getElementById('security-live-stream');
+    const searchInput = document.getElementById('sec-log-search-input');
+    const filterTabs = document.querySelectorAll('#sec-log-tabs .tab-pill');
+    const btnRefresh = document.getElementById('btn-refresh-logs');
+    const btnExportJson = document.getElementById('btn-export-logs-json');
+    const btnExportCsv = document.getElementById('btn-export-logs-csv');
+    const btnClearLogs = document.getElementById('btn-clear-security-logs');
+    const alarmBanner = document.getElementById('sec-global-alarm-banner');
+    const btnDismissAlarm = document.getElementById('btn-dismiss-alarm');
+    const alarmTitle = document.getElementById('alarm-banner-title');
+    const alarmDesc = document.getElementById('alarm-banner-desc');
 
-    db.ref('security_logs').limitToLast(25).on('value', (snap) => {
-        const logs = snap.val();
-        if (!logs) return;
-        const entries = Object.values(logs).reverse();
+    const statTotal = document.getElementById('sec-stat-total');
+    const statViolations = document.getElementById('sec-stat-violations');
+    const statNodes = document.getElementById('sec-stat-nodes');
+    const badgeSecurity = document.getElementById('badge-security-logs');
 
-        logsContainer.innerHTML = entries.map(l => `
-            <div class="log-entry">
-                <span class="log-time">[${new Date(l.timestamp).toLocaleTimeString()}]</span>
-                <strong style="color: var(--primary);">${l.action}</strong>
-                <span style="color: var(--text-muted); font-size: 0.7rem;">(by ${l.user || 'ADMIN'})</span>
-            </div>
-        `).join('');
+    // 1. Listen to Global Security Alarm
+    db.ref('siteData/security/globalAlarm').on('value', (snap) => {
+        const alarm = snap.val();
+        if (alarm && alarm.active) {
+            if (alarmBanner) {
+                alarmBanner.style.display = 'flex';
+                if (alarmTitle) alarmTitle.textContent = `CRITICAL ALERT: ${alarm.type || 'INTRUSION DETECTED'}`;
+                if (alarmDesc) alarmDesc.textContent = `Location: ${alarm.location || 'Unknown'} | IP: ${alarm.ip || 'Unknown'} | Intercepted at: ${new Date(alarm.time || Date.now()).toLocaleTimeString()}`;
+            }
+        } else {
+            if (alarmBanner) alarmBanner.style.display = 'none';
+        }
     });
+
+    if (btnDismissAlarm) {
+        btnDismissAlarm.addEventListener('click', () => {
+            db.ref('siteData/security/globalAlarm/active').set(false).then(() => {
+                showToast("SECURITY ALARM DISMISSED");
+            });
+        });
+    }
+
+    // 2. Listen to Live Visitor Nodes
+    db.ref('siteData/activeConnections').on('value', (snapshot) => {
+        const count = snapshot.numChildren();
+        if (statNodes) statNodes.textContent = Math.max(1, count);
+    });
+
+    // 3. Listen to Violations
+    db.ref('siteData/security/violations').on('value', (snapshot) => {
+        const data = snapshot.val();
+        cachedViolations = data ? Object.values(data) : [];
+        if (statViolations) statViolations.textContent = cachedViolations.length;
+    });
+
+    // 4. Listen to Primary Security Logs Stream
+    db.ref('siteData/security/logs').limitToLast(150).on('value', (snapshot) => {
+        const data = snapshot.val();
+        cachedSecurityLogs = [];
+        if (data) {
+            cachedSecurityLogs = Object.values(data).reverse(); // Newest first
+        }
+        if (statTotal) statTotal.textContent = cachedSecurityLogs.length;
+        if (badgeSecurity) badgeSecurity.textContent = cachedSecurityLogs.length;
+        renderSecurityLogs();
+    });
+
+    // 5. Render Security Logs List
+    function renderSecurityLogs() {
+        if (!liveStreamContainer) return;
+        const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+        const filtered = cachedSecurityLogs.filter(log => {
+            // Tab Category Filter
+            if (currentLogFilter === 'violations') {
+                const isViolation = log.type === 'CONSOLE_TAMPER' || log.type === 'INJECTION_ATTEMPT' || log.type === 'SECURITY_VIOLATION';
+                if (!isViolation) return false;
+            } else if (currentLogFilter === 'visitors') {
+                if (log.type !== 'VISITOR_ACCESS') return false;
+            } else if (currentLogFilter === 'forms') {
+                const isForm = log.type === 'DEMO_SUBMISSION' || log.type === 'CONTACT_MESSAGE';
+                if (!isForm) return false;
+            }
+
+            // Search Query Filter
+            if (query) {
+                const ipStr = (log.ip || '').toLowerCase();
+                const cityStr = (log.city || '').toLowerCase();
+                const countryStr = (log.country || '').toLowerCase();
+                const typeStr = (log.type || '').toLowerCase();
+                const osStr = (log.device?.os || '').toLowerCase();
+                const browserStr = (log.device?.browser || '').toLowerCase();
+                return ipStr.includes(query) || cityStr.includes(query) || countryStr.includes(query) || typeStr.includes(query) || osStr.includes(query) || browserStr.includes(query);
+            }
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            liveStreamContainer.innerHTML = `
+                <div class="empty-state full-grid" style="padding: 2.5rem; text-align: center; color: var(--text-dim);">
+                    <i class="fas fa-shield-alt" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                    <h3>NO SECURITY LOGS MATCHING CRITERIA</h3>
+                    <p>Telemetry stream active. Security events and visitor arrivals will appear here automatically.</p>
+                </div>
+            `;
+            return;
+        }
+
+        liveStreamContainer.innerHTML = filtered.map((log, index) => {
+            const timeStr = log.timestamp ? new Date(log.timestamp).toLocaleString() : (log.timeISO || 'RECENT');
+            const type = log.type || 'SYSTEM_EVENT';
+            const ip = log.ip || 'UNKNOWN_IP';
+            const city = log.city || 'CYBERSPACE';
+            const country = log.country || 'EARTH';
+            const countryCode = log.countryCode || 'UN';
+            const isp = log.isp || 'INTERNET PROVIDER';
+            const os = log.device?.os || 'Unknown OS';
+            const browser = log.device?.browser || 'Unknown Browser';
+            const screen = log.device?.screen || 'N/A';
+            const devType = log.device?.type || 'Desktop';
+            const path = log.path || '/';
+
+            // Event styling badge
+            let badgeClass = 'status-badge pending';
+            let badgeColor = 'rgba(0, 240, 255, 0.15)';
+            let badgeTextColor = 'var(--primary)';
+            let icon = 'fas fa-info-circle';
+
+            if (type === 'CONSOLE_TAMPER' || type === 'SECURITY_VIOLATION' || type === 'INJECTION_ATTEMPT') {
+                badgeClass = 'status-badge rejected';
+                badgeColor = 'rgba(255, 0, 85, 0.2)';
+                badgeTextColor = '#ff0055';
+                icon = 'fas fa-exclamation-triangle';
+            } else if (type === 'VISITOR_ACCESS') {
+                badgeColor = 'rgba(0, 240, 255, 0.12)';
+                badgeTextColor = '#00f0ff';
+                icon = 'fas fa-user-astronaut';
+            } else if (type === 'DEMO_SUBMISSION') {
+                badgeColor = 'rgba(183, 0, 255, 0.2)';
+                badgeTextColor = '#b700ff';
+                icon = 'fas fa-music';
+            } else if (type === 'CONTACT_MESSAGE') {
+                badgeColor = 'rgba(0, 255, 140, 0.2)';
+                badgeTextColor = '#00ff8c';
+                icon = 'fas fa-envelope';
+            }
+
+            // OS icon
+            let osIcon = 'fas fa-desktop';
+            if (os.includes('Win')) osIcon = 'fab fa-windows';
+            else if (os.includes('Mac') || os.includes('iOS')) osIcon = 'fab fa-apple';
+            else if (os.includes('Android')) osIcon = 'fab fa-android';
+            else if (os.includes('Linux')) osIcon = 'fab fa-linux';
+
+            const detailsStr = typeof log.details === 'object' ? JSON.stringify(log.details) : (log.details || 'No payload details.');
+
+            return `
+                <div class="inbox-entry-card" style="border-left: 4px solid ${badgeTextColor};">
+                    <div class="inbox-top-row">
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <span class="status-badge" style="background: ${badgeColor}; color: ${badgeTextColor}; border: 1px solid ${badgeTextColor}; display: inline-flex; align-items: center; gap: 0.4rem;">
+                                <i class="${icon}"></i> ${type}
+                            </span>
+                            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);"><i class="far fa-clock"></i> ${timeStr}</span>
+                        </div>
+                        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--primary);">
+                            <i class="fas fa-map-marker-alt"></i> <strong>${city}, ${country}</strong> (${countryCode})
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; background: rgba(0,0,0,0.35); padding: 0.9rem 1.2rem; border-radius: 10px; border: 1px solid var(--border-dim);">
+                        <div>
+                            <span style="font-size: 0.68rem; color: var(--text-muted); display: block; font-family: var(--font-mono);">CLIENT IP & ISP</span>
+                            <strong style="font-family: var(--font-mono); font-size: 0.82rem; color: #fff;"><i class="fas fa-network-wired"></i> ${ip}</strong>
+                            <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.2rem;">${isp}</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.68rem; color: var(--text-muted); display: block; font-family: var(--font-mono);">DEVICE & SYSTEM</span>
+                            <strong style="font-family: var(--font-mono); font-size: 0.82rem; color: #fff;"><i class="${osIcon}"></i> ${os} (${devType})</strong>
+                            <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.2rem;"><i class="fab fa-chrome"></i> ${browser}</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.68rem; color: var(--text-muted); display: block; font-family: var(--font-mono);">RESOLUTION & PATH</span>
+                            <strong style="font-family: var(--font-mono); font-size: 0.82rem; color: #fff;"><i class="fas fa-expand"></i> ${screen}</strong>
+                            <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.2rem;"><i class="fas fa-link"></i> ${path}</div>
+                        </div>
+                    </div>
+
+                    <div class="inbox-message-box" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);"><i class="fas fa-terminal"></i> <strong>PAYLOAD:</strong> ${detailsStr}</span>
+                        <button type="button" class="cyber-btn sm" style="padding: 0.25rem 0.6rem; font-size: 0.68rem;" onclick="viewRawLogData(${index})"><i class="fas fa-code"></i> RAW JSON</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Tab Filtering
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            filterTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            currentLogFilter = tab.dataset.filter || 'all';
+            renderSecurityLogs();
+        });
+    });
+
+    // Search Input
+    if (searchInput) {
+        searchInput.addEventListener('input', renderSecurityLogs);
+    }
+
+    // Refresh Button
+    if (btnRefresh) {
+        btnRefresh.addEventListener('click', () => {
+            showToast("REFRESHING SECURITY TELEMETRY...");
+            renderSecurityLogs();
+        });
+    }
+
+    // Export JSON
+    if (btnExportJson) {
+        btnExportJson.addEventListener('click', () => {
+            const jsonStr = JSON.stringify(cachedSecurityLogs, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `obscura_security_logs_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("TELEMETRY LOGS EXPORTED AS JSON!");
+        });
+    }
+
+    // Export CSV
+    if (btnExportCsv) {
+        btnExportCsv.addEventListener('click', () => {
+            if (cachedSecurityLogs.length === 0) {
+                showToast("NO LOGS TO EXPORT!", 'error');
+                return;
+            }
+            const headers = ["Timestamp", "Event Type", "IP Address", "City", "Country", "ISP", "OS", "Browser", "Screen", "Path", "Details"];
+            const rows = cachedSecurityLogs.map(l => [
+                l.timestamp ? new Date(l.timestamp).toISOString() : (l.timeISO || ''),
+                l.type || '',
+                l.ip || '',
+                l.city || '',
+                l.country || '',
+                l.isp || '',
+                l.device?.os || '',
+                l.device?.browser || '',
+                l.device?.screen || '',
+                l.path || '',
+                typeof l.details === 'object' ? JSON.stringify(l.details).replace(/"/g, '""') : (l.details || '')
+            ]);
+
+            const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.map(val => `"${val}"`).join(','))].join('\n');
+            const encodedUri = encodeURI(csvContent);
+            const a = document.createElement('a');
+            a.href = encodedUri;
+            a.download = `obscura_security_logs_${Date.now()}.csv`;
+            a.click();
+            showToast("TELEMETRY LOGS EXPORTED AS CSV!");
+        });
+    }
+
+    // Clear Logs
+    if (btnClearLogs) {
+        btnClearLogs.addEventListener('click', () => {
+            if (!confirm("Are you sure you want to PURGE ALL SECURITY & TELEMETRY LOGS from the database?")) return;
+            Promise.all([
+                db.ref('siteData/security/logs').remove(),
+                db.ref('siteData/security/violations').remove(),
+                db.ref('security_logs').remove()
+            ]).then(() => {
+                showToast("ALL SECURITY & TELEMETRY LOGS PURGED!");
+            }).catch(err => showToast("ERROR: " + err.message, 'error'));
+        });
+    }
+
+    // Raw JSON Viewer Global Helper
+    window.viewRawLogData = function(index) {
+        const item = cachedSecurityLogs[index];
+        if (!item) return;
+        alert(JSON.stringify(item, null, 2));
+    };
 }
+
