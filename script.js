@@ -512,15 +512,12 @@ function loadPopular() {
             card.className = 'popular-card release-card-large glass';
             card.innerHTML = `
                 <div class="release-cover-large">
-                    <div class="cyber-cd-disc">
-                        <div class="cd-hologram-shimmer"></div>
-                        <div class="cd-data-tracks"></div>
-                        <div class="cd-laser-flare"></div>
-                        <div class="cd-center-hub">
-                            <div class="cd-label-mini"><img src="${r.image || 'assets/cover.png'}" alt="CD Label"></div>
-                            <div class="cd-center-hole"></div>
-                        </div>
-                        <div class="cd-rim-glow"></div>
+                    <div class="cyber-laser-scanner"></div>
+                    <div class="neon-spectrum-visualizer">
+                        <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+                        <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+                        <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+                        <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
                     </div>
                     <img src="${r.image || 'assets/cover.png'}" alt="${r.title}">
                     <div class="release-type-badge">HOT #${rankFormatted}</div>
@@ -1783,15 +1780,12 @@ const initPortal = () => {
                 const cardHtml = `
                     <div class="release-card-large glass">
                         <div class="release-cover-large">
-                            <div class="cyber-cd-disc">
-                                <div class="cd-hologram-shimmer"></div>
-                                <div class="cd-data-tracks"></div>
-                                <div class="cd-laser-flare"></div>
-                                <div class="cd-center-hub">
-                                    <div class="cd-label-mini"><img src="${release.image || 'assets/cover.png'}" alt="CD Label"></div>
-                                    <div class="cd-center-hole"></div>
-                                </div>
-                                <div class="cd-rim-glow"></div>
+                            <div class="cyber-laser-scanner"></div>
+                            <div class="neon-spectrum-visualizer">
+                                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+                                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+                                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+                                <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
                             </div>
                             <img src="${release.image || 'assets/cover.png'}" alt="${release.title}">
                             <div class="release-type-badge">${release.type || 'SINGLE'}</div>
