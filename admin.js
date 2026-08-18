@@ -1835,7 +1835,9 @@ function initModalsEngine() {
 
 // --- 10. SECURITY & AUDIT LOGS ENGINE ---
 let cachedSecurityLogs = [];
-let cachedViolations = [];
+let rawTelemetryLogs = [];
+let rawViolations = [];
+let rawAuditLogs = [];
 let currentLogFilter = 'all';
 
 function initSecurityLogsEngine() {
@@ -1856,54 +1858,119 @@ function initSecurityLogsEngine() {
     const statNodes = document.getElementById('sec-stat-nodes');
     const badgeSecurity = document.getElementById('badge-security-logs');
 
-    // 1. Listen to Global Security Alarm
+    // 1. Listen to Global Security Alarm (With 3-minute auto timeout)
     db.ref('siteData/security/globalAlarm').on('value', (snap) => {
         const alarm = snap.val();
-        if (alarm && alarm.active) {
+        const now = Date.now();
+        const isRecent = alarm && alarm.active && (now - (alarm.time || 0) < 180000);
+
+        if (isRecent) {
             if (alarmBanner) {
                 alarmBanner.style.display = 'flex';
                 if (alarmTitle) alarmTitle.textContent = `CRITICAL ALERT: ${alarm.type || 'INTRUSION DETECTED'}`;
-                if (alarmDesc) alarmDesc.textContent = `Location: ${alarm.location || 'Unknown'} | IP: ${alarm.ip || 'Unknown'} | Intercepted at: ${new Date(alarm.time || Date.now()).toLocaleTimeString()}`;
+                if (alarmDesc) alarmDesc.textContent = `Location: ${alarm.location || 'Unknown'} | IP: ${alarm.ip || 'Unknown'} | Intercepted at: ${new Date(alarm.time || now).toLocaleTimeString()}`;
             }
         } else {
             if (alarmBanner) alarmBanner.style.display = 'none';
+            if (alarm && alarm.active && (now - (alarm.time || 0) >= 180000)) {
+                // Auto-clear stale alarms
+                db.ref('siteData/security/globalAlarm').set({ active: false, time: now });
+            }
         }
     });
 
     if (btnDismissAlarm) {
         btnDismissAlarm.addEventListener('click', () => {
-            db.ref('siteData/security/globalAlarm/active').set(false).then(() => {
-                showToast("SECURITY ALARM DISMISSED");
+            db.ref('siteData/security/globalAlarm').set({ active: false, time: Date.now() }).then(() => {
+                if (alarmBanner) alarmBanner.style.display = 'none';
+                showToast("SECURITY ALARM DISMISSED & RESET");
             });
         });
     }
 
-    // 2. Listen to Live Visitor Nodes
+    // 2. Listen to Live Active Visitor Nodes
     db.ref('siteData/activeConnections').on('value', (snapshot) => {
         const count = snapshot.numChildren();
         if (statNodes) statNodes.textContent = Math.max(1, count);
     });
 
-    // 3. Listen to Violations
-    db.ref('siteData/security/violations').on('value', (snapshot) => {
-        const data = snapshot.val();
-        cachedViolations = data ? Object.values(data) : [];
-        if (statViolations) statViolations.textContent = cachedViolations.length;
-    });
+    // Helper: Re-merge and sort all log collections
+    function syncAndRenderLogs() {
+        const logMap = new Map();
 
-    // 4. Listen to Primary Security Logs Stream
-    db.ref('siteData/security/logs').limitToLast(150).on('value', (snapshot) => {
-        const data = snapshot.val();
-        cachedSecurityLogs = [];
-        if (data) {
-            cachedSecurityLogs = Object.values(data).reverse(); // Newest first
-        }
+        // 1. Add Telemetry Logs
+        rawTelemetryLogs.forEach(l => {
+            if (l && l.id) logMap.set(l.id, l);
+            else if (l) logMap.set('TL_' + (l.timestamp || Math.random()), l);
+        });
+
+        // 2. Add Violations
+        rawViolations.forEach(l => {
+            if (l && l.id) logMap.set(l.id, l);
+            else if (l) logMap.set('VL_' + (l.timestamp || Math.random()), l);
+        });
+
+        // 3. Add Admin Audit Logs
+        rawAuditLogs.forEach(l => {
+            if (l && l.id) logMap.set(l.id, l);
+        });
+
+        // Sort descending by timestamp
+        cachedSecurityLogs = Array.from(logMap.values()).sort((a, b) => {
+            const timeA = typeof a.timestamp === 'number' ? a.timestamp : new Date(a.timeISO || 0).getTime();
+            const timeB = typeof b.timestamp === 'number' ? b.timestamp : new Date(b.timeISO || 0).getTime();
+            return timeB - timeA;
+        });
+
+        // Update Counter Stats
+        const violationCount = cachedSecurityLogs.filter(l => l.type === 'CONSOLE_TAMPER' || l.type === 'INJECTION_ATTEMPT' || l.type === 'SECURITY_VIOLATION').length;
         if (statTotal) statTotal.textContent = cachedSecurityLogs.length;
+        if (statViolations) statViolations.textContent = violationCount;
         if (badgeSecurity) badgeSecurity.textContent = cachedSecurityLogs.length;
+
         renderSecurityLogs();
+    }
+
+    // 3. Listen to Primary Telemetry Logs Stream
+    db.ref('siteData/security/logs').limitToLast(200).on('value', (snapshot) => {
+        const data = snapshot.val();
+        rawTelemetryLogs = data ? Object.values(data) : [];
+        syncAndRenderLogs();
     });
 
-    // 5. Render Security Logs List
+    // 4. Listen to Violations Stream
+    db.ref('siteData/security/violations').limitToLast(100).on('value', (snapshot) => {
+        const data = snapshot.val();
+        rawViolations = data ? Object.values(data) : [];
+        syncAndRenderLogs();
+    });
+
+    // 5. Listen to Administrative Audit Logs (Syncs & Saves)
+    db.ref('security_logs').limitToLast(100).on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            rawAuditLogs = Object.entries(data).map(([key, l]) => ({
+                id: 'AUDIT_' + key,
+                type: 'ADMIN_AUDIT',
+                timestamp: l.timestamp || Date.now(),
+                timeISO: new Date(l.timestamp || Date.now()).toISOString(),
+                ip: 'ADMIN CONSOLE',
+                city: 'OBSCURA HQ',
+                region: 'COMMAND DECK',
+                country: 'ADMIN',
+                countryCode: 'ADM',
+                isp: 'SECURE AUTH',
+                device: { os: 'Admin Workstation', browser: 'Chromium Superuser', type: 'Desktop', screen: 'Admin Panel' },
+                path: '/admin.html',
+                details: { action: l.action || 'System synced', admin: l.user || 'SUPERUSER' }
+            }));
+        } else {
+            rawAuditLogs = [];
+        }
+        syncAndRenderLogs();
+    });
+
+    // 6. Render Security Logs List
     function renderSecurityLogs() {
         if (!liveStreamContainer) return;
         const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
@@ -1915,6 +1982,8 @@ function initSecurityLogsEngine() {
                 if (!isViolation) return false;
             } else if (currentLogFilter === 'visitors') {
                 if (log.type !== 'VISITOR_ACCESS') return false;
+            } else if (currentLogFilter === 'admin') {
+                if (log.type !== 'ADMIN_AUDIT') return false;
             } else if (currentLogFilter === 'forms') {
                 const isForm = log.type === 'DEMO_SUBMISSION' || log.type === 'CONTACT_MESSAGE';
                 if (!isForm) return false;
@@ -1928,7 +1997,8 @@ function initSecurityLogsEngine() {
                 const typeStr = (log.type || '').toLowerCase();
                 const osStr = (log.device?.os || '').toLowerCase();
                 const browserStr = (log.device?.browser || '').toLowerCase();
-                return ipStr.includes(query) || cityStr.includes(query) || countryStr.includes(query) || typeStr.includes(query) || osStr.includes(query) || browserStr.includes(query);
+                const detailsStr = typeof log.details === 'object' ? JSON.stringify(log.details).toLowerCase() : (log.details || '').toLowerCase();
+                return ipStr.includes(query) || cityStr.includes(query) || countryStr.includes(query) || typeStr.includes(query) || osStr.includes(query) || browserStr.includes(query) || detailsStr.includes(query);
             }
             return true;
         });
@@ -1937,8 +2007,8 @@ function initSecurityLogsEngine() {
             liveStreamContainer.innerHTML = `
                 <div class="empty-state full-grid" style="padding: 2.5rem; text-align: center; color: var(--text-dim);">
                     <i class="fas fa-shield-alt" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
-                    <h3>NO SECURITY LOGS MATCHING CRITERIA</h3>
-                    <p>Telemetry stream active. Security events and visitor arrivals will appear here automatically.</p>
+                    <h3>NO LOGS MATCHING CURRENT CRITERIA</h3>
+                    <p>Telemetry stream active. Security events, visitor arrivals, and admin changes will appear here live.</p>
                 </div>
             `;
             return;
@@ -1959,13 +2029,11 @@ function initSecurityLogsEngine() {
             const path = log.path || '/';
 
             // Event styling badge
-            let badgeClass = 'status-badge pending';
             let badgeColor = 'rgba(0, 240, 255, 0.15)';
             let badgeTextColor = 'var(--primary)';
             let icon = 'fas fa-info-circle';
 
             if (type === 'CONSOLE_TAMPER' || type === 'SECURITY_VIOLATION' || type === 'INJECTION_ATTEMPT') {
-                badgeClass = 'status-badge rejected';
                 badgeColor = 'rgba(255, 0, 85, 0.2)';
                 badgeTextColor = '#ff0055';
                 icon = 'fas fa-exclamation-triangle';
@@ -1973,6 +2041,10 @@ function initSecurityLogsEngine() {
                 badgeColor = 'rgba(0, 240, 255, 0.12)';
                 badgeTextColor = '#00f0ff';
                 icon = 'fas fa-user-astronaut';
+            } else if (type === 'ADMIN_AUDIT') {
+                badgeColor = 'rgba(255, 204, 0, 0.2)';
+                badgeTextColor = '#ffcc00';
+                icon = 'fas fa-tools';
             } else if (type === 'DEMO_SUBMISSION') {
                 badgeColor = 'rgba(183, 0, 255, 0.2)';
                 badgeTextColor = '#b700ff';
@@ -1989,6 +2061,7 @@ function initSecurityLogsEngine() {
             else if (os.includes('Mac') || os.includes('iOS')) osIcon = 'fab fa-apple';
             else if (os.includes('Android')) osIcon = 'fab fa-android';
             else if (os.includes('Linux')) osIcon = 'fab fa-linux';
+            else if (os.includes('Admin')) osIcon = 'fas fa-user-shield';
 
             const detailsStr = typeof log.details === 'object' ? JSON.stringify(log.details) : (log.details || 'No payload details.');
 
@@ -2025,7 +2098,7 @@ function initSecurityLogsEngine() {
                     </div>
 
                     <div class="inbox-message-box" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);"><i class="fas fa-terminal"></i> <strong>PAYLOAD:</strong> ${detailsStr}</span>
+                        <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);"><i class="fas fa-terminal"></i> <strong>DETAILS:</strong> ${detailsStr}</span>
                         <button type="button" class="cyber-btn sm" style="padding: 0.25rem 0.6rem; font-size: 0.68rem;" onclick="viewRawLogData(${index})"><i class="fas fa-code"></i> RAW JSON</button>
                     </div>
                 </div>
@@ -2052,7 +2125,7 @@ function initSecurityLogsEngine() {
     if (btnRefresh) {
         btnRefresh.addEventListener('click', () => {
             showToast("REFRESHING SECURITY TELEMETRY...");
-            renderSecurityLogs();
+            syncAndRenderLogs();
         });
     }
 
@@ -2110,8 +2183,15 @@ function initSecurityLogsEngine() {
             Promise.all([
                 db.ref('siteData/security/logs').remove(),
                 db.ref('siteData/security/violations').remove(),
+                db.ref('siteData/security/globalAlarm').set({ active: false, time: Date.now() }),
                 db.ref('security_logs').remove()
             ]).then(() => {
+                rawTelemetryLogs = [];
+                rawViolations = [];
+                rawAuditLogs = [];
+                cachedSecurityLogs = [];
+                if (alarmBanner) alarmBanner.style.display = 'none';
+                syncAndRenderLogs();
                 showToast("ALL SECURITY & TELEMETRY LOGS PURGED!");
             }).catch(err => showToast("ERROR: " + err.message, 'error'));
         });
@@ -2124,4 +2204,5 @@ function initSecurityLogsEngine() {
         alert(JSON.stringify(item, null, 2));
     };
 }
+
 
