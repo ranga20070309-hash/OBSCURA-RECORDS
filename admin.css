@@ -36,11 +36,14 @@
     --topbar-height: 72px;
 }
 
-/* --- RESET & GLOBAL ARCHITECTURE --- */
+/* --- RESET & GLOBAL ARCHITECTURE (4K ULTRA-HIGH FIDELITY) --- */
 *, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    text-rendering: optimizeLegibility !important;
 }
 
 html, body {
@@ -53,6 +56,20 @@ html, body {
     line-height: 1.5;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+img, canvas, svg, .cyber-card, .table-row {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: auto;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
 }
 
 /* Custom Cyber Scrollbar */
