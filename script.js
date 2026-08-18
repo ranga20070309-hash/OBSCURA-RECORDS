@@ -518,6 +518,13 @@ function loadPopular() {
 
         items.forEach((r, i) => {
             const rankFormatted = (i + 1 < 10) ? `0${i + 1}` : `${i + 1}`;
+            let ytData = getYouTubeID(r.youtube);
+            const previewYT = getYouTubeID(r.preview);
+            if (previewYT) ytData = previewYT;
+
+            const ytIdAttr = ytData ? ytData.id : '';
+            const ytTypeAttr = ytData ? ytData.type : 'video';
+
             const card = document.createElement('div');
             card.className = 'popular-card release-card-large glass';
             card.innerHTML = `
@@ -526,7 +533,18 @@ function loadPopular() {
                     <img src="${r.image || 'assets/cover.png'}" alt="${r.title}">
                     <div class="release-type-badge">HOT #${rankFormatted}</div>
                     <div class="player-overlay">
-                        <button class="play-btn"><i class="fas fa-play"></i></button>
+                        <button class="play-btn"
+                            data-title="${(r.title || 'POPULAR HIT').replace(/"/g, '&quot;')}"
+                            data-artist="${(r.artist || 'OBSCURA RECORD').replace(/"/g, '&quot;')}"
+                            data-image="${r.image || 'assets/cover.png'}"
+                            data-spotify="${r.spotify || '#'}"
+                            data-youtube="${r.youtube || '#'}"
+                            data-preview="${r.preview || ''}"
+                            data-ytid="${ytIdAttr}"
+                            data-yttype="${ytTypeAttr}">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <div class="preview-time" style="display: none;">0:30</div>
                     </div>
                 </div>
                 <div class="release-info-large">
@@ -541,12 +559,53 @@ function loadPopular() {
                 </div>
             `;
 
-            card.addEventListener('click', () => {
-                if (typeof playBleep === 'function') playBleep(900, 'sine', 0.1);
-                // Default click opens the first available link
-                const firstLink = (r.spotify && r.spotify !== '#') ? r.spotify : ((r.youtube && r.youtube !== '#') ? r.youtube : r.apple);
-                if (firstLink && firstLink !== '#') window.open(firstLink, '_blank');
-            });
+            const playBtn = card.querySelector('.play-btn');
+            if (playBtn) {
+                playBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isPlaying = playBtn.innerHTML.includes('fa-pause');
+                    if (currentPlayingBtn && currentPlayingBtn !== playBtn) {
+                        stopPlayback(currentPlayingBtn);
+                    }
+
+                    if (!isPlaying) {
+                        currentPlayingBtn = playBtn;
+                        const mp3Url = playBtn.getAttribute('data-preview');
+                        const ytId = playBtn.getAttribute('data-ytid');
+                        const ytType = playBtn.getAttribute('data-yttype');
+                        const coverImg = card.querySelector('.release-cover-large > img');
+                        
+                        if (mp3Url && mp3Url !== '#' && !getYouTubeID(mp3Url)) {
+                            previewAudio.src = mp3Url;
+                            previewAudio.play().then(() => {
+                                startUIPlayback(playBtn, card, coverImg);
+                            }).catch(() => {
+                                startUIPlayback(playBtn, card, coverImg);
+                            });
+                        } else if (ytId) {
+                            if (!isYTApiReady || !ytPlayer) initYTPlayer();
+                            try {
+                                if (ytPlayer && ytPlayer.playVideo) {
+                                    ytPlayer.unMute();
+                                    ytPlayer.setVolume(100);
+                                    if (ytType === 'playlist') {
+                                        ytPlayer.loadPlaylist({ listType: 'playlist', list: ytId, index: 0 });
+                                    } else {
+                                        ytPlayer.loadVideoById({ videoId: ytId });
+                                    }
+                                    ytPlayer.playVideo();
+                                }
+                            } catch(e) {}
+                            startUIPlayback(playBtn, card, coverImg);
+                        } else {
+                            startUIPlayback(playBtn, card, coverImg);
+                        }
+                    } else {
+                        stopPlayback(playBtn);
+                        currentPlayingBtn = null;
+                    }
+                });
+            }
 
             popularGrid.appendChild(card);
 
