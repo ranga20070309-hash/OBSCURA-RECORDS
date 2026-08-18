@@ -589,6 +589,7 @@ function loadPopular() {
                     <div class="cyber-laser-scanner"></div>
                     <img src="${cover}" alt="${title}" onerror="this.onerror=null; this.src='assets/cover.png';">
                     <div class="release-type-badge">HOT #${rankFormatted}</div>
+                    <div class="popular-overlay"></div>
                 </div>
                 <div class="release-info-large">
                     <span class="track-id">POPULAR HIT <span class="badge">${badgeText}</span></span>
