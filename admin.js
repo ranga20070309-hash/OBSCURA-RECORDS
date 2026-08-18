@@ -1,4 +1,4 @@
-// OBSCURA RECORD // CORE DIRECTIVE COMMAND DECK ENGINE (v5.0)
+// OBSCURA RECORD // CORE DIRECTIVE COMMAND DECK ENGINE (v5.5)
 // ARCHITECTURE: FULL REAL-TIME FIREBASE SYNCHRONIZATION (0 BUGS / ZERO DELAY)
 
 const firebaseConfig = {
@@ -263,10 +263,10 @@ function initNavigation() {
         'releases-panel': { title: '<i class="fas fa-compact-disc"></i> RELEASE CATALOG ARCHIVE', desc: 'Publish, edit, and reorder music releases with instant audio streaming IDs.' },
         'upcoming-panel': { title: '<i class="fas fa-clock"></i> UPCOMING RELEASES & TEASERS', desc: 'Configure teaser artwork, countdown date, and production status tags.' },
         'ghost-production-panel': { title: '<i class="fas fa-ghost"></i> GHOST PRODUCTION DIRECTIVES', desc: 'Manage custom production pricing tiers, turnaround timeline, and feature lists.' },
-        'staff-panel': { title: '<i class="fas fa-users-cog"></i> PERSONNEL & COLLABORATOR PROFILES', desc: 'Custom avatars, biographies, sort order, and social platforms for personnel.' },
+        'staff-panel': { title: '<i class="fas fa-users-cog"></i> PERSONNEL & COLLABORATOR PROFILES', desc: 'Custom avatars, banners, biographies, sort order, and social platforms for personnel.' },
         'demo-inbox-panel': { title: '<i class="fas fa-inbox"></i> DEMO SUBMISSIONS INBOX', desc: 'Review, stream, analyze link security, and tag artist demo transmissions.' },
         'contact-inbox-panel': { title: '<i class="fas fa-envelope-open-text"></i> CONTACT INQUIRIES', desc: 'Direct communications submitted via the public contact portal.' },
-        'modals-panel': { title: '<i class="fas fa-window-restore"></i> MODALS, FAQ & POLICIES', desc: 'Interactive FAQ question/answers accordion and legal policy editor.' },
+        'modals-panel': { title: '<i class="fas fa-window-restore"></i> MODALS, FAQ & FOOTER', desc: 'Interactive FAQ question/answers accordion, footer links, and legal policy editor.' },
         'security-panel': { title: '<i class="fas fa-shield-virus"></i> SECURITY & SYSTEM AUDIT', desc: 'Real-time database connection telemetry and administrative audit logs.' }
     };
 
@@ -332,13 +332,7 @@ function initGlobalsSync() {
             site_streetxTitle: data.streetxTitle || "STREETX <span class='accent'>CLOTHING</span>",
             site_streetxDesc: data.streetxDesc || "",
             site_streetxCta: data.streetxCta || "EXPLORE COLLECTION",
-            site_streetxUrl: data.streetxUrl || "streetx-clothing/",
-            // Footer Texts
-            site_footerCopyright: data.footerCopyright || "&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED.",
-            site_footerFaqText: data.footerFaqText || "FAQ",
-            site_footerDemoText: data.footerDemoText || "DEMO SUBMISSION",
-            site_footerContactText: data.footerContactText || "CONTACT US",
-            site_footerPrivacyText: data.footerPrivacyText || "PRIVACY"
+            site_streetxUrl: data.streetxUrl || "streetx-clothing/"
         };
 
         for (const [id, val] of Object.entries(map)) {
@@ -400,16 +394,11 @@ function initGlobalsSync() {
                 streetxTitle: document.getElementById('site_streetxTitle').value,
                 streetxDesc: document.getElementById('site_streetxDesc').value,
                 streetxCta: document.getElementById('site_streetxCta').value,
-                streetxUrl: document.getElementById('site_streetxUrl').value,
-                footerCopyright: document.getElementById('site_footerCopyright').value,
-                footerFaqText: document.getElementById('site_footerFaqText').value,
-                footerDemoText: document.getElementById('site_footerDemoText').value,
-                footerContactText: document.getElementById('site_footerContactText').value,
-                footerPrivacyText: document.getElementById('site_footerPrivacyText').value
+                streetxUrl: document.getElementById('site_streetxUrl').value
             };
 
             db.ref('siteData/globals').update(updates).then(() => {
-                bumpSiteVersion("Updated Navigation, Social URLs & Footer");
+                bumpSiteVersion("Updated Navigation & Social URLs");
                 showToast("NAVIGATION & SOCIAL LINKS SYNCHRONIZED!");
             }).catch(err => showToast("ERROR: " + err.message, 'error'));
         });
@@ -493,10 +482,13 @@ function initReleasesEngine() {
         if (!container) return;
         const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
         const filtered = cachedReleases.filter(r => {
+            const title = r.title || '';
+            const artist = r.artist || r.producers || '';
+            const catalog = r.catalog || r.id || '';
             if (!query) return true;
-            return (r.title || '').toLowerCase().includes(query) ||
-                   (r.artist || '').toLowerCase().includes(query) ||
-                   (r.catalog || '').toLowerCase().includes(query);
+            return title.toLowerCase().includes(query) ||
+                   artist.toLowerCase().includes(query) ||
+                   catalog.toLowerCase().includes(query);
         });
 
         if (filtered.length === 0) {
@@ -506,15 +498,17 @@ function initReleasesEngine() {
 
         container.innerHTML = filtered.map((rel, i) => {
             const actualIndex = cachedReleases.indexOf(rel);
-            const cover = rel.cover || 'assets/cover.png';
+            const cover = rel.cover || rel.image || 'assets/cover.png';
+            const artist = rel.artist || rel.producers || 'UNKNOWN ARTIST';
+            const catalog = rel.catalog || rel.id || 'OCR---';
             return `
                 <div class="admin-release-card">
                     <div class="rel-card-top">
                         <img src="${cover}" alt="Artwork" class="rel-thumb" onerror="this.onerror=null; this.src='assets/cover.png';">
                         <div class="rel-meta">
                             <h4>${rel.title || 'UNTITLED'}</h4>
-                            <div class="rel-artist">${rel.artist || 'UNKNOWN ARTIST'}</div>
-                            <div class="rel-code">${rel.catalog || 'OCR---'} | ${rel.date || 'TBA'}</div>
+                            <div class="rel-artist">${artist}</div>
+                            <div class="rel-code">${catalog} | ${rel.date || 'TBA'}</div>
                         </div>
                     </div>
                     <div class="rel-card-actions">
@@ -546,16 +540,29 @@ function initReleasesEngine() {
                 return;
             }
 
+            const catalog = document.getElementById('rel_catalog').value.trim() || 'OCR000';
+            const cover = document.getElementById('rel_cover').value.trim() || 'assets/cover.png';
+            const streamUrl = document.getElementById('rel_streamUrl').value.trim();
+            const spotifyUrl = document.getElementById('rel_spotifyUrl').value.trim();
+            const appleUrl = document.getElementById('rel_appleUrl').value.trim();
+
+            // Store dual keys so both old and new site scripts work seamlessly
             const item = {
                 title: title,
                 artist: artist,
-                catalog: document.getElementById('rel_catalog').value.trim() || 'OCR000',
+                producers: artist,
+                catalog: catalog,
+                id: catalog,
                 date: document.getElementById('rel_date').value.trim() || '2026',
-                cover: document.getElementById('rel_cover').value.trim() || 'assets/cover.png',
-                streamUrl: document.getElementById('rel_streamUrl').value.trim(),
-                spotifyUrl: document.getElementById('rel_spotifyUrl').value.trim(),
+                cover: cover,
+                image: cover,
+                streamUrl: streamUrl,
+                youtube: streamUrl,
+                spotifyUrl: spotifyUrl,
+                spotify: spotifyUrl,
                 soundcloudUrl: document.getElementById('rel_soundcloudUrl').value.trim(),
-                appleUrl: document.getElementById('rel_appleUrl').value.trim(),
+                appleUrl: appleUrl,
+                apple: appleUrl,
                 dlUrl: document.getElementById('rel_dlUrl').value.trim()
             };
 
@@ -581,18 +588,19 @@ function initReleasesEngine() {
         document.getElementById('rel_edit_index').value = index;
         document.getElementById('release-editor-title').textContent = `EDIT RELEASE: ${rel.title}`;
         document.getElementById('rel_title').value = rel.title || '';
-        document.getElementById('rel_artist').value = rel.artist || '';
-        document.getElementById('rel_catalog').value = rel.catalog || '';
+        document.getElementById('rel_artist').value = rel.artist || rel.producers || '';
+        document.getElementById('rel_catalog').value = rel.catalog || rel.id || '';
         document.getElementById('rel_date').value = rel.date || '';
-        document.getElementById('rel_cover').value = rel.cover || '';
-        document.getElementById('rel_streamUrl').value = rel.streamUrl || '';
-        document.getElementById('rel_spotifyUrl').value = rel.spotifyUrl || '';
-        document.getElementById('rel_soundcloudUrl').value = rel.soundcloudUrl || '';
-        document.getElementById('rel_appleUrl').value = rel.appleUrl || '';
+        document.getElementById('rel_cover').value = rel.cover || rel.image || '';
+        document.getElementById('rel_streamUrl').value = rel.streamUrl || rel.youtube || '';
+        document.getElementById('rel_spotifyUrl').value = rel.spotifyUrl || rel.spotify || '';
+        document.getElementById('rel_soundcloudUrl').value = rel.soundcloudUrl || rel.soundcloud || '';
+        document.getElementById('rel_appleUrl').value = rel.appleUrl || rel.apple || '';
         document.getElementById('rel_dlUrl').value = rel.dlUrl || '';
 
+        const coverSrc = rel.cover || rel.image || '';
         if (coverPreview) {
-            coverPreview.innerHTML = rel.cover ? `<img src="${rel.cover}">` : '<i class="fas fa-image"></i>';
+            coverPreview.innerHTML = coverSrc ? `<img src="${coverSrc}">` : '<i class="fas fa-image"></i>';
         }
 
         editorCard.style.display = 'block';
@@ -661,10 +669,10 @@ function initUpcomingEngine() {
         container.innerHTML = cachedUpcoming.map((upc, i) => `
             <div class="admin-upcoming-card">
                 <div class="rel-card-top">
-                    <img src="${upc.cover || 'assets/cover.png'}" alt="Teaser" class="rel-thumb" onerror="this.onerror=null; this.src='assets/cover.png';">
+                    <img src="${upc.cover || upc.image || 'assets/cover.png'}" alt="Teaser" class="rel-thumb" onerror="this.onerror=null; this.src='assets/cover.png';">
                     <div class="rel-meta">
                         <h4>${upc.title || 'UNTITLED TEASER'}</h4>
-                        <div class="rel-artist">${upc.artist || 'UNKNOWN'}</div>
+                        <div class="rel-artist">${upc.artist || upc.producers || 'UNKNOWN'}</div>
                         <div class="rel-code" style="color: var(--accent-yellow); font-weight: 600;">[ ${upc.status || 'COMING SOON'} ]</div>
                     </div>
                 </div>
@@ -687,12 +695,15 @@ function initUpcomingEngine() {
                 return;
             }
 
+            const cover = document.getElementById('upc_cover').value.trim() || 'assets/cover.png';
             const item = {
                 title: title,
                 artist: artist,
+                producers: artist,
                 date: document.getElementById('upc_date').value.trim() || 'COMING SOON',
                 status: document.getElementById('upc_status').value,
-                cover: document.getElementById('upc_cover').value.trim() || 'assets/cover.png'
+                cover: cover,
+                image: cover
             };
 
             let updatedList = [...cachedUpcoming];
@@ -716,10 +727,10 @@ function initUpcomingEngine() {
         document.getElementById('upc_edit_index').value = index;
         document.getElementById('upcoming-editor-title').textContent = `EDIT TEASER: ${item.title}`;
         document.getElementById('upc_title').value = item.title || '';
-        document.getElementById('upc_artist').value = item.artist || '';
+        document.getElementById('upc_artist').value = item.artist || item.producers || '';
         document.getElementById('upc_date').value = item.date || '';
         document.getElementById('upc_status').value = item.status || 'COMING SOON';
-        document.getElementById('upc_cover').value = item.cover || '';
+        document.getElementById('upc_cover').value = item.cover || item.image || '';
         editorCard.style.display = 'block';
         editorCard.scrollIntoView({ behavior: 'smooth' });
     };
@@ -734,16 +745,29 @@ function initUpcomingEngine() {
     };
 }
 
-// --- 5. GHOST PRODUCTION ENGINE ---
+// --- 5. GHOST PRODUCTION ENGINE (ALL OPTIONS & PRICING) ---
 function initGhostProdEngine() {
-    db.ref('siteData/ghostProduction').on('value', (snap) => {
+    db.ref('siteData/globals').on('value', (snap) => {
         const data = snap.val() || {};
         const map = {
-            site_ghostTitle: data.title || "GHOST <span class='accent'>PRODUCTION</span>",
-            site_ghostPrice: data.price || "STARTING AT $299",
-            site_ghostDesc: data.desc || "Premium, uncredited, industry-standard electronic music production.",
-            site_ghostTurnaround: data.turnaround || "7-14 DAYS ESTIMATED DELIVERY",
-            site_ghostCta: data.cta || "REQUEST CUSTOM TRACK"
+            site_ghostDesc: data.ghostDesc || "Request your custom sound in any style. Secure professional production for a flat fee.",
+            site_ghostServiceTitle: data.ghostServiceTitle || "GHOST PRODUCTION",
+            site_ghostTagline: data.ghostTagline || "EXCLUSIVE EVENT",
+            site_ghostServiceDesc: data.ghostServiceDesc || "Submit your preferred musical style and vision to our portal. Our elite producers will craft a bespoke, professional track tailored specifically to your requirements.",
+            site_ghostPrice30s: data.ghostPrice30s || "$10",
+            site_ghostPrice1m: data.ghostPrice1m || "$30",
+            site_ghostPriceVocals: data.ghostPriceVocals || "$50",
+            site_ghostPriceCustom: data.ghostPriceCustom || "From $100",
+            site_ghostAddonMix: data.ghostAddonMix || "+ $20",
+            site_ghostFeature1: data.ghostFeature1 || "High-Quality WAV Files",
+            site_ghostFeature2: data.ghostFeature2 || "24/7 Customer Service",
+            site_ghostFeature3: data.ghostFeature3 || "3 Project Revisions",
+            site_ghostAddonRevisions: data.ghostAddonRevisions || "+ $20",
+            site_ghostDeliveryTitle: data.ghostDeliveryTitle || "DELIVERY",
+            site_ghostDelivery3d: data.ghostDelivery3d || "+ $20",
+            site_ghostDelivery5d: data.ghostDelivery5d || "+ $10",
+            site_ghostSpecialTitle: data.ghostSpecialTitle || "SPECIAL OFFER: FULL TRACK",
+            site_ghostSpecialDesc: data.ghostSpecialDesc || "1 Full Track, Any Style, Mixed & Mastered. MP3 + WAV + MIDI + STEMS + PROJECT FILE"
         };
         for (const [id, val] of Object.entries(map)) {
             const el = document.getElementById(id);
@@ -755,21 +779,34 @@ function initGhostProdEngine() {
     if (btnSave) {
         btnSave.addEventListener('click', () => {
             const updates = {
-                title: document.getElementById('site_ghostTitle').value,
-                price: document.getElementById('site_ghostPrice').value,
-                desc: document.getElementById('site_ghostDesc').value,
-                turnaround: document.getElementById('site_ghostTurnaround').value,
-                cta: document.getElementById('site_ghostCta').value
+                ghostDesc: document.getElementById('site_ghostDesc').value,
+                ghostServiceTitle: document.getElementById('site_ghostServiceTitle').value,
+                ghostTagline: document.getElementById('site_ghostTagline').value,
+                ghostServiceDesc: document.getElementById('site_ghostServiceDesc').value,
+                ghostPrice30s: document.getElementById('site_ghostPrice30s').value,
+                ghostPrice1m: document.getElementById('site_ghostPrice1m').value,
+                ghostPriceVocals: document.getElementById('site_ghostPriceVocals').value,
+                ghostPriceCustom: document.getElementById('site_ghostPriceCustom').value,
+                ghostAddonMix: document.getElementById('site_ghostAddonMix').value,
+                ghostFeature1: document.getElementById('site_ghostFeature1').value,
+                ghostFeature2: document.getElementById('site_ghostFeature2').value,
+                ghostFeature3: document.getElementById('site_ghostFeature3').value,
+                ghostAddonRevisions: document.getElementById('site_ghostAddonRevisions').value,
+                ghostDeliveryTitle: document.getElementById('site_ghostDeliveryTitle').value,
+                ghostDelivery3d: document.getElementById('site_ghostDelivery3d').value,
+                ghostDelivery5d: document.getElementById('site_ghostDelivery5d').value,
+                ghostSpecialTitle: document.getElementById('site_ghostSpecialTitle').value,
+                ghostSpecialDesc: document.getElementById('site_ghostSpecialDesc').value
             };
-            db.ref('siteData/ghostProduction').update(updates).then(() => {
-                bumpSiteVersion("Updated Ghost Production Directives");
-                showToast("GHOST PRODUCTION DIRECTIVES SAVED!");
+            db.ref('siteData/globals').update(updates).then(() => {
+                bumpSiteVersion("Updated All Ghost Production Options");
+                showToast("ALL GHOST PRODUCTION OPTIONS SAVED & SYNCED!");
             }).catch(err => showToast("ERROR: " + err.message, 'error'));
         });
     }
 }
 
-// --- 6. PERSONNEL & PARTNERS ENGINE (WITH PROFILE BUILDER & MULTI-SOCIALS) ---
+// --- 6. PERSONNEL & PARTNERS ENGINE (WITH LOCAL IMAGE FILE UPLOAD / BROWSER) ---
 function initStaffEngine() {
     const container = document.getElementById('staff-admin-container');
     const tabStaff = document.getElementById('tab-staff-view');
@@ -780,6 +817,58 @@ function initStaffEngine() {
     const btnCloseProf = document.getElementById('close-profile-editor');
     const btnCancelProf = document.getElementById('btn-cancel-profile');
     const btnSaveProf = document.getElementById('btn-save-profile');
+    
+    const avatarInput = document.getElementById('prof_avatar');
+    const avatarFile = document.getElementById('prof_avatar_file');
+    const avatarPreview = document.getElementById('prof-avatar-preview');
+
+    const bannerInput = document.getElementById('prof_banner');
+    const bannerFile = document.getElementById('prof_banner_file');
+    const bannerPreview = document.getElementById('prof-banner-preview');
+
+    // Local file browser for Avatar / DP
+    if (avatarFile && avatarInput) {
+        avatarFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                avatarInput.value = event.target.result;
+                if (avatarPreview) avatarPreview.innerHTML = `<img src="${event.target.result}">`;
+                showToast("AVATAR IMAGE LOADED FROM LOCAL MACHINE!");
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (avatarInput && avatarPreview) {
+        avatarInput.addEventListener('input', () => {
+            const url = avatarInput.value.trim();
+            avatarPreview.innerHTML = url ? `<img src="${url}">` : '<i class="fas fa-user"></i>';
+        });
+    }
+
+    // Local file browser for Profile Banner
+    if (bannerFile && bannerInput) {
+        bannerFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                bannerInput.value = event.target.result;
+                if (bannerPreview) bannerPreview.innerHTML = `<img src="${event.target.result}">`;
+                showToast("BANNER IMAGE LOADED FROM LOCAL MACHINE!");
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (bannerInput && bannerPreview) {
+        bannerInput.addEventListener('input', () => {
+            const url = bannerInput.value.trim();
+            bannerPreview.innerHTML = url ? `<img src="${url}">` : '<i class="fas fa-image"></i>';
+        });
+    }
 
     if (tabStaff && tabPartner) {
         tabStaff.addEventListener('click', () => {
@@ -796,6 +885,7 @@ function initStaffEngine() {
         });
     }
 
+    // Add new profile button - RESET AND UNLOCK ID TEXTBOX
     if (btnAddProf && profEditor) {
         btnAddProf.addEventListener('click', () => {
             const isPartner = currentStaffView === 'partner';
@@ -803,11 +893,22 @@ function initStaffEngine() {
             document.getElementById('prof_is_partner').value = isPartner ? 'true' : 'false';
             document.getElementById('profile-editor-title').textContent = `CREATE NEW ${isPartner ? 'PARTNER' : 'STAFF'} PROFILE`;
             
-            ['prof_id', 'prof_name', 'prof_role', 'prof_avatar', 'prof_bio', 'prof_social_insta', 'prof_social_spotify', 'prof_social_soundcloud', 'prof_social_youtube', 'prof_social_twitter', 'prof_social_discord'].forEach(id => {
+            const profIdInput = document.getElementById('prof_id');
+            if (profIdInput) {
+                profIdInput.disabled = false; // UNLOCKED SO USER CAN TYPE NEW ID
+                profIdInput.value = '';
+                profIdInput.focus();
+            }
+
+            ['prof_name', 'prof_role', 'prof_avatar', 'prof_banner', 'prof_bio', 'prof_social_insta', 'prof_social_spotify', 'prof_social_soundcloud', 'prof_social_youtube', 'prof_social_twitter', 'prof_social_discord'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
             });
+
+            if (avatarPreview) avatarPreview.innerHTML = '<i class="fas fa-user"></i>';
+            if (bannerPreview) bannerPreview.innerHTML = '<i class="fas fa-image"></i>';
             document.getElementById('prof_order').value = '1';
+            
             profEditor.style.display = 'block';
             profEditor.scrollIntoView({ behavior: 'smooth' });
         });
@@ -853,8 +954,7 @@ function initStaffEngine() {
         }
 
         container.innerHTML = entries.map(([id, p]) => {
-            const avatar = p.avatar_url || 'assets/cover.png';
-            const socials = p.socials || {};
+            const avatar = p.avatar_url || p.logoUrl || 'assets/cover.png';
             return `
                 <div class="staff-editor-card" data-id="${id}">
                     <div class="rel-card-top">
@@ -908,11 +1008,17 @@ function initStaffEngine() {
             if (twitter) socials.twitter = twitter;
             if (discord) socials.discord = discord;
 
+            const avatarUrl = document.getElementById('prof_avatar').value.trim();
+            const bannerUrl = document.getElementById('prof_banner').value.trim();
+
             const data = {
                 name: name,
                 role: role,
                 order: parseInt(document.getElementById('prof_order').value) || 99,
-                avatar_url: document.getElementById('prof_avatar').value.trim(),
+                avatar_url: avatarUrl,
+                logoUrl: avatarUrl,
+                banner_url: bannerUrl,
+                bannerUrl: bannerUrl,
                 bio: document.getElementById('prof_bio').value.trim(),
                 socials: socials
             };
@@ -935,12 +1041,24 @@ function initStaffEngine() {
         document.getElementById('prof_is_partner').value = isPartner ? 'true' : 'false';
         document.getElementById('profile-editor-title').textContent = `EDIT PROFILE: ${p.name || id}`;
         
-        document.getElementById('prof_id').value = id;
-        document.getElementById('prof_id').disabled = true; // Key lock
+        const profIdInput = document.getElementById('prof_id');
+        if (profIdInput) {
+            profIdInput.value = id;
+            profIdInput.disabled = true; // Key lock for existing
+        }
+
         document.getElementById('prof_name').value = p.name || '';
         document.getElementById('prof_role').value = p.role || '';
         document.getElementById('prof_order').value = p.order || 99;
-        document.getElementById('prof_avatar').value = p.avatar_url || '';
+        
+        const avUrl = p.avatar_url || p.logoUrl || '';
+        document.getElementById('prof_avatar').value = avUrl;
+        if (avatarPreview) avatarPreview.innerHTML = avUrl ? `<img src="${avUrl}">` : '<i class="fas fa-user"></i>';
+
+        const bnUrl = p.banner_url || p.bannerUrl || '';
+        document.getElementById('prof_banner').value = bnUrl;
+        if (bannerPreview) bannerPreview.innerHTML = bnUrl ? `<img src="${bnUrl}">` : '<i class="fas fa-image"></i>';
+
         document.getElementById('prof_bio').value = p.bio || '';
 
         const socials = p.socials || {};
@@ -965,7 +1083,7 @@ function initStaffEngine() {
     };
 }
 
-// --- 7. DEMO SUBMISSIONS INBOX ENGINE ---
+// --- 7. DEMO SUBMISSIONS INBOX ENGINE (DUAL SYNC FOR ALL SUBMISSIONS) ---
 function initDemosEngine() {
     const container = document.getElementById('demos-inbox-container');
     const badgeDemos = document.getElementById('badge-demos');
@@ -984,11 +1102,25 @@ function initDemosEngine() {
         });
     }
 
-    db.ref('demo_submissions').on('value', (snap) => {
-        cachedDemos = snap.val() || {};
+    // Listen to both paths: 'siteData/submissions/demo' and 'demo_submissions'
+    let demosA = {};
+    let demosB = {};
+
+    function updateDemos() {
+        cachedDemos = { ...demosB, ...demosA };
         const count = Object.keys(cachedDemos).length;
         if (badgeDemos) badgeDemos.textContent = count;
         renderDemosList();
+    }
+
+    db.ref('siteData/submissions/demo').on('value', (snap) => {
+        demosA = snap.val() || {};
+        updateDemos();
+    });
+
+    db.ref('demo_submissions').on('value', (snap) => {
+        demosB = snap.val() || {};
+        updateDemos();
     });
 
     function renderDemosList() {
@@ -1001,8 +1133,8 @@ function initDemosEngine() {
             const status = (d.status || 'PENDING').toUpperCase();
             if (filter !== 'ALL' && status !== filter) return false;
             if (!query) return true;
-            return (d.artist || '').toLowerCase().includes(query) ||
-                   (d.trackTitle || '').toLowerCase().includes(query) ||
+            return (d.artist || d.name || '').toLowerCase().includes(query) ||
+                   (d.trackTitle || d.track || '').toLowerCase().includes(query) ||
                    (d.email || '').toLowerCase().includes(query) ||
                    (d.genre || '').toLowerCase().includes(query);
         });
@@ -1025,7 +1157,7 @@ function initDemosEngine() {
                 <div class="inbox-entry-card" data-demo-id="${id}">
                     <div class="inbox-top-row">
                         <div class="inbox-artist-info">
-                            <h4>${d.trackTitle || 'UNTITLED TRACK'} <span style="font-size: 0.9rem; color: #fff; opacity: 0.8;">by ${d.artist || d.name || 'UNKNOWN'}</span></h4>
+                            <h4>${d.trackTitle || d.track || 'UNTITLED TRACK'} <span style="font-size: 0.9rem; color: #fff; opacity: 0.8;">by ${d.artist || d.name || 'UNKNOWN'}</span></h4>
                             <span><i class="fas fa-envelope"></i> ${d.email || 'NO EMAIL'} | <i class="fas fa-music"></i> ${d.genre || 'ELECTRONIC'}</span>
                         </div>
                         <div class="inbox-tags">
@@ -1043,7 +1175,7 @@ function initDemosEngine() {
                             </a>
                         ` : ''}
                         ${isAudioStream ? `
-                            <button type="button" class="inbox-link-btn" onclick="playAudioPreview('${streamLink}', '${d.trackTitle || 'DEMO'}', '${d.artist || 'ARTIST'}')">
+                            <button type="button" class="inbox-link-btn" onclick="playAudioPreview('${streamLink}', '${d.trackTitle || d.track || 'DEMO'}', '${d.artist || d.name || 'ARTIST'}')">
                                 <i class="fas fa-play"></i> PREVIEW AUDIO
                             </button>
                         ` : ''}
@@ -1080,6 +1212,8 @@ function initDemosEngine() {
     };
 
     window.updateDemoStatus = function(id, status) {
+        // Update both paths
+        db.ref('siteData/submissions/demo/' + id).update({ status: status });
         db.ref('demo_submissions/' + id).update({ status: status }).then(() => {
             showToast(`STATUS UPDATED: ${status}`);
         }).catch(err => showToast("ERROR: " + err.message, 'error'));
@@ -1087,13 +1221,14 @@ function initDemosEngine() {
 
     window.deleteDemoSubmission = function(id) {
         if (!confirm("Permanently delete this demo submission record?")) return;
+        db.ref('siteData/submissions/demo/' + id).remove();
         db.ref('demo_submissions/' + id).remove().then(() => {
             showToast("SUBMISSION DELETED!");
         }).catch(err => showToast("ERROR: " + err.message, 'error'));
     };
 }
 
-// --- 8. CONTACT MESSAGES INBOX ENGINE ---
+// --- 8. CONTACT MESSAGES INBOX ENGINE (DUAL SYNC FOR ALL CONTACTS) ---
 function initContactEngine() {
     const container = document.getElementById('contact-inbox-container');
     const badgeContact = document.getElementById('badge-contact-msg');
@@ -1105,11 +1240,24 @@ function initContactEngine() {
         });
     }
 
-    db.ref('contact_messages').on('value', (snap) => {
-        cachedContacts = snap.val() || {};
+    let contactsA = {};
+    let contactsB = {};
+
+    function updateContacts() {
+        cachedContacts = { ...contactsB, ...contactsA };
         const count = Object.keys(cachedContacts).length;
         if (badgeContact) badgeContact.textContent = count;
         renderContactMessages();
+    }
+
+    db.ref('siteData/submissions/contact').on('value', (snap) => {
+        contactsA = snap.val() || {};
+        updateContacts();
+    });
+
+    db.ref('contact_messages').on('value', (snap) => {
+        contactsB = snap.val() || {};
+        updateContacts();
     });
 
     function renderContactMessages() {
@@ -1147,34 +1295,51 @@ function initContactEngine() {
 
     window.deleteContactMsg = function(id) {
         if (!confirm("Delete this contact message?")) return;
+        db.ref('siteData/submissions/contact/' + id).remove();
         db.ref('contact_messages/' + id).remove().then(() => {
             showToast("MESSAGE REMOVED!");
         }).catch(err => showToast("ERROR: " + err.message, 'error'));
     };
 }
 
-// --- 9. MODALS, FAQ & LEGAL POLICIES ENGINE ---
+// --- 9. MODALS, FAQ & FOOTER ENGINE ---
 function initModalsEngine() {
     const faqContainer = document.getElementById('faq-admin-container');
     const btnAddFaq = document.getElementById('btn-add-faq-item');
     const btnSaveModals = document.getElementById('save-modals-text');
 
-    db.ref('siteData/modals').on('value', (snap) => {
+    db.ref('siteData/globals').on('value', (snap) => {
         const data = snap.val() || {};
-        cachedFAQs = data.faqs || [
+        
+        const map = {
+            site_footerCopyright: data.footerCopyright || "&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED.",
+            site_footerFaqText: data.footerFaqText || "FAQ",
+            site_footerDemoText: data.footerDemoText || "DEMO SUBMISSION",
+            site_footerContactText: data.footerContactText || "CONTACT US",
+            site_footerPrivacyText: data.footerPrivacyText || "PRIVACY",
+            site_formRule1Title: data.formRule1Title || "Is this track unreleased?",
+            site_formRule1Desc: data.formRule1Desc || "We do NOT accept already-released tracks. Any submissions that have already been published will be automatically declined.",
+            site_formRule2Title: data.formRule2Title || "Track identification",
+            site_formRule2Desc: data.formRule2Desc || "Please provide the title for your track. If you haven't decided on a name yet, a reference title is sufficient so we can identify your submission.",
+            site_formSubmitBtn: data.formSubmitBtn || "Initiate Submission",
+            site_formDiscordBtn: data.formDiscordBtn || "Join Discord",
+            site_formFooterRec: data.formFooterRec || "[ Highly Recommended: Join the server for real-time frequency tracking ]",
+            site_contactModalSubtext: data.contactModalSubtext || "Establish a direct frequency with the Obscura Record command center.",
+            site_privacyContent: data.privacyContent || "At OBSCURA RECORD, we value the privacy and intellectual property of our artists and visitors..."
+        };
+
+        for (const [id, val] of Object.entries(map)) {
+            const el = document.getElementById(id);
+            if (el) el.value = val;
+        }
+    });
+
+    db.ref('siteData/modals/faqs').on('value', (snap) => {
+        const data = snap.val();
+        cachedFAQs = (data && Array.isArray(data)) ? data : [
             { q: "HOW DO I SUBMIT A DEMO?", a: "Transmit your unreleased master tracks through the Send Demo button." },
             { q: "WHAT GENRES DOES OBSCURA ACCEPT?", a: "We specialize in futuristic electronic, phonk, funk, and cyberpunk soundscapes." }
         ];
-
-        const demoDescEl = document.getElementById('site_demoDesc');
-        if (demoDescEl && data.demoDesc) demoDescEl.value = data.demoDesc;
-
-        const privacyEl = document.getElementById('site_privacyContent');
-        if (privacyEl && data.privacyContent) privacyEl.value = data.privacyContent;
-
-        const contactSubEl = document.getElementById('site_contactModalSubtext');
-        if (contactSubEl && data.contactModalSubtext) contactSubEl.value = data.contactModalSubtext;
-
         renderFaqItems();
     });
 
@@ -1184,11 +1349,11 @@ function initModalsEngine() {
             <div class="form-grid" style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-dim); padding-bottom: 1.2rem;" data-faq-index="${i}">
                 <div class="input-group full">
                     <label>QUESTION #${i + 1}</label>
-                    <input type="text" class="faq-q-input" value="${item.q || ''}">
+                    <input type="text" class="faq-q-input" value="${item.q || item.question || ''}">
                 </div>
                 <div class="input-group full">
                     <label>ANSWER #${i + 1}</label>
-                    <textarea class="faq-a-input" rows="2">${item.a || ''}</textarea>
+                    <textarea class="faq-a-input" rows="2">${item.a || item.answer || ''}</textarea>
                 </div>
                 <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end;">
                     <button type="button" class="cyber-btn danger sm" onclick="removeFaqItem(${i})"><i class="fas fa-trash"></i> REMOVE FAQ</button>
@@ -1199,7 +1364,7 @@ function initModalsEngine() {
 
     if (btnAddFaq) {
         btnAddFaq.addEventListener('click', () => {
-            cachedFAQs.push({ q: "NEW QUESTION", a: "Answer payload..." });
+            cachedFAQs.push({ q: "NEW QUESTION", a: "Answer transmission payload..." });
             renderFaqItems();
         });
     }
@@ -1219,32 +1384,34 @@ function initModalsEngine() {
                 if (qIn && aIn) {
                     newFaqs.push({
                         q: qIn.value.trim(),
-                        a: aIn.value.trim()
+                        question: qIn.value.trim(),
+                        a: aIn.value.trim(),
+                        answer: aIn.value.trim()
                     });
                 }
             });
 
-            const demoDesc = document.getElementById('site_demoDesc').value;
-            const privacyContent = document.getElementById('site_privacyContent').value;
-            const contactModalSubtext = document.getElementById('site_contactModalSubtext').value;
-
             const updates = {
-                faqs: newFaqs,
-                demoDesc: demoDesc,
-                privacyContent: privacyContent,
-                contactModalSubtext: contactModalSubtext
+                footerCopyright: document.getElementById('site_footerCopyright').value,
+                footerFaqText: document.getElementById('site_footerFaqText').value,
+                footerDemoText: document.getElementById('site_footerDemoText').value,
+                footerContactText: document.getElementById('site_footerContactText').value,
+                footerPrivacyText: document.getElementById('site_footerPrivacyText').value,
+                formRule1Title: document.getElementById('site_formRule1Title').value,
+                formRule1Desc: document.getElementById('site_formRule1Desc').value,
+                formRule2Title: document.getElementById('site_formRule2Title').value,
+                formRule2Desc: document.getElementById('site_formRule2Desc').value,
+                formSubmitBtn: document.getElementById('site_formSubmitBtn').value,
+                formDiscordBtn: document.getElementById('site_formDiscordBtn').value,
+                formFooterRec: document.getElementById('site_formFooterRec').value,
+                contactModalSubtext: document.getElementById('site_contactModalSubtext').value,
+                privacyContent: document.getElementById('site_privacyContent').value
             };
 
-            db.ref('siteData/modals').set(updates).then(() => {
-                // Also sync to globals
-                db.ref('siteData/globals').update({
-                    demoDesc: demoDesc,
-                    privacyContent: privacyContent,
-                    contactModalSubtext: contactModalSubtext
-                });
-
-                bumpSiteVersion("Updated FAQs, Demo Rules & Privacy Policy");
-                showToast("MODALS & FAQ ACCORDION SAVED!");
+            db.ref('siteData/globals').update(updates);
+            db.ref('siteData/modals/faqs').set(newFaqs).then(() => {
+                bumpSiteVersion("Updated Modals, FAQ & Footer Options");
+                showToast("MODALS, FAQ & FOOTER SYNCHRONIZED!");
             }).catch(err => showToast("ERROR: " + err.message, 'error'));
         });
     }
