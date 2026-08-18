@@ -2826,7 +2826,8 @@ function handleScrollProximityAudio() {
     // Apply smooth natural audio volume falloff curve
     applyProximityVolume(proximityFactor);
 
-    // Auto-Pause when scrolled completely away (proximityFactor <= 0.03)
+    // Auto-Pause & Hide Floating Player when scrolled completely away (proximityFactor <= 0.03)
+    const fpBar = document.getElementById('floating-audio-player');
     if (proximityFactor <= 0.03) {
         if (!isAudioAutoPausedByScroll && currentPlayingBtn) {
             isAudioAutoPausedByScroll = true;
@@ -2834,9 +2835,15 @@ function handleScrollProximityAudio() {
                 if (previewAudio && !previewAudio.paused) previewAudio.pause();
                 if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
             } catch (e) {}
+
+            // Smoothly slide down & fade out the floating player bar
+            if (fpBar) {
+                fpBar.classList.add('hidden');
+                fpBar.classList.remove('playing');
+            }
         }
     } else if (proximityFactor > 0.08 && isAudioAutoPausedByScroll) {
-        // Auto-Resume when scrolled back into range
+        // Auto-Resume & Pop Up Floating Player when scrolled back into range
         isAudioAutoPausedByScroll = false;
         try {
             if (previewAudio && previewAudio.src) {
@@ -2846,6 +2853,13 @@ function handleScrollProximityAudio() {
                 ytPlayer.playVideo();
             }
         } catch (e) {}
+
+        // Smoothly pop up the player bar with active glowing border
+        if (fpBar && currentPlayingBtn) {
+            resetFloatingPlayerAutoDismiss();
+            fpBar.classList.remove('hidden');
+            fpBar.classList.add('playing');
+        }
     }
 }
 
