@@ -438,6 +438,7 @@ function getYouTubeID(url) {
 
 function startUIPlayback(btn, row, img) {
     if (!btn) return;
+    isAudioAutoPausedByScroll = false;
     playBleep(800, 'square', 0.1);
     btn.innerHTML = '<i class="fas fa-pause"></i>';
     if (row) row.classList.add('active-track');
@@ -453,6 +454,7 @@ function startUIPlayback(btn, row, img) {
 
 function stopPlayback(btn) {
     if (!btn) return;
+    isAudioAutoPausedByScroll = false;
     playBleep(400, 'sine', 0.1);
     const parentRow = btn.closest('.release-card-large');
     if (!parentRow) return;
@@ -2725,10 +2727,8 @@ function initFloatingPlayer() {
     if (volSlider) {
         volSlider.addEventListener('input', (e) => {
             const vol = parseFloat(e.target.value) / 100;
-            previewAudio.volume = vol;
-            if (ytPlayer && ytPlayer.setVolume) {
-                ytPlayer.setVolume(vol * 100);
-            }
+            activeUserMasterVolume = vol;
+            applyProximityVolume(1.0);
             if (muteBtn) {
                 muteBtn.innerHTML = vol === 0 ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
             }
@@ -2739,12 +2739,14 @@ function initFloatingPlayer() {
         muteBtn.addEventListener('click', () => {
             playCyberSFX('click');
             if (previewAudio.volume > 0 || (ytPlayer && ytPlayer.isMuted && !ytPlayer.isMuted())) {
-                previewAudio.volume = 0;
+                activeUserMasterVolume = 0;
+                applyProximityVolume(0);
                 if (ytPlayer && ytPlayer.mute) ytPlayer.mute();
                 if (volSlider) volSlider.value = 0;
                 muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
             } else {
-                previewAudio.volume = 1;
+                activeUserMasterVolume = 1;
+                applyProximityVolume(1);
                 if (ytPlayer && ytPlayer.unMute) ytPlayer.unMute();
                 if (volSlider) volSlider.value = 100;
                 muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
@@ -2767,6 +2769,88 @@ function initFloatingPlayer() {
             updateFloatingPlayerProgress(targetTime, PREVIEW_LIMIT);
         });
     }
+}
+
+// --- SPATIAL SONIC ZONE (SCROLL PROXIMITY AUDIO FADING & AUTO-PAUSE/RESUME) ---
+let activeUserMasterVolume = 1.0;
+let isAudioAutoPausedByScroll = false;
+let proximityScrollTicking = false;
+
+function applyProximityVolume(volFactor) {
+    const finalVol = Math.max(0, Math.min(1, activeUserMasterVolume * volFactor));
+    if (previewAudio) {
+        previewAudio.volume = finalVol;
+    }
+    if (ytPlayer && ytPlayer.setVolume) {
+        try {
+            ytPlayer.setVolume(finalVol * 100);
+        } catch (e) {}
+    }
+}
+
+function handleScrollProximityAudio() {
+    if (!currentPlayingBtn && !isAudioAutoPausedByScroll) return;
+
+    const releasesSection = document.getElementById('releases');
+    if (!releasesSection) return;
+
+    const rect = releasesSection.getBoundingClientRect();
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+    // 400px smooth distance fade buffer above and below the releases section
+    const fadeBuffer = 400; 
+
+    let proximityFactor = 1.0;
+
+    if (rect.bottom < 0) {
+        // Scrolled below the releases section
+        const distance = Math.abs(rect.bottom);
+        proximityFactor = Math.max(0, 1 - (distance / fadeBuffer));
+    } else if (rect.top > windowHeight) {
+        // Scrolled above the releases section
+        const distance = rect.top - windowHeight;
+        proximityFactor = Math.max(0, 1 - (distance / fadeBuffer));
+    } else {
+        // Inside the releases section
+        proximityFactor = 1.0;
+    }
+
+    // Natural smooth volume curve
+    const smoothProximity = Math.pow(proximityFactor, 1.4);
+    applyProximityVolume(smoothProximity);
+
+    // Auto-Pause when scrolled completely away (proximityFactor <= 0.02)
+    if (proximityFactor <= 0.02) {
+        if (!isAudioAutoPausedByScroll && currentPlayingBtn) {
+            isAudioAutoPausedByScroll = true;
+            try {
+                if (previewAudio && !previewAudio.paused) previewAudio.pause();
+                if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
+            } catch (e) {}
+        }
+    } else if (proximityFactor > 0.06 && isAudioAutoPausedByScroll) {
+        // Auto-Resume when scrolled back near/into the releases section
+        isAudioAutoPausedByScroll = false;
+        try {
+            if (previewAudio && previewAudio.src) {
+                previewAudio.play().catch(() => {});
+            }
+            if (ytPlayer && ytPlayer.playVideo) {
+                ytPlayer.playVideo();
+            }
+        } catch (e) {}
+    }
+}
+
+function initScrollProximityAudio() {
+    window.addEventListener('scroll', () => {
+        if (!proximityScrollTicking) {
+            window.requestAnimationFrame(() => {
+                handleScrollProximityAudio();
+                proximityScrollTicking = false;
+            });
+            proximityScrollTicking = true;
+        }
+    }, { passive: true });
 }
 
 function initGlobalSFXListeners() {
@@ -2792,6 +2876,7 @@ const startEngines = () => {
     initPortal();
     loadPopular();
     initFloatingPlayer();
+    initScrollProximityAudio();
     initGlobalSFXListeners();
 };
 
