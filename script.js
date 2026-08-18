@@ -552,9 +552,18 @@ function loadPopular() {
         }
 
         items.forEach((r, i) => {
+            const title = r.title || 'POPULAR TRACK';
+            const artist = r.artist || r.producers || 'OBSCURA RECORD';
+            const cover = r.image || r.cover || 'assets/cover.png';
+            const youtube = r.youtube || r.streamUrl || '';
+            const spotify = r.spotify || r.spotifyUrl || '';
+            const apple = r.apple || r.appleUrl || '';
+            const preview = r.preview || youtube || '';
+            const badgeText = r.badge || 'TRENDING';
             const rankFormatted = (i + 1 < 10) ? `0${i + 1}` : `${i + 1}`;
-            let ytData = getYouTubeID(r.youtube);
-            const previewYT = getYouTubeID(r.preview);
+            
+            let ytData = getYouTubeID(youtube);
+            const previewYT = getYouTubeID(preview);
             if (previewYT) ytData = previewYT;
 
             const ytIdAttr = ytData ? ytData.id : '';
@@ -565,16 +574,16 @@ function loadPopular() {
             card.innerHTML = `
                 <div class="release-cover-large">
                     <div class="cyber-laser-scanner"></div>
-                    <img src="${r.image || 'assets/cover.png'}" alt="${r.title}">
+                    <img src="${cover}" alt="${title}" onerror="this.onerror=null; this.src='assets/cover.png';">
                     <div class="release-type-badge">HOT #${rankFormatted}</div>
                     <div class="player-overlay">
                         <button class="play-btn"
-                            data-title="${(r.title || 'POPULAR HIT').replace(/"/g, '&quot;')}"
-                            data-artist="${(r.artist || 'OBSCURA RECORD').replace(/"/g, '&quot;')}"
-                            data-image="${r.image || 'assets/cover.png'}"
-                            data-spotify="${r.spotify || '#'}"
-                            data-youtube="${r.youtube || '#'}"
-                            data-preview="${r.preview || ''}"
+                            data-title="${title.replace(/"/g, '&quot;')}"
+                            data-artist="${artist.replace(/"/g, '&quot;')}"
+                            data-image="${cover}"
+                            data-spotify="${spotify || '#'}"
+                            data-youtube="${youtube || '#'}"
+                            data-preview="${preview || ''}"
                             data-ytid="${ytIdAttr}"
                             data-yttype="${ytTypeAttr}">
                             <i class="fas fa-play"></i>
@@ -583,13 +592,13 @@ function loadPopular() {
                     </div>
                 </div>
                 <div class="release-info-large">
-                    <span class="track-id">POPULAR HIT <span class="badge">TRENDING</span></span>
-                    <h4>${r.title}</h4>
-                    <div class="producers-text">Artist: <span>${r.artist}</span></div>
+                    <span class="track-id">POPULAR HIT <span class="badge">${badgeText}</span></span>
+                    <h4>${title}</h4>
+                    <div class="producers-text">Artist: <span>${artist}</span></div>
                     <div class="release-actions">
-                        ${r.spotify && r.spotify !== '#' ? `<a href="${r.spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
-                        ${r.apple && r.apple !== '#' ? `<a href="${r.apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
-                        ${r.youtube && r.youtube !== '#' ? `<a href="${r.youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
+                        ${spotify && spotify !== '#' ? `<a href="${spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
+                        ${apple && apple !== '#' ? `<a href="${apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
+                        ${youtube && youtube !== '#' ? `<a href="${youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
                     </div>
                 </div>
             `;
@@ -1853,7 +1862,7 @@ const initPortal = () => {
 
                 // POPULAR RELEASES VISIBILITY GATING
                 const popularSection = document.getElementById('popular');
-                if (data.showPopular === 'Hidden') {
+                if (data.showPopular === 'Hidden' || data.showPopular === false || data.showPopularReleases === false || data.showPopularReleases === 'Hidden') {
                     if (popularSection) popularSection.style.setProperty('display', 'none', 'important');
                 } else {
                     if (popularSection) popularSection.style.setProperty('display', 'block', 'important');
