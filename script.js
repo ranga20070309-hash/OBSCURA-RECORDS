@@ -512,10 +512,6 @@ function loadPopular() {
             card.className = 'popular-card release-card-large glass';
             card.innerHTML = `
                 <div class="release-cover-large">
-                    <div class="vinyl-disc">
-                        <div class="vinyl-grooves"></div>
-                        <div class="vinyl-label"><img src="${r.image || 'assets/cover.png'}" alt="Vinyl Label"></div>
-                    </div>
                     <img src="${r.image || 'assets/cover.png'}" alt="${r.title}">
                     <div class="release-type-badge">HOT #${rankFormatted}</div>
                     <div class="player-overlay">
@@ -1777,10 +1773,6 @@ const initPortal = () => {
                 const cardHtml = `
                     <div class="release-card-large glass">
                         <div class="release-cover-large">
-                            <div class="vinyl-disc">
-                                <div class="vinyl-grooves"></div>
-                                <div class="vinyl-label"><img src="${release.image || 'assets/cover.png'}" alt="Vinyl Label"></div>
-                            </div>
                             <img src="${release.image || 'assets/cover.png'}" alt="${release.title}">
                             <div class="release-type-badge">${release.type || 'SINGLE'}</div>
                             <div class="player-overlay">
