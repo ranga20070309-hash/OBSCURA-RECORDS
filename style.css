@@ -1162,25 +1162,39 @@ section {
 }
 
 /* ==========================================================================
-   FEATURE: LIVE DANCING NEON AUDIO SPECTRUM & CYBER LASER SCANNER
+   FEATURE: CYBER LASER SCANNER & HUD COVER OVERLAY
    ========================================================================== */
 .cyber-laser-scanner {
     position: absolute;
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.95), #fff, rgba(183, 0, 255, 0.95), transparent);
-    box-shadow: 0 0 15px #00f0ff, 0 0 30px rgba(0, 240, 255, 0.6);
+    background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.95), #ffffff, rgba(183, 0, 255, 0.95), transparent);
+    box-shadow: 
+        0 0 15px #00f0ff, 
+        0 0 30px rgba(0, 240, 255, 0.8),
+        0 0 50px rgba(183, 0, 255, 0.5);
     z-index: 8;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.4s ease;
-    animation: cyberLaserSweep 2.8s ease-in-out infinite alternate;
+    animation: cyberLaserSweep 2.4s ease-in-out infinite alternate;
+}
+
+.cyber-laser-scanner::after {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, rgba(0, 240, 255, 0.12), transparent);
+    pointer-events: none;
 }
 
 @keyframes cyberLaserSweep {
-    0% { top: 4%; }
-    100% { top: 92%; }
+    0% { top: 3%; }
+    100% { top: 94%; }
 }
 
 .release-card-large:hover .cyber-laser-scanner,
@@ -1190,97 +1204,10 @@ section {
     opacity: 1;
 }
 
-/* Neon EQ Frequency Spectrum Visualizer */
-.neon-spectrum-visualizer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 75px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 4px;
-    padding: 0 1.2rem 0.8rem 1.2rem;
-    z-index: 7;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
-    pointer-events: none;
-}
-
-.eq-bar {
-    flex: 1;
-    min-width: 3px;
-    max-width: 14px;
-    height: 6px;
-    border-radius: 4px 4px 1px 1px;
-    background: linear-gradient(to top, rgba(0, 240, 255, 0.35), var(--accent-blue), var(--accent-purple));
-    box-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
-    transform-origin: bottom;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-}
-
-.eq-bar:nth-child(1) { height: 20%; }
-.eq-bar:nth-child(2) { height: 40%; }
-.eq-bar:nth-child(3) { height: 65%; }
-.eq-bar:nth-child(4) { height: 30%; }
-.eq-bar:nth-child(5) { height: 80%; }
-.eq-bar:nth-child(6) { height: 50%; }
-.eq-bar:nth-child(7) { height: 95%; }
-.eq-bar:nth-child(8) { height: 60%; }
-.eq-bar:nth-child(9) { height: 90%; }
-.eq-bar:nth-child(10) { height: 45%; }
-.eq-bar:nth-child(11) { height: 85%; }
-.eq-bar:nth-child(12) { height: 55%; }
-.eq-bar:nth-child(13) { height: 70%; }
-.eq-bar:nth-child(14) { height: 35%; }
-.eq-bar:nth-child(15) { height: 60%; }
-.eq-bar:nth-child(16) { height: 25%; }
-
-/* Hover Live Dancing EQ Rhythm */
-.release-card-large:hover .eq-bar,
-.popular-card:hover .eq-bar {
-    animation: eqBounce 0.9s ease-in-out infinite alternate;
-}
-
-/* Playing State Supercharged Visualizer */
-.release-card-large.active-track .eq-bar,
-.popular-card.active-track .eq-bar {
-    animation: eqBouncePlaying 0.55s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate !important;
-    box-shadow: 0 0 14px var(--accent-blue), 0 0 25px rgba(183, 0, 255, 0.7) !important;
-}
-
-.eq-bar:nth-child(1) { animation-delay: 0.12s; }
-.eq-bar:nth-child(2) { animation-delay: 0.28s; }
-.eq-bar:nth-child(3) { animation-delay: 0.05s; }
-.eq-bar:nth-child(4) { animation-delay: 0.42s; }
-.eq-bar:nth-child(5) { animation-delay: 0.16s; }
-.eq-bar:nth-child(6) { animation-delay: 0.34s; }
-.eq-bar:nth-child(7) { animation-delay: 0.08s; }
-.eq-bar:nth-child(8) { animation-delay: 0.38s; }
-.eq-bar:nth-child(9) { animation-delay: 0.19s; }
-.eq-bar:nth-child(10) { animation-delay: 0.25s; }
-.eq-bar:nth-child(11) { animation-delay: 0.02s; }
-.eq-bar:nth-child(12) { animation-delay: 0.45s; }
-.eq-bar:nth-child(13) { animation-delay: 0.14s; }
-.eq-bar:nth-child(14) { animation-delay: 0.31s; }
-.eq-bar:nth-child(15) { animation-delay: 0.18s; }
-.eq-bar:nth-child(16) { animation-delay: 0.36s; }
-
-@keyframes eqBounce {
-    0% { transform: scaleY(0.25); }
-    50% { transform: scaleY(0.9); }
-    100% { transform: scaleY(0.45); }
-}
-
-@keyframes eqBouncePlaying {
-    0% { transform: scaleY(0.4); filter: brightness(1); }
-    50% { transform: scaleY(1); filter: brightness(1.5); }
-    100% { transform: scaleY(0.6); filter: brightness(1.2); }
-}
-
 .release-card-large:hover .release-cover-large > img,
 .popular-card:hover .release-cover-large > img {
     transform: scale(1.06);
+    filter: contrast(1.08) brightness(1.05);
 }
 
 .release-type-badge {
