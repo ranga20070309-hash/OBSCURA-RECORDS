@@ -831,6 +831,48 @@ const initPortal = () => {
     setupModal('order-ghost', 'contact-modal');
     setupModal('order-special', 'contact-modal');
 
+    // --- SOCIAL SIDEBAR & MOBILE NAVIGATION DRAWER ---
+    const navMenuTrigger = document.getElementById('nav-menu-trigger');
+    const socialSidebar = document.getElementById('social-sidebar');
+    const closeSidebar = document.getElementById('close-sidebar');
+    const sidebarOverlay = document.querySelector('.sidebar-overlay');
+
+    if (navMenuTrigger && socialSidebar) {
+        navMenuTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (typeof playCyberSFX === 'function') playCyberSFX('click');
+            socialSidebar.classList.add('active');
+            if (sidebarOverlay) sidebarOverlay.classList.add('active');
+            document.body.classList.add('no-scroll');
+        });
+    }
+
+    if (closeSidebar && socialSidebar) {
+        closeSidebar.addEventListener('click', () => {
+            if (typeof playCyberSFX === 'function') playCyberSFX('click');
+            socialSidebar.classList.remove('active');
+            if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+            document.body.classList.remove('no-scroll');
+        });
+    }
+
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+            if (socialSidebar) socialSidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            document.body.classList.remove('no-scroll');
+        });
+    }
+
+    const sidebarNavItems = document.querySelectorAll('.sidebar-nav .nav-item');
+    sidebarNavItems.forEach(item => {
+        item.addEventListener('click', () => {
+            if (socialSidebar) socialSidebar.classList.remove('active');
+            if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+            document.body.classList.remove('no-scroll');
+        });
+    });
+
     // --- ARTIST MODAL CLOSE LOGIC ---
     const artistModal = document.getElementById('artist-modal');
     if (artistModal) {
@@ -1682,9 +1724,11 @@ const initPortal = () => {
         function renderAdminPreviewBanner(active) {
             let banner = document.getElementById('admin-preview-floating-bar');
             if (!active) {
+                document.body.classList.remove('admin-preview-active');
                 if (banner) banner.style.display = 'none';
                 return;
             }
+            document.body.classList.add('admin-preview-active');
 
             if (!banner) {
                 banner = document.createElement('div');
@@ -2240,43 +2284,6 @@ const initPortal = () => {
                 items = Array.isArray(data) ? data : Object.values(data);
             }
             renderUpcoming(items);
-        });
-    }
-    // --- SOCIAL SIDEBAR TOGGLE ---
-    const menuTrigger = document.getElementById('nav-menu-trigger');
-    const socialSidebar = document.getElementById('social-sidebar');
-    const closeSidebar = document.getElementById('close-sidebar');
-    const sidebarOverlay = document.getElementById('sidebar-overlay');
-
-    if (menuTrigger && socialSidebar) {
-        const toggleSidebar = (state) => {
-            if (state === 'close') {
-                socialSidebar.classList.remove('active');
-                if (sidebarOverlay) sidebarOverlay.classList.remove('active');
-                document.body.classList.remove('no-scroll');
-                document.documentElement.classList.remove('no-scroll');
-            } else {
-                socialSidebar.classList.toggle('active');
-                if (sidebarOverlay) sidebarOverlay.classList.toggle('active');
-                document.body.classList.toggle('no-scroll');
-                document.documentElement.classList.toggle('no-scroll');
-            }
-        };
-
-        menuTrigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            playBleep(900, 'square', 0.05);
-            toggleSidebar();
-        });
-
-        [closeSidebar, sidebarOverlay].forEach(btn => {
-            if (btn) {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    playBleep(300, 'sine', 0.1);
-                    toggleSidebar('close');
-                });
-            }
         });
     }
 
