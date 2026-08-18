@@ -834,64 +834,144 @@
             <section id="modals-panel" class="panel">
                 <div class="card-grid">
                     
-                    <!-- Footer Texts & Copyright Card -->
+                    <!-- 1. FOOTER BAR NAVIGATION BUTTONS -->
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-shoe-prints card-icon"></i>
                             <div>
-                                <h3>FOOTER NAVIGATION LINKS & COPYRIGHT NOTICE</h3>
-                                <p>Customize the labels and links displayed in the website footer.</p>
+                                <h3>FOOTER NAVIGATION BUTTONS & COPYRIGHT</h3>
+                                <p>Modify the 4 main footer popup trigger button labels and copyright line.</p>
                             </div>
                         </div>
                         <div class="card-body form-grid">
                             <div class="input-group full">
-                                <label>COPYRIGHT NOTICE</label>
+                                <label>FOOTER COPYRIGHT NOTICE</label>
                                 <input type="text" id="site_footerCopyright" value="&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED.">
                             </div>
                             <div class="input-group">
-                                <label>FOOTER FAQ BUTTON TEXT</label>
+                                <label><i class="fas fa-question-circle"></i> BUTTON 1: FAQ BUTTON LABEL</label>
                                 <input type="text" id="site_footerFaqText" value="FAQ">
                             </div>
                             <div class="input-group">
-                                <label>FOOTER DEMO SUBMISSION TEXT</label>
+                                <label><i class="fas fa-paper-plane"></i> BUTTON 2: DEMO SUBMISSION BUTTON LABEL</label>
                                 <input type="text" id="site_footerDemoText" value="DEMO SUBMISSION">
                             </div>
                             <div class="input-group">
-                                <label>FOOTER CONTACT BUTTON TEXT</label>
+                                <label><i class="fas fa-envelope"></i> BUTTON 3: CONTACT US BUTTON LABEL</label>
                                 <input type="text" id="site_footerContactText" value="CONTACT US">
                             </div>
                             <div class="input-group">
-                                <label>FOOTER PRIVACY BUTTON TEXT</label>
+                                <label><i class="fas fa-shield-alt"></i> BUTTON 4: PRIVACY BUTTON LABEL</label>
                                 <input type="text" id="site_footerPrivacyText" value="PRIVACY">
                             </div>
                         </div>
                     </div>
 
-                    <!-- FAQ Questions & Accordions Editor -->
+                    <!-- 2. FAQ POPUP MODAL -->
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-question-circle card-icon"></i>
                             <div>
-                                <h3>FREQUENTLY ASKED QUESTIONS (FAQ ACCORDION)</h3>
-                                <p>Edit questions and answers shown in the interactive FAQ modal popup.</p>
+                                <h3>1. FAQ POPUP MODAL CONTENT</h3>
+                                <p>Header title and dynamic question/answer accordion items.</p>
                             </div>
                             <button class="cyber-btn primary sm" id="btn-add-faq-item"><i class="fas fa-plus"></i> ADD FAQ ITEM</button>
                         </div>
-                        <div class="card-body" id="faq-admin-container">
-                            <!-- Dynamic FAQ Items -->
+                        <div class="card-body form-grid">
+                            <div class="input-group full">
+                                <label>FAQ MODAL HEADER TITLE</label>
+                                <input type="text" id="site_modalFaqTitle" value="FREQUENCY ASKED QUESTIONS">
+                            </div>
+                            <div id="faq-admin-container" class="full" style="grid-column: 1 / -1; margin-top: 1rem;">
+                                <!-- Dynamic FAQ Items -->
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Demo Submission Modal Rules & Texts -->
+                    <!-- 3. DEMO SUBMISSION POPUP MODAL -->
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-paper-plane card-icon"></i>
                             <div>
-                                <h3>DEMO SUBMISSION MODAL RULES & GUIDELINES</h3>
-                                <p>Checklist rules, button texts, and guidelines inside the Send Demo popup.</p>
+                                <h3>2. DEMO SUBMISSION POPUP MODAL CONTENT</h3>
+                                <p>Header, all input labels, placeholders, checklist rules, and buttons.</p>
                             </div>
                         </div>
                         <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>MODAL TITLE (HTML)</label>
+                                <input type="text" id="site_formTitle" value="Secure <span class='accent'>Form Submission</span>">
+                            </div>
+                            <div class="input-group">
+                                <label>MODAL SUBTITLE / DESCRIPTION</label>
+                                <input type="text" id="site_formDesc" value="Transmit your audio frequency to the Obscura A&R department for priority review.">
+                            </div>
+
+                            <!-- Input Field Labels & Placeholders -->
+                            <div class="input-group">
+                                <label>REAL NAME LABEL</label>
+                                <input type="text" id="site_formLabelName" value="Real Name">
+                            </div>
+                            <div class="input-group">
+                                <label>REAL NAME PLACEHOLDER</label>
+                                <input type="text" id="site_formPlaceholderName" value="Name">
+                            </div>
+
+                            <div class="input-group">
+                                <label>ARTIST NAME LABEL</label>
+                                <input type="text" id="site_formLabelArtist" value="Artist Name(s)">
+                            </div>
+                            <div class="input-group">
+                                <label>ARTIST NAME PLACEHOLDER</label>
+                                <input type="text" id="site_formPlaceholderArtist" value="Names">
+                            </div>
+
+                            <div class="input-group">
+                                <label>EMAIL ADDRESS LABEL</label>
+                                <input type="text" id="site_formLabelEmail" value="Email Address">
+                            </div>
+                            <div class="input-group">
+                                <label>EMAIL ADDRESS PLACEHOLDER</label>
+                                <input type="text" id="site_formPlaceholderEmail" value="official@artist.com">
+                            </div>
+
+                            <div class="input-group">
+                                <label>PRIMARY GENRE LABEL</label>
+                                <input type="text" id="site_formLabelGenre" value="Primary Genre">
+                            </div>
+                            <div class="input-group">
+                                <label>PRIMARY GENRE PLACEHOLDER</label>
+                                <input type="text" id="site_formPlaceholderGenre" value="Funk / EDM / Hip Hop">
+                            </div>
+
+                            <div class="input-group">
+                                <label>SOCIALS / SPOTIFY LINK LABEL</label>
+                                <input type="text" id="site_formLabelSpotify" value="Artist Profile / Social Links">
+                            </div>
+                            <div class="input-group">
+                                <label>SOCIALS / SPOTIFY PLACEHOLDER</label>
+                                <input type="text" id="site_formPlaceholderSpotify" value="https://open.spotify.com/artist/...">
+                            </div>
+
+                            <div class="input-group">
+                                <label>STREAMING LINK LABEL</label>
+                                <input type="text" id="site_formLabelLink" value="Private streaming link (SoundCloud / Dropbox / Drive)">
+                            </div>
+                            <div class="input-group">
+                                <label>STREAMING LINK PLACEHOLDER</label>
+                                <input type="text" id="site_formPlaceholderLink" value="https://soundcloud.com/...">
+                            </div>
+
+                            <div class="input-group">
+                                <label>MESSAGE / BIOGRAPHY LABEL</label>
+                                <input type="text" id="site_formLabelMessage" value="Message / Biography (Optional)">
+                            </div>
+                            <div class="input-group">
+                                <label>MESSAGE PLACEHOLDER</label>
+                                <input type="text" id="site_formPlaceholderMessage" value="A brief transmission regarding your sound...">
+                            </div>
+
+                            <!-- Rules -->
                             <div class="input-group full">
                                 <label>RULE 1: TITLE</label>
                                 <input type="text" id="site_formRule1Title" value="Is this track unreleased?">
@@ -908,6 +988,8 @@
                                 <label>RULE 2: DESCRIPTION</label>
                                 <textarea id="site_formRule2Desc" rows="2">Please provide the title for your track. If you haven't decided on a name yet, a reference title is sufficient so we can identify your submission.</textarea>
                             </div>
+
+                            <!-- Actions -->
                             <div class="input-group">
                                 <label>SUBMIT BUTTON TEXT</label>
                                 <input type="text" id="site_formSubmitBtn" value="Initiate Submission">
@@ -923,23 +1005,142 @@
                         </div>
                     </div>
 
-                    <!-- Privacy Policy & Contact Modal Subtexts -->
+                    <!-- 4. CONTACT US POPUP MODAL -->
                     <div class="cyber-card full-card">
                         <div class="card-header">
-                            <i class="fas fa-file-contract card-icon"></i>
+                            <i class="fas fa-envelope-open-text card-icon"></i>
                             <div>
-                                <h3>PRIVACY POLICY & CONTACT MODAL TEXTS</h3>
-                                <p>Legal and instructional statements presented in modals.</p>
+                                <h3>3. CONTACT US POPUP MODAL CONTENT</h3>
+                                <p>Header title, subtext, input field labels, placeholders, and send button.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>MODAL HEADER TITLE (HTML)</label>
+                                <input type="text" id="site_contactModalTitle" value="CONTACT <span class='accent'>VOID</span>">
+                            </div>
+                            <div class="input-group">
+                                <label>MODAL SUBTITLE TEXT</label>
+                                <input type="text" id="site_contactModalSubtext" value="Establish a direct frequency with the Obscura Record command center.">
+                            </div>
+                            <div class="input-group">
+                                <label>NAME FIELD LABEL</label>
+                                <input type="text" id="site_contactLabelName" value="NAME / IDENTIFIER">
+                            </div>
+                            <div class="input-group">
+                                <label>NAME PLACEHOLDER</label>
+                                <input type="text" id="site_contactPlaceholderName" value="Entity Name">
+                            </div>
+                            <div class="input-group">
+                                <label>EMAIL FIELD LABEL</label>
+                                <input type="text" id="site_contactLabelEmail" value="RETURN EMAIL">
+                            </div>
+                            <div class="input-group">
+                                <label>EMAIL PLACEHOLDER</label>
+                                <input type="text" id="site_contactPlaceholderEmail" value="freq@void.com">
+                            </div>
+                            <div class="input-group full">
+                                <label>MESSAGE FIELD LABEL</label>
+                                <input type="text" id="site_contactLabelMessage" value="MESSAGE PAYLOAD">
+                            </div>
+                            <div class="input-group full">
+                                <label>MESSAGE PLACEHOLDER</label>
+                                <input type="text" id="site_contactPlaceholderMessage" value="Type your transmission here...">
+                            </div>
+                            <div class="input-group">
+                                <label>SEND BUTTON TEXT</label>
+                                <input type="text" id="site_contactSubmitBtn" value="SEND TRANSMISSION">
+                            </div>
+                            <div class="input-group">
+                                <label>FOOTER SECURITY NOTE</label>
+                                <input type="text" id="site_contactFooterNote" value="This frequency is guarded by Google reCAPTCHA and sonic encryption.">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. PRIVACY POLICY POPUP MODAL -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-shield-alt card-icon"></i>
+                            <div>
+                                <h3>4. PRIVACY POLICY POPUP MODAL CONTENT</h3>
+                                <p>Header title and all 7 legal privacy policy sections.</p>
                             </div>
                         </div>
                         <div class="card-body form-grid">
                             <div class="input-group full">
-                                <label>CONTACT MODAL SUBTEXT</label>
-                                <textarea id="site_contactModalSubtext" rows="2">Establish a direct frequency with the Obscura Record command center.</textarea>
+                                <label>PRIVACY MODAL HEADER TITLE</label>
+                                <input type="text" id="site_modalPrivacyTitle" value="PRIVACY POLICY">
+                            </div>
+
+                            <!-- Section 1 -->
+                            <div class="input-group">
+                                <label>SECTION 1: TITLE</label>
+                                <input type="text" id="site_p1_q" value="INTELLECTUAL PROPERTY">
                             </div>
                             <div class="input-group full">
-                                <label>PRIVACY POLICY CONTENT</label>
-                                <textarea id="site_privacyContent" rows="6">At OBSCURA RECORD, we value the privacy and intellectual property of our artists and visitors. Any audio submissions or contact transmissions are kept strictly confidential...</textarea>
+                                <label>SECTION 1: CONTENT</label>
+                                <textarea id="site_p1_a" rows="2">All content in this dimension—including audio, graphics, logos, and visual art—is the property of Obscura Record or its licensors.</textarea>
+                            </div>
+
+                            <!-- Section 2 -->
+                            <div class="input-group">
+                                <label>SECTION 2: TITLE</label>
+                                <input type="text" id="site_p2_q" value="DATA SECURITY">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 2: CONTENT</label>
+                                <textarea id="site_p2_a" rows="2">Your portal data is encrypted and secure. We only collect what is necessary to maintain your connection.</textarea>
+                            </div>
+
+                            <!-- Section 3 -->
+                            <div class="input-group">
+                                <label>SECTION 3: TITLE</label>
+                                <input type="text" id="site_p3_q" value="PROMOTIONAL CONTENT">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 3: CONTENT</label>
+                                <textarea id="site_p3_a" rows="2">By connecting to our portal, you may receive updates on new releases, talent discoveries, and galactic events.</textarea>
+                            </div>
+
+                            <!-- Section 4 -->
+                            <div class="input-group">
+                                <label>SECTION 4: TITLE</label>
+                                <input type="text" id="site_p4_q" value="EXTERNAL EMBEDS">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 4: CONTENT</label>
+                                <textarea id="site_p4_a" rows="2">We use third-party players (SoundCloud/YouTube). Their respective privacy policies apply to your interactions on those platforms.</textarea>
+                            </div>
+
+                            <!-- Section 5 -->
+                            <div class="input-group">
+                                <label>SECTION 5: TITLE</label>
+                                <input type="text" id="site_p5_q" value="DATA RETENTION">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 5: CONTENT</label>
+                                <textarea id="site_p5_a" rows="2">We retain connection data only as long as necessary for community support and galactic record-keeping.</textarea>
+                            </div>
+
+                            <!-- Section 6 -->
+                            <div class="input-group">
+                                <label>SECTION 6: TITLE</label>
+                                <input type="text" id="site_p6_q" value="GOVERNING LAW">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 6: CONTENT</label>
+                                <textarea id="site_p6_a" rows="2">All legal matters are governed by the laws of our primary operational frequency. Disputes are resolved via cosmic mediation.</textarea>
+                            </div>
+
+                            <!-- Section 7 -->
+                            <div class="input-group">
+                                <label>SECTION 7: TITLE</label>
+                                <input type="text" id="site_p7_q" value="LEGAL CONTACT">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 7: CONTENT</label>
+                                <textarea id="site_p7_a" rows="2">For all legal inquiries, copyright complaints (DMCA), or licensing requests, please send an email message to our Legal Counsel at sayurux@gmail.com.</textarea>
                             </div>
                         </div>
                     </div>
@@ -947,7 +1148,7 @@
                 </div>
 
                 <div class="action-footer">
-                    <button class="cyber-btn primary" id="save-modals-text"><i class="fas fa-save"></i> SAVE & SYNC MODALS, FAQ & FOOTER</button>
+                    <button class="cyber-btn primary" id="save-modals-text"><i class="fas fa-save"></i> SAVE & SYNC ALL 4 POPUPS & FOOTER BUTTONS</button>
                     <span id="save-msg-modals" class="save-status-indicator"></span>
                 </div>
             </section>
