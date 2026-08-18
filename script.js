@@ -1291,37 +1291,58 @@ const initPortal = () => {
             const item = document.createElement('div');
             item.className = 'artist-item glass';
             item.dataset.partnerId = partnerId;
-
-            const bannerUrl = (data.banner_url && data.banner_url.trim() !== '') ? data.banner_url : (data.banner || 'assets/cover.png');
-            const logoUrl = (data.logo_url && data.logo_url.trim() !== '') ? data.logo_url : (data.avatar_url && data.avatar_url.trim() !== '' ? data.avatar_url : 'assets/staff/default.png');
-            const tagline = data.tagline || 'Label Partner';
-            const name = data.name || 'LABEL PARTNER';
-            const bio = data.bio || 'Encrypted record label partnership transmission.';
-
             item.innerHTML = `
                 <div class="avatar-wrapper">
-                    <div class="artist-img" style="background-image: url('${logoUrl}'); background-size: cover; background-position: center;"></div>
+                    <div class="artist-img"></div>
                     <img src="" class="avatar-decoration" alt="Frame" style="display:none;">
                 </div>
-                <h4>${name}</h4>
-                <span class="artist-loc">${tagline}</span>
+                <h4>PARTNER</h4>
+                <span class="artist-loc">Label Partner</span>
             `;
+            gridEl.appendChild(item);
 
-            // Modal click handler for Partner (Displays Banner at Top of Modal)
-            item.style.cursor = 'pointer';
-            item.onclick = () => {
-                openProfileModal({
-                    name: name,
-                    bio: bio,
-                    avatarUrl: logoUrl,
-                    bannerUrl: bannerUrl,
-                    bannerColor: data.banner_color || data.accent_color || '',
-                    socials: data.socials,
-                    isPartner: true
-                });
+            const avatar  = item.querySelector('.artist-img');
+            const nameEl  = item.querySelector('h4');
+            const locEl   = item.querySelector('.artist-loc');
+
+            const applyPartnerData = (d) => {
+                if (!d) return;
+                const name = d.name || 'LABEL PARTNER';
+                const tagline = d.tagline || 'Label Partner';
+                const bio = d.bio || 'Encrypted record label partnership transmission.';
+                const logoUrl = (d.logo_url && d.logo_url.trim() !== '') ? d.logo_url : (d.avatar_url && d.avatar_url.trim() !== '' ? d.avatar_url : 'assets/staff/default.png');
+                const bannerUrl = (d.banner_url && d.banner_url.trim() !== '') ? d.banner_url : (d.banner || '');
+                const bannerColor = d.banner_color || d.accent_color || '';
+
+                if (nameEl) nameEl.textContent = name;
+                if (locEl) locEl.textContent = tagline;
+                if (avatar) {
+                    avatar.style.backgroundImage = `url("${logoUrl}")`;
+                    avatar.style.backgroundSize = 'cover';
+                    avatar.style.backgroundPosition = 'center';
+                }
+
+                item.style.cursor = 'pointer';
+                item.onclick = () => {
+                    openProfileModal({
+                        name: name,
+                        bio: bio,
+                        avatarUrl: logoUrl,
+                        bannerUrl: bannerUrl,
+                        bannerColor: bannerColor,
+                        socials: d.socials,
+                        isPartner: true
+                    });
+                };
             };
 
-            gridEl.appendChild(item);
+            applyPartnerData(data);
+
+            // Real-time Firebase listener for this partner
+            const pRef = db.ref('partner_status/' + partnerId);
+            pRef.on('value', snap => {
+                if (snap.exists()) applyPartnerData(snap.val());
+            });
         }
 
         // --- DYNAMIC PARTNERS GRID: Render all from Firebase partner_status/ (Sorted by hierarchy order) ---
