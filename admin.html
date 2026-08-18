@@ -99,6 +99,10 @@
                     <a href="#" class="nav-btn" data-target="links-panel">
                         <i class="fas fa-link"></i> <span>NAV & SOCIAL LINKS</span>
                     </a>
+                    <a href="#" class="nav-btn" data-target="popular-panel">
+                        <i class="fas fa-fire"></i> <span>POPULAR RELEASES</span>
+                        <span class="badge" id="badge-popular">0</span>
+                    </a>
                     <a href="#" class="nav-btn" data-target="releases-panel">
                         <i class="fas fa-compact-disc"></i> <span>RELEASE ARCHIVE</span>
                         <span class="badge" id="badge-releases">0</span>
@@ -388,6 +392,122 @@
                 <div class="action-footer">
                     <button class="cyber-btn primary" id="save-links"><i class="fas fa-save"></i> SAVE & SYNC NAVIGATION & LINKS</button>
                     <span id="save-msg-links" class="save-status-indicator"></span>
+                </div>
+            </section>
+
+            <!-- 2.5 POPULAR RELEASES PANEL -->
+            <section id="popular-panel" class="panel">
+                <div class="section-visibility-group">
+                    <div class="toggle-wrapper">
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-popular-section" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="toggle-label">DISPLAY POPULAR RELEASES SECTION ON MAIN SITE</span>
+                    </div>
+                </div>
+
+                <div class="cyber-card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <i class="fas fa-heading card-icon"></i>
+                        <div>
+                            <h3>POPULAR SECTION HEADER & DESCRIPTION</h3>
+                            <p>Customize the headline texts shown above the popular carousel.</p>
+                        </div>
+                    </div>
+                    <div class="card-body form-grid">
+                        <div class="input-group">
+                            <label>POPULAR SECTION TITLE (HTML)</label>
+                            <input type="text" id="site_popularTitle" value="<span class='accent'>POPULAR</span> <span>RELEASES</span>">
+                        </div>
+                        <div class="input-group">
+                            <label>POPULAR SECTION DESCRIPTION</label>
+                            <input type="text" id="site_popularDesc" value="THE MOST TRANSMITTED FREQUENCIES IN THE VOID">
+                        </div>
+                    </div>
+                    <div style="padding: 0 1.8rem 1.5rem; display: flex; justify-content: flex-end;">
+                        <button class="cyber-btn primary sm" id="save-popular-header"><i class="fas fa-save"></i> SAVE SECTION HEADER</button>
+                    </div>
+                </div>
+
+                <div class="panel-action-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="popular-search-input" placeholder="SEARCH POPULAR TRACKS BY TITLE OR ARTIST...">
+                    </div>
+                    <button class="cyber-btn primary" id="btn-add-new-popular"><i class="fas fa-plus-circle"></i> ADD NEW POPULAR HIT</button>
+                </div>
+
+                <!-- Add/Edit Popular Release Form Modal -->
+                <div id="popular-editor-card" class="cyber-card editor-card" style="display: none; margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <i class="fas fa-fire card-icon"></i>
+                        <div>
+                            <h3 id="popular-editor-title">ADD NEW POPULAR RELEASE</h3>
+                            <p>Configure trending rank, track metadata, artwork, and streaming audio links.</p>
+                        </div>
+                        <button type="button" class="close-card-btn" id="close-popular-editor">&times;</button>
+                    </div>
+                    <div class="card-body form-grid">
+                        <input type="hidden" id="pop_edit_index" value="-1">
+                        <div class="input-group">
+                            <label><i class="fas fa-music"></i> TRACK TITLE *</label>
+                            <input type="text" id="pop_title" placeholder="e.g. NEON DRIFT">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-user-astronaut"></i> ARTIST / PRODUCERS *</label>
+                            <input type="text" id="pop_artist" placeholder="e.g. SAYURUX ft. OBSCURA">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-sort-numeric-down"></i> RANK / PRIORITY ORDER (1 = TOP)</label>
+                            <input type="number" id="pop_rank" value="1">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-tag"></i> BADGE TEXT</label>
+                            <input type="text" id="pop_badge" value="TRENDING" placeholder="e.g. TRENDING, VIRAL, HOT">
+                        </div>
+
+                        <!-- Cover Artwork with Local Browser -->
+                        <div class="input-group full">
+                            <label><i class="fas fa-image"></i> COVER ARTWORK (URL OR BROWSE LOCAL FILE) *</label>
+                            <div style="display: flex; gap: 0.8rem; align-items: center;">
+                                <input type="text" id="pop_cover" placeholder="assets/cover.png or https://..." style="flex: 1;">
+                                <label class="cyber-btn primary sm" style="cursor: pointer; margin: 0; white-space: nowrap;">
+                                    <i class="fas fa-folder-open"></i> BROWSE FILE
+                                    <input type="file" id="pop_cover_file" accept="image/*" style="display: none;">
+                                </label>
+                            </div>
+                            <div id="pop_cover_preview_box" style="margin-top: 0.8rem; width: 100px; height: 100px; border-radius: 12px; border: 1px dashed var(--border); overflow: hidden; background: #070a16; display: flex; align-items: center; justify-content: center;">
+                                <img id="pop_cover_preview_img" src="assets/cover.png" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label><i class="fas fa-headphones"></i> AUDIO PREVIEW / MP3 URL</label>
+                            <input type="text" id="pop_preview" placeholder="https://.../preview.mp3 or YouTube link">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fab fa-youtube"></i> YOUTUBE LINK / STREAM</label>
+                            <input type="text" id="pop_youtube" placeholder="https://youtube.com/watch?v=...">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fab fa-spotify"></i> SPOTIFY STREAMING URL</label>
+                            <input type="text" id="pop_spotify" placeholder="https://open.spotify.com/track/...">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fa-brands fa-apple"></i> APPLE MUSIC STREAMING URL</label>
+                            <input type="text" id="pop_apple" placeholder="https://music.apple.com/album/...">
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="cyber-btn danger" id="btn-cancel-popular"><i class="fas fa-times"></i> CANCEL</button>
+                        <button class="cyber-btn primary" id="btn-save-popular-record"><i class="fas fa-save"></i> SAVE & SYNC POPULAR TRACK</button>
+                    </div>
+                </div>
+
+                <!-- Popular Releases Grid -->
+                <div class="releases-grid-container" id="popular-releases-list">
+                    <!-- Dynamic Popular Cards in Admin -->
                 </div>
             </section>
 
