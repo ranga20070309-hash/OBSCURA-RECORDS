@@ -1877,6 +1877,7 @@ const initPortal = () => {
                         }
 
                         if (!isPlaying) {
+                            currentPlayingBtn = playBtn;
                             playbackStartOffset = -1; // Reset for relative 30s limit
                             // PRIORITY 1: Direct MP3/Snippet URL (User specified)
                             if (mp3Url && mp3Url !== '' && mp3Url !== '#' && !getYouTubeID(mp3Url)) {
@@ -1884,6 +1885,7 @@ const initPortal = () => {
                                     previewAudio.src = mp3Url;
                                     previewAudio.play().then(() => {
                                         startUIPlayback(playBtn, row, coverImg);
+                                        if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
                                         if (timeDisplay) {
                                             timeDisplay.style.display = 'block';
                                             updateTimer(timeDisplay, 'mp3');
@@ -1891,6 +1893,7 @@ const initPortal = () => {
                                     }).catch(err => {
                                         console.warn("MP3 Blocked:", err);
                                         startUIPlayback(playBtn, row, coverImg);
+                                        if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
                                     });
                                 } catch (e) { console.error("MP3 Fail:", e); }
                             }
@@ -1921,6 +1924,7 @@ const initPortal = () => {
                                 } catch (e) { console.warn("YT Delay..."); }
 
                                 startUIPlayback(playBtn, row, coverImg);
+                                if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
                                 if (timeDisplay) {
                                     timeDisplay.style.display = 'block';
                                     timeDisplay.textContent = '...';
@@ -1928,8 +1932,8 @@ const initPortal = () => {
                                 }
                             } else {
                                 startUIPlayback(playBtn, row, coverImg);
+                                if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
                             }
-                            currentPlayingBtn = playBtn;
                         } else {
                             stopPlayback(playBtn);
                             currentPlayingBtn = null;
@@ -2016,6 +2020,10 @@ const initPortal = () => {
                 startAutoScroll(); // Restart interval to prevent overlap
             });
         }
+
+        // Bind existing static release cards immediately on load
+        bindReleaseInteractions();
+        startAutoScroll();
 
         db.ref('siteData/releases').on('value', (snapshot) => {
             let data = snapshot.val();
@@ -2783,7 +2791,7 @@ function applyProximityVolume(volFactor) {
     }
     if (ytPlayer && ytPlayer.setVolume) {
         try {
-            ytPlayer.setVolume(finalVol * 100);
+            ytPlayer.setVolume(Math.round(finalVol * 100));
         } catch (e) {}
     }
 }
@@ -2796,30 +2804,30 @@ function handleScrollProximityAudio() {
 
     const rect = releasesSection.getBoundingClientRect();
     const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-    // 400px smooth distance fade buffer above and below the releases section
-    const fadeBuffer = 400; 
+    const viewportCenter = windowHeight / 2;
+    const sectionCenter = rect.top + (rect.height / 2);
+
+    // Distance between viewport center and releases section center
+    const distFromCenter = Math.abs(sectionCenter - viewportCenter);
+
+    // Core zone (full volume area around the section center)
+    const coreZone = Math.max(80, (rect.height / 2) * 0.4);
+    // Distance beyond coreZone where volume smoothly drops to 0
+    const fadeRange = (rect.height / 2) + (windowHeight * 0.45);
 
     let proximityFactor = 1.0;
-
-    if (rect.bottom < 0) {
-        // Scrolled below the releases section
-        const distance = Math.abs(rect.bottom);
-        proximityFactor = Math.max(0, 1 - (distance / fadeBuffer));
-    } else if (rect.top > windowHeight) {
-        // Scrolled above the releases section
-        const distance = rect.top - windowHeight;
-        proximityFactor = Math.max(0, 1 - (distance / fadeBuffer));
+    if (distFromCenter > coreZone) {
+        const excess = distFromCenter - coreZone;
+        proximityFactor = Math.max(0, 1 - (excess / fadeRange));
     } else {
-        // Inside the releases section
         proximityFactor = 1.0;
     }
 
-    // Natural smooth volume curve
-    const smoothProximity = Math.pow(proximityFactor, 1.4);
-    applyProximityVolume(smoothProximity);
+    // Apply smooth natural audio volume falloff curve
+    applyProximityVolume(proximityFactor);
 
-    // Auto-Pause when scrolled completely away (proximityFactor <= 0.02)
-    if (proximityFactor <= 0.02) {
+    // Auto-Pause when scrolled completely away (proximityFactor <= 0.03)
+    if (proximityFactor <= 0.03) {
         if (!isAudioAutoPausedByScroll && currentPlayingBtn) {
             isAudioAutoPausedByScroll = true;
             try {
@@ -2827,8 +2835,8 @@ function handleScrollProximityAudio() {
                 if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
             } catch (e) {}
         }
-    } else if (proximityFactor > 0.06 && isAudioAutoPausedByScroll) {
-        // Auto-Resume when scrolled back near/into the releases section
+    } else if (proximityFactor > 0.08 && isAudioAutoPausedByScroll) {
+        // Auto-Resume when scrolled back into range
         isAudioAutoPausedByScroll = false;
         try {
             if (previewAudio && previewAudio.src) {
@@ -2851,6 +2859,13 @@ function initScrollProximityAudio() {
             proximityScrollTicking = true;
         }
     }, { passive: true });
+
+    // Also run an interval ticker while audio is active to catch dynamic layout shifts
+    setInterval(() => {
+        if (currentPlayingBtn || isAudioAutoPausedByScroll) {
+            handleScrollProximityAudio();
+        }
+    }, 150);
 }
 
 function initGlobalSFXListeners() {
