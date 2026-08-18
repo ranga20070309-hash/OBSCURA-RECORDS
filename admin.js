@@ -1317,6 +1317,25 @@ function initModalsEngine() {
             site_footerDemoText: data.footerDemoText || "DEMO SUBMISSION",
             site_footerContactText: data.footerContactText || "CONTACT US",
             site_footerPrivacyText: data.footerPrivacyText || "PRIVACY",
+            // FAQ Modal
+            site_modalFaqTitle: data.modalFaqTitle || "FREQUENCY ASKED QUESTIONS",
+            // Demo Submission Modal
+            site_formTitle: data.formTitle || "Secure <span class='accent'>Form Submission</span>",
+            site_formDesc: data.formDesc || "Transmit your audio frequency to the Obscura A&R department for priority review.",
+            site_formLabelName: data.formLabelName || "Real Name",
+            site_formPlaceholderName: data.formPlaceholderName || "Name",
+            site_formLabelArtist: data.formLabelArtist || "Artist Name(s)",
+            site_formPlaceholderArtist: data.formPlaceholderArtist || "Names",
+            site_formLabelEmail: data.formLabelEmail || "Email Address",
+            site_formPlaceholderEmail: data.formPlaceholderEmail || "official@artist.com",
+            site_formLabelGenre: data.formLabelGenre || "Primary Genre",
+            site_formPlaceholderGenre: data.formPlaceholderGenre || "Funk / EDM / Hip Hop",
+            site_formLabelSpotify: data.formLabelSpotify || "Artist Profile / Social Links",
+            site_formPlaceholderSpotify: data.formPlaceholderSpotify || "https://open.spotify.com/artist/...",
+            site_formLabelLink: data.formLabelLink || "Private streaming link (SoundCloud / Dropbox / Drive)",
+            site_formPlaceholderLink: data.formPlaceholderLink || "https://soundcloud.com/...",
+            site_formLabelMessage: data.formLabelMessage || "Message / Biography (Optional)",
+            site_formPlaceholderMessage: data.formPlaceholderMessage || "A brief transmission regarding your sound...",
             site_formRule1Title: data.formRule1Title || "Is this track unreleased?",
             site_formRule1Desc: data.formRule1Desc || "We do NOT accept already-released tracks. Any submissions that have already been published will be automatically declined.",
             site_formRule2Title: data.formRule2Title || "Track identification",
@@ -1324,8 +1343,33 @@ function initModalsEngine() {
             site_formSubmitBtn: data.formSubmitBtn || "Initiate Submission",
             site_formDiscordBtn: data.formDiscordBtn || "Join Discord",
             site_formFooterRec: data.formFooterRec || "[ Highly Recommended: Join the server for real-time frequency tracking ]",
+            // Contact Us Modal
+            site_contactModalTitle: data.contactModalTitle || "CONTACT <span class='accent'>VOID</span>",
             site_contactModalSubtext: data.contactModalSubtext || "Establish a direct frequency with the Obscura Record command center.",
-            site_privacyContent: data.privacyContent || "At OBSCURA RECORD, we value the privacy and intellectual property of our artists and visitors..."
+            site_contactLabelName: data.contactLabelName || "NAME / IDENTIFIER",
+            site_contactPlaceholderName: data.contactPlaceholderName || "Entity Name",
+            site_contactLabelEmail: data.contactLabelEmail || "RETURN EMAIL",
+            site_contactPlaceholderEmail: data.contactPlaceholderEmail || "freq@void.com",
+            site_contactLabelMessage: data.contactLabelMessage || "MESSAGE PAYLOAD",
+            site_contactPlaceholderMessage: data.contactPlaceholderMessage || "Type your transmission here...",
+            site_contactSubmitBtn: data.contactSubmitBtn || "SEND TRANSMISSION",
+            site_contactFooterNote: data.contactFooterNote || "This frequency is guarded by Google reCAPTCHA and sonic encryption.",
+            // Privacy Policy Modal
+            site_modalPrivacyTitle: data.modalPrivacyTitle || "PRIVACY POLICY",
+            site_p1_q: data.p1_q || "INTELLECTUAL PROPERTY",
+            site_p1_a: data.p1_a || "All content in this dimension—including audio, graphics, logos, and visual art—is the property of Obscura Record or its licensors.",
+            site_p2_q: data.p2_q || "DATA SECURITY",
+            site_p2_a: data.p2_a || "Your portal data is encrypted and secure. We only collect what is necessary to maintain your connection.",
+            site_p3_q: data.p3_q || "PROMOTIONAL CONTENT",
+            site_p3_a: data.p3_a || "By connecting to our portal, you may receive updates on new releases, talent discoveries, and galactic events.",
+            site_p4_q: data.p4_q || "EXTERNAL EMBEDS",
+            site_p4_a: data.p4_a || "We use third-party players (SoundCloud/YouTube). Their respective privacy policies apply to your interactions on those platforms.",
+            site_p5_q: data.p5_q || "DATA RETENTION",
+            site_p5_a: data.p5_a || "We retain connection data only as long as necessary for community support and galactic record-keeping.",
+            site_p6_q: data.p6_q || "GOVERNING LAW",
+            site_p6_a: data.p6_a || "All legal matters are governed by the laws of our primary operational frequency. Disputes are resolved via cosmic mediation.",
+            site_p7_q: data.p7_q || "LEGAL CONTACT",
+            site_p7_a: data.p7_a || "For all legal inquiries, copyright complaints (DMCA), or licensing requests, please send an email message to our Legal Counsel at sayurux@gmail.com."
         };
 
         for (const [id, val] of Object.entries(map)) {
@@ -1337,8 +1381,10 @@ function initModalsEngine() {
     db.ref('siteData/modals/faqs').on('value', (snap) => {
         const data = snap.val();
         cachedFAQs = (data && Array.isArray(data)) ? data : [
-            { q: "HOW DO I SUBMIT A DEMO?", a: "Transmit your unreleased master tracks through the Send Demo button." },
-            { q: "WHAT GENRES DOES OBSCURA ACCEPT?", a: "We specialize in futuristic electronic, phonk, funk, and cyberpunk soundscapes." }
+            { q: "HOW DO I SUBMIT A DEMO?", a: "We highly recommend sending demos through our Discord Server for faster review. Alternatively, you can send an email message to sayurux@gmail.com." },
+            { q: "WHAT GENRES ARE YOU LOOKING FOR?", a: "Our dimension primarily focuses on Phonk, Funk, and Futuristic Electronic music. We are looking for high-energy vibrations that push the boundaries of sound." },
+            { q: "WHERE CAN I JOIN THE COMMUNITY?", a: "Join our galactic community on Discord to connect with other artists, share ideas, and participate in exclusive portal events." },
+            { q: "HOW LONG DOES A RESPONSE TAKE?", a: "Our sonic reviewers aim to respond within a few galactic cycles. If your sound resonates with our frequency, we will reach out via Discord or email." }
         ];
         renderFaqItems();
     });
@@ -1397,6 +1443,25 @@ function initModalsEngine() {
                 footerDemoText: document.getElementById('site_footerDemoText').value,
                 footerContactText: document.getElementById('site_footerContactText').value,
                 footerPrivacyText: document.getElementById('site_footerPrivacyText').value,
+                // FAQ
+                modalFaqTitle: document.getElementById('site_modalFaqTitle').value,
+                // Demo
+                formTitle: document.getElementById('site_formTitle').value,
+                formDesc: document.getElementById('site_formDesc').value,
+                formLabelName: document.getElementById('site_formLabelName').value,
+                formPlaceholderName: document.getElementById('site_formPlaceholderName').value,
+                formLabelArtist: document.getElementById('site_formLabelArtist').value,
+                formPlaceholderArtist: document.getElementById('site_formPlaceholderArtist').value,
+                formLabelEmail: document.getElementById('site_formLabelEmail').value,
+                formPlaceholderEmail: document.getElementById('site_formPlaceholderEmail').value,
+                formLabelGenre: document.getElementById('site_formLabelGenre').value,
+                formPlaceholderGenre: document.getElementById('site_formPlaceholderGenre').value,
+                formLabelSpotify: document.getElementById('site_formLabelSpotify').value,
+                formPlaceholderSpotify: document.getElementById('site_formPlaceholderSpotify').value,
+                formLabelLink: document.getElementById('site_formLabelLink').value,
+                formPlaceholderLink: document.getElementById('site_formPlaceholderLink').value,
+                formLabelMessage: document.getElementById('site_formLabelMessage').value,
+                formPlaceholderMessage: document.getElementById('site_formPlaceholderMessage').value,
                 formRule1Title: document.getElementById('site_formRule1Title').value,
                 formRule1Desc: document.getElementById('site_formRule1Desc').value,
                 formRule2Title: document.getElementById('site_formRule2Title').value,
@@ -1404,14 +1469,47 @@ function initModalsEngine() {
                 formSubmitBtn: document.getElementById('site_formSubmitBtn').value,
                 formDiscordBtn: document.getElementById('site_formDiscordBtn').value,
                 formFooterRec: document.getElementById('site_formFooterRec').value,
+                // Contact
+                contactModalTitle: document.getElementById('site_contactModalTitle').value,
                 contactModalSubtext: document.getElementById('site_contactModalSubtext').value,
-                privacyContent: document.getElementById('site_privacyContent').value
+                contactLabelName: document.getElementById('site_contactLabelName').value,
+                contactPlaceholderName: document.getElementById('site_contactPlaceholderName').value,
+                contactLabelEmail: document.getElementById('site_contactLabelEmail').value,
+                contactPlaceholderEmail: document.getElementById('site_contactPlaceholderEmail').value,
+                contactLabelMessage: document.getElementById('site_contactLabelMessage').value,
+                contactPlaceholderMessage: document.getElementById('site_contactPlaceholderMessage').value,
+                contactSubmitBtn: document.getElementById('site_contactSubmitBtn').value,
+                contactFooterNote: document.getElementById('site_contactFooterNote').value,
+                // Privacy
+                modalPrivacyTitle: document.getElementById('site_modalPrivacyTitle').value,
+                p1_q: document.getElementById('site_p1_q').value,
+                p1_a: document.getElementById('site_p1_a').value,
+                p2_q: document.getElementById('site_p2_q').value,
+                p2_a: document.getElementById('site_p2_a').value,
+                p3_q: document.getElementById('site_p3_q').value,
+                p3_a: document.getElementById('site_p3_a').value,
+                p4_q: document.getElementById('site_p4_q').value,
+                p4_a: document.getElementById('site_p4_a').value,
+                p5_q: document.getElementById('site_p5_q').value,
+                p5_a: document.getElementById('site_p5_a').value,
+                p6_q: document.getElementById('site_p6_q').value,
+                p6_a: document.getElementById('site_p6_a').value,
+                p7_q: document.getElementById('site_p7_q').value,
+                p7_a: document.getElementById('site_p7_a').value
             };
+
+            // Sync legacy individual keys for 100% backward-compatibility
+            if (newFaqs.length > 0) {
+                newFaqs.forEach((f, idx) => {
+                    updates[`faq${idx + 1}_q`] = f.q;
+                    updates[`faq${idx + 1}_a`] = f.a;
+                });
+            }
 
             db.ref('siteData/globals').update(updates);
             db.ref('siteData/modals/faqs').set(newFaqs).then(() => {
-                bumpSiteVersion("Updated Modals, FAQ & Footer Options");
-                showToast("MODALS, FAQ & FOOTER SYNCHRONIZED!");
+                bumpSiteVersion("Updated All 4 Popups, FAQ & Footer Options");
+                showToast("ALL 4 POPUPS & FOOTER BUTTONS SYNCHRONIZED!");
             }).catch(err => showToast("ERROR: " + err.message, 'error'));
         });
     }
