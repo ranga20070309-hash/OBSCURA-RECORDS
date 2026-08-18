@@ -2569,9 +2569,14 @@ const initKernelSecurity = () => {
     let devToolsOpen = false;
     const threshold = 200; // Increased threshold to avoid false positives (Sidebars, etc)
     let detectionHold = true; // Temporary hold to prevent false triggers on load
+    let lastIntrusionReportTime = 0;
 
     const reportIntrusion = async (type) => {
         if (detectionHold) return;
+        const now = Date.now();
+        if (now - lastIntrusionReportTime < 30000) return; // Throttle to avoid flooding
+        lastIntrusionReportTime = now;
+
         if (typeof ObscuraTelemetry !== 'undefined') {
             ObscuraTelemetry.logEvent(type || 'CONSOLE_TAMPER', {
                 message: 'Developer tools or console inspected',
