@@ -102,15 +102,16 @@ body.maintenance-active::-webkit-scrollbar {
 }
 
 /* Background & Overlay */
+/* Background & Ambient Lighting */
 .space-bg {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: #000;
-    /* Deep Black Background */
-    z-index: -3;
+    background: #04040a;
+    z-index: 0;
+    pointer-events: none;
 }
 
 /* ==========================================================================
@@ -120,44 +121,44 @@ body.maintenance-active::-webkit-scrollbar {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     pointer-events: none;
-    z-index: -2;
+    z-index: 1;
     overflow: hidden;
-    opacity: 0.15;
+    opacity: 0.25;
     transition: opacity 0.5s ease;
     will-change: opacity, transform;
 }
 
 body.audio-playing .ambient-bass-lighting {
-    opacity: 1;
+    opacity: 1 !important;
 }
 
 .bass-light-orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(85px);
+    filter: blur(80px);
     pointer-events: none;
     will-change: transform, opacity;
     transform: translate(-50%, -50%) scale(var(--bass-scale, 1));
-    transition: transform 0.06s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.06s ease;
+    transition: transform 0.05s cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
 .orb-cyan {
-    top: 25%;
-    left: 20%;
-    width: 650px;
-    height: 650px;
-    background: radial-gradient(circle, rgba(0, 240, 255, calc(0.12 + var(--bass-intensity, 0) * 0.48)) 0%, rgba(0, 240, 255, 0.04) 50%, transparent 75%);
+    top: 22%;
+    left: 18%;
+    width: 680px;
+    height: 680px;
+    background: radial-gradient(circle, rgba(0, 240, 255, calc(0.35 + var(--bass-intensity, 0) * 0.55)) 0%, rgba(0, 240, 255, 0.1) 45%, transparent 70%);
 }
 
 .orb-purple {
-    bottom: 20%;
-    right: 20%;
-    width: 780px;
-    height: 780px;
-    background: radial-gradient(circle, rgba(157, 0, 255, calc(0.14 + var(--bass-intensity, 0) * 0.52)) 0%, rgba(112, 0, 255, 0.05) 50%, transparent 75%);
+    bottom: 18%;
+    right: 18%;
+    width: 820px;
+    height: 820px;
+    background: radial-gradient(circle, rgba(183, 0, 255, calc(0.38 + var(--bass-intensity, 0) * 0.55)) 0%, rgba(112, 0, 255, 0.1) 45%, transparent 70%);
 }
 
 .orb-center-sub {
@@ -165,19 +166,22 @@ body.audio-playing .ambient-bass-lighting {
     left: 50%;
     width: 950px;
     height: 950px;
-    background: radial-gradient(circle, rgba(0, 240, 255, calc(var(--bass-intensity, 0) * 0.28)) 0%, rgba(183, 0, 255, calc(var(--bass-intensity, 0) * 0.22)) 40%, transparent 70%);
+    background: radial-gradient(circle, rgba(0, 240, 255, calc(var(--bass-intensity, 0) * 0.45)) 0%, rgba(183, 0, 255, calc(var(--bass-intensity, 0) * 0.35)) 40%, transparent 70%);
+}
+
+/* Edge Bass-Reactive Neon Flash Bloom */
+.bass-vignette-flash {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 calc(50px + var(--bass-intensity, 0) * 80px) rgba(0, 240, 255, calc(var(--bass-intensity, 0) * 0.4)),
+                inset 0 0 calc(100px + var(--bass-intensity, 0) * 120px) rgba(183, 0, 255, calc(var(--bass-intensity, 0) * 0.3));
+    opacity: calc(var(--bass-intensity, 0));
+    transition: opacity 0.05s ease;
 }
 
 .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.85) 100%);
-    z-index: -1;
-    pointer-events: none;
-    opacity: 0.85;
+    display: none;
 }
 
 .noise-overlay {
