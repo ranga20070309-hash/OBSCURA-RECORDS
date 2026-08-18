@@ -427,13 +427,22 @@ body.admin-preview-active header {
     transform: translateX(-50%) scaleX(1);
 }
 
-/* Send Demo Nav Pill Accent */
+/* Send Demo Nav Pill Accent - Perfectly Centered Between Contact and SFX/Menu */
 #open-form.nav-item {
+    margin-left: 1.5rem;
+    margin-right: 1.5rem;
+    padding: 0.55rem 1.4rem;
     background: rgba(0, 240, 255, 0.12);
-    border: 1px solid rgba(0, 240, 255, 0.35);
+    border: 1px solid rgba(0, 240, 255, 0.4);
     color: #00f0ff;
     font-weight: 700;
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.12);
+    border-radius: 30px;
+    box-shadow: 0 0 18px rgba(0, 240, 255, 0.15);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    letter-spacing: 0.12rem;
 }
 
 #open-form.nav-item:hover {
@@ -452,6 +461,7 @@ body.admin-preview-active header {
     position: relative;
     display: flex;
     align-items: center;
+    gap: 0.6rem;
 }
 
 .menu-trigger {
@@ -491,18 +501,18 @@ body.admin-preview-active header {
     transform: rotate(90deg);
 }
 
-/* Dynamic Ultra-Cyber Social Sidebar */
+/* Dynamic Ultra-Cyber Social Sidebar (Higher than Header) */
 .social-sidebar {
     position: fixed;
     top: 0;
     right: -400px;
     width: 390px;
     height: 100vh;
-    background: rgba(5, 7, 18, 0.94);
+    background: rgba(5, 7, 18, 0.96);
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
-    border-left: 1px solid rgba(0, 240, 255, 0.25);
-    z-index: 10001;
+    border-left: 1px solid rgba(0, 240, 255, 0.3);
+    z-index: 100005; /* Must be higher than header (99999) */
     display: flex;
     flex-direction: column;
     padding: 3.5rem 2.4rem;
@@ -622,13 +632,13 @@ body.admin-preview-active header {
     text-transform: uppercase;
 }
 
-/* Sidebar Overlay */
+/* Sidebar Overlay (Higher than Header) */
 .sidebar-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
-    z-index: 10000;
+    backdrop-filter: blur(10px);
+    z-index: 100002;
     opacity: 0;
     visibility: hidden;
     transition: all 0.5s ease;
