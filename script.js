@@ -1,22 +1,3 @@
-/* 
-    OBSCURA RECORDS | THE IGNITION SEQUENCE (OS v2.0.6)
-    AUTHOR: RANGA | STRICTLY CUSTOM BUILT
-*/
-
-// --- DEVELOPER AUTHENTICATION (FOR INSPECTORS) ---
-console.log(
-    '%c CORE PORTAL AUTHENTICATED %c \n%c DEVELOPER: RANGA %c \n%c PROJECT: OBSCURA RECORD %c',
-    'background: #00f0ff; color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
-    '',
-    'color: #00f0ff; font-weight: bold; margin-top: 5px;',
-    '',
-    'color: #fff; opacity: 0.8;',
-    ''
-);
-console.log("%cWARNING: ACCESSING PROTECTED LOGIC. REVERSE ENGINEERING IS MONITORED.", "color: red; font-weight: bold; font-size: 8px;");
-
-
-// Force scroll to top on reload (Robust method)
 if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual';
 }
@@ -63,11 +44,32 @@ const updateSFXToggleUI = () => {
     }
 };
 
+// Unlock Web Audio Context cleanly on first user gesture (Prevents browser warnings)
+const unlockAudioContextOnGesture = () => {
+    try {
+        if (!sfxAudioCtx) sfxAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (sfxAudioCtx && sfxAudioCtx.state === 'suspended') sfxAudioCtx.resume();
+    } catch (e) {}
+    window.removeEventListener('click', unlockAudioContextOnGesture);
+    window.removeEventListener('keydown', unlockAudioContextOnGesture);
+    window.removeEventListener('touchstart', unlockAudioContextOnGesture);
+};
+window.addEventListener('click', unlockAudioContextOnGesture, { once: true });
+window.addEventListener('keydown', unlockAudioContextOnGesture, { once: true });
+window.addEventListener('touchstart', unlockAudioContextOnGesture, { once: true });
+
 const playCyberSFX = (type = 'click') => {
     if (!sfxEnabled) return;
     try {
-        if (!sfxAudioCtx) sfxAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (sfxAudioCtx.state === 'suspended') sfxAudioCtx.resume();
+        if (!sfxAudioCtx) {
+            // Do not create AudioContext on mere hover before first user gesture
+            if (type === 'hover') return;
+            sfxAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (sfxAudioCtx.state === 'suspended') {
+            if (type === 'hover') return;
+            sfxAudioCtx.resume();
+        }
         const now = sfxAudioCtx.currentTime;
         
         if (type === 'hover') {
@@ -1927,7 +1929,7 @@ const initPortal = () => {
                         }
                         // Only set YouTube cover if it hasn't been set by Spotify yet (or if Spotify is still loading, Spotify will safely override)
                         if (videoId && coverImg && coverImg.src.includes('cover')) {
-                            const ytThumb = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+                            const ytThumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
                             coverImg.src = ytThumb;
                             coverImg.style.filter = "none";
                             if (cdImg) cdImg.src = ytThumb;
