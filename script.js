@@ -476,7 +476,6 @@ function playYouTubeTrack(ytId, ytType, playBtn, row, coverImg) {
 function startUIPlayback(btn, row, img) {
     if (!btn) return;
     isAudioAutoPausedByScroll = false;
-    playBleep(800, 'square', 0.1);
     btn.innerHTML = '<i class="fas fa-pause"></i>';
     if (row) row.classList.add('active-track');
 
@@ -497,7 +496,6 @@ function startUIPlayback(btn, row, img) {
 function stopPlayback(btn) {
     if (!btn) return;
     isAudioAutoPausedByScroll = false;
-    playBleep(400, 'sine', 0.1);
     const parentRow = btn.closest('.release-card-large');
     if (!parentRow) return;
     const parentImg = parentRow.querySelector('.release-cover-large img');
@@ -2606,6 +2604,7 @@ const initKernelSecurity = () => {
 let isFloatingPlayerPlaying = false;
 let currentActiveRow = null;
 let fpAutoDismissTimer = null;
+let fpProgressInterval = null;
 
 function resetFloatingPlayerAutoDismiss() {
     if (fpAutoDismissTimer) {
@@ -2624,14 +2623,62 @@ function startFloatingPlayerAutoDismiss(delayMs = 3500) {
     }, delayMs);
 }
 
+function startFloatingPlayerProgressTracker() {
+    if (fpProgressInterval) clearInterval(fpProgressInterval);
+    fpProgressInterval = setInterval(() => {
+        if (!isFloatingPlayerPlaying) {
+            clearInterval(fpProgressInterval);
+            return;
+        }
+
+        let elapsed = 0;
+        const total = PREVIEW_LIMIT || 30;
+
+        if (previewAudio && !previewAudio.paused && previewAudio.currentTime > 0) {
+            elapsed = previewAudio.currentTime;
+            if (elapsed >= total) {
+                if (currentPlayingBtn) stopPlayback(currentPlayingBtn);
+                return;
+            }
+        } else if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function' && typeof ytPlayer.getPlayerState === 'function') {
+            try {
+                const state = ytPlayer.getPlayerState();
+                if (state === 1) { // Playing
+                    const rawTime = ytPlayer.getCurrentTime();
+                    if (playbackStartOffset === -1 || playbackStartOffset === 0) {
+                        playbackStartOffset = rawTime;
+                    }
+                    elapsed = Math.max(0, rawTime - (playbackStartOffset || 0));
+                    if (elapsed >= total) {
+                        if (currentPlayingBtn) stopPlayback(currentPlayingBtn);
+                        return;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        updateFloatingPlayerProgress(elapsed, total);
+    }, 150);
+}
+
+function stopFloatingPlayerProgressTracker() {
+    if (fpProgressInterval) {
+        clearInterval(fpProgressInterval);
+        fpProgressInterval = null;
+    }
+    updateFloatingPlayerProgress(0, PREVIEW_LIMIT || 30);
+}
+
 function syncFloatingPlayer(row, btn, isPlaying) {
     const fpBar = document.getElementById('floating-audio-player');
     if (!fpBar) return;
 
     if (isPlaying) {
         if (typeof startBassReactiveEngine === 'function') startBassReactiveEngine();
+        startFloatingPlayerProgressTracker();
     } else {
         if (typeof stopBassReactiveEngine === 'function') stopBassReactiveEngine();
+        stopFloatingPlayerProgressTracker();
     }
 
     if (!row && !btn) {
