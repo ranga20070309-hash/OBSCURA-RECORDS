@@ -15,6 +15,12 @@ let audioTimer = null;
 let previewAudio = new Audio();
 previewAudio.crossOrigin = "anonymous";
 previewAudio.preload = "auto";
+previewAudio.addEventListener('ended', () => {
+    if (typeof stopPlayback === 'function') stopPlayback();
+});
+previewAudio.addEventListener('error', () => {
+    if (typeof stopPlayback === 'function') stopPlayback();
+});
 let playbackStartOffset = 0;
 let autoScrollInterval = null;
 const PREVIEW_LIMIT = 30;
@@ -221,10 +227,7 @@ function initYTPlayer() {
 
 function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
-        if (currentPlayingBtn) {
-            stopPlayback(currentPlayingBtn);
-            currentPlayingBtn = null;
-        }
+        if (typeof stopPlayback === 'function') stopPlayback();
     }
 }
 
@@ -476,6 +479,7 @@ function playYouTubeTrack(ytId, ytType, playBtn, row, coverImg) {
 function startUIPlayback(btn, row, img) {
     if (!btn) return;
     isAudioAutoPausedByScroll = false;
+    currentPlayingBtn = btn;
     btn.innerHTML = '<i class="fas fa-pause"></i>';
     if (row) row.classList.add('active-track');
 
@@ -494,31 +498,45 @@ function startUIPlayback(btn, row, img) {
 }
 
 function stopPlayback(btn) {
-    if (!btn) return;
+    const targetBtn = btn || currentPlayingBtn;
+    currentPlayingBtn = null;
     isAudioAutoPausedByScroll = false;
-    const parentRow = btn.closest('.release-card-large');
-    if (!parentRow) return;
-    const parentImg = parentRow.querySelector('.release-cover-large img');
-    const timeDisplay = parentRow.querySelector('.preview-time');
 
-    btn.innerHTML = '<i class="fas fa-play"></i>';
-    parentRow.classList.remove('active-track');
-    gsap.killTweensOf([btn, parentImg]);
-    gsap.to(btn, { scale: 1, boxShadow: 'none' });
-    if (parentImg) gsap.to(parentImg, { scale: 1, duration: 0.5 });
+    // Reset all play buttons in releases archive
+    document.querySelectorAll('#release-slider .play-btn').forEach(b => {
+        b.innerHTML = '<i class="fas fa-play"></i>';
+        gsap.killTweensOf(b);
+        gsap.to(b, { scale: 1, boxShadow: 'none' });
+    });
 
-    // Silence all sources
-    previewAudio.pause();
-    previewAudio.currentTime = 0;
-    playbackStartOffset = 0;
+    // Reset active-track states
+    document.querySelectorAll('#release-slider .release-card-large').forEach(r => {
+        r.classList.remove('active-track');
+        const img = r.querySelector('.release-cover-large img');
+        if (img) {
+            gsap.killTweensOf(img);
+            gsap.to(img, { scale: 1, duration: 0.5 });
+        }
+        const timeDisplay = r.querySelector('.preview-time');
+        if (timeDisplay) timeDisplay.style.display = 'none';
+    });
 
-    if (ytPlayer && ytPlayer.stopVideo) {
-        try { ytPlayer.stopVideo(); } catch (e) { }
+    if (audioTimer) {
+        clearInterval(audioTimer);
+        audioTimer = null;
     }
 
-    if (timeDisplay) {
-        timeDisplay.style.display = 'none';
-        if (audioTimer) clearInterval(audioTimer);
+    // Silence all audio sources immediately
+    if (previewAudio) {
+        try {
+            previewAudio.pause();
+            previewAudio.currentTime = 0;
+        } catch (e) {}
+    }
+    playbackStartOffset = -1;
+
+    if (ytPlayer && ytPlayer.stopVideo) {
+        try { ytPlayer.stopVideo(); } catch (e) {}
     }
 
     // Stop Sub-Bass Reactive Background Lighting
@@ -526,9 +544,9 @@ function stopPlayback(btn) {
         stopBassReactiveEngine();
     }
 
-    // Sync Floating Player State to Paused
+    // Sync Floating Player State to Paused & trigger auto dismiss
     if (typeof syncFloatingPlayer === 'function') {
-        syncFloatingPlayer(parentRow, btn, false);
+        syncFloatingPlayer(null, null, false);
     }
 }
 
@@ -558,16 +576,8 @@ function loadPopular() {
             const youtube = r.youtube || r.streamUrl || '';
             const spotify = r.spotify || r.spotifyUrl || '';
             const apple = r.apple || r.appleUrl || '';
-            const preview = r.preview || youtube || '';
             const badgeText = r.badge || 'TRENDING';
             const rankFormatted = (i + 1 < 10) ? `0${i + 1}` : `${i + 1}`;
-            
-            let ytData = getYouTubeID(youtube);
-            const previewYT = getYouTubeID(preview);
-            if (previewYT) ytData = previewYT;
-
-            const ytIdAttr = ytData ? ytData.id : '';
-            const ytTypeAttr = ytData ? ytData.type : 'video';
 
             const card = document.createElement('div');
             card.className = 'popular-card release-card-large glass';
@@ -576,20 +586,6 @@ function loadPopular() {
                     <div class="cyber-laser-scanner"></div>
                     <img src="${cover}" alt="${title}" onerror="this.onerror=null; this.src='assets/cover.png';">
                     <div class="release-type-badge">HOT #${rankFormatted}</div>
-                    <div class="player-overlay">
-                        <button class="play-btn"
-                            data-title="${title.replace(/"/g, '&quot;')}"
-                            data-artist="${artist.replace(/"/g, '&quot;')}"
-                            data-image="${cover}"
-                            data-spotify="${spotify || '#'}"
-                            data-youtube="${youtube || '#'}"
-                            data-preview="${preview || ''}"
-                            data-ytid="${ytIdAttr}"
-                            data-yttype="${ytTypeAttr}">
-                            <i class="fas fa-play"></i>
-                        </button>
-                        <div class="preview-time" style="display: none;">0:30</div>
-                    </div>
                 </div>
                 <div class="release-info-large">
                     <span class="track-id">POPULAR HIT <span class="badge">${badgeText}</span></span>
@@ -602,41 +598,6 @@ function loadPopular() {
                     </div>
                 </div>
             `;
-
-            const playBtn = card.querySelector('.play-btn');
-            if (playBtn) {
-                playBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const isPlaying = playBtn.innerHTML.includes('fa-pause');
-                    if (currentPlayingBtn && currentPlayingBtn !== playBtn) {
-                        stopPlayback(currentPlayingBtn);
-                    }
-
-                    if (!isPlaying) {
-                        currentPlayingBtn = playBtn;
-                        const mp3Url = playBtn.getAttribute('data-preview');
-                        const ytId = playBtn.getAttribute('data-ytid');
-                        const ytType = playBtn.getAttribute('data-yttype');
-                        const coverImg = card.querySelector('.release-cover-large > img');
-                        
-                        if (mp3Url && mp3Url !== '#' && !getYouTubeID(mp3Url)) {
-                            previewAudio.src = mp3Url;
-                            previewAudio.play().then(() => {
-                                startUIPlayback(playBtn, card, coverImg);
-                            }).catch(() => {
-                                startUIPlayback(playBtn, card, coverImg);
-                            });
-                        } else if (ytId) {
-                            playYouTubeTrack(ytId, ytType, playBtn, card, coverImg);
-                        } else {
-                            startUIPlayback(playBtn, card, coverImg);
-                        }
-                    } else {
-                        stopPlayback(playBtn);
-                        currentPlayingBtn = null;
-                    }
-                });
-            }
 
             popularGrid.appendChild(card);
 
@@ -2134,12 +2095,10 @@ const initPortal = () => {
                             display.textContent = `0:${secs.toString().padStart(2, '0')}`;
 
                             if (remaining <= 0.1) {
-                                stopPlayback(currentPlayingBtn);
-                                currentPlayingBtn = null;
+                                stopPlayback();
                             }
                         } else if (remaining <= 0) {
-                            stopPlayback(currentPlayingBtn);
-                            currentPlayingBtn = null;
+                            stopPlayback();
                         }
                     } else {
                         display.textContent = "...";
@@ -2705,7 +2664,7 @@ function startFloatingPlayerProgressTracker() {
         if (previewAudio && !previewAudio.paused && previewAudio.currentTime > 0) {
             elapsed = previewAudio.currentTime;
             if (elapsed >= total) {
-                if (currentPlayingBtn) stopPlayback(currentPlayingBtn);
+                stopPlayback();
                 return;
             }
         } else if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function' && typeof ytPlayer.getPlayerState === 'function') {
@@ -2718,7 +2677,7 @@ function startFloatingPlayerProgressTracker() {
                     }
                     elapsed = Math.max(0, rawTime - (playbackStartOffset || 0));
                     if (elapsed >= total) {
-                        if (currentPlayingBtn) stopPlayback(currentPlayingBtn);
+                        stopPlayback();
                         return;
                     }
                 }
@@ -2833,7 +2792,7 @@ function updateFloatingPlayerProgress(elapsed, total) {
 }
 
 function stepTrack(direction = 1) {
-    const allPlayBtns = Array.from(document.querySelectorAll('.release-card-large .play-btn'));
+    const allPlayBtns = Array.from(document.querySelectorAll('#release-slider .play-btn'));
     if (!allPlayBtns.length) return;
 
     let currentIndex = -1;
@@ -2885,7 +2844,7 @@ function initFloatingPlayer() {
             if (currentPlayingBtn) {
                 currentPlayingBtn.click();
             } else {
-                const firstBtn = document.querySelector('.release-card-large .play-btn');
+                const firstBtn = document.querySelector('#release-slider .play-btn');
                 if (firstBtn) firstBtn.click();
             }
         });
