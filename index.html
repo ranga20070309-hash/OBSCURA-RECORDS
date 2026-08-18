@@ -1061,26 +1061,26 @@
             <div class="modal-content glass no-tilt" style="max-width: 500px;">
                 <button class="close-modal">&times;</button>
                 <div class="modal-header">
-                    <h2 class="section-title">CONTACT <span class="accent">VOID</span></h2>
-                    <p
+                    <h2 class="section-title" data-sync="contactModalTitle" data-sync-target="html">CONTACT <span class="accent">VOID</span></h2>
+                    <p data-sync="contactModalSubtext" data-sync-target="text"
                         style="margin-top:-1rem; margin-bottom: 1.5rem; color: var(--text-secondary); opacity: 0.8; font-size: 0.8rem;">
                         Establish a direct frequency with the Obscura Record command center.</p>
                 </div>
                 <form id="contact-form" class="cyber-form">
                     <div class="form-group">
-                        <label>NAME / IDENTIFIER</label>
-                        <input type="text" name="name" placeholder="Entity Name" required>
+                        <label data-sync="contactLabelName" data-sync-target="text">NAME / IDENTIFIER</label>
+                        <input type="text" name="name" placeholder="Entity Name" data-sync="contactPlaceholderName" data-sync-target="placeholder" required>
                     </div>
                     <div class="form-group">
-                        <label>RETURN EMAIL</label>
-                        <input type="email" name="email" placeholder="freq@void.com" required>
+                        <label data-sync="contactLabelEmail" data-sync-target="text">RETURN EMAIL</label>
+                        <input type="email" name="email" placeholder="freq@void.com" data-sync="contactPlaceholderEmail" data-sync-target="placeholder" required>
                     </div>
                     <div class="form-group">
-                        <label>MESSAGE PAYLOAD</label>
-                        <textarea name="message" placeholder="Type your transmission here..." required></textarea>
+                        <label data-sync="contactLabelMessage" data-sync-target="text">MESSAGE PAYLOAD</label>
+                        <textarea name="message" placeholder="Type your transmission here..." data-sync="contactPlaceholderMessage" data-sync-target="placeholder" required></textarea>
                     </div>
-                    <button type="submit" class="cta-primary-small" style="width: 100%;">SEND TRANSMISSION</button>
-                    <p
+                    <button type="submit" class="cta-primary-small" style="width: 100%;" data-sync="contactSubmitBtn" data-sync-target="text">SEND TRANSMISSION</button>
+                    <p data-sync="contactFooterNote" data-sync-target="text"
                         style="font-size: 0.6rem; color: var(--text-secondary); opacity: 0.5; margin-top: 1rem; text-align: center;">
                         This frequency is guarded by Google reCAPTCHA and sonic encryption.</p>
                 </form>
