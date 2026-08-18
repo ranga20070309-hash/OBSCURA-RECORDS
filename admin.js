@@ -19,6 +19,7 @@ const db = firebase.database();
 
 // State stores
 let cachedGlobals = {};
+let cachedPopular = [];
 let cachedReleases = [];
 let cachedUpcoming = [];
 let cachedStaff = {};
@@ -240,6 +241,7 @@ window.addEventListener('DOMContentLoaded', () => {
 function initDashboardEngine() {
     initNavigation();
     initGlobalsSync();
+    initPopularEngine();
     initReleasesEngine();
     initUpcomingEngine();
     initGhostProdEngine();
@@ -260,6 +262,7 @@ function initNavigation() {
     const panelMeta = {
         'settings-panel': { title: '<i class="fas fa-sliders-h"></i> GLOBALS & DIRECTIVES', desc: 'Real-time control center for core site typography, branding, and system states.' },
         'links-panel': { title: '<i class="fas fa-link"></i> NAVIGATION & SOCIAL CHANNELS', desc: 'Manage destination URLs for header links, social channels, and external portals.' },
+        'popular-panel': { title: '<i class="fas fa-fire"></i> POPULAR RELEASES & TRENDING TRACKS', desc: 'Manage featured trending carousel tracks, ranking order, audio links, and section visibility.' },
         'releases-panel': { title: '<i class="fas fa-compact-disc"></i> RELEASE CATALOG ARCHIVE', desc: 'Publish, edit, and reorder music releases with instant audio streaming IDs.' },
         'upcoming-panel': { title: '<i class="fas fa-clock"></i> UPCOMING RELEASES & TEASERS', desc: 'Configure teaser artwork, countdown date, and production status tags.' },
         'ghost-production-panel': { title: '<i class="fas fa-ghost"></i> GHOST PRODUCTION DIRECTIVES', desc: 'Manage custom production pricing tiers, turnaround timeline, and feature lists.' },
@@ -426,6 +429,321 @@ function initGlobalsSync() {
             });
         });
     }
+}
+
+// --- 2.5 POPULAR RELEASES ENGINE ---
+function initPopularEngine() {
+    const container = document.getElementById('popular-releases-list');
+    const badgePopular = document.getElementById('badge-popular');
+    const editorCard = document.getElementById('popular-editor-card');
+    const btnAddNew = document.getElementById('btn-add-new-popular');
+    const btnClose = document.getElementById('close-popular-editor');
+    const btnCancel = document.getElementById('btn-cancel-popular');
+    const btnSave = document.getElementById('btn-save-popular-record');
+    const searchInput = document.getElementById('popular-search-input');
+    const coverInput = document.getElementById('pop_cover');
+    const coverFile = document.getElementById('pop_cover_file');
+    const coverImg = document.getElementById('pop_cover_preview_img');
+    const togglePopular = document.getElementById('toggle-popular-section');
+    const btnSaveHeader = document.getElementById('save-popular-header');
+
+    // Live Cover Image Preview
+    if (coverInput && coverImg) {
+        coverInput.addEventListener('input', () => {
+            const url = coverInput.value.trim();
+            coverImg.src = url || 'assets/cover.png';
+        });
+    }
+
+    // Local File Browser for Cover Artwork
+    if (coverFile && coverInput && coverImg) {
+        coverFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const dataUrl = event.target.result;
+                    coverInput.value = dataUrl;
+                    coverImg.src = dataUrl;
+                    showToast("LOCAL ARTWORK LOADED!");
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Section Visibility & Header sync
+    db.ref('siteData/globals').on('value', (snap) => {
+        const data = snap.val() || {};
+        if (togglePopular) {
+            const isVisible = !(data.showPopular === 'Hidden' || data.showPopular === false || data.showPopularReleases === false || data.showPopularReleases === 'Hidden');
+            togglePopular.checked = isVisible;
+        }
+        const titleEl = document.getElementById('site_popularTitle');
+        const descEl = document.getElementById('site_popularDesc');
+        if (titleEl && data.popularTitle) titleEl.value = data.popularTitle;
+        if (descEl && data.popularDesc) descEl.value = data.popularDesc;
+    });
+
+    if (togglePopular) {
+        togglePopular.addEventListener('change', () => {
+            const isChecked = togglePopular.checked;
+            const val = isChecked ? 'Visible' : 'Hidden';
+            db.ref('siteData/globals').update({
+                showPopular: val,
+                showPopularReleases: isChecked
+            }).then(() => {
+                bumpSiteVersion(`Popular Section: ${val}`);
+                showToast(`POPULAR RELEASES SECTION IS NOW ${val.toUpperCase()}!`);
+            });
+        });
+    }
+
+    if (btnSaveHeader) {
+        btnSaveHeader.addEventListener('click', () => {
+            const title = document.getElementById('site_popularTitle').value.trim();
+            const desc = document.getElementById('site_popularDesc').value.trim();
+            db.ref('siteData/globals').update({
+                popularTitle: title,
+                popularDesc: desc
+            }).then(() => {
+                bumpSiteVersion("Updated Popular Releases Section Header");
+                showToast("POPULAR SECTION HEADER SYNCHRONIZED!");
+            }).catch(err => showToast("ERROR: " + err.message, 'error'));
+        });
+    }
+
+    // Load and listen to Popular Releases list
+    db.ref('siteData/popular_releases').on('value', (snapshot) => {
+        const data = snapshot.val();
+        cachedPopular = [];
+        if (data) {
+            if (Array.isArray(data)) {
+                cachedPopular = data.filter(Boolean);
+            } else if (typeof data === 'object') {
+                cachedPopular = Object.values(data);
+            }
+        }
+        if (badgePopular) badgePopular.textContent = cachedPopular.length;
+        renderPopularList();
+    });
+
+    function renderPopularList() {
+        if (!container) return;
+        const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+        const filtered = cachedPopular.map((item, idx) => ({ ...item, _origIdx: idx })).filter(item => {
+            if (!query) return true;
+            return (item.title && item.title.toLowerCase().includes(query)) ||
+                   (item.artist && item.artist.toLowerCase().includes(query)) ||
+                   (item.producers && item.producers.toLowerCase().includes(query));
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state full-grid">
+                    <i class="fas fa-fire"></i>
+                    <h3>NO POPULAR RELEASES FOUND</h3>
+                    <p>Click "+ ADD NEW POPULAR HIT" to feature trending releases on the front page.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = filtered.map((item) => {
+            const idx = item._origIdx;
+            const rank = idx + 1;
+            const rankFormatted = rank < 10 ? `0${rank}` : `${rank}`;
+            const cover = item.image || item.cover || 'assets/cover.png';
+            const title = item.title || 'UNTITLED HIT';
+            const artist = item.artist || item.producers || 'UNKNOWN ARTIST';
+            const badge = item.badge || 'TRENDING';
+
+            return `
+                <div class="admin-release-card" data-index="${idx}">
+                    <div class="rel-card-top">
+                        <div style="position: relative;">
+                            <img src="${cover}" alt="Artwork" class="rel-thumb" onerror="this.onerror=null; this.src='assets/cover.png';">
+                            <span class="badge" style="position: absolute; bottom: -4px; right: -4px; background: #ff0055; color: #fff; font-size: 0.65rem; padding: 2px 6px; border-radius: 6px;">#${rankFormatted}</span>
+                        </div>
+                        <div class="rel-meta" style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h4>${title}</h4>
+                                <span class="badge" style="background: rgba(0, 240, 255, 0.2); color: #00f0ff; border: 1px solid rgba(0, 240, 255, 0.4); font-size: 0.65rem;">${badge}</span>
+                            </div>
+                            <div class="rel-artist"><i class="fas fa-user-astronaut"></i> ${artist}</div>
+                            <div class="stream-indicators" style="display: flex; gap: 0.6rem; margin-top: 0.4rem; font-size: 0.9rem;">
+                                ${item.youtube || item.streamUrl ? '<span style="color:#ff0000;" title="YouTube Available"><i class="fab fa-youtube"></i></span>' : ''}
+                                ${item.spotify || item.spotifyUrl ? '<span style="color:#1db954;" title="Spotify Available"><i class="fab fa-spotify"></i></span>' : ''}
+                                ${item.apple || item.appleUrl ? '<span style="color:#fc3c44;" title="Apple Music Available"><i class="fa-brands fa-apple"></i></span>' : ''}
+                                ${item.preview ? '<span style="color:#00f0ff;" title="Audio Preview Ready"><i class="fas fa-headphones"></i></span>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rel-card-actions" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; gap: 0.3rem;">
+                            <button type="button" class="cyber-btn sm" style="padding: 0.4rem 0.6rem;" title="Move Up" onclick="movePopularItem(${idx}, -1)"><i class="fas fa-arrow-up"></i></button>
+                            <button type="button" class="cyber-btn sm" style="padding: 0.4rem 0.6rem;" title="Move Down" onclick="movePopularItem(${idx}, 1)"><i class="fas fa-arrow-down"></i></button>
+                        </div>
+                        <div style="display: flex; gap: 0.4rem;">
+                            <button type="button" class="cyber-btn primary sm" onclick="openPopularEditor(${idx})">
+                                <i class="fas fa-edit"></i> EDIT
+                            </button>
+                            <button type="button" class="cyber-btn danger sm" onclick="deletePopularRecord(${idx})">
+                                <i class="fas fa-trash"></i> DELETE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', renderPopularList);
+    }
+
+    // Open Add Form
+    if (btnAddNew) {
+        btnAddNew.addEventListener('click', () => {
+            document.getElementById('pop_edit_index').value = "-1";
+            document.getElementById('popular-editor-title').innerHTML = '<i class="fas fa-plus-circle"></i> ADD NEW POPULAR RELEASE';
+            document.getElementById('pop_title').value = '';
+            document.getElementById('pop_artist').value = '';
+            document.getElementById('pop_rank').value = cachedPopular.length + 1;
+            document.getElementById('pop_badge').value = 'TRENDING';
+            document.getElementById('pop_cover').value = '';
+            document.getElementById('pop_preview').value = '';
+            document.getElementById('pop_youtube').value = '';
+            document.getElementById('pop_spotify').value = '';
+            document.getElementById('pop_apple').value = '';
+            if (coverImg) coverImg.src = 'assets/cover.png';
+            if (editorCard) {
+                editorCard.style.display = 'block';
+                editorCard.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+
+    // Close / Cancel
+    [btnClose, btnCancel].forEach(btn => {
+        if (btn) {
+            btn.addEventListener('click', () => {
+                if (editorCard) editorCard.style.display = 'none';
+            });
+        }
+    });
+
+    // Save Popular Track
+    if (btnSave) {
+        btnSave.addEventListener('click', () => {
+            const editIndex = parseInt(document.getElementById('pop_edit_index').value, 10);
+            const title = document.getElementById('pop_title').value.trim();
+            const artist = document.getElementById('pop_artist').value.trim();
+            const rank = parseInt(document.getElementById('pop_rank').value, 10) || 1;
+            const badge = document.getElementById('pop_badge').value.trim() || 'TRENDING';
+            const cover = document.getElementById('pop_cover').value.trim() || 'assets/cover.png';
+            const preview = document.getElementById('pop_preview').value.trim();
+            const youtube = document.getElementById('pop_youtube').value.trim();
+            const spotify = document.getElementById('pop_spotify').value.trim();
+            const apple = document.getElementById('pop_apple').value.trim();
+
+            if (!title) {
+                showToast("PLEASE ENTER TRACK TITLE!", 'error');
+                return;
+            }
+            if (!artist) {
+                showToast("PLEASE ENTER ARTIST NAME!", 'error');
+                return;
+            }
+
+            const record = {
+                title: title,
+                artist: artist,
+                producers: artist,
+                image: cover,
+                cover: cover,
+                rank: rank,
+                badge: badge,
+                preview: preview,
+                youtube: youtube,
+                streamUrl: youtube,
+                spotify: spotify,
+                spotifyUrl: spotify,
+                apple: apple,
+                appleUrl: apple
+            };
+
+            let newList = [...cachedPopular];
+            if (editIndex >= 0 && editIndex < newList.length) {
+                newList[editIndex] = record;
+            } else {
+                newList.push(record);
+            }
+
+            // Sort by rank if custom ranks provided
+            newList.sort((a, b) => (parseInt(a.rank) || 99) - (parseInt(b.rank) || 99));
+
+            db.ref('siteData/popular_releases').set(newList).then(() => {
+                bumpSiteVersion(`Saved Popular Track: ${title}`);
+                showToast(`POPULAR TRACK "${title}" SYNCHRONIZED!`);
+                if (editorCard) editorCard.style.display = 'none';
+            }).catch(err => showToast("ERROR: " + err.message, 'error'));
+        });
+    }
+
+    // Global Functions for Edit, Delete, Move
+    window.openPopularEditor = function(index) {
+        const item = cachedPopular[index];
+        if (!item) return;
+
+        document.getElementById('pop_edit_index').value = index;
+        document.getElementById('popular-editor-title').innerHTML = `<i class="fas fa-edit"></i> EDIT POPULAR RELEASE: ${item.title || ''}`;
+        document.getElementById('pop_title').value = item.title || '';
+        document.getElementById('pop_artist').value = item.artist || item.producers || '';
+        document.getElementById('pop_rank').value = item.rank || (index + 1);
+        document.getElementById('pop_badge').value = item.badge || 'TRENDING';
+        document.getElementById('pop_cover').value = item.image || item.cover || '';
+        document.getElementById('pop_preview').value = item.preview || '';
+        document.getElementById('pop_youtube').value = item.youtube || item.streamUrl || '';
+        document.getElementById('pop_spotify').value = item.spotify || item.spotifyUrl || '';
+        document.getElementById('pop_apple').value = item.apple || item.appleUrl || '';
+        if (coverImg) coverImg.src = item.image || item.cover || 'assets/cover.png';
+
+        if (editorCard) {
+            editorCard.style.display = 'block';
+            editorCard.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    window.deletePopularRecord = function(index) {
+        const item = cachedPopular[index];
+        if (!item) return;
+        if (!confirm(`Are you sure you want to remove "${item.title || 'this track'}" from Popular Releases?`)) return;
+
+        const newList = cachedPopular.filter((_, i) => i !== index);
+        db.ref('siteData/popular_releases').set(newList).then(() => {
+            bumpSiteVersion(`Removed Popular Track: ${item.title}`);
+            showToast("TRACK REMOVED FROM POPULAR RELEASES!");
+        }).catch(err => showToast("ERROR: " + err.message, 'error'));
+    };
+
+    window.movePopularItem = function(index, direction) {
+        const targetIdx = index + direction;
+        if (targetIdx < 0 || targetIdx >= cachedPopular.length) return;
+
+        const newList = [...cachedPopular];
+        const temp = newList[index];
+        newList[index] = newList[targetIdx];
+        newList[targetIdx] = temp;
+
+        // Update rank numbers
+        newList.forEach((item, i) => { item.rank = i + 1; });
+
+        db.ref('siteData/popular_releases').set(newList).then(() => {
+            bumpSiteVersion("Reordered Popular Releases");
+            showToast("POPULAR RELEASES REORDERED!");
+        }).catch(err => showToast("ERROR: " + err.message, 'error'));
+    };
 }
 
 // --- 3. RELEASES & CATALOG ARCHIVE ENGINE ---
