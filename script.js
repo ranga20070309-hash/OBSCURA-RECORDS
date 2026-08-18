@@ -438,6 +438,71 @@ function getYouTubeID(url) {
     }
 }
 
+// --- DIRECT YOUTUBE AUDIO STREAM RESOLVER (ZERO FIREBASE STORAGE // 100% REAL FFT ANALYSIS) ---
+const ytStreamCache = new Map();
+
+async function fetchYouTubeAudioStream(ytId) {
+    if (!ytId) return null;
+    if (ytStreamCache.has(ytId)) return ytStreamCache.get(ytId);
+
+    const proxyEndpoints = [
+        `https://pipedapi.kavin.rocks/streams/${ytId}`,
+        `https://api.piped.privacydev.net/streams/${ytId}`,
+        `https://invidious.nerdvpn.de/api/v1/videos/${ytId}`,
+        `https://vid.puffyan.us/api/v1/videos/${ytId}`
+    ];
+
+    for (const endpoint of proxyEndpoints) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2800);
+            const res = await fetch(endpoint, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.audioStreams && data.audioStreams.length > 0) {
+                    const chosen = data.audioStreams[0].url;
+                    ytStreamCache.set(ytId, chosen);
+                    return chosen;
+                }
+                if (data.adaptiveFormats) {
+                    const audioFormat = data.adaptiveFormats.find(f => f.type && f.type.includes('audio'));
+                    if (audioFormat && audioFormat.url) {
+                        ytStreamCache.set(ytId, audioFormat.url);
+                        return audioFormat.url;
+                    }
+                }
+            }
+        } catch (e) {}
+    }
+    return null;
+}
+
+function fallbackToYTPlayer(ytId, ytType, playBtn, row, coverImg, timeDisplay) {
+    if (!isYTApiReady || !ytPlayer) initYTPlayer();
+    try {
+        if (ytPlayer && ytPlayer.playVideo) {
+            ytPlayer.unMute();
+            ytPlayer.setVolume(100);
+            if (ytType === 'playlist') {
+                ytPlayer.loadPlaylist({ listType: 'playlist', list: ytId, index: 0 });
+            } else {
+                ytPlayer.loadVideoById({ videoId: ytId });
+            }
+            ytPlayer.playVideo();
+        }
+    } catch (e) {
+        console.warn("YT Player playback delay:", e);
+    }
+    startUIPlayback(playBtn, row, coverImg);
+    if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
+    if (timeDisplay) {
+        timeDisplay.style.display = 'block';
+        timeDisplay.textContent = '...';
+        updateTimer(timeDisplay, 'yt');
+    }
+}
+
 function startUIPlayback(btn, row, img) {
     if (!btn) return;
     isAudioAutoPausedByScroll = false;
@@ -585,20 +650,20 @@ function loadPopular() {
                                 startUIPlayback(playBtn, card, coverImg);
                             });
                         } else if (ytId) {
-                            if (!isYTApiReady || !ytPlayer) initYTPlayer();
-                            try {
-                                if (ytPlayer && ytPlayer.playVideo) {
-                                    ytPlayer.unMute();
-                                    ytPlayer.setVolume(100);
-                                    if (ytType === 'playlist') {
-                                        ytPlayer.loadPlaylist({ listType: 'playlist', list: ytId, index: 0 });
-                                    } else {
-                                        ytPlayer.loadVideoById({ videoId: ytId });
-                                    }
-                                    ytPlayer.playVideo();
+                            fetchYouTubeAudioStream(ytId).then(streamUrl => {
+                                if (streamUrl && currentPlayingBtn === playBtn) {
+                                    previewAudio.src = streamUrl;
+                                    previewAudio.play().then(() => {
+                                        startUIPlayback(playBtn, card, coverImg);
+                                    }).catch(() => {
+                                        fallbackToYTPlayer(ytId, ytType, playBtn, card, coverImg, null);
+                                    });
+                                } else {
+                                    fallbackToYTPlayer(ytId, ytType, playBtn, card, coverImg, null);
                                 }
-                            } catch(e) {}
-                            startUIPlayback(playBtn, card, coverImg);
+                            }).catch(() => {
+                                fallbackToYTPlayer(ytId, ytType, playBtn, card, coverImg, null);
+                            });
                         } else {
                             startUIPlayback(playBtn, card, coverImg);
                         }
@@ -1946,7 +2011,8 @@ const initPortal = () => {
                         if (!isPlaying) {
                             currentPlayingBtn = playBtn;
                             playbackStartOffset = -1; // Reset for relative 30s limit
-                            // PRIORITY 1: Direct MP3/Snippet URL (User specified)
+                            
+                            // PRIORITY 1: Direct MP3 / Snippet URL (User specified)
                             if (mp3Url && mp3Url !== '' && mp3Url !== '#' && !getYouTubeID(mp3Url)) {
                                 try {
                                     previewAudio.src = mp3Url;
@@ -1958,48 +2024,35 @@ const initPortal = () => {
                                             updateTimer(timeDisplay, 'mp3');
                                         }
                                     }).catch(err => {
-                                        console.warn("MP3 Blocked:", err);
                                         startUIPlayback(playBtn, row, coverImg);
-                                        if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
                                     });
-                                } catch (e) { console.error("MP3 Fail:", e); }
-                            }
-                            // PRIORITY 2: YouTube Fallback (Check if youtube field OR preview field has YT link)
-                            else if (ytId) {
-                                if (!isYTApiReady || !ytPlayer) initYTPlayer();
-
-                                try {
-                                    if (ytPlayer && ytPlayer.playVideo) {
-                                        ytPlayer.unMute();
-                                        ytPlayer.setVolume(100);
-
-                                        if (ytType === 'playlist') {
-                                            ytPlayer.loadPlaylist({
-                                                listType: 'playlist',
-                                                list: ytId,
-                                                index: 0,
-                                                suggestedQuality: 'small'
-                                            });
-                                        } else {
-                                            ytPlayer.loadVideoById({
-                                                videoId: ytId,
-                                                suggestedQuality: 'small'
-                                            });
-                                        }
-                                        ytPlayer.playVideo();
-                                    }
-                                } catch (e) { console.warn("YT Delay..."); }
-
-                                startUIPlayback(playBtn, row, coverImg);
-                                if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
-                                if (timeDisplay) {
-                                    timeDisplay.style.display = 'block';
-                                    timeDisplay.textContent = '...';
-                                    updateTimer(timeDisplay, 'yt');
+                                } catch (e) {
+                                    startUIPlayback(playBtn, row, coverImg);
                                 }
+                            }
+                            // PRIORITY 2: Direct YouTube Audio Stream (100% Real-Time FFT Bass Analysis, Zero Storage)
+                            else if (ytId) {
+                                fetchYouTubeAudioStream(ytId).then(streamUrl => {
+                                    if (streamUrl && currentPlayingBtn === playBtn) {
+                                        previewAudio.src = streamUrl;
+                                        previewAudio.play().then(() => {
+                                            startUIPlayback(playBtn, row, coverImg);
+                                            if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
+                                            if (timeDisplay) {
+                                                timeDisplay.style.display = 'block';
+                                                updateTimer(timeDisplay, 'mp3');
+                                            }
+                                        }).catch(() => {
+                                            fallbackToYTPlayer(ytId, ytType, playBtn, row, coverImg, timeDisplay);
+                                        });
+                                    } else {
+                                        fallbackToYTPlayer(ytId, ytType, playBtn, row, coverImg, timeDisplay);
+                                    }
+                                }).catch(() => {
+                                    fallbackToYTPlayer(ytId, ytType, playBtn, row, coverImg, timeDisplay);
+                                });
                             } else {
                                 startUIPlayback(playBtn, row, coverImg);
-                                if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
                             }
                         } else {
                             stopPlayback(playBtn);
