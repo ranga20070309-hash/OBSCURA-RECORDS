@@ -1,28 +1,3 @@
-/* ==========================================================================
-   4K ULTRA-HIGH DEFINITION DISPLAY ENGINE & ANTI-BLUR ACCELERATION
-   ========================================================================== */
-*, *::before, *::after {
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-    text-rendering: optimizeLegibility !important;
-}
-
-html, body {
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-}
-
-img, canvas, svg, .artist-img, .artist-modal-banner-img, .release-cover, .album-art, .avatar-decoration {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: auto;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-}
-
 :root {
     --bg-color: #050510;
     --accent-blue: #00f0ff;
@@ -2260,7 +2235,7 @@ section {
     -webkit-backdrop-filter: blur(20px);
 }
 
-/* PREMIUM MODAL SYSTEM (RESTORED UI - 4K CRISP ANTI-BLUR) */
+/* PREMIUM MODAL SYSTEM (RESTORED UI) */
 .modal {
     position: fixed;
     inset: 0;
@@ -2270,11 +2245,9 @@ section {
     align-items: center;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     padding: 1.5rem;
     box-sizing: border-box;
-    contain: paint;
-    isolation: isolate;
 }
 
 .modal.active {
@@ -2285,13 +2258,9 @@ section {
 .modal-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(2, 3, 10, 0.88);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    background: rgba(2, 3, 10, 0.85);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
 }
 
 .modal-content.glass {
@@ -2300,22 +2269,20 @@ section {
     max-width: 820px;
     padding: 3.2rem 2.8rem;
     border-radius: 28px;
-    background: rgba(8, 10, 24, 0.96) !important;
-    border: 1px solid rgba(0, 240, 255, 0.32);
-    box-shadow: 0 0 60px rgba(0, 240, 255, 0.16),
-                0 30px 80px rgba(0, 0, 0, 0.95),
+    background: rgba(6, 8, 20, 0.82);
+    backdrop-filter: blur(35px);
+    -webkit-backdrop-filter: blur(35px);
+    border: 1px solid rgba(0, 240, 255, 0.28);
+    box-shadow: 0 0 60px rgba(0, 240, 255, 0.14),
+                0 30px 80px rgba(0, 0, 0, 0.85),
                 inset 0 1px 1px rgba(255, 255, 255, 0.12);
-    transform: scale(0.96) translateY(12px) translateZ(0);
-    -webkit-transform: scale(0.96) translateY(12px) translateZ(0);
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+    transform: scale(0.92) translateY(20px);
+    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
     max-height: 88vh;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 240, 255, 0.4) transparent;
     box-sizing: border-box;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    isolation: isolate;
 }
 
 .modal-content.glass::-webkit-scrollbar {
@@ -2332,8 +2299,7 @@ section {
 }
 
 .modal.active .modal-content {
-    transform: scale(1) translateY(0) translateZ(0);
-    -webkit-transform: scale(1) translateY(0) translateZ(0);
+    transform: scale(1) translateY(0);
 }
 
 .close-modal {
@@ -4227,25 +4193,18 @@ textarea.real-input:focus {
 }
 
 /* =========================================================
-   ARTIST & PARTNER PROFILE MODAL WITH DYNAMIC DISCORD BANNER (4K ULTRA-CRISP)
+   ARTIST & PARTNER PROFILE MODAL WITH DYNAMIC DISCORD BANNER
    ========================================================= */
 .artist-modal-content {
     max-width: 620px !important;
     width: 90% !important;
     padding: 0 !important;
     overflow: hidden !important;
-    border-radius: 24px !important;
-    background: rgba(10, 8, 22, 0.98) !important;
-    border: 1px solid rgba(0, 240, 255, 0.35) !important;
-    box-shadow: 0 0 60px rgba(0, 0, 0, 0.98), 0 0 40px rgba(0, 240, 255, 0.2) !important;
+    border-radius: 20px !important;
+    background: rgba(10, 8, 20, 0.96) !important;
+    border: 1px solid rgba(0, 240, 255, 0.25) !important;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.95), 0 0 35px rgba(0, 240, 255, 0.15) !important;
     position: relative !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-    backface-visibility: hidden !important;
-    -webkit-backface-visibility: hidden !important;
-    transform: translateZ(0) !important;
-    -webkit-transform: translateZ(0) !important;
-    isolation: isolate !important;
 }
 
 .artist-modal-banner {
