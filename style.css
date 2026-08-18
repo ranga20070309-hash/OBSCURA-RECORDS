@@ -1155,51 +1155,174 @@ section {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1), filter 0.5s ease;
+    transition: transform 0.65s cubic-bezier(0.23, 1, 0.32, 1), filter 0.5s ease;
     transform: scale(1);
+    position: relative;
+    z-index: 2;
 }
 
-.release-card-large:hover .release-cover-large img {
-    transform: scale(1.08);
-}
-
-.release-card-large.active-track .release-cover-large img {
-    transform: scale(1.06);
-}
-
-/* Cyber HUD Corner Brackets on Cover */
-.release-cover-large::before,
-.release-cover-large::after {
-    content: '';
+/* ==========================================================================
+   FUTURISTIC HOLOGRAPHIC LASER CD / JEWEL DISC EFFECT
+   ========================================================================== */
+.cyber-cd-disc {
     position: absolute;
-    width: 20px;
-    height: 20px;
+    top: 8%;
+    right: 4%;
+    width: 84%;
+    height: 84%;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, rgba(32, 38, 52, 0.98) 0%, rgba(18, 22, 32, 0.98) 40%, rgba(10, 14, 22, 1) 75%, #05080f 100%);
+    border: 1.5px solid rgba(0, 240, 255, 0.45);
+    box-shadow: 
+        0 0 25px rgba(0, 0, 0, 0.95),
+        0 0 15px rgba(0, 240, 255, 0.35),
+        inset 0 0 20px rgba(0, 240, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
     pointer-events: none;
-    z-index: 5;
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    opacity: 0.6;
+    transform: translateX(0) rotate(0deg) scale(0.92);
+    transition: transform 0.65s cubic-bezier(0.34, 1.35, 0.64, 1), box-shadow 0.5s ease, opacity 0.5s ease;
+    opacity: 0.9;
+    overflow: hidden;
 }
 
-.release-cover-large::before {
-    top: 14px;
-    right: 14px;
-    border-top: 2px solid var(--accent-blue);
-    border-right: 2px solid var(--accent-blue);
+.cd-hologram-shimmer {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(
+        from 45deg,
+        rgba(255, 0, 128, 0.35) 0deg,
+        rgba(0, 240, 255, 0.45) 60deg,
+        rgba(255, 230, 0, 0.35) 120deg,
+        rgba(0, 255, 128, 0.45) 180deg,
+        rgba(183, 0, 255, 0.45) 240deg,
+        rgba(0, 240, 255, 0.45) 300deg,
+        rgba(255, 0, 128, 0.35) 360deg
+    );
+    mix-blend-mode: screen;
+    opacity: 0.85;
+    pointer-events: none;
 }
 
-.release-cover-large::after {
-    bottom: 14px;
-    left: 14px;
-    border-bottom: 2px solid var(--accent-blue);
-    border-left: 2px solid var(--accent-blue);
+.cd-data-tracks {
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    background: repeating-radial-gradient(
+        circle at center,
+        rgba(255, 255, 255, 0.08) 0px,
+        rgba(255, 255, 255, 0.08) 1px,
+        transparent 2px,
+        transparent 4px
+    );
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    pointer-events: none;
 }
 
-.release-card-large:hover .release-cover-large::before,
-.release-card-large:hover .release-cover-large::after {
+.cd-laser-flare {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.4) 0%, transparent 65%);
+    transform: rotate(45deg);
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.cd-center-hub {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 36%;
+    height: 36%;
+    border-radius: 50%;
+    background: #000;
+    border: 2px solid var(--accent-blue);
+    box-shadow: 0 0 14px var(--accent-blue);
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.cd-label-mini {
+    width: 100%;
+    height: 100%;
+}
+
+.cd-label-mini img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    transform: none !important;
+    filter: brightness(1.1) contrast(1.05);
+}
+
+.cd-center-hole {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #000;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 6px var(--accent-blue);
+    z-index: 4;
+}
+
+.cd-rim-glow {
+    position: absolute;
+    inset: -1px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 240, 255, 0.6);
+    box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.4);
+    pointer-events: none;
+}
+
+/* Hover Slide-out & Laser Reflections */
+.release-card-large:hover .cyber-cd-disc,
+.popular-card:hover .cyber-cd-disc {
+    transform: translateX(40%) rotate(200deg) scale(0.96);
+    box-shadow: 
+        0 15px 40px rgba(0, 0, 0, 0.95),
+        0 0 35px rgba(0, 240, 255, 0.5),
+        0 0 60px rgba(183, 0, 255, 0.35),
+        inset 0 0 25px rgba(0, 240, 255, 0.3);
     opacity: 1;
-    box-shadow: 0 0 10px var(--accent-blue);
-    width: 26px;
-    height: 26px;
+}
+
+.release-card-large:hover .release-cover-large > img,
+.popular-card:hover .release-cover-large > img {
+    transform: translateX(-6%) scale(1.04);
+}
+
+/* Continuous Laser Spin while Playing */
+.release-card-large.active-track .cyber-cd-disc,
+.popular-card.active-track .cyber-cd-disc {
+    transform: translateX(40%) scale(0.96);
+    animation: cdLaserContinuousSpin 3.5s linear infinite;
+    box-shadow: 
+        0 15px 45px rgba(0, 0, 0, 0.95),
+        0 0 45px rgba(0, 240, 255, 0.7),
+        0 0 70px rgba(183, 0, 255, 0.45),
+        inset 0 0 30px rgba(0, 240, 255, 0.4);
+    opacity: 1;
+}
+
+@keyframes cdLaserContinuousSpin {
+    from {
+        transform: translateX(40%) rotate(0deg) scale(0.96);
+    }
+    to {
+        transform: translateX(40%) rotate(360deg) scale(0.96);
+    }
 }
 
 .release-type-badge {
