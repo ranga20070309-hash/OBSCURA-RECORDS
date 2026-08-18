@@ -45,10 +45,18 @@
             
             <div class="login-body">
                 <div class="login-input-group">
-                    <label><i class="fas fa-terminal"></i> ADMINISTRATIVE KERNEL PASS</label>
+                    <label><i class="fas fa-envelope"></i> ADMIN EMAIL ADDRESS</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user-astronaut"></i>
+                        <input type="email" id="root-email-input" placeholder="ADMIN EMAIL (e.g. sayurux@gmail.com)..." autocomplete="username">
+                    </div>
+                </div>
+                
+                <div class="login-input-group">
+                    <label><i class="fas fa-terminal"></i> ADMINISTRATIVE PASSWORD / KEY</label>
                     <div class="input-with-icon">
                         <i class="fas fa-key"></i>
-                        <input type="password" id="root-pass-input" placeholder="ENTER PORTAL MASTER KEY..." autocomplete="current-password">
+                        <input type="password" id="root-pass-input" placeholder="ENTER PORTAL MASTER PASSWORD..." autocomplete="current-password">
                         <button type="button" id="toggle-pwd-btn" class="pwd-eye"><i class="fas fa-eye"></i></button>
                     </div>
                 </div>
@@ -60,7 +68,7 @@
                 
                 <p id="login-error" class="error-msg"><i class="fas fa-exclamation-triangle"></i> ACCESS DENIED: INVALID KERNEL PASSPHRASE</p>
                 <div class="login-footer-info">
-                    <span>SECURITY PROTOCOL: L4 AES-256</span>
+                    <span>SECURITY PROTOCOL: FIREBASE AUTH TLS</span>
                     <span>ENGINE v<span class="engine-ver">5.0</span></span>
                 </div>
             </div>
