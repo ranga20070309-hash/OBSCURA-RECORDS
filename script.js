@@ -1118,19 +1118,15 @@ const initPortal = () => {
 
                 if (mBannerImg) {
                     if (bannerUrl) {
-                        mBannerImg.onload = () => {
-                            mBannerImg.style.display = 'block';
-                        };
+                        mBannerImg.style.display = 'block';
                         mBannerImg.onerror = () => {
                             if (bannerColor) {
                                 mBannerImg.style.display = 'none';
                             } else {
                                 mBannerImg.src = 'assets/cover.png';
-                                mBannerImg.style.display = 'block';
                             }
                         };
                         mBannerImg.src = bannerUrl;
-                        mBannerImg.style.display = 'block';
                     } else if (bannerColor) {
                         mBannerImg.src = '';
                         mBannerImg.style.display = 'none';
