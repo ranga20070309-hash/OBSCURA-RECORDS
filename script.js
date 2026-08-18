@@ -2665,59 +2665,6 @@ function stepTrack(direction = 1) {
     }
 }
 
-function startAudioVisualizer(canvas) {
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const barCount = 20;
-    const bars = Array.from({ length: barCount }, () => Math.random() * 8 + 4);
-
-    function renderFrame() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const width = canvas.width;
-        const height = canvas.height;
-        const barWidth = (width / barCount) - 2;
-
-        for (let i = 0; i < barCount; i++) {
-            if (isFloatingPlayerPlaying) {
-                // Energetic reactive spectrum
-                const target = Math.random() * (height - 6) + 4;
-                bars[i] += (target - bars[i]) * 0.25;
-            } else {
-                // Gentle idle wave
-                const idle = Math.sin((Date.now() / 300) + (i * 0.4)) * 3 + 4;
-                bars[i] += (idle - bars[i]) * 0.1;
-            }
-
-            const barHeight = Math.max(2, bars[i]);
-            const x = i * (barWidth + 2);
-            const y = height - barHeight;
-
-            // Gradient cyan to purple
-            const gradient = ctx.createLinearGradient(0, height, 0, 0);
-            gradient.addColorStop(0, '#00f0ff');
-            gradient.addColorStop(1, '#9d00ff');
-
-            ctx.fillStyle = gradient;
-            ctx.shadowBlur = isFloatingPlayerPlaying ? 8 : 2;
-            ctx.shadowColor = '#00f0ff';
-            ctx.beginPath();
-            if (ctx.roundRect) {
-                ctx.roundRect(x, y, barWidth, barHeight, 2);
-            } else {
-                ctx.rect(x, y, barWidth, barHeight);
-            }
-            ctx.fill();
-        }
-
-        requestAnimationFrame(renderFrame);
-    }
-
-    renderFrame();
-}
-
 function initFloatingPlayer() {
     const fpBar = document.getElementById('floating-audio-player');
     if (!fpBar) return;
@@ -2729,7 +2676,6 @@ function initFloatingPlayer() {
     const muteBtn = document.getElementById('fp-mute-btn');
     const volSlider = document.getElementById('fp-volume-slider');
     const progressContainer = document.getElementById('fp-progress-container');
-    const canvas = document.getElementById('fp-visualizer-canvas');
     const sfxBtn = document.getElementById('sfx-toggle-btn');
 
     if (sfxBtn) {
@@ -2821,8 +2767,6 @@ function initFloatingPlayer() {
             updateFloatingPlayerProgress(targetTime, PREVIEW_LIMIT);
         });
     }
-
-    startAudioVisualizer(canvas);
 }
 
 function initGlobalSFXListeners() {
