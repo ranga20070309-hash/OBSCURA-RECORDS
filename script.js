@@ -2779,10 +2779,12 @@ function initFloatingPlayer() {
     }
 }
 
-// --- SPATIAL SONIC ZONE (SCROLL PROXIMITY AUDIO FADING & AUTO-PAUSE/RESUME) ---
+// --- SPATIAL SONIC ZONE (ULTRA-SMOOTH 60FPS LERP VOLUME FADING & AUTO-PAUSE/RESUME) ---
 let activeUserMasterVolume = 1.0;
 let isAudioAutoPausedByScroll = false;
-let proximityScrollTicking = false;
+let targetProximityFactor = 1.0;
+let currentLerpedFactor = 1.0;
+let proximityLoopRunning = false;
 
 function applyProximityVolume(volFactor) {
     const finalVol = Math.max(0, Math.min(1, activeUserMasterVolume * volFactor));
@@ -2793,6 +2795,44 @@ function applyProximityVolume(volFactor) {
         try {
             ytPlayer.setVolume(Math.round(finalVol * 100));
         } catch (e) {}
+    }
+}
+
+function runProximityLerpLoop() {
+    if (!currentPlayingBtn && !isAudioAutoPausedByScroll && currentLerpedFactor <= 0.001) {
+        proximityLoopRunning = false;
+        return;
+    }
+
+    // Smooth Butter Lerp (0.08 smoothing dampener for buttery ease)
+    const diff = targetProximityFactor - currentLerpedFactor;
+    if (Math.abs(diff) < 0.001) {
+        currentLerpedFactor = targetProximityFactor;
+    } else {
+        currentLerpedFactor += diff * 0.08;
+    }
+
+    // Apply smoothed audio volume
+    applyProximityVolume(currentLerpedFactor);
+
+    // If lerped factor reaches near 0, safely auto-pause audio
+    if (currentLerpedFactor <= 0.015) {
+        if (!isAudioAutoPausedByScroll && currentPlayingBtn) {
+            isAudioAutoPausedByScroll = true;
+            try {
+                if (previewAudio && !previewAudio.paused) previewAudio.pause();
+                if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
+            } catch (e) {}
+        }
+    }
+
+    requestAnimationFrame(runProximityLerpLoop);
+}
+
+function startProximityLoop() {
+    if (!proximityLoopRunning) {
+        proximityLoopRunning = true;
+        requestAnimationFrame(runProximityLerpLoop);
     }
 }
 
@@ -2811,51 +2851,43 @@ function handleScrollProximityAudio() {
     const distFromCenter = Math.abs(sectionCenter - viewportCenter);
 
     // Core zone (full volume area around the section center)
-    const coreZone = Math.max(80, (rect.height / 2) * 0.4);
-    // Distance beyond coreZone where volume smoothly drops to 0
+    const coreZone = Math.max(100, (rect.height / 2) * 0.4);
+    // Smooth distance beyond coreZone where volume fades
     const fadeRange = (rect.height / 2) + (windowHeight * 0.45);
 
-    let proximityFactor = 1.0;
     if (distFromCenter > coreZone) {
         const excess = distFromCenter - coreZone;
-        proximityFactor = Math.max(0, 1 - (excess / fadeRange));
+        targetProximityFactor = Math.max(0, 1 - (excess / fadeRange));
     } else {
-        proximityFactor = 1.0;
+        targetProximityFactor = 1.0;
     }
 
-    // Apply smooth natural audio volume falloff curve
-    applyProximityVolume(proximityFactor);
+    // Trigger smooth lerp loop
+    startProximityLoop();
 
-    // Auto-Pause & Hide Floating Player when scrolled completely away (proximityFactor <= 0.03)
     const fpBar = document.getElementById('floating-audio-player');
-    if (proximityFactor <= 0.03) {
-        if (!isAudioAutoPausedByScroll && currentPlayingBtn) {
-            isAudioAutoPausedByScroll = true;
-            try {
-                if (previewAudio && !previewAudio.paused) previewAudio.pause();
-                if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
-            } catch (e) {}
 
-            // Smoothly slide down & fade out the floating player bar
-            if (fpBar) {
-                fpBar.classList.add('hidden');
-                fpBar.classList.remove('playing');
-            }
+    // Handle Floating Player Bar Visibility smoothly
+    if (targetProximityFactor <= 0.04) {
+        if (fpBar && !fpBar.classList.contains('hidden')) {
+            fpBar.classList.add('hidden');
+            fpBar.classList.remove('playing');
         }
-    } else if (proximityFactor > 0.08 && isAudioAutoPausedByScroll) {
-        // Auto-Resume & Pop Up Floating Player when scrolled back into range
-        isAudioAutoPausedByScroll = false;
-        try {
-            if (previewAudio && previewAudio.src) {
-                previewAudio.play().catch(() => {});
-            }
-            if (ytPlayer && ytPlayer.playVideo) {
-                ytPlayer.playVideo();
-            }
-        } catch (e) {}
+    } else if (targetProximityFactor > 0.08) {
+        if (isAudioAutoPausedByScroll) {
+            // Auto-Resume audio immediately when scrolling back
+            isAudioAutoPausedByScroll = false;
+            try {
+                if (previewAudio && previewAudio.src) {
+                    previewAudio.play().catch(() => {});
+                }
+                if (ytPlayer && ytPlayer.playVideo) {
+                    ytPlayer.playVideo();
+                }
+            } catch (e) {}
+        }
 
-        // Smoothly pop up the player bar with active glowing border
-        if (fpBar && currentPlayingBtn) {
+        if (fpBar && currentPlayingBtn && fpBar.classList.contains('hidden')) {
             resetFloatingPlayerAutoDismiss();
             fpBar.classList.remove('hidden');
             fpBar.classList.add('playing');
@@ -2864,22 +2896,9 @@ function handleScrollProximityAudio() {
 }
 
 function initScrollProximityAudio() {
-    window.addEventListener('scroll', () => {
-        if (!proximityScrollTicking) {
-            window.requestAnimationFrame(() => {
-                handleScrollProximityAudio();
-                proximityScrollTicking = false;
-            });
-            proximityScrollTicking = true;
-        }
-    }, { passive: true });
-
-    // Also run an interval ticker while audio is active to catch dynamic layout shifts
-    setInterval(() => {
-        if (currentPlayingBtn || isAudioAutoPausedByScroll) {
-            handleScrollProximityAudio();
-        }
-    }, 150);
+    window.addEventListener('scroll', handleScrollProximityAudio, { passive: true });
+    window.addEventListener('resize', handleScrollProximityAudio, { passive: true });
+    startProximityLoop();
 }
 
 function initGlobalSFXListeners() {
