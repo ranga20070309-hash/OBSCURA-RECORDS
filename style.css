@@ -3919,10 +3919,10 @@ textarea.real-input:focus {
     width: calc(100% - 48px);
     max-width: 1240px;
     height: 78px;
-    background: rgba(10, 8, 22, 0.92);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(0, 240, 255, 0.25);
+    background: rgba(6, 6, 12, 0.88);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(0, 240, 255, 0.2);
     border-radius: 20px;
     padding: 0 1.8rem;
     display: grid;
@@ -3931,23 +3931,23 @@ textarea.real-input:focus {
     gap: 2rem;
     z-index: 9999;
     box-shadow: 
-        0 20px 50px rgba(0, 0, 0, 0.9),
+        0 20px 50px rgba(0, 0, 0, 0.92),
         0 0 25px rgba(0, 240, 255, 0.12),
-        inset 0 0 15px rgba(255, 255, 255, 0.03);
+        inset 0 0 15px rgba(255, 255, 255, 0.02);
     opacity: 1;
     filter: blur(0px);
     visibility: visible;
     transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.55s ease, filter 0.55s ease, visibility 0.55s, box-shadow 0.5s ease;
 }
 
-/* Glowing Loop Border Tape Stream (Active only when playing) */
+/* Glowing Loop Border Tape Stream (Cyan & Cyber Purple - Active only when playing) */
 .floating-player-bar::before {
     content: '';
     position: absolute;
     inset: -1.5px;
     border-radius: 21px;
     padding: 1.5px;
-    background: linear-gradient(90deg, #00f0ff, #9d00ff, #ff007f, #00f0ff);
+    background: linear-gradient(90deg, #00f0ff, #7000ff, #00f0ff, #b700ff, #00f0ff);
     background-size: 300% 300%;
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -3971,12 +3971,12 @@ textarea.real-input:focus {
 }
 
 .floating-player-bar.playing {
-    border-color: rgba(0, 240, 255, 0.45);
+    border-color: rgba(0, 240, 255, 0.4);
     box-shadow: 
-        0 20px 55px rgba(0, 0, 0, 0.95),
-        0 0 35px rgba(0, 240, 255, 0.32),
-        0 0 65px rgba(157, 0, 255, 0.18),
-        inset 0 0 20px rgba(255, 255, 255, 0.06);
+        0 25px 60px rgba(0, 0, 0, 0.95),
+        0 0 35px rgba(0, 240, 255, 0.28),
+        0 0 60px rgba(183, 0, 255, 0.14),
+        inset 0 0 20px rgba(0, 240, 255, 0.05);
 }
 
 .floating-player-bar.hidden {
@@ -3994,7 +3994,7 @@ textarea.real-input:focus {
     right: 8%;
     height: 1.5px;
     background: linear-gradient(90deg, transparent, var(--accent-blue), var(--accent-purple), transparent);
-    box-shadow: 0 0 12px var(--accent-blue);
+    box-shadow: 0 0 14px var(--accent-blue);
     pointer-events: none;
 }
 
