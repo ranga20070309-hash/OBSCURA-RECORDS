@@ -46,7 +46,7 @@ const API_BASE_URL = (window.location.hostname === "localhost" || window.locatio
 gsap.config({ nullTargetWarn: false });
 
 // --- CYBERPUNK UI SOUND SYNTHESIZER & SFX ENGINE ---
-let audioCtx = null;
+let sfxAudioCtx = null;
 let sfxEnabled = localStorage.getItem('obscura_sfx_enabled') !== 'false';
 
 const updateSFXToggleUI = () => {
@@ -64,56 +64,56 @@ const updateSFXToggleUI = () => {
 const playCyberSFX = (type = 'click') => {
     if (!sfxEnabled) return;
     try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const now = audioCtx.currentTime;
+        if (!sfxAudioCtx) sfxAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (sfxAudioCtx.state === 'suspended') sfxAudioCtx.resume();
+        const now = sfxAudioCtx.currentTime;
         
         if (type === 'hover') {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
+            const osc = sfxAudioCtx.createOscillator();
+            const gain = sfxAudioCtx.createGain();
             osc.type = 'sine';
             osc.frequency.setValueAtTime(1400, now);
             osc.frequency.exponentialRampToValueAtTime(700, now + 0.035);
             gain.gain.setValueAtTime(0.015, now);
             gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
             osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            gain.connect(sfxAudioCtx.destination);
             osc.start(now);
             osc.stop(now + 0.035);
         } else if (type === 'click') {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
+            const osc = sfxAudioCtx.createOscillator();
+            const gain = sfxAudioCtx.createGain();
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(880, now);
             osc.frequency.exponentialRampToValueAtTime(220, now + 0.07);
             gain.gain.setValueAtTime(0.05, now);
             gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
             osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            gain.connect(sfxAudioCtx.destination);
             osc.start(now);
             osc.stop(now + 0.07);
         } else if (type === 'whoosh' || type === 'modal') {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
+            const osc = sfxAudioCtx.createOscillator();
+            const gain = sfxAudioCtx.createGain();
             osc.type = 'sine';
             osc.frequency.setValueAtTime(250, now);
             osc.frequency.exponentialRampToValueAtTime(950, now + 0.14);
             gain.gain.setValueAtTime(0.035, now);
             gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
             osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            gain.connect(sfxAudioCtx.destination);
             osc.start(now);
             osc.stop(now + 0.14);
         } else if (type === 'success') {
             [587.33, 880].forEach((freq, idx) => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
+                const osc = sfxAudioCtx.createOscillator();
+                const gain = sfxAudioCtx.createGain();
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(freq, now + idx * 0.07);
                 gain.gain.setValueAtTime(0.04, now + idx * 0.07);
                 gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.07 + 0.1);
                 osc.connect(gain);
-                gain.connect(audioCtx.destination);
+                gain.connect(sfxAudioCtx.destination);
                 osc.start(now + idx * 0.07);
                 osc.stop(now + idx * 0.07 + 0.1);
             });
@@ -124,18 +124,18 @@ const playCyberSFX = (type = 'click') => {
 const playBleep = (freq = 600, type = 'sine', duration = 0.08) => {
     if (!sfxEnabled) return;
     try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        if (!sfxAudioCtx) sfxAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (sfxAudioCtx.state === 'suspended') sfxAudioCtx.resume();
+        const osc = sfxAudioCtx.createOscillator();
+        const gain = sfxAudioCtx.createGain();
         osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.frequency.setValueAtTime(freq, sfxAudioCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, sfxAudioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, sfxAudioCtx.currentTime + duration);
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect(sfxAudioCtx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + duration);
+        osc.stop(sfxAudioCtx.currentTime + duration);
     } catch (e) { }
 };
 
@@ -446,6 +446,11 @@ function startUIPlayback(btn, row, img) {
     gsap.to(btn, { scale: 1.1, boxShadow: '0 0 20px #00f0ff', repeat: -1, yoyo: true, duration: 0.8 });
     if (img) gsap.to(img, { scale: 1.15, duration: 20, ease: "linear", repeat: -1, yoyo: true });
 
+    // Activate Real-Time Sub-Bass Reactive Background Lighting
+    if (typeof startBassReactiveEngine === 'function') {
+        startBassReactiveEngine();
+    }
+
     // Sync Floating Cyberpunk Music Stream Player
     if (typeof syncFloatingPlayer === 'function') {
         syncFloatingPlayer(row, btn, true);
@@ -479,6 +484,11 @@ function stopPlayback(btn) {
     if (timeDisplay) {
         timeDisplay.style.display = 'none';
         if (audioTimer) clearInterval(audioTimer);
+    }
+
+    // Stop Sub-Bass Reactive Background Lighting
+    if (typeof stopBassReactiveEngine === 'function') {
+        stopBassReactiveEngine();
     }
 
     // Sync Floating Player State to Paused
@@ -2565,6 +2575,12 @@ function syncFloatingPlayer(row, btn, isPlaying) {
     const fpBar = document.getElementById('floating-audio-player');
     if (!fpBar) return;
 
+    if (isPlaying) {
+        if (typeof startBassReactiveEngine === 'function') startBassReactiveEngine();
+    } else {
+        if (typeof stopBassReactiveEngine === 'function') stopBassReactiveEngine();
+    }
+
     if (!row && !btn) {
         isFloatingPlayerPlaying = isPlaying;
         const playIcon = document.querySelector('#fp-play-btn i');
@@ -2968,3 +2984,131 @@ if (typeof firebase !== 'undefined') {
 }
 
 // PORTAL CORE INITIALIZED
+
+// ==========================================================================
+// REAL-TIME AUDIO BASS-REACTIVE AMBIENT LIGHTING ENGINE
+// ==========================================================================
+let ambientAudioCtx = null;
+let audioAnalyser = null;
+let audioSourceNode = null;
+let audioFreqData = null;
+let isAudioEngineRunning = false;
+let currentBassIntensity = 0;
+let targetBassIntensity = 0;
+let isSiteAudioPlaying = false;
+
+function getOrCreateAudioContext() {
+    if (!ambientAudioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+            try {
+                ambientAudioCtx = new AudioContextClass();
+                audioAnalyser = ambientAudioCtx.createAnalyser();
+                audioAnalyser.fftSize = 256;
+                audioAnalyser.smoothingTimeConstant = 0.82;
+                audioFreqData = new Uint8Array(audioAnalyser.frequencyBinCount);
+
+                if (previewAudio) {
+                    try {
+                        previewAudio.crossOrigin = "anonymous";
+                        audioSourceNode = ambientAudioCtx.createMediaElementSource(previewAudio);
+                        audioSourceNode.connect(audioAnalyser);
+                        audioAnalyser.connect(ambientAudioCtx.destination);
+                    } catch (e) {
+                        console.warn("AudioContext source link note:", e);
+                    }
+                }
+            } catch (err) {
+                console.warn("Web Audio API not allowed or blocked:", err);
+            }
+        }
+    }
+    if (ambientAudioCtx && ambientAudioCtx.state === 'suspended') {
+        ambientAudioCtx.resume();
+    }
+}
+
+function startBassReactiveEngine() {
+    isSiteAudioPlaying = true;
+    document.body.classList.add('audio-playing');
+    getOrCreateAudioContext();
+
+    if (!isAudioEngineRunning) {
+        isAudioEngineRunning = true;
+        runBassReactiveLoop();
+    }
+}
+
+function stopBassReactiveEngine() {
+    isSiteAudioPlaying = false;
+    document.body.classList.remove('audio-playing');
+}
+
+function runBassReactiveLoop() {
+    let synthBeatTime = 0;
+    
+    function tick() {
+        if (!isSiteAudioPlaying) {
+            // Decay to 0 smoothly
+            currentBassIntensity += (0 - currentBassIntensity) * 0.08;
+            if (currentBassIntensity < 0.005) {
+                currentBassIntensity = 0;
+                document.documentElement.style.setProperty('--bass-intensity', '0');
+                document.documentElement.style.setProperty('--bass-scale', '1');
+                isAudioEngineRunning = false;
+                return; // Stop RAF loop when idle to save CPU/GPU
+            }
+        } else {
+            let extractedBass = 0;
+            let hasRealFreqData = false;
+
+            // 1. Try real-time Web Audio API low-frequency analysis (20Hz - 140Hz)
+            if (audioAnalyser && audioFreqData && previewAudio && !previewAudio.paused && previewAudio.currentTime > 0) {
+                try {
+                    audioAnalyser.getByteFrequencyData(audioFreqData);
+                    // Frequency bins 0..5 represent Sub-Bass & Kick range in a 256-FFT
+                    let bassSum = 0;
+                    const bassBinsCount = 6;
+                    for (let i = 0; i < bassBinsCount; i++) {
+                        bassSum += audioFreqData[i];
+                    }
+                    const avgBass = bassSum / (bassBinsCount * 255);
+                    if (avgBass > 0.04) {
+                        // Normalize & punch up dynamic bass range
+                        extractedBass = Math.min(1.0, Math.pow(avgBass * 1.4, 1.35));
+                        hasRealFreqData = true;
+                    }
+                } catch (e) {}
+            }
+
+            // 2. Rhythmic Kick & Sub-Bass Generator (for YouTube stream or when Analyser is silent/CORS)
+            if (!hasRealFreqData) {
+                synthBeatTime += 0.016; // ~60fps step
+                // 126 BPM 4/4 electronic cadence (every ~0.476s is a quarter beat kick)
+                const beatDuration = 60 / 126;
+                const beatPhase = (synthBeatTime % beatDuration) / beatDuration;
+                
+                // Exponential kick & bass attack-decay curve
+                let kickPulse = Math.pow(Math.max(0, 1 - beatPhase * 1.8), 2.8);
+                // Dynamic syncopated off-beat sub-bass hum
+                const offbeatPhase = ((synthBeatTime + (beatDuration * 0.5)) % beatDuration) / beatDuration;
+                let subHum = Math.sin(offbeatPhase * Math.PI) * 0.28;
+                
+                extractedBass = Math.min(1.0, kickPulse * 0.85 + Math.max(0, subHum));
+            }
+
+            targetBassIntensity = extractedBass;
+            // Smooth attack and natural kick decay
+            const lerpSpeed = targetBassIntensity > currentBassIntensity ? 0.38 : 0.12;
+            currentBassIntensity += (targetBassIntensity - currentBassIntensity) * lerpSpeed;
+        }
+
+        const scale = 1 + currentBassIntensity * 0.22;
+        document.documentElement.style.setProperty('--bass-intensity', currentBassIntensity.toFixed(3));
+        document.documentElement.style.setProperty('--bass-scale', scale.toFixed(3));
+
+        requestAnimationFrame(tick);
+    }
+
+    requestAnimationFrame(tick);
+}
