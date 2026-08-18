@@ -502,15 +502,15 @@ function stopPlayback(btn) {
     currentPlayingBtn = null;
     isAudioAutoPausedByScroll = false;
 
-    // Reset all play buttons in releases archive
-    document.querySelectorAll('#release-slider .play-btn').forEach(b => {
+    // Reset all play buttons across the archive
+    document.querySelectorAll('.play-btn, #releases .play-btn, .releases-slider .play-btn').forEach(b => {
         b.innerHTML = '<i class="fas fa-play"></i>';
         gsap.killTweensOf(b);
-        gsap.to(b, { scale: 1, boxShadow: 'none' });
+        gsap.to(b, { scale: 1, boxShadow: 'none', duration: 0.3 });
     });
 
-    // Reset active-track states
-    document.querySelectorAll('#release-slider .release-card-large').forEach(r => {
+    // Reset active-track states and preview time countdowns
+    document.querySelectorAll('.release-card-large, #releases .release-card-large, .releases-slider .release-card-large').forEach(r => {
         r.classList.remove('active-track');
         const img = r.querySelector('.release-cover-large img');
         if (img) {
@@ -518,7 +518,10 @@ function stopPlayback(btn) {
             gsap.to(img, { scale: 1, duration: 0.5 });
         }
         const timeDisplay = r.querySelector('.preview-time');
-        if (timeDisplay) timeDisplay.style.display = 'none';
+        if (timeDisplay) {
+            timeDisplay.style.display = 'none';
+            timeDisplay.textContent = '0:30';
+        }
     });
 
     if (audioTimer) {
@@ -2743,15 +2746,15 @@ const ObscuraTelemetry = (() => {
                 details: typeof payload === 'string' ? { message: payload } : (payload || {})
             };
 
-            // Push to primary security logs collection
-            db.ref('siteData/security/logs').push(entry);
+            // Push to primary security logs collection (safe catch for permission restrictions)
+            db.ref('siteData/security/logs').push(entry).catch(() => {});
 
             // Also mirror to legacy security_logs for backward compatibility
             db.ref('security_logs').push({
                 action: `[${type}] ${payload.message || JSON.stringify(payload)}`,
                 timestamp: Date.now(),
                 user: `${location.city}, ${location.country} (${location.ip})`
-            });
+            }).catch(() => {});
 
             // If security violation or console tamper, raise global alarm
             if (type === 'CONSOLE_TAMPER' || type === 'INJECTION_ATTEMPT' || type === 'SECURITY_VIOLATION') {
@@ -2762,12 +2765,12 @@ const ObscuraTelemetry = (() => {
                     ip: location.ip,
                     location: `${location.city}, ${location.country}`,
                     details: payload
-                });
+                }).catch(() => {});
                 // Also push to violations archive
-                db.ref('siteData/security/violations').push(entry);
+                db.ref('siteData/security/violations').push(entry).catch(() => {});
             }
         } catch (err) {
-            console.warn("Telemetry Dispatch Note:", err);
+            // Silently suppress client-side permission warnings
         }
     };
 
@@ -2957,7 +2960,7 @@ function updateFloatingPlayerProgress(elapsed, total) {
 }
 
 function stepTrack(direction = 1) {
-    const allPlayBtns = Array.from(document.querySelectorAll('#release-slider .play-btn'));
+    const allPlayBtns = Array.from(document.querySelectorAll('#releases .play-btn, .releases-slider .play-btn'));
     if (!allPlayBtns.length) return;
 
     let currentIndex = -1;
@@ -3009,7 +3012,7 @@ function initFloatingPlayer() {
             if (currentPlayingBtn) {
                 currentPlayingBtn.click();
             } else {
-                const firstBtn = document.querySelector('#release-slider .play-btn');
+                const firstBtn = document.querySelector('#releases .play-btn, .releases-slider .play-btn');
                 if (firstBtn) firstBtn.click();
             }
         });
