@@ -3630,7 +3630,7 @@ textarea.real-input:focus {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: #020305;
+    background: radial-gradient(circle at center, #060714 0%, #020206 70%, #000002 100%);
     z-index: 999999;
     display: none;
     flex-direction: column;
@@ -3639,7 +3639,7 @@ textarea.real-input:focus {
     overflow: hidden;
     font-family: 'Space Grotesk', 'Outfit', sans-serif;
     color: #ffffff;
-    padding: 2rem;
+    padding: 1.5rem;
     box-sizing: border-box;
 }
 
@@ -3650,144 +3650,324 @@ textarea.real-input:focus {
     height: 100%;
     pointer-events: none;
     z-index: 1;
-    opacity: 0.6;
+    opacity: 0.85;
 }
 
-.m-ambient-glow {
+/* Deep Space Ambient Nebula Clouds */
+.m-nebula-glow {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 50vw;
-    height: 50vw;
-    max-width: 550px;
-    max-height: 550px;
-    background: radial-gradient(circle, rgba(0, 240, 255, 0.08) 0%, rgba(112, 0, 255, 0.03) 40%, transparent 70%);
-    pointer-events: none;
     border-radius: 50%;
-    animation: ambientPulse 6s ease-in-out infinite alternate;
+    pointer-events: none;
+    filter: blur(120px);
     z-index: 2;
+    will-change: transform, opacity;
 }
 
-@keyframes ambientPulse {
-    0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.5; }
-    100% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+.m-nebula-cyan {
+    top: 20%;
+    left: 15%;
+    width: 650px;
+    height: 650px;
+    background: radial-gradient(circle, rgba(0, 240, 255, 0.16) 0%, rgba(0, 240, 255, 0.02) 60%, transparent 80%);
+    animation: nebulaPulse 8s ease-in-out infinite alternate;
 }
 
-.m-artwork-tape-wrap {
+.m-nebula-purple {
+    bottom: 15%;
+    right: 15%;
+    width: 750px;
+    height: 750px;
+    background: radial-gradient(circle, rgba(183, 0, 255, 0.16) 0%, rgba(112, 0, 255, 0.02) 60%, transparent 80%);
+    animation: nebulaPulse 10s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes nebulaPulse {
+    0% { transform: scale(0.9) translate(0, 0); opacity: 0.6; }
+    50% { transform: scale(1.15) translate(30px, -20px); opacity: 0.95; }
+    100% { transform: scale(1) translate(-20px, 30px); opacity: 0.7; }
+}
+
+/* Cyber Grid & Holographic Scanlines */
+.m-grid-scanlines {
     position: absolute;
-    top: 50%;
-    left: -10%;
-    width: 120%;
-    transform: translateY(-50%) rotate(-4deg);
-    overflow: hidden;
-    opacity: 0.14;
-    filter: grayscale(30%) contrast(1.1);
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.3) 4px);
+    background-size: 50px 50px, 50px 50px, 100% 4px;
     pointer-events: none;
     z-index: 3;
-}
-
-.m-artwork-tape {
-    display: flex;
-    gap: 1.8rem;
-    width: max-content;
-    animation: tapeScroll 50s linear infinite;
-}
-
-.m-artwork-tape img {
-    width: 170px;
-    height: 170px;
-    object-fit: cover;
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-}
-
-@keyframes tapeScroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    opacity: 0.55;
 }
 
 .m-center-wrapper {
     position: relative;
     z-index: 10;
-    text-align: center;
-    max-width: 650px;
+    max-width: 680px;
+    width: 100%;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
 }
 
+/* Ultra-Glassmorphic HUD Card Container */
+.m-glass-card {
+    position: relative;
+    width: 100%;
+    padding: 3.2rem 2.8rem;
+    background: rgba(8, 10, 22, 0.65);
+    border: 1px solid rgba(0, 240, 255, 0.22);
+    border-radius: 28px;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    box-shadow: 0 0 50px rgba(0, 240, 255, 0.12),
+                0 25px 60px rgba(0, 0, 0, 0.7),
+                inset 0 0 30px rgba(0, 240, 255, 0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-sizing: border-box;
+    animation: cardFloat 6s ease-in-out infinite alternate;
+}
+
+@keyframes cardFloat {
+    0% { transform: translateY(0); box-shadow: 0 0 45px rgba(0, 240, 255, 0.1), 0 25px 60px rgba(0, 0, 0, 0.7); }
+    100% { transform: translateY(-8px); box-shadow: 0 0 65px rgba(183, 0, 255, 0.18), 0 35px 80px rgba(0, 0, 0, 0.85); }
+}
+
+/* Cyber Tech Corner Brackets */
+.m-corner {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-color: #00f0ff;
+    pointer-events: none;
+}
+.m-corner.top-left { top: 12px; left: 12px; border-top: 2px solid #00f0ff; border-left: 2px solid #00f0ff; }
+.m-corner.top-right { top: 12px; right: 12px; border-top: 2px solid #00f0ff; border-right: 2px solid #00f0ff; }
+.m-corner.bottom-left { bottom: 12px; left: 12px; border-bottom: 2px solid #00f0ff; border-left: 2px solid #00f0ff; }
+.m-corner.bottom-right { bottom: 12px; right: 12px; border-bottom: 2px solid #00f0ff; border-right: 2px solid #00f0ff; }
+
+/* Holographic Emblem & Orbit Tech Rings */
+.m-emblem-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.8rem;
+}
+
+.m-orbit-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(0, 240, 255, 0.35);
+    pointer-events: none;
+}
+
+.m-orbit-ring.ring-1 {
+    width: 110px;
+    height: 110px;
+    animation: orbitSpin 12s linear infinite;
+    border-top-color: #00f0ff;
+    border-bottom-color: #b700ff;
+}
+
+.m-orbit-ring.ring-2 {
+    width: 130px;
+    height: 130px;
+    animation: orbitSpinReverse 18s linear infinite;
+    border-left-color: #00f0ff;
+    border-right-color: transparent;
+    opacity: 0.6;
+}
+
+@keyframes orbitSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes orbitSpinReverse {
+    0% { transform: rotate(360deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.m-emblem-glow {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle, rgba(0, 240, 255, 0.4) 0%, rgba(183, 0, 255, 0.2) 50%, transparent 80%);
+    border-radius: 50%;
+    filter: blur(15px);
+    animation: emblemGlowPulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes emblemGlowPulse {
+    0% { transform: scale(0.9); opacity: 0.5; }
+    100% { transform: scale(1.2); opacity: 0.9; }
+}
+
 .m-emblem {
-    height: 75px;
+    height: 70px;
     width: auto;
     object-fit: contain;
-    margin-bottom: 2.2rem;
-    filter: drop-shadow(0 0 25px rgba(0, 240, 255, 0.4));
+    position: relative;
+    z-index: 2;
+    filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.6));
     animation: floatEmblem 4s ease-in-out infinite alternate;
 }
 
 @keyframes floatEmblem {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-8px); }
+    0% { transform: translateY(0) scale(1); }
+    100% { transform: translateY(-5px) scale(1.03); }
+}
+
+/* Brand Name Header with Cyber Neon Light Shimmer Effect */
+.m-brand-header {
+    margin-bottom: 1.4rem;
+}
+
+.m-brand-name {
+    font-family: 'Space Grotesk', 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: 0.55rem;
+    text-transform: uppercase;
+    margin: 0;
+    color: #ffffff;
+    display: inline-block;
+    position: relative;
+    text-shadow: 0 0 25px rgba(0, 240, 255, 0.5), 0 0 50px rgba(0, 240, 255, 0.2);
+}
+
+.m-brand-name span {
+    color: #00f0ff;
+    background: linear-gradient(135deg, #00f0ff 0%, #b700ff 50%, #00f0ff 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: brandShimmer 4s linear infinite;
+    text-shadow: none;
+}
+
+@keyframes brandShimmer {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.m-brand-sub {
+    font-family: monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.25rem;
+    color: rgba(255, 255, 255, 0.45);
+    margin-top: 0.4rem;
+}
+
+/* Pulsing Status Pill */
+.m-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 1.1rem;
+    background: rgba(0, 240, 255, 0.06);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    border-radius: 30px;
+    margin-bottom: 1.4rem;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+}
+
+.m-live-pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #00f0ff;
+    box-shadow: 0 0 10px #00f0ff;
+    animation: livePulseGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes livePulseGlow {
+    0% { transform: scale(0.8); opacity: 0.5; box-shadow: 0 0 4px #00f0ff; }
+    100% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 14px #00f0ff; }
 }
 
 .m-status-tag {
     font-family: monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.3rem;
-    color: var(--accent-blue, #00f0ff);
-    margin-bottom: 1.5rem;
-    opacity: 0.85;
+    font-size: 0.7rem;
+    letter-spacing: 0.2rem;
+    color: #00f0ff;
     text-transform: uppercase;
+    font-weight: 600;
 }
 
+/* Main Renovation Headline & Subtext */
 .m-main-title {
-    font-family: 'Syne', 'Outfit', sans-serif;
+    font-family: 'Space Grotesk', 'Syne', sans-serif;
     font-weight: 800;
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    letter-spacing: 0.35rem;
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    letter-spacing: 0.25rem;
     color: #ffffff;
     text-transform: uppercase;
-    margin: 0 0 1.5rem 0;
-    line-height: 1.2;
-    text-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
+    margin: 0 0 1rem 0;
+    line-height: 1.25;
+    text-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
 }
 
 .m-sub-text {
-    font-size: 1rem;
-    letter-spacing: 0.08rem;
-    color: rgba(255, 255, 255, 0.6);
-    line-height: 1.8;
-    margin: 0;
-    max-width: 520px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    letter-spacing: 0.04rem;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.7;
+    margin: 0 0 2rem 0;
+    max-width: 480px;
 }
 
-.m-sound-control {
-    position: absolute;
-    bottom: 2rem;
-    right: 2.5rem;
-    z-index: 20;
+/* Social Buttons */
+.m-social-links {
     display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+}
+
+.m-social-btn {
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.4rem 0.9rem;
+    padding: 0.55rem 1.1rem;
     background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    font-family: monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.15rem;
-    color: rgba(255, 255, 255, 0.6);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12rem;
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.m-sound-control:hover {
+.m-social-btn i {
+    font-size: 0.85rem;
     color: #00f0ff;
-    border-color: rgba(0, 240, 255, 0.3);
-    background: rgba(0, 240, 255, 0.08);
+    transition: transform 0.3s ease;
+}
+
+.m-social-btn:hover {
+    background: rgba(0, 240, 255, 0.12);
+    border-color: #00f0ff;
+    color: #ffffff;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
+    transform: translateY(-2px);
+}
+
+.m-social-btn:hover i {
+    transform: scale(1.15);
 }
 
 /* =========================================================
