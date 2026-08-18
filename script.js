@@ -1110,18 +1110,30 @@ const initPortal = () => {
             if (mBanner) {
                 if (bannerColor) {
                     mBanner.style.backgroundColor = bannerColor;
+                    mBanner.style.background = `linear-gradient(180deg, ${bannerColor} 0%, rgba(13,11,24,0.95) 100%)`;
                 } else {
                     mBanner.style.backgroundColor = '#0d0b18';
+                    mBanner.style.background = '';
                 }
 
                 if (mBannerImg) {
                     if (bannerUrl) {
+                        mBannerImg.onload = () => {
+                            mBannerImg.style.display = 'block';
+                        };
+                        mBannerImg.onerror = () => {
+                            if (bannerColor) {
+                                mBannerImg.style.display = 'none';
+                            } else {
+                                mBannerImg.src = 'assets/cover.png';
+                                mBannerImg.style.display = 'block';
+                            }
+                        };
                         mBannerImg.src = bannerUrl;
                         mBannerImg.style.display = 'block';
                     } else if (bannerColor) {
                         mBannerImg.src = '';
                         mBannerImg.style.display = 'none';
-                        mBanner.style.background = `linear-gradient(180deg, ${bannerColor} 0%, rgba(13,11,24,0.95) 100%)`;
                     } else {
                         mBannerImg.src = 'assets/cover.png';
                         mBannerImg.style.display = 'block';
