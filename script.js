@@ -507,27 +507,31 @@ function loadPopular() {
         }
 
         items.forEach((r, i) => {
+            const rankFormatted = (i + 1 < 10) ? `0${i + 1}` : `${i + 1}`;
             const card = document.createElement('div');
-            card.className = 'popular-card';
+            card.className = 'popular-card glass';
             card.innerHTML = `
-                <div class="trending-badge">TRENDING</div>
+                <div class="popular-card-top-row">
+                    <div class="trending-badge"><span class="pulse-dot"></span> TOP #${rankFormatted}</div>
+                    <div class="popular-genre-tag">HOT HIT</div>
+                </div>
                 <div class="popular-cover">
                     <div class="vinyl-disc">
                         <div class="vinyl-grooves"></div>
-                        <div class="vinyl-label"><img src="${r.image}" alt="Vinyl Label"></div>
+                        <div class="vinyl-label"><img src="${r.image || 'assets/cover.png'}" alt="Vinyl Label"></div>
                     </div>
-                    <img src="${r.image}" alt="${r.title}">
+                    <img src="${r.image || 'assets/cover.png'}" alt="${r.title}">
                     <div class="popular-overlay">
                         <div class="play-icon-glow"><i class="fas fa-play"></i></div>
                     </div>
                 </div>
                 <div class="popular-info">
                     <h3>${r.title}</h3>
-                    <p>${r.artist}</p>
+                    <p class="popular-artist-name"><i class="fas fa-compact-disc"></i> ${r.artist}</p>
                     <div class="popular-links">
-                        ${r.spotify && r.spotify !== '#' ? `<a href="${r.spotify}" target="_blank" class="platform-link spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
-                        ${r.youtube && r.youtube !== '#' ? `<a href="${r.youtube}" target="_blank" class="platform-link youtube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
-                        ${r.apple && r.apple !== '#' ? `<a href="${r.apple}" target="_blank" class="platform-link apple" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
+                        ${r.spotify && r.spotify !== '#' ? `<a href="${r.spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
+                        ${r.youtube && r.youtube !== '#' ? `<a href="${r.youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
+                        ${r.apple && r.apple !== '#' ? `<a href="${r.apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
                     </div>
                 </div>
             `;
@@ -535,7 +539,7 @@ function loadPopular() {
             card.addEventListener('click', () => {
                 if (typeof playBleep === 'function') playBleep(900, 'sine', 0.1);
                 // Default click opens the first available link
-                const firstLink = r.spotify !== '#' ? r.spotify : (r.youtube !== '#' ? r.youtube : r.apple);
+                const firstLink = (r.spotify && r.spotify !== '#') ? r.spotify : ((r.youtube && r.youtube !== '#') ? r.youtube : r.apple);
                 if (firstLink && firstLink !== '#') window.open(firstLink, '_blank');
             });
 
