@@ -315,10 +315,17 @@ header {
     display: flex;
     justify-content: center;
     pointer-events: none;
+    transition: top 0.3s ease, padding 0.3s ease;
+}
+
+body.admin-preview-active header {
+    top: 40px !important;
 }
 
 .glass-nav {
-    display: flex;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     justify-content: space-between;
     align-items: center;
     padding: 0.95rem 2.8rem;
@@ -368,6 +375,7 @@ header {
     font-weight: 300;
     background: linear-gradient(135deg, #00f0ff, #b700ff);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -4050,6 +4058,7 @@ textarea.real-input:focus {
     background: linear-gradient(135deg, #00f0ff 0%, #b700ff 50%, #00f0ff 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: brandShimmer 4s linear infinite;
     text-shadow: none;
