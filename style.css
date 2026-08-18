@@ -3978,29 +3978,29 @@ textarea.real-input:focus {
 }
 
 /* ==========================================================================
-   FEATURE 1: FLOATING CYBERPUNK MUSIC PLAYER
+   FEATURE 1: FLOATING CYBERPUNK MUSIC PLAYER (BALANCED 3-COLUMN LAYOUT)
    ========================================================================== */
 .floating-player-bar {
     position: fixed;
-    bottom: 20px;
+    bottom: 22px;
     left: 50%;
     transform: translateX(-50%) translateY(0);
-    width: calc(100% - 40px);
-    max-width: 1000px;
-    height: 72px;
-    background: rgba(10, 8, 20, 0.88);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    width: calc(100% - 48px);
+    max-width: 1120px;
+    height: 78px;
+    background: rgba(10, 8, 22, 0.92);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(0, 240, 255, 0.25);
-    border-radius: 18px;
-    padding: 0 1.4rem;
-    display: flex;
+    border-radius: 20px;
+    padding: 0 1.8rem;
+    display: grid;
+    grid-template-columns: 280px 1fr auto;
     align-items: center;
-    justify-content: space-between;
-    gap: 1.2rem;
+    gap: 2rem;
     z-index: 9999;
     box-shadow: 
-        0 15px 40px rgba(0, 0, 0, 0.85),
+        0 20px 50px rgba(0, 0, 0, 0.9),
         0 0 25px rgba(0, 240, 255, 0.12),
         inset 0 0 15px rgba(255, 255, 255, 0.03);
     transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease, visibility 0.4s, box-shadow 0.4s ease;
@@ -4011,7 +4011,7 @@ textarea.real-input:focus {
     content: '';
     position: absolute;
     inset: -1.5px;
-    border-radius: 19px;
+    border-radius: 21px;
     padding: 1.5px;
     background: linear-gradient(90deg, #00f0ff, #9d00ff, #ff007f, #00f0ff);
     background-size: 300% 300%;
@@ -4020,7 +4020,7 @@ textarea.real-input:focus {
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0;
-    transition: opacity 0.45s ease;
+    transition: opacity 0.5s ease;
     pointer-events: none;
     z-index: 1;
 }
@@ -4037,16 +4037,16 @@ textarea.real-input:focus {
 }
 
 .floating-player-bar.playing {
-    border-color: rgba(0, 240, 255, 0.4);
+    border-color: rgba(0, 240, 255, 0.45);
     box-shadow: 
-        0 20px 50px rgba(0, 0, 0, 0.9),
-        0 0 35px rgba(0, 240, 255, 0.3),
-        0 0 60px rgba(157, 0, 255, 0.15),
-        inset 0 0 15px rgba(255, 255, 255, 0.05);
+        0 20px 55px rgba(0, 0, 0, 0.95),
+        0 0 35px rgba(0, 240, 255, 0.32),
+        0 0 65px rgba(157, 0, 255, 0.18),
+        inset 0 0 20px rgba(255, 255, 255, 0.06);
 }
 
 .floating-player-bar.hidden {
-    transform: translateX(-50%) translateY(120px);
+    transform: translateX(-50%) translateY(130px);
     opacity: 0;
     pointer-events: none;
     visibility: hidden;
@@ -4055,46 +4055,46 @@ textarea.real-input:focus {
 .fp-glow-stream {
     position: absolute;
     top: -1px;
-    left: 10%;
-    right: 10%;
-    height: 1px;
+    left: 8%;
+    right: 8%;
+    height: 1.5px;
     background: linear-gradient(90deg, transparent, var(--accent-blue), var(--accent-purple), transparent);
-    box-shadow: 0 0 10px var(--accent-blue);
+    box-shadow: 0 0 12px var(--accent-blue);
     pointer-events: none;
 }
 
-/* Track Info */
+/* 1. LEFT COLUMN: Track Info */
 .floating-player-track-info {
     display: flex;
     align-items: center;
-    gap: 0.85rem;
-    min-width: 220px;
-    max-width: 260px;
+    gap: 1rem;
+    min-width: 0;
 }
 
 .fp-thumb-wrapper {
     position: relative;
-    width: 46px;
-    height: 46px;
+    width: 48px;
+    height: 48px;
     flex-shrink: 0;
 }
 
 .fp-cover-img {
     width: 100%;
     height: 100%;
-    border-radius: 8px;
+    border-radius: 10px;
     object-fit: cover;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     position: relative;
     z-index: 2;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .fp-mini-vinyl {
     position: absolute;
     top: 2px;
     right: -8px;
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: radial-gradient(circle, #222 0%, #0a0a0a 60%, #000 100%);
     border: 1px solid rgba(0, 240, 255, 0.4);
@@ -4115,25 +4115,29 @@ textarea.real-input:focus {
 }
 
 .fp-vinyl-core {
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
     border-radius: 50%;
     background: var(--accent-blue);
+    box-shadow: 0 0 6px var(--accent-blue);
 }
 
 .fp-text-meta {
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .fp-track-title {
     font-family: var(--font-heading);
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: #fff;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    letter-spacing: 0.05rem;
+    letter-spacing: 0.04rem;
 }
 
 .fp-track-artist {
@@ -4142,81 +4146,94 @@ textarea.real-input:focus {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    opacity: 0.85;
-    margin-top: 2px;
+    opacity: 0.9;
+    font-weight: 500;
+    letter-spacing: 0.03rem;
 }
 
-/* Center Controls & Scrubber */
+/* 2. CENTER COLUMN: Controls & Wide Scrubber */
 .floating-player-center {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.35rem;
-    flex: 1;
-    max-width: 440px;
+    justify-content: center;
+    gap: 0.45rem;
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
 }
 
 .floating-player-controls {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.4rem;
 }
 
 .fp-btn {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 4px;
 }
 
 .fp-btn:hover {
     color: var(--accent-blue);
-    transform: scale(1.15);
+    transform: scale(1.2);
 }
 
 .fp-play-btn {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     background: var(--accent-blue);
     color: #000;
-    font-size: 0.85rem;
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+    font-size: 0.9rem;
+    box-shadow: 0 0 18px rgba(0, 240, 255, 0.65);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .fp-play-btn:hover {
     background: #fff;
-    box-shadow: 0 0 20px #00f0ff;
+    box-shadow: 0 0 25px #00f0ff;
     color: #000;
+    transform: scale(1.08);
 }
 
 .floating-player-progress-row {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.85rem;
     width: 100%;
 }
 
 .fp-time {
     font-family: var(--font-heading);
-    font-size: 0.68rem;
-    color: rgba(255, 255, 255, 0.5);
-    min-width: 28px;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.55);
+    min-width: 32px;
+    font-weight: 500;
+    letter-spacing: 0.02rem;
 }
 
 .fp-progress-container {
     flex: 1;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.1);
+    height: 6px;
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 10px;
     position: relative;
     cursor: pointer;
     overflow: hidden;
+    transition: height 0.2s ease;
+}
+
+.fp-progress-container:hover {
+    height: 8px;
 }
 
 .fp-progress-bar {
@@ -4224,30 +4241,38 @@ textarea.real-input:focus {
     width: 0%;
     background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
     border-radius: 10px;
-    box-shadow: 0 0 8px var(--accent-blue);
+    box-shadow: 0 0 10px var(--accent-blue);
     transition: width 0.15s linear;
 }
 
-/* Actions & Volume */
+/* 3. RIGHT COLUMN: Actions (Volume, Streaming, Close) */
 .floating-player-actions {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    justify-content: flex-end;
+    gap: 1.4rem;
 }
 
 .fp-volume-wrapper {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.65rem;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.4rem 0.85rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .fp-icon-btn {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
     cursor: pointer;
     transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .fp-icon-btn:hover {
@@ -4257,10 +4282,10 @@ textarea.real-input:focus {
 .fp-vol-slider {
     -webkit-appearance: none;
     appearance: none;
-    width: 65px;
+    width: 80px;
     height: 4px;
     border-radius: 4px;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.18);
     outline: none;
     cursor: pointer;
 }
@@ -4268,95 +4293,123 @@ textarea.real-input:focus {
 .fp-vol-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: var(--accent-blue);
-    box-shadow: 0 0 6px var(--accent-blue);
+    box-shadow: 0 0 8px var(--accent-blue);
     cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.fp-vol-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.25);
 }
 
 .fp-external-links {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.65rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    padding-left: 1.2rem;
 }
 
 .fp-link-icon {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.25s ease;
     text-decoration: none;
 }
 
 .fp-link-icon.spotify:hover {
     background: #1DB954;
     border-color: #1DB954;
-    box-shadow: 0 0 10px #1DB954;
+    box-shadow: 0 0 12px rgba(29, 185, 84, 0.6);
     color: #fff;
+    transform: translateY(-2px);
 }
 
 .fp-link-icon.youtube:hover {
     background: #FF0000;
     border-color: #FF0000;
-    box-shadow: 0 0 10px #FF0000;
+    box-shadow: 0 0 12px rgba(255, 0, 0, 0.6);
     color: #fff;
+    transform: translateY(-2px);
 }
 
 .close-fp {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
+    transition: all 0.25s ease;
     margin-left: 0.2rem;
-    font-size: 1rem;
 }
 
-/* Mobile Responsiveness for Floating Player */
-@media (max-width: 900px) {
-    .fp-vol-slider {
+.close-fp:hover {
+    background: rgba(255, 0, 85, 0.2);
+    border-color: rgba(255, 0, 85, 0.5);
+    color: #ff0055;
+    box-shadow: 0 0 10px rgba(255, 0, 85, 0.4);
+    transform: rotate(90deg);
+}
+
+/* Mobile & Tablet Responsiveness */
+@media (max-width: 1024px) {
+    .floating-player-bar {
+        grid-template-columns: 220px 1fr auto;
+        gap: 1.2rem;
+        padding: 0 1.2rem;
+    }
+    .fp-volume-wrapper {
         display: none;
     }
-    .floating-player-bar {
-        height: 66px;
-        padding: 0 0.8rem;
-    }
-    .floating-player-track-info {
-        min-width: 140px;
-        max-width: 180px;
-    }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .floating-player-bar {
-        bottom: 10px;
-        width: calc(100% - 20px);
-        height: 62px;
-        padding: 0 0.6rem;
-        border-radius: 14px;
-    }
-    .floating-player-track-info {
-        min-width: 110px;
-        max-width: 130px;
+        bottom: 12px;
+        width: calc(100% - 24px);
+        height: 66px;
+        padding: 0 0.9rem;
+        grid-template-columns: 1fr auto auto;
+        gap: 0.8rem;
+        border-radius: 16px;
     }
     .fp-thumb-wrapper {
-        width: 38px;
-        height: 38px;
+        width: 40px;
+        height: 40px;
     }
     .fp-mini-vinyl {
         display: none;
     }
+    .floating-player-center {
+        max-width: 220px;
+    }
+    .floating-player-progress-row {
+        display: none;
+    }
     .floating-player-controls {
-        gap: 0.5rem;
+        gap: 0.8rem;
     }
     .fp-play-btn {
-        width: 32px;
-        height: 32px;
-        font-size: 0.75rem;
+        width: 34px;
+        height: 34px;
+        font-size: 0.8rem;
     }
     .fp-external-links {
         display: none;
