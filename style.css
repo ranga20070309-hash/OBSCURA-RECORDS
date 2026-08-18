@@ -311,7 +311,7 @@ header {
     left: 0;
     width: 100%;
     padding: 1.2rem 4%;
-    z-index: 2000;
+    z-index: 99999;
     display: flex;
     justify-content: center;
     pointer-events: none;
@@ -319,13 +319,14 @@ header {
 }
 
 body.admin-preview-active header {
-    top: 40px !important;
+    top: 42px !important;
 }
 
 .glass-nav {
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
+    transform: none !important;
     justify-content: space-between;
     align-items: center;
     padding: 0.95rem 2.8rem;
