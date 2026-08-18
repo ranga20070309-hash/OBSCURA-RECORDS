@@ -3731,3 +3731,60 @@ textarea.real-input:focus {
     border-color: rgba(0, 240, 255, 0.3);
     background: rgba(0, 240, 255, 0.08);
 }
+
+/* =========================================================
+   ARTIST & PARTNER PROFILE MODAL WITH DYNAMIC DISCORD BANNER
+   ========================================================= */
+.artist-modal-content {
+    max-width: 620px !important;
+    width: 90% !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 20px !important;
+    background: rgba(10, 8, 20, 0.96) !important;
+    border: 1px solid rgba(0, 240, 255, 0.25) !important;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.95), 0 0 35px rgba(0, 240, 255, 0.15) !important;
+    position: relative !important;
+}
+
+.artist-modal-banner {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    background-color: #0d0b18;
+    overflow: hidden;
+    display: block;
+}
+
+.artist-modal-banner-img {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: block;
+}
+
+.artist-modal-banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(10, 8, 20, 0.8) 80%, rgba(10, 8, 20, 1) 100%);
+    pointer-events: none;
+}
+
+.artist-modal-inner {
+    padding: 1.2rem 2.2rem 2.2rem 2.2rem;
+    position: relative;
+    z-index: 5;
+    margin-top: -65px; /* Overlap Avatar gracefully over the banner */
+}
+
+.artist-modal-header {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
