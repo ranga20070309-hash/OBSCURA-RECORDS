@@ -419,11 +419,11 @@ function initReleasesEngine() {
 
         container.innerHTML = filtered.map((rel, i) => {
             const actualIndex = cachedReleases.indexOf(rel);
-            const cover = rel.cover || 'images/covers/cover1.jpg';
+            const cover = rel.cover || 'assets/cover.png';
             return `
                 <div class="admin-release-card">
                     <div class="rel-card-top">
-                        <img src="${cover}" alt="Artwork" class="rel-thumb" onerror="this.src='OCR.png'">
+                        <img src="${cover}" alt="Artwork" class="rel-thumb" onerror="this.onerror=null; this.src='assets/OCR.png';">
                         <div class="rel-meta">
                             <h4>${rel.title || 'UNTITLED'}</h4>
                             <div class="rel-artist">${rel.artist || 'UNKNOWN ARTIST'}</div>
@@ -574,7 +574,7 @@ function initUpcomingEngine() {
         container.innerHTML = cachedUpcoming.map((upc, i) => `
             <div class="admin-upcoming-card">
                 <div class="rel-card-top">
-                    <img src="${upc.cover || 'OCR.png'}" alt="Teaser" class="rel-thumb" onerror="this.src='OCR.png'">
+                    <img src="${upc.cover || 'assets/OCR.png'}" alt="Teaser" class="rel-thumb" onerror="this.onerror=null; this.src='assets/OCR.png';">
                     <div class="rel-meta">
                         <h4>${upc.title || 'UNTITLED TEASER'}</h4>
                         <div class="rel-artist">${upc.artist || 'UNKNOWN'}</div>
@@ -725,12 +725,12 @@ function initStaffEngine() {
         }
 
         container.innerHTML = entries.map(([id, p]) => {
-            const avatar = p.avatar_url || 'OCR.png';
+            const avatar = p.avatar_url || 'assets/OCR.png';
             const socials = p.socials || {};
             return `
                 <div class="staff-editor-card" data-id="${id}" data-type="${isPartner ? 'partner' : 'staff'}">
                     <div class="rel-card-top">
-                        <img src="${avatar}" alt="Avatar" class="rel-thumb" onerror="this.src='OCR.png'">
+                        <img src="${avatar}" alt="Avatar" class="rel-thumb" onerror="this.onerror=null; this.src='assets/OCR.png';">
                         <div class="rel-meta">
                             <h4>${p.name || id}</h4>
                             <div class="rel-artist">${p.role || (isPartner ? 'PARTNER' : 'STAFF MEMBER')}</div>
