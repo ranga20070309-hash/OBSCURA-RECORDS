@@ -1504,6 +1504,11 @@ section {
     position: relative;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.02);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 /* Obscura Cyber-Cyan & Purple Glowing Border Stream */
@@ -3745,6 +3750,9 @@ textarea.real-input:focus {
     border: 1px solid rgba(0, 240, 255, 0.25) !important;
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.95), 0 0 35px rgba(0, 240, 255, 0.15) !important;
     position: relative !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transform: translateZ(0);
 }
 
 .artist-modal-banner {
