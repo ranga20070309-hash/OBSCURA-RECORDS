@@ -512,6 +512,16 @@ function loadPopular() {
             card.className = 'popular-card release-card-large glass';
             card.innerHTML = `
                 <div class="release-cover-large">
+                    <div class="cyber-cd-disc">
+                        <div class="cd-hologram-shimmer"></div>
+                        <div class="cd-data-tracks"></div>
+                        <div class="cd-laser-flare"></div>
+                        <div class="cd-center-hub">
+                            <div class="cd-label-mini"><img src="${r.image || 'assets/cover.png'}" alt="CD Label"></div>
+                            <div class="cd-center-hole"></div>
+                        </div>
+                        <div class="cd-rim-glow"></div>
+                    </div>
                     <img src="${r.image || 'assets/cover.png'}" alt="${r.title}">
                     <div class="release-type-badge">HOT #${rankFormatted}</div>
                     <div class="player-overlay">
@@ -1773,6 +1783,16 @@ const initPortal = () => {
                 const cardHtml = `
                     <div class="release-card-large glass">
                         <div class="release-cover-large">
+                            <div class="cyber-cd-disc">
+                                <div class="cd-hologram-shimmer"></div>
+                                <div class="cd-data-tracks"></div>
+                                <div class="cd-laser-flare"></div>
+                                <div class="cd-center-hub">
+                                    <div class="cd-label-mini"><img src="${release.image || 'assets/cover.png'}" alt="CD Label"></div>
+                                    <div class="cd-center-hole"></div>
+                                </div>
+                                <div class="cd-rim-glow"></div>
+                            </div>
                             <img src="${release.image || 'assets/cover.png'}" alt="${release.title}">
                             <div class="release-type-badge">${release.type || 'SINGLE'}</div>
                             <div class="player-overlay">
@@ -1817,7 +1837,7 @@ const initPortal = () => {
             trackRows.forEach(row => {
                 const playBtn = row.querySelector('.play-btn');
                 const coverImg = row.querySelector('.release-cover-large > img');
-                const vinylImg = row.querySelector('.vinyl-label img');
+                const cdImg = row.querySelector('.cd-label-mini img');
                 const ytLink = row.querySelector('.platform-link.youtube');
                 const spLink = row.querySelector('.platform-link.spotify');
 
@@ -1829,7 +1849,7 @@ const initPortal = () => {
                             if (data.thumbnail_url && coverImg) {
                                 coverImg.src = data.thumbnail_url;
                                 coverImg.style.filter = "none";
-                                if (vinylImg) vinylImg.src = data.thumbnail_url;
+                                if (cdImg) cdImg.src = data.thumbnail_url;
                                 if (playBtn) playBtn.setAttribute('data-image', data.thumbnail_url);
                             }
                         }).catch(e => console.warn('Spotify Artwork URL parse failed:', e));
@@ -1850,7 +1870,7 @@ const initPortal = () => {
                             const ytThumb = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
                             coverImg.src = ytThumb;
                             coverImg.style.filter = "none";
-                            if (vinylImg) vinylImg.src = ytThumb;
+                            if (cdImg) cdImg.src = ytThumb;
                             if (playBtn) playBtn.setAttribute('data-image', ytThumb);
                         }
                     } catch (e) {
