@@ -9,7 +9,7 @@
     <!-- Cyberpunk & Modern Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <link rel="stylesheet" href="admin.css">
@@ -38,7 +38,7 @@
         <div class="login-glass">
             <div class="login-brand">
                 <div class="login-emblem-glow"></div>
-                <img src="assets/OCR.png" alt="Obscura Logo" class="login-emblem">
+                <img src="assets/OCR.png" alt="Obscura Logo" class="login-emblem" onerror="this.onerror=null; this.src='assets/cover.png';">
                 <h2>OBSCURA <span>RECORD</span></h2>
                 <div class="login-badge"><i class="fas fa-shield-alt"></i> ROOT AUTHENTICATION REQUIRED</div>
             </div>
@@ -66,7 +66,7 @@
                     <i class="fas fa-unlock-alt"></i> INITIATE ROOT ACCESS
                 </button>
                 
-                <p id="login-error" class="error-msg"><i class="fas fa-exclamation-triangle"></i> ACCESS DENIED: INVALID KERNEL PASSPHRASE</p>
+                <p id="login-error" class="error-msg"><i class="fas fa-exclamation-triangle"></i> ACCESS DENIED: INVALID KERNEL CREDENTIALS</p>
                 <div class="login-footer-info">
                     <span>SECURITY PROTOCOL: FIREBASE AUTH TLS</span>
                     <span>ENGINE v<span class="engine-ver">5.0</span></span>
@@ -82,7 +82,7 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="brand-container">
-                    <img src="assets/OCR.png" alt="Logo" class="sidebar-logo-img">
+                    <img src="assets/OCR.png" alt="Logo" class="sidebar-logo-img" onerror="this.onerror=null; this.src='assets/cover.png';">
                     <div class="brand-text">
                         <h2>OBSCURA <span>CORE</span></h2>
                         <span class="access-pill"><span class="dot live"></span> ROOT SECURED</span>
@@ -112,6 +112,7 @@
                     </a>
                     <a href="#" class="nav-btn" data-target="staff-panel">
                         <i class="fas fa-users-cog"></i> <span>STAFF & PARTNERS</span>
+                        <span class="badge" id="badge-staff-count">0</span>
                     </a>
 
                     <div class="nav-section-label">COMMUNICATIONS & INBOX</div>
@@ -202,13 +203,13 @@
                         </div>
                     </div>
 
-                    <!-- Catalog & Staff Titles Card -->
+                    <!-- Section Titles & Subtexts Card -->
                     <div class="cyber-card">
                         <div class="card-header">
                             <i class="fas fa-layer-group card-icon"></i>
                             <div>
                                 <h3>SECTION TITLES & SUBTEXTS</h3>
-                                <p>Customize section titles displayed across the scroll sections.</p>
+                                <p>Customize section titles displayed across all main page sections.</p>
                             </div>
                         </div>
                         <div class="card-body form-grid">
@@ -219,6 +220,14 @@
                             <div class="input-group">
                                 <label>RELEASE ARCHIVE SUBTITLE</label>
                                 <input type="text" id="site_archiveDesc" value="THESE ARE THE RELEASES THAT IS PUBLISHED THROUGH OUR LABEL">
+                            </div>
+                            <div class="input-group">
+                                <label>UPCOMING SECTION TITLE</label>
+                                <input type="text" id="site_upcomingTitle" value="UPCOMING <span class='accent'>RELEASES</span>">
+                            </div>
+                            <div class="input-group">
+                                <label>UPCOMING SECTION SUBTITLE</label>
+                                <input type="text" id="site_upcomingDesc" value="FUTURE TRANSMISSIONS FROM THE VOID">
                             </div>
                             <div class="input-group">
                                 <label>STAFF SECTION TITLE</label>
@@ -374,6 +383,39 @@
                         </div>
                     </div>
 
+                    <!-- Footer Texts & Copyright Card -->
+                    <div class="cyber-card">
+                        <div class="card-header">
+                            <i class="fas fa-shoe-prints card-icon"></i>
+                            <div>
+                                <h3>FOOTER LINKS & COPYRIGHT</h3>
+                                <p>Text strings for footer navigation and copyright line.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group full">
+                                <label>COPYRIGHT NOTICE</label>
+                                <input type="text" id="site_footerCopyright" value="&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED.">
+                            </div>
+                            <div class="input-group">
+                                <label>FOOTER FAQ TEXT</label>
+                                <input type="text" id="site_footerFaqText" value="FAQ">
+                            </div>
+                            <div class="input-group">
+                                <label>FOOTER DEMO SUBMISSION TEXT</label>
+                                <input type="text" id="site_footerDemoText" value="DEMO SUBMISSION">
+                            </div>
+                            <div class="input-group">
+                                <label>FOOTER CONTACT TEXT</label>
+                                <input type="text" id="site_footerContactText" value="CONTACT US">
+                            </div>
+                            <div class="input-group">
+                                <label>FOOTER PRIVACY TEXT</label>
+                                <input type="text" id="site_footerPrivacyText" value="PRIVACY">
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="action-footer">
@@ -423,7 +465,7 @@
                         <div class="input-group full">
                             <label><i class="fas fa-image"></i> COVER ARTWORK URL *</label>
                             <div class="input-with-preview">
-                                <input type="text" id="rel_cover" placeholder="https://i.imgur.com/... or images/covers/...">
+                                <input type="text" id="rel_cover" placeholder="https://i.imgur.com/... or assets/covers/...">
                                 <div class="img-preview-box" id="rel-cover-preview">
                                     <i class="fas fa-image"></i>
                                 </div>
@@ -463,10 +505,16 @@
                 </div>
             </section>
 
-            <!-- 4. UPCOMING TEASERS PANEL -->
+            <!-- 4. UPCOMING TEASERS PANEL (WITH VISIBILITY SWITCH) -->
             <section id="upcoming-panel" class="panel">
                 <div class="panel-action-bar">
-                    <h3><i class="fas fa-clock"></i> UPCOMING RELEASES & PREVIEWS</h3>
+                    <div class="section-visibility-group">
+                        <label><i class="fas fa-eye"></i> UPCOMING SECTION VISIBILITY:</label>
+                        <select id="site_showUpcoming" class="cyber-select-sm">
+                            <option value="Visible">Visible (Show On Main Site)</option>
+                            <option value="Hidden">Hidden (Hide From Main Site)</option>
+                        </select>
+                    </div>
                     <button class="cyber-btn primary" id="btn-add-upcoming"><i class="fas fa-plus-circle"></i> ADD UPCOMING TEASER</button>
                 </div>
 
@@ -504,7 +552,7 @@
                         </div>
                         <div class="input-group full">
                             <label>COVER / TEASER ARTWORK URL</label>
-                            <input type="text" id="upc_cover" placeholder="https://i.imgur.com/...">
+                            <input type="text" id="upc_cover" placeholder="https://i.imgur.com/... or assets/covers/...">
                         </div>
                     </div>
                     <div class="card-footer-btns">
@@ -518,8 +566,18 @@
                 </div>
             </section>
 
-            <!-- 5. GHOST PRODUCTION PANEL -->
+            <!-- 5. GHOST PRODUCTION PANEL (WITH VISIBILITY SWITCH) -->
             <section id="ghost-production-panel" class="panel">
+                <div class="panel-action-bar" style="margin-bottom: 1.5rem;">
+                    <div class="section-visibility-group">
+                        <label><i class="fas fa-eye"></i> GHOST PRODUCTION SECTION VISIBILITY:</label>
+                        <select id="site_showGhostProduction" class="cyber-select-sm">
+                            <option value="Visible">Visible (Show On Main Site)</option>
+                            <option value="Hidden">Hidden (Hide From Main Site)</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="card-grid">
                     <div class="cyber-card full-card">
                         <div class="card-header">
@@ -560,13 +618,91 @@
                 </div>
             </section>
 
-            <!-- 6. STAFF & PARTNERS PERSONNEL PANEL -->
+            <!-- 6. STAFF & PARTNERS PERSONNEL PANEL (WITH MULTI-SOCIAL LINK BUILDER) -->
             <section id="staff-panel" class="panel">
                 <div class="panel-action-bar">
-                    <h3><i class="fas fa-users-cog"></i> PERSONNEL & COLLABORATOR PROFILES</h3>
                     <div class="tab-pill-group">
                         <button type="button" class="tab-pill active" id="tab-staff-view">OBSCURA STAFF</button>
                         <button type="button" class="tab-pill" id="tab-partner-view">LABEL PARTNERS</button>
+                    </div>
+                    <button class="cyber-btn primary" id="btn-add-profile"><i class="fas fa-user-plus"></i> ADD NEW PROFILE</button>
+                </div>
+
+                <!-- Add/Edit Profile Modal / Container -->
+                <div id="profile-editor-card" class="cyber-card editor-card" style="display: none; margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <i class="fas fa-user-edit card-icon"></i>
+                        <div>
+                            <h3 id="profile-editor-title">CREATE NEW PROFILE</h3>
+                            <p>Configure personnel details, avatars, and social platform links.</p>
+                        </div>
+                        <button type="button" class="close-card-btn" id="close-profile-editor">&times;</button>
+                    </div>
+                    <div class="card-body form-grid">
+                        <input type="hidden" id="prof_edit_id" value="">
+                        <input type="hidden" id="prof_is_partner" value="false">
+                        
+                        <div class="input-group">
+                            <label>PROFILE ID / DISCORD USERNAME *</label>
+                            <input type="text" id="prof_id" placeholder="e.g. sayurux or partner_id">
+                        </div>
+                        <div class="input-group">
+                            <label>DISPLAY NAME *</label>
+                            <input type="text" id="prof_name" placeholder="e.g. SAYURUX">
+                        </div>
+                        <div class="input-group">
+                            <label>ROLE / POSITION *</label>
+                            <input type="text" id="prof_role" placeholder="e.g. FOUNDER & HEAD OF A&R">
+                        </div>
+                        <div class="input-group">
+                            <label>SORT PRIORITY (1 = HIGHEST)</label>
+                            <input type="number" id="prof_order" value="1">
+                        </div>
+                        <div class="input-group full">
+                            <label>AVATAR / LOGO IMAGE URL</label>
+                            <input type="text" id="prof_avatar" placeholder="https://i.imgur.com/... or assets/cover.png">
+                        </div>
+                        <div class="input-group full">
+                            <label>BIOGRAPHY / PROFILE DESCRIPTION</label>
+                            <textarea id="prof_bio" rows="3" placeholder="A brief background about this personnel/partner..."></textarea>
+                        </div>
+
+                        <!-- Social Links Container -->
+                        <div class="social-links-builder full" style="grid-column: 1 / -1; border-top: 1px solid var(--border-dim); padding-top: 1.2rem;">
+                            <label style="font-family: var(--font-mono); color: var(--primary); font-size: 0.78rem; font-weight: 700; margin-bottom: 0.8rem; display: block;">
+                                <i class="fas fa-share-alt"></i> CONNECTED SOCIAL PLATFORMS & LINKS
+                            </label>
+                            <div class="form-grid" style="gap: 1rem;">
+                                <div class="input-group">
+                                    <label><i class="fab fa-instagram"></i> INSTAGRAM LINK</label>
+                                    <input type="text" id="prof_social_insta" placeholder="https://instagram.com/...">
+                                </div>
+                                <div class="input-group">
+                                    <label><i class="fab fa-spotify"></i> SPOTIFY ARTIST LINK</label>
+                                    <input type="text" id="prof_social_spotify" placeholder="https://open.spotify.com/artist/...">
+                                </div>
+                                <div class="input-group">
+                                    <label><i class="fab fa-soundcloud"></i> SOUNDCLOUD LINK</label>
+                                    <input type="text" id="prof_social_soundcloud" placeholder="https://soundcloud.com/...">
+                                </div>
+                                <div class="input-group">
+                                    <label><i class="fab fa-youtube"></i> YOUTUBE CHANNEL</label>
+                                    <input type="text" id="prof_social_youtube" placeholder="https://youtube.com/...">
+                                </div>
+                                <div class="input-group">
+                                    <label><i class="fab fa-twitter"></i> X / TWITTER</label>
+                                    <input type="text" id="prof_social_twitter" placeholder="https://x.com/...">
+                                </div>
+                                <div class="input-group">
+                                    <label><i class="fab fa-discord"></i> DISCORD SERVER / PROFILE</label>
+                                    <input type="text" id="prof_social_discord" placeholder="https://discord.gg/...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer-btns">
+                        <button type="button" class="cyber-btn primary" id="btn-save-profile"><i class="fas fa-save"></i> SAVE PROFILE</button>
+                        <button type="button" class="cyber-btn secondary" id="btn-cancel-profile">CANCEL</button>
                     </div>
                 </div>
 
@@ -633,11 +769,15 @@
                         <div class="card-header">
                             <i class="fas fa-file-contract card-icon"></i>
                             <div>
-                                <h3>LEGAL PRIVACY POLICY & DEMO GUIDELINES</h3>
-                                <p>Legal text payloads displayed in popups.</p>
+                                <h3>MODAL SUBTEXTS, PRIVACY POLICY & DEMO GUIDELINES</h3>
+                                <p>Instructional and legal text payloads displayed in popups.</p>
                             </div>
                         </div>
                         <div class="card-body form-grid">
+                            <div class="input-group full">
+                                <label>CONTACT MODAL SUBTEXT</label>
+                                <textarea id="site_contactModalSubtext" rows="2">For partnerships, general questions, or portal feedback, reach out via the channels above.</textarea>
+                            </div>
                             <div class="input-group full">
                                 <label>DEMO REQUIREMENTS & RULES</label>
                                 <textarea id="site_demoDesc" rows="4">We are looking for the next evolution of sound. If your music pushes the boundaries of Funk, Phonk, or Futuristic Electronic music, our portal is open for your transmissions.</textarea>
@@ -695,8 +835,8 @@
                         <div class="card-header">
                             <i class="fas fa-history card-icon"></i>
                             <div>
-                                <h3>RECENT ADMINISTRATIVE ACTIVITY</h3>
-                                <p>Audit timestamps of recent configuration syncs.</p>
+                                <h3>REAL-TIME ADMINISTRATIVE AUDIT LOGS</h3>
+                                <p>Audit timestamps of recent configuration syncs and security events.</p>
                             </div>
                         </div>
                         <div class="card-body">
