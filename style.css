@@ -1475,7 +1475,7 @@ section {
 }
 
 .artists {
-    padding: 6.5rem 4%;
+    padding: 7rem 4%;
     max-width: 1680px;
     margin: 0 auto;
     width: 100%;
@@ -1484,6 +1484,12 @@ section {
     align-items: center;
     justify-content: center;
     text-align: center;
+    min-height: 85vh;
+}
+
+#artists, #partners {
+    min-height: 85vh;
+    padding: 7rem 4%;
 }
 
 .artists-grid {
@@ -1869,10 +1875,15 @@ section {
 
 /* Contact Section (Social Links) */
 .contact-section {
-    padding: 6.5rem 4%;
+    padding: 7rem 4%;
     max-width: 1680px;
     margin: 0 auto;
     width: 100%;
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .contact-container {
