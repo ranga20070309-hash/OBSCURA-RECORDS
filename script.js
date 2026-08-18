@@ -1028,7 +1028,7 @@ const initPortal = () => {
     });
 
     // --- 3D TILT EFFECT ---
-    const tiltContainers = document.querySelectorAll('.glass:not(.no-tilt), .release-card, .social-card, .faq-item');
+    const tiltContainers = document.querySelectorAll('.glass:not(.no-tilt):not(.artist-item), .release-card, .social-card, .faq-item');
     tiltContainers.forEach(container => {
         container.addEventListener('mousemove', (e) => {
             const { left, top, width, height } = container.getBoundingClientRect();
