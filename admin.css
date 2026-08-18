@@ -36,14 +36,11 @@
     --topbar-height: 72px;
 }
 
-/* --- RESET & GLOBAL ARCHITECTURE (4K ULTRA-HIGH FIDELITY) --- */
+/* --- RESET & GLOBAL ARCHITECTURE --- */
 *, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-    text-rendering: optimizeLegibility !important;
 }
 
 html, body {
@@ -56,20 +53,6 @@ html, body {
     line-height: 1.5;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-}
-
-img, canvas, svg, .cyber-card, .table-row {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: auto;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
 }
 
 /* Custom Cyber Scrollbar */
@@ -1305,4 +1288,56 @@ img, canvas, svg, .cyber-card, .table-row {
 .log-time {
     color: var(--text-muted);
     margin-right: 0.5rem;
+}
+
+/* --- CYBER ALERT BANNER --- */
+.cyber-alert-banner {
+    background: linear-gradient(90deg, rgba(255, 0, 85, 0.25), rgba(10, 14, 28, 0.95));
+    border: 1px solid #ff0055;
+    border-radius: 14px;
+    padding: 1.2rem 1.8rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    box-shadow: 0 0 30px rgba(255, 0, 85, 0.35);
+    animation: alertPulse 2s infinite ease-in-out;
+}
+
+.alert-content {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.alert-icon-pulse {
+    font-size: 2rem;
+    color: #ff0055;
+    animation: iconShake 0.6s infinite alternate ease-in-out;
+}
+
+.cyber-alert-banner strong {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    color: #fff;
+    display: block;
+    letter-spacing: 0.05rem;
+}
+
+.cyber-alert-banner p {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent-red);
+    margin-top: 0.2rem;
+}
+
+@keyframes alertPulse {
+    0%, 100% { border-color: #ff0055; box-shadow: 0 0 20px rgba(255, 0, 85, 0.2); }
+    50% { border-color: #ff3377; box-shadow: 0 0 40px rgba(255, 0, 85, 0.5); }
+}
+
+@keyframes iconShake {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.15) rotate(5deg); }
 }
