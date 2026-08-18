@@ -1334,10 +1334,14 @@ section {
     opacity: 1;
 }
 
-.release-card-large:hover .release-cover-large > img,
-.popular-card:hover .release-cover-large > img {
+.release-card-large:hover .release-cover-large > img {
     transform: scale(1.08);
     filter: contrast(1.1) brightness(1.08) drop-shadow(0 0 20px rgba(0, 240, 255, 0.4));
+}
+
+.popular-card:hover .release-cover-large > img {
+    transform: scale(1.08);
+    filter: blur(2.5px) contrast(1.1) brightness(0.85) drop-shadow(0 0 25px rgba(0, 240, 255, 0.5));
 }
 
 /* Specific Popular Card Glassmorphic Aura & Blur */
@@ -1347,6 +1351,22 @@ section {
     -webkit-backdrop-filter: blur(25px) !important;
     border: 1px solid rgba(0, 240, 255, 0.18) !important;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.75) !important;
+}
+
+.popular-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    opacity: 0;
+    transition: all 0.4s ease;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.popular-card:hover .popular-overlay {
+    opacity: 1;
 }
 
 .popular-card:hover {
