@@ -177,6 +177,8 @@ const dismissLoader = () => {
 window.addEventListener('load', dismissLoader);
 setTimeout(dismissLoader, 1500); // Safety Override: Ultra-Snappy 1.5s
 
+let pendingYTTrack = null;
+
 window.onYouTubeIframeAPIReady = function () {
     initYTPlayer();
 };
@@ -189,7 +191,7 @@ function initYTPlayer() {
             height: '180',
             width: '320',
             playerVars: {
-                'autoplay': 0,
+                'autoplay': 1,
                 'controls': 0,
                 'showinfo': 0,
                 'rel': 0,
@@ -198,14 +200,19 @@ function initYTPlayer() {
                 'origin': isFileProtocol ? 'https://www.youtube.com' : (window.location.origin === 'null' || !window.location.origin ? '*' : window.location.origin)
             },
             events: {
-                'onReady': () => {
+                'onReady': (event) => {
                     isYTApiReady = true;
                     console.log('YT API Active');
-                    if (ytPlayer.setVolume) ytPlayer.setVolume(100);
+                    if (event.target && event.target.setVolume) event.target.setVolume(100);
+                    if (pendingYTTrack) {
+                        const track = pendingYTTrack;
+                        pendingYTTrack = null;
+                        playYouTubeTrack(track.ytId, track.ytType, track.playBtn, track.row, track.coverImg);
+                    }
                 },
                 'onStateChange': onPlayerStateChange,
                 'onError': (e) => {
-                    console.warn("YT Playback Note (Error Code: " + e.data + "): Browsers enforce strict cross-origin sandboxing on local file:/// URLs. Run via local server (http://localhost:3000) for full unrestricted streaming.");
+                    console.warn("YT Playback Error Code:", e.data);
                 }
             }
         });
@@ -441,18 +448,24 @@ function getYouTubeID(url) {
 }
 
 function playYouTubeTrack(ytId, ytType, playBtn, row, coverImg) {
-    if (!isYTApiReady || !ytPlayer) initYTPlayer();
+    if (!ytId) return;
+
+    if (!isYTApiReady || !ytPlayer || typeof ytPlayer.loadVideoById !== 'function') {
+        pendingYTTrack = { ytId, ytType, playBtn, row, coverImg };
+        initYTPlayer();
+        startUIPlayback(playBtn, row, coverImg);
+        return;
+    }
+
     try {
-        if (ytPlayer && ytPlayer.playVideo) {
-            ytPlayer.unMute();
-            ytPlayer.setVolume(100);
-            if (ytType === 'playlist') {
-                ytPlayer.loadPlaylist({ listType: 'playlist', list: ytId, index: 0 });
-            } else {
-                ytPlayer.loadVideoById({ videoId: ytId });
-            }
-            ytPlayer.playVideo();
+        if (ytPlayer.unMute) ytPlayer.unMute();
+        if (ytPlayer.setVolume) ytPlayer.setVolume(100);
+        if (ytType === 'playlist') {
+            ytPlayer.loadPlaylist({ listType: 'playlist', list: ytId, index: 0 });
+        } else {
+            ytPlayer.loadVideoById({ videoId: ytId, startSeconds: 0 });
         }
+        if (ytPlayer.playVideo) ytPlayer.playVideo();
     } catch (e) {
         console.warn("YT Player playback delay:", e);
     }
