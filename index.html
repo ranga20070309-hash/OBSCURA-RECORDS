@@ -2,6 +2,30 @@
 <html lang="en" class="no-scroll">
 
 <head>
+    <script>
+        // INSTANT URL SANITIZER: Purges Chrome scroll-to-text fragments (#:~:text=...), dirty hash fragments and query strings
+        (function() {
+            function cleanCurrentURL() {
+                try {
+                    if (window.location.hash || window.location.href.indexOf('#') !== -1 || window.location.href.indexOf(':~:text=') !== -1) {
+                        var cleanPath = window.location.pathname || '/';
+                        var cleanSearch = (window.location.search && window.location.search.indexOf('preview=') === -1) ? window.location.search : '';
+                        window.history.replaceState(null, document.title, cleanPath + cleanSearch);
+                    }
+                } catch (e) {}
+            }
+            cleanCurrentURL();
+            window.addEventListener('DOMContentLoaded', cleanCurrentURL);
+            window.addEventListener('load', cleanCurrentURL);
+            window.addEventListener('hashchange', cleanCurrentURL);
+            var sweepCount = 0;
+            var sweepInterval = setInterval(function() {
+                cleanCurrentURL();
+                sweepCount++;
+                if (sweepCount > 10) clearInterval(sweepInterval);
+            }, 200);
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OBSCURA RECORD | Official Label Portal</title>
