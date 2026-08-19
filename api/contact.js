@@ -71,6 +71,12 @@ async function sendDiscordContactNotification({ name, email, message }) {
     }
 }
 
+function isAllowedOrigin(origin) {
+    if (!origin) return true;
+    const allowed = ['obscura', 'vercel.app', 'localhost', '127.0.0.1', 'github.io'];
+    return allowed.some(domain => origin.toLowerCase().includes(domain));
+}
+
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -88,13 +94,17 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const { name, email, message, recaptcha_token } = req.body || {};
-
-    if (!email || !name || !message) {
-        return res.status(400).json({ error: 'Missing required fields' });
+    const origin = req.headers.origin || req.headers.referer || '';
+    if (origin && !isAllowedOrigin(origin)) {
+        return res.status(403).json({ error: 'Forbidden. Unauthorized Origin.' });
     }
 
-    const origin = req.headers.origin || req.headers.referer || '';
+    const { name, email, message, recaptcha_token } = req.body || {};
+
+    if (!email || !name || !message || email.length < 5 || name.length < 2) {
+        return res.status(400).json({ error: 'Missing or invalid required fields' });
+    }
+
     const isValidCaptcha = await verifyRecaptcha(recaptcha_token, origin);
     if (!isValidCaptcha) {
         return res.status(403).json({ error: 'reCAPTCHA verification failed.' });
