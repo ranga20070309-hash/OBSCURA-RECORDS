@@ -4365,6 +4365,175 @@ textarea.real-input:focus {
     transform: scale(1.15);
 }
 
+/* ==========================================================================
+   MAINTENANCE SCREEN ULTRA-RESPONSIVE MOBILE STYLES (PREVENT ALL OVERFLOWS)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .maintenance-screen {
+        padding: 1.2rem 1rem !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+    }
+
+    .m-center-wrapper {
+        margin: auto 0 !important;
+        padding: 1rem 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .m-glass-card {
+        padding: 2.2rem 1.4rem !important;
+        border-radius: 22px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-shadow: 0 0 35px rgba(0, 240, 255, 0.1), 0 20px 45px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .m-emblem-container {
+        width: 95px !important;
+        height: 95px !important;
+        margin-bottom: 1.2rem !important;
+    }
+
+    .m-orbit-ring.ring-1 {
+        width: 85px !important;
+        height: 85px !important;
+    }
+
+    .m-orbit-ring.ring-2 {
+        width: 105px !important;
+        height: 105px !important;
+    }
+
+    .m-emblem {
+        height: 52px !important;
+    }
+
+    .m-brand-header {
+        margin-bottom: 1rem !important;
+    }
+
+    .m-brand-name {
+        font-size: 1.45rem !important;
+        letter-spacing: 0.22rem !important;
+        word-break: break-word !important;
+    }
+
+    .m-brand-sub {
+        font-size: 0.58rem !important;
+        letter-spacing: 0.1rem !important;
+        margin-top: 0.35rem !important;
+        line-height: 1.4 !important;
+    }
+
+    .m-status-pill {
+        padding: 0.35rem 0.85rem !important;
+        margin-bottom: 1rem !important;
+        gap: 0.45rem !important;
+    }
+
+    .m-status-tag {
+        font-size: 0.62rem !important;
+        letter-spacing: 0.12rem !important;
+    }
+
+    .m-main-title {
+        font-size: 1.35rem !important;
+        letter-spacing: 0.15rem !important;
+        margin-bottom: 0.75rem !important;
+        line-height: 1.25 !important;
+    }
+
+    .m-sub-text {
+        font-size: 0.85rem !important;
+        letter-spacing: 0.02rem !important;
+        line-height: 1.55 !important;
+        margin-bottom: 1.5rem !important;
+        padding: 0 0.5rem !important;
+    }
+
+    .m-social-links {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.6rem !important;
+        width: 100% !important;
+    }
+
+    .m-social-btn {
+        padding: 0.55rem 0.6rem !important;
+        font-size: 0.65rem !important;
+        letter-spacing: 0.08rem !important;
+        justify-content: center !important;
+        border-radius: 10px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .maintenance-screen {
+        padding: 0.8rem 0.6rem !important;
+    }
+
+    .m-glass-card {
+        padding: 1.8rem 1rem !important;
+        border-radius: 18px !important;
+    }
+
+    .m-emblem-container {
+        width: 80px !important;
+        height: 80px !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .m-orbit-ring.ring-1 {
+        width: 70px !important;
+        height: 70px !important;
+    }
+
+    .m-orbit-ring.ring-2 {
+        width: 90px !important;
+        height: 90px !important;
+    }
+
+    .m-emblem {
+        height: 44px !important;
+    }
+
+    .m-brand-name {
+        font-size: 1.25rem !important;
+        letter-spacing: 0.15rem !important;
+    }
+
+    .m-brand-sub {
+        font-size: 0.52rem !important;
+        letter-spacing: 0.06rem !important;
+    }
+
+    .m-main-title {
+        font-size: 1.18rem !important;
+        letter-spacing: 0.1rem !important;
+    }
+
+    .m-sub-text {
+        font-size: 0.78rem !important;
+        line-height: 1.45 !important;
+        margin-bottom: 1.2rem !important;
+    }
+
+    .m-social-links {
+        gap: 0.45rem !important;
+    }
+
+    .m-social-btn {
+        padding: 0.48rem 0.4rem !important;
+        font-size: 0.6rem !important;
+        letter-spacing: 0.04rem !important;
+        gap: 0.35rem !important;
+    }
+}
+
 /* =========================================================
    ARTIST & PARTNER PROFILE MODAL WITH DYNAMIC DISCORD BANNER
    ========================================================= */
