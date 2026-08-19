@@ -104,7 +104,7 @@ function logSecurityEvent(action, details = {}) {
 
     try {
         db.ref('siteData/security/logs').push(logItem);
-        db.ref('siteData/submissions/audit_logs').push(logItem);
+        db.ref('siteData/security/audit_logs').push(logItem);
     } catch (e) {}
 }
 
@@ -2030,8 +2030,8 @@ function initSecurityLogsEngine() {
         syncAndRenderLogs();
     });
 
-    // 3.1 Listen to Visitor Logs Submissions
-    db.ref('siteData/submissions/visitor_logs').limitToLast(250).on('value', (snapshot) => {
+    // 3.1 Listen to Visitor Logs Telemetry
+    db.ref('siteData/telemetry/visitor_logs').limitToLast(250).on('value', (snapshot) => {
         const data = snapshot.val();
         rawVisitorLogs = data ? Object.values(data) : [];
         syncAndRenderLogs();
@@ -2045,7 +2045,7 @@ function initSecurityLogsEngine() {
     });
 
     // 5. Listen to Administrative Audit Logs (Syncs & Saves)
-    db.ref('siteData/submissions/audit_logs').limitToLast(250).on('value', (snapshot) => {
+    db.ref('siteData/security/audit_logs').limitToLast(250).on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
             rawAuditLogs = Object.values(data);
@@ -2364,14 +2364,20 @@ function initSecurityLogsEngine() {
         btnClearCategory.addEventListener('click', () => {
             if (currentLogFilter === 'visitors') {
                 if (!confirm("Are you sure you want to clear all VISITOR TRAFFIC LOGS?")) return;
-                db.ref('siteData/submissions/visitor_logs').remove().then(() => {
+                Promise.all([
+                    db.ref('siteData/telemetry/visitor_logs').remove(),
+                    db.ref('siteData/submissions/visitor_logs').remove()
+                ]).then(() => {
                     rawVisitorLogs = [];
                     syncAndRenderLogs();
                     showToast("VISITOR TRAFFIC LOGS CLEARED!");
                 }).catch(err => showToast("ERROR: " + err.message, 'error'));
             } else if (currentLogFilter === 'admin') {
                 if (!confirm("Are you sure you want to clear all ADMIN AUDIT & SAVE LOGS?")) return;
-                db.ref('siteData/submissions/audit_logs').remove().then(() => {
+                Promise.all([
+                    db.ref('siteData/security/audit_logs').remove(),
+                    db.ref('siteData/submissions/audit_logs').remove()
+                ]).then(() => {
                     rawAuditLogs = [];
                     syncAndRenderLogs();
                     showToast("ADMIN AUDIT LOGS CLEARED!");
@@ -2381,6 +2387,7 @@ function initSecurityLogsEngine() {
                 Promise.all([
                     db.ref('siteData/security/violations').remove(),
                     db.ref('siteData/security/logs').remove(),
+                    db.ref('siteData/submissions/security_logs').remove(),
                     db.ref('siteData/security/globalAlarm').set({ active: false, time: Date.now() })
                 ]).then(() => {
                     rawViolations = [];
@@ -2407,10 +2414,12 @@ function initSecurityLogsEngine() {
                 if (!confirm("Are you sure you want to PURGE ALL SECURITY, VISITOR & AUDIT LOGS from the database?")) return;
                 Promise.all([
                     db.ref('siteData/security/logs').remove(),
+                    db.ref('siteData/telemetry/visitor_logs').remove(),
+                    db.ref('siteData/security/audit_logs').remove(),
+                    db.ref('siteData/security/violations').remove(),
                     db.ref('siteData/submissions/visitor_logs').remove(),
                     db.ref('siteData/submissions/security_logs').remove(),
                     db.ref('siteData/submissions/audit_logs').remove(),
-                    db.ref('siteData/security/violations').remove(),
                     db.ref('siteData/security/globalAlarm').set({ active: false, time: Date.now() })
                 ]).then(() => {
                     rawTelemetryLogs = [];
@@ -2432,10 +2441,12 @@ function initSecurityLogsEngine() {
             if (!confirm("Are you sure you want to PURGE ALL SECURITY, VISITOR & AUDIT LOGS from the database?")) return;
             Promise.all([
                 db.ref('siteData/security/logs').remove(),
+                db.ref('siteData/telemetry/visitor_logs').remove(),
+                db.ref('siteData/security/audit_logs').remove(),
+                db.ref('siteData/security/violations').remove(),
                 db.ref('siteData/submissions/visitor_logs').remove(),
                 db.ref('siteData/submissions/security_logs').remove(),
                 db.ref('siteData/submissions/audit_logs').remove(),
-                db.ref('siteData/security/violations').remove(),
                 db.ref('siteData/security/globalAlarm').set({ active: false, time: Date.now() })
             ]).then(() => {
                 rawTelemetryLogs = [];
