@@ -264,6 +264,14 @@
                         </div>
                         <div class="card-body form-grid">
                             <div class="input-group">
+                                <label><i class="fas fa-code-branch"></i> CORE PORTAL ENGINE VERSION</label>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="text" id="site_v" value="1.0" placeholder="e.g. 95.1 or 1.0" style="flex: 1;">
+                                    <button type="button" class="cyber-btn sm" id="btn-bump-version" title="Increment version (+0.1)" style="white-space: nowrap;"><i class="fas fa-plus"></i> +0.1 BUMP</button>
+                                </div>
+                                <small>Live engine version & cache buster. Syncs automatically to main site footer & engine boot.</small>
+                            </div>
+                            <div class="input-group">
                                 <label><i class="fas fa-power-off"></i> MAINTENANCE MODE SWITCH</label>
                                 <select id="site_maintenanceMode" class="cyber-select">
                                     <option value="Disabled">Disabled (Site 100% Live To Public)</option>
@@ -1334,11 +1342,11 @@
                 <!-- Action Bar & Filter Controls -->
                 <div class="panel-action-bar" style="margin-bottom: 1.5rem;">
                     <div class="tab-pill-group" id="sec-log-tabs">
-                        <button type="button" class="tab-pill active" data-filter="all"><i class="fas fa-list"></i> ALL EVENTS</button>
-                        <button type="button" class="tab-pill" data-filter="violations"><i class="fas fa-exclamation-triangle"></i> SECURITY ALERTS</button>
-                        <button type="button" class="tab-pill" data-filter="visitors"><i class="fas fa-user-astronaut"></i> VISITORS & LOCATION</button>
-                        <button type="button" class="tab-pill" data-filter="admin"><i class="fas fa-tools"></i> ADMIN AUDIT</button>
-                        <button type="button" class="tab-pill" data-filter="forms"><i class="fas fa-paper-plane"></i> SUBMISSIONS</button>
+                        <button type="button" class="tab-pill active" data-filter="all"><i class="fas fa-list"></i> ALL EVENTS <span class="tab-count-pill" id="count-filter-all">0</span></button>
+                        <button type="button" class="tab-pill" data-filter="visitors"><i class="fas fa-user-astronaut"></i> VISITORS & TRAFFIC <span class="tab-count-pill" id="count-filter-visitors">0</span></button>
+                        <button type="button" class="tab-pill" data-filter="admin"><i class="fas fa-tools"></i> ADMIN AUDIT & SAVES <span class="tab-count-pill" id="count-filter-admin">0</span></button>
+                        <button type="button" class="tab-pill" data-filter="violations"><i class="fas fa-exclamation-triangle"></i> SECURITY ALERTS <span class="tab-count-pill" id="count-filter-violations">0</span></button>
+                        <button type="button" class="tab-pill" data-filter="forms"><i class="fas fa-paper-plane"></i> SUBMISSIONS <span class="tab-count-pill" id="count-filter-forms">0</span></button>
                     </div>
 
                     <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
