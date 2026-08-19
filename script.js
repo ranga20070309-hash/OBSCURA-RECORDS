@@ -1,3 +1,17 @@
+// --- BROWSER URL SANITIZER (Eliminates Chrome Text Fragments & Ugly Hashes) ---
+const sanitizeBrowserURL = () => {
+    try {
+        if (window.location.hash || window.location.href.includes(':~:text=') || window.location.href.includes('%20')) {
+            const cleanPath = window.location.pathname || '/';
+            const cleanSearch = window.location.search && !window.location.search.includes('preview=') ? window.location.search : '';
+            window.history.replaceState(null, document.title, cleanPath + cleanSearch);
+        }
+    } catch (e) {}
+};
+sanitizeBrowserURL();
+window.addEventListener('load', sanitizeBrowserURL);
+window.addEventListener('hashchange', sanitizeBrowserURL);
+
 if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual';
 }
@@ -5,6 +19,7 @@ window.scrollTo(0, 0);
 
 window.onload = () => {
     window.scrollTo(0, 0);
+    sanitizeBrowserURL();
 };
 
 // --- THE CORE SONIC PLAYER ---
@@ -1218,20 +1233,25 @@ const initPortal = () => {
     window.bindAccordionListeners('faq-container');
     window.bindAccordionListeners('privacy-container');
 
-    // --- CLEAN URL NAVIGATION SYSTEM ---
-    const navLinks = document.querySelectorAll('.nav-links a, .nav-item, .logo-link');
+    // --- CLEAN URL NAVIGATION SYSTEM (Zero URL Pollution On Button Clicks) ---
+    const navLinks = document.querySelectorAll('.nav-links a, .nav-item, .logo-link, .sidebar-nav-item, a[href^="#"]');
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             const target = link.getAttribute('data-target') || link.getAttribute('href');
 
             if (target === 'reload') {
-                window.location.reload();
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                sanitizeBrowserURL();
                 return;
             }
 
             // Only intercept internal section links
             if (target && target.startsWith('#')) {
                 e.preventDefault();
+
+                // Clean the browser address bar immediately so #section or text fragments NEVER appear
+                sanitizeBrowserURL();
 
                 // --- MOBILE SIDEBAR AUTO-CLOSE LOGIC ---
                 const sidebar = document.getElementById('social-sidebar');
