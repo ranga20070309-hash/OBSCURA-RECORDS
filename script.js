@@ -1914,6 +1914,8 @@ const initPortal = () => {
                 if (data.v) {
                     const vEl = document.getElementById('km-portal-version');
                     if (vEl) vEl.textContent = 'v' + data.v;
+                    const sideVEl = document.getElementById('sidebar-portal-version');
+                    if (sideVEl) sideVEl.textContent = 'v' + data.v;
                 }
             }
         });
