@@ -49,12 +49,14 @@ function showToast(message, type = 'success') {
     }, 3500);
 }
 
-// Auto-Versioning (Cache Buster) & Audit Logger
+// Auto-Versioning (Cache Buster) & Comprehensive Audit Logger
 function bumpSiteVersion(actionDesc) {
     db.ref('siteData/globals/v').transaction((v) => {
         const nextV = (parseFloat(v || 1.0) + 0.1).toFixed(1);
         const display = document.getElementById('display-v');
         if (display) display.textContent = nextV;
+        const vInput = document.getElementById('site_v');
+        if (vInput) vInput.value = nextV;
         return nextV;
     });
 
@@ -63,15 +65,52 @@ function bumpSiteVersion(actionDesc) {
     }
 }
 
-function logSecurityEvent(action) {
+function setSiteVersion(newVersion, actionDesc) {
+    const vStr = String(newVersion || '1.0').trim();
+    return db.ref('siteData/globals/v').set(vStr).then(() => {
+        const display = document.getElementById('display-v');
+        if (display) display.textContent = vStr;
+        const vInput = document.getElementById('site_v');
+        if (vInput) vInput.value = vStr;
+        if (actionDesc) {
+            logSecurityEvent(actionDesc, { version: vStr });
+        }
+    });
+}
+
+function logSecurityEvent(action, details = {}) {
     const user = firebase.auth().currentUser;
-    const email = user ? user.email : 'SYSTEM';
+    const email = user ? user.email : (sessionStorage.getItem('rootAuth') === 'granted' ? 'SUPERUSER ROOT' : 'ADMIN CONSOLE');
+    const timestamp = Date.now();
+    const timeISO = new Date(timestamp).toISOString();
+
     const logItem = {
+        id: 'AUDIT_' + timestamp + '_' + Math.random().toString(36).substr(2, 5),
+        type: 'ADMIN_AUDIT',
         action: action,
         user: email,
-        timestamp: Date.now()
+        timestamp: timestamp,
+        timeISO: timeISO,
+        ip: 'ADMIN CONSOLE',
+        city: 'OBSCURA HQ',
+        region: 'COMMAND DECK',
+        country: 'ADMIN',
+        countryCode: 'ADM',
+        isp: 'SUPERUSER AUTH',
+        device: { os: 'Admin Workstation', browser: 'Admin Console', type: 'Desktop', screen: `${window.innerWidth}x${window.innerHeight}` },
+        path: '/admin.html',
+        details: { action: action, admin: email, ...(typeof details === 'object' ? details : { info: details }) }
     };
-    db.ref('security_logs').push(logItem);
+
+    try {
+        db.ref('security_logs').push({
+            action: action,
+            user: email,
+            timestamp: timestamp,
+            details: details || {}
+        });
+        db.ref('siteData/security/logs').push(logItem);
+    } catch (e) {}
 }
 
 // Safe navigation helper
@@ -318,6 +357,7 @@ function initGlobalsSync() {
             site_maintenanceMsg: data.maintenanceMsg || "Quantum upgrades in progress.",
             site_showUpcoming: data.showUpcoming || "Visible",
             site_showGhostProduction: data.showGhostProduction || "Visible",
+            site_v: data.v || "1.0",
             // Nav & Socials
             site_navHome: data.navHome || "HOME",
             site_navReleases: data.navReleases || "RELEASES",
@@ -345,13 +385,31 @@ function initGlobalsSync() {
 
         const vDisplay = document.getElementById('display-v');
         if (vDisplay && data.v) vDisplay.textContent = data.v;
+        const vInput = document.getElementById('site_v');
+        if (vInput && data.v) vInput.value = data.v;
     });
+
+    // Version Bump Quick Action
+    const btnBump = document.getElementById('btn-bump-version');
+    if (btnBump) {
+        btnBump.addEventListener('click', () => {
+            const vInput = document.getElementById('site_v');
+            const cur = parseFloat(vInput?.value || cachedGlobals.v || 1.0);
+            const next = isNaN(cur) ? '1.1' : (cur + 0.1).toFixed(1);
+            if (vInput) vInput.value = next;
+            const vDisplay = document.getElementById('display-v');
+            if (vDisplay) vDisplay.textContent = next;
+            showToast(`VERSION INCREMENTED TO v${next}. CLICK SAVE TO COMMIT.`);
+        });
+    }
 
     // Save Globals button
     const saveGlobalsBtn = document.getElementById('save-globals');
     if (saveGlobalsBtn) {
         saveGlobalsBtn.addEventListener('click', () => {
+            const customV = document.getElementById('site_v')?.value.trim() || '1.0';
             const updates = {
+                v: customV,
                 siteTitle: document.getElementById('site_siteTitle').value,
                 heroTitle: document.getElementById('site_heroTitle').value,
                 heroDesc: document.getElementById('site_heroDesc').value,
@@ -370,8 +428,10 @@ function initGlobalsSync() {
             };
 
             db.ref('siteData/globals').update(updates).then(() => {
-                bumpSiteVersion("Updated Global Titles & Settings");
-                showToast("GLOBALS SAVED & SYNCED TO PRODUCTION!");
+                const vDisplay = document.getElementById('display-v');
+                if (vDisplay) vDisplay.textContent = customV;
+                logSecurityEvent("Updated Global Settings, Brand Titles & Version v" + customV, { version: customV, maintenance: updates.maintenanceMode });
+                showToast("GLOBALS & ENGINE VERSION SAVED SUCCESSFULLY!");
             }).catch(err => showToast("ERROR: " + err.message, 'error'));
         });
     }
@@ -1533,6 +1593,7 @@ function initDemosEngine() {
         // Update both paths
         db.ref('siteData/submissions/demo/' + id).update({ status: status });
         db.ref('demo_submissions/' + id).update({ status: status }).then(() => {
+            logSecurityEvent("Updated Demo Submission Status: " + status, { id: id, status: status });
             showToast(`STATUS UPDATED: ${status}`);
         }).catch(err => showToast("ERROR: " + err.message, 'error'));
     };
@@ -1541,6 +1602,7 @@ function initDemosEngine() {
         if (!confirm("Permanently delete this demo submission record?")) return;
         db.ref('siteData/submissions/demo/' + id).remove();
         db.ref('demo_submissions/' + id).remove().then(() => {
+            logSecurityEvent("Deleted Demo Submission Record", { id: id });
             showToast("SUBMISSION DELETED!");
         }).catch(err => showToast("ERROR: " + err.message, 'error'));
     };
@@ -1615,6 +1677,7 @@ function initContactEngine() {
         if (!confirm("Delete this contact message?")) return;
         db.ref('siteData/submissions/contact/' + id).remove();
         db.ref('contact_messages/' + id).remove().then(() => {
+            logSecurityEvent("Deleted Contact Message Record", { id: id });
             showToast("MESSAGE REMOVED!");
         }).catch(err => showToast("ERROR: " + err.message, 'error'));
     };
@@ -1836,8 +1899,11 @@ function initModalsEngine() {
 // --- 10. SECURITY & AUDIT LOGS ENGINE ---
 let cachedSecurityLogs = [];
 let rawTelemetryLogs = [];
+let rawVisitorLogs = [];
 let rawViolations = [];
 let rawAuditLogs = [];
+let rawDemoLogs = [];
+let rawContactLogs = [];
 let currentLogFilter = 'all';
 
 function initSecurityLogsEngine() {
@@ -1858,6 +1924,13 @@ function initSecurityLogsEngine() {
     const statNodes = document.getElementById('sec-stat-nodes');
     const badgeSecurity = document.getElementById('badge-security-logs');
 
+    // Tab count pill elements
+    const countAll = document.getElementById('count-filter-all');
+    const countVisitors = document.getElementById('count-filter-visitors');
+    const countAdmin = document.getElementById('count-filter-admin');
+    const countViolations = document.getElementById('count-filter-violations');
+    const countForms = document.getElementById('count-filter-forms');
+
     // 1. Listen to Global Security Alarm (With 3-minute auto timeout)
     db.ref('siteData/security/globalAlarm').on('value', (snap) => {
         const alarm = snap.val();
@@ -1873,8 +1946,7 @@ function initSecurityLogsEngine() {
         } else {
             if (alarmBanner) alarmBanner.style.display = 'none';
             if (alarm && alarm.active && (now - (alarm.time || 0) >= 180000)) {
-                // Auto-clear stale alarms
-                db.ref('siteData/security/globalAlarm').set({ active: false, time: now });
+                db.ref('siteData/security/globalAlarm').set({ active: false, time: now }).catch(() => {});
             }
         }
     });
@@ -1884,7 +1956,7 @@ function initSecurityLogsEngine() {
             db.ref('siteData/security/globalAlarm').set({ active: false, time: Date.now() }).then(() => {
                 if (alarmBanner) alarmBanner.style.display = 'none';
                 showToast("SECURITY ALARM DISMISSED & RESET");
-            });
+            }).catch(() => {});
         });
     }
 
@@ -1898,55 +1970,87 @@ function initSecurityLogsEngine() {
     function syncAndRenderLogs() {
         const logMap = new Map();
 
-        // 1. Add Telemetry Logs
+        // 1. Add Telemetry Logs & Visitor submissions
         rawTelemetryLogs.forEach(l => {
             if (l && l.id) logMap.set(l.id, l);
             else if (l) logMap.set('TL_' + (l.timestamp || Math.random()), l);
         });
 
+        rawVisitorLogs.forEach(l => {
+            if (l && l.id) logMap.set(l.id, l);
+            else if (l) logMap.set('VL_' + (l.timestamp || Math.random()), l);
+        });
+
         // 2. Add Violations
         rawViolations.forEach(l => {
             if (l && l.id) logMap.set(l.id, l);
-            else if (l) logMap.set('VL_' + (l.timestamp || Math.random()), l);
+            else if (l) logMap.set('VIO_' + (l.timestamp || Math.random()), l);
         });
 
         // 3. Add Admin Audit Logs
         rawAuditLogs.forEach(l => {
             if (l && l.id) logMap.set(l.id, l);
+            else if (l) logMap.set('AUDIT_' + (l.timestamp || Math.random()), l);
+        });
+
+        // 4. Add Demo Submissions & Contact Forms
+        rawDemoLogs.forEach(l => {
+            if (l && l.id) logMap.set(l.id, l);
+        });
+        rawContactLogs.forEach(l => {
+            if (l && l.id) logMap.set(l.id, l);
         });
 
         // Sort descending by timestamp
         cachedSecurityLogs = Array.from(logMap.values()).sort((a, b) => {
-            const timeA = typeof a.timestamp === 'number' ? a.timestamp : new Date(a.timeISO || 0).getTime();
-            const timeB = typeof b.timestamp === 'number' ? b.timestamp : new Date(b.timeISO || 0).getTime();
+            const timeA = typeof a.timestamp === 'number' ? a.timestamp : new Date(a.timeISO || a.submittedAt || 0).getTime();
+            const timeB = typeof b.timestamp === 'number' ? b.timestamp : new Date(b.timeISO || b.submittedAt || 0).getTime();
             return timeB - timeA;
         });
 
-        // Update Counter Stats
+        // Compute Live Counters for All Tabs
+        const totalCount = cachedSecurityLogs.length;
+        const visitorsCount = cachedSecurityLogs.filter(l => l.type === 'VISITOR_ACCESS').length;
+        const adminCount = cachedSecurityLogs.filter(l => l.type === 'ADMIN_AUDIT' || l.type === 'ADMIN_SAVE').length;
         const violationCount = cachedSecurityLogs.filter(l => l.type === 'CONSOLE_TAMPER' || l.type === 'INJECTION_ATTEMPT' || l.type === 'SECURITY_VIOLATION').length;
-        if (statTotal) statTotal.textContent = cachedSecurityLogs.length;
+        const formsCount = cachedSecurityLogs.filter(l => l.type === 'DEMO_SUBMISSION' || l.type === 'CONTACT_MESSAGE').length;
+
+        if (statTotal) statTotal.textContent = totalCount;
         if (statViolations) statViolations.textContent = violationCount;
-        if (badgeSecurity) badgeSecurity.textContent = cachedSecurityLogs.length;
+        if (badgeSecurity) badgeSecurity.textContent = totalCount;
+
+        if (countAll) countAll.textContent = totalCount;
+        if (countVisitors) countVisitors.textContent = visitorsCount;
+        if (countAdmin) countAdmin.textContent = adminCount;
+        if (countViolations) countViolations.textContent = violationCount;
+        if (countForms) countForms.textContent = formsCount;
 
         renderSecurityLogs();
     }
 
     // 3. Listen to Primary Telemetry Logs Stream
-    db.ref('siteData/security/logs').limitToLast(200).on('value', (snapshot) => {
+    db.ref('siteData/security/logs').limitToLast(250).on('value', (snapshot) => {
         const data = snapshot.val();
         rawTelemetryLogs = data ? Object.values(data) : [];
         syncAndRenderLogs();
     });
 
+    // 3.1 Listen to Visitor Logs Submissions
+    db.ref('siteData/submissions/visitor_logs').limitToLast(250).on('value', (snapshot) => {
+        const data = snapshot.val();
+        rawVisitorLogs = data ? Object.values(data) : [];
+        syncAndRenderLogs();
+    });
+
     // 4. Listen to Violations Stream
-    db.ref('siteData/security/violations').limitToLast(100).on('value', (snapshot) => {
+    db.ref('siteData/security/violations').limitToLast(150).on('value', (snapshot) => {
         const data = snapshot.val();
         rawViolations = data ? Object.values(data) : [];
         syncAndRenderLogs();
     });
 
     // 5. Listen to Administrative Audit Logs (Syncs & Saves)
-    db.ref('security_logs').limitToLast(100).on('value', (snapshot) => {
+    db.ref('security_logs').limitToLast(250).on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
             rawAuditLogs = Object.entries(data).map(([key, l]) => ({
@@ -1959,10 +2063,10 @@ function initSecurityLogsEngine() {
                 region: 'COMMAND DECK',
                 country: 'ADMIN',
                 countryCode: 'ADM',
-                isp: 'SECURE AUTH',
-                device: { os: 'Admin Workstation', browser: 'Chromium Superuser', type: 'Desktop', screen: 'Admin Panel' },
+                isp: 'AUTHENTICATED SESSION',
+                device: { os: 'Admin Workstation', browser: 'Chromium Superuser', type: 'Desktop', screen: 'Admin Command' },
                 path: '/admin.html',
-                details: { action: l.action || 'System synced', admin: l.user || 'SUPERUSER' }
+                details: { action: l.action || 'System synced', admin: l.user || 'SUPERUSER', ...(l.details || {}) }
             }));
         } else {
             rawAuditLogs = [];
@@ -1970,7 +2074,55 @@ function initSecurityLogsEngine() {
         syncAndRenderLogs();
     });
 
-    // 6. Render Security Logs List
+    // 6. Listen to Demo Submissions for Forms Stream
+    db.ref('siteData/submissions/demo').limitToLast(100).on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            rawDemoLogs = Object.entries(data).map(([key, d]) => ({
+                id: 'DEMO_SUB_' + key,
+                type: 'DEMO_SUBMISSION',
+                timestamp: d.timestamp || (d.submittedAt ? new Date(d.submittedAt).getTime() : Date.now()),
+                timeISO: d.submittedAt || new Date().toISOString(),
+                ip: d.ip || 'VISITOR NODE',
+                city: d.city || 'EXTERNAL',
+                country: d.country || 'CLIENT',
+                countryCode: d.countryCode || 'XX',
+                isp: d.isp || 'PUBLIC WEB',
+                device: d.device || { os: 'Audio Client', browser: 'Web', type: 'Music Creator' },
+                path: '/#demo-modal',
+                details: { artist: d.artistName || 'Unknown Artist', track: d.trackTitle || 'Demo Track', genre: d.genre || 'EDM', email: d.email || '' }
+            }));
+        } else {
+            rawDemoLogs = [];
+        }
+        syncAndRenderLogs();
+    });
+
+    // 7. Listen to Contact Inquiries for Forms Stream
+    db.ref('siteData/submissions/contact').limitToLast(100).on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            rawContactLogs = Object.entries(data).map(([key, c]) => ({
+                id: 'CONTACT_SUB_' + key,
+                type: 'CONTACT_MESSAGE',
+                timestamp: c.timestamp || (c.submittedAt ? new Date(c.submittedAt).getTime() : Date.now()),
+                timeISO: c.submittedAt || new Date().toISOString(),
+                ip: c.ip || 'VISITOR NODE',
+                city: c.city || 'EXTERNAL',
+                country: c.country || 'CLIENT',
+                countryCode: c.countryCode || 'XX',
+                isp: c.isp || 'PUBLIC WEB',
+                device: c.device || { os: 'Client System', browser: 'Web', type: 'Visitor' },
+                path: '/#contact-modal',
+                details: { name: c.name || 'Anonymous', email: c.email || '', subject: c.subject || 'Inquiry', message: c.message || '' }
+            }));
+        } else {
+            rawContactLogs = [];
+        }
+        syncAndRenderLogs();
+    });
+
+    // 8. Render Security Logs List
     function renderSecurityLogs() {
         if (!liveStreamContainer) return;
         const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
@@ -1983,7 +2135,7 @@ function initSecurityLogsEngine() {
             } else if (currentLogFilter === 'visitors') {
                 if (log.type !== 'VISITOR_ACCESS') return false;
             } else if (currentLogFilter === 'admin') {
-                if (log.type !== 'ADMIN_AUDIT') return false;
+                if (log.type !== 'ADMIN_AUDIT' && log.type !== 'ADMIN_SAVE') return false;
             } else if (currentLogFilter === 'forms') {
                 const isForm = log.type === 'DEMO_SUBMISSION' || log.type === 'CONTACT_MESSAGE';
                 if (!isForm) return false;
@@ -1997,8 +2149,11 @@ function initSecurityLogsEngine() {
                 const typeStr = (log.type || '').toLowerCase();
                 const osStr = (log.device?.os || '').toLowerCase();
                 const browserStr = (log.device?.browser || '').toLowerCase();
+                const adminStr = (log.user || log.details?.admin || '').toLowerCase();
                 const detailsStr = typeof log.details === 'object' ? JSON.stringify(log.details).toLowerCase() : (log.details || '').toLowerCase();
-                return ipStr.includes(query) || cityStr.includes(query) || countryStr.includes(query) || typeStr.includes(query) || osStr.includes(query) || browserStr.includes(query) || detailsStr.includes(query);
+                return ipStr.includes(query) || cityStr.includes(query) || countryStr.includes(query) || 
+                       typeStr.includes(query) || osStr.includes(query) || browserStr.includes(query) || 
+                       adminStr.includes(query) || detailsStr.includes(query);
             }
             return true;
         });
@@ -2007,8 +2162,8 @@ function initSecurityLogsEngine() {
             liveStreamContainer.innerHTML = `
                 <div class="empty-state full-grid" style="padding: 2.5rem; text-align: center; color: var(--text-dim);">
                     <i class="fas fa-shield-alt" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
-                    <h3>NO LOGS MATCHING CURRENT CRITERIA</h3>
-                    <p>Telemetry stream active. Security events, visitor arrivals, and admin changes will appear here live.</p>
+                    <h3>NO LOGS RECORDED IN THIS CATEGORY</h3>
+                    <p>Telemetry listeners active. Real-time visitor traffic, admin save modifications, and security telemetry will be logged here.</p>
                 </div>
             `;
             return;
@@ -2028,31 +2183,37 @@ function initSecurityLogsEngine() {
             const devType = log.device?.type || 'Desktop';
             const path = log.path || '/';
 
-            // Event styling badge
+            // Event badge styling
             let badgeColor = 'rgba(0, 240, 255, 0.15)';
             let badgeTextColor = 'var(--primary)';
             let icon = 'fas fa-info-circle';
+            let labelText = type;
 
             if (type === 'CONSOLE_TAMPER' || type === 'SECURITY_VIOLATION' || type === 'INJECTION_ATTEMPT') {
                 badgeColor = 'rgba(255, 0, 85, 0.2)';
                 badgeTextColor = '#ff0055';
                 icon = 'fas fa-exclamation-triangle';
+                labelText = 'SECURITY ALERT: ' + type;
             } else if (type === 'VISITOR_ACCESS') {
                 badgeColor = 'rgba(0, 240, 255, 0.12)';
                 badgeTextColor = '#00f0ff';
                 icon = 'fas fa-user-astronaut';
-            } else if (type === 'ADMIN_AUDIT') {
+                labelText = 'SITE VISITOR TRAFFIC';
+            } else if (type === 'ADMIN_AUDIT' || type === 'ADMIN_SAVE') {
                 badgeColor = 'rgba(255, 204, 0, 0.2)';
                 badgeTextColor = '#ffcc00';
                 icon = 'fas fa-tools';
+                labelText = 'ADMIN SAVE & AUDIT';
             } else if (type === 'DEMO_SUBMISSION') {
                 badgeColor = 'rgba(183, 0, 255, 0.2)';
                 badgeTextColor = '#b700ff';
                 icon = 'fas fa-music';
+                labelText = 'DEMO SUBMISSION';
             } else if (type === 'CONTACT_MESSAGE') {
                 badgeColor = 'rgba(0, 255, 140, 0.2)';
                 badgeTextColor = '#00ff8c';
                 icon = 'fas fa-envelope';
+                labelText = 'CONTACT MESSAGE';
             }
 
             // OS icon
@@ -2063,14 +2224,28 @@ function initSecurityLogsEngine() {
             else if (os.includes('Linux')) osIcon = 'fab fa-linux';
             else if (os.includes('Admin')) osIcon = 'fas fa-user-shield';
 
-            const detailsStr = typeof log.details === 'object' ? JSON.stringify(log.details) : (log.details || 'No payload details.');
+            let actionSummary = '';
+            if (type === 'ADMIN_AUDIT') {
+                const act = log.details?.action || log.action || 'Settings Synchronized';
+                const adminName = log.details?.admin || log.user || 'SUPERUSER';
+                actionSummary = `<span style="color: #ffcc00; font-weight: bold;"><i class="fas fa-check-circle"></i> ACTION: ${act}</span> | <span style="color: var(--text-dim);">BY: <strong>${adminName}</strong></span>`;
+            } else if (type === 'VISITOR_ACCESS') {
+                actionSummary = `<span style="color: #00f0ff;"><i class="fas fa-satellite"></i> Visitor session initiated on <strong>${path}</strong></span>`;
+            } else if (type === 'DEMO_SUBMISSION') {
+                actionSummary = `<span style="color: #b700ff;"><i class="fas fa-compact-disc"></i> Artist: <strong>${log.details?.artist || 'Unknown'}</strong> | Track: <strong>${log.details?.track || 'Demo'}</strong> (${log.details?.genre || 'EDM'})</span>`;
+            } else if (type === 'CONTACT_MESSAGE') {
+                actionSummary = `<span style="color: #00ff8c;"><i class="fas fa-comment-dots"></i> From: <strong>${log.details?.name || 'User'}</strong> | Subject: <strong>${log.details?.subject || 'Inquiry'}</strong></span>`;
+            } else {
+                const detailsStr = typeof log.details === 'object' ? JSON.stringify(log.details) : (log.details || 'Event logged.');
+                actionSummary = `<span>${detailsStr}</span>`;
+            }
 
             return `
                 <div class="inbox-entry-card" style="border-left: 4px solid ${badgeTextColor};">
                     <div class="inbox-top-row">
-                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                        <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
                             <span class="status-badge" style="background: ${badgeColor}; color: ${badgeTextColor}; border: 1px solid ${badgeTextColor}; display: inline-flex; align-items: center; gap: 0.4rem;">
-                                <i class="${icon}"></i> ${type}
+                                <i class="${icon}"></i> ${labelText}
                             </span>
                             <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);"><i class="far fa-clock"></i> ${timeStr}</span>
                         </div>
@@ -2081,24 +2256,26 @@ function initSecurityLogsEngine() {
 
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; background: rgba(0,0,0,0.35); padding: 0.9rem 1.2rem; border-radius: 10px; border: 1px solid var(--border-dim);">
                         <div>
-                            <span style="font-size: 0.68rem; color: var(--text-muted); display: block; font-family: var(--font-mono);">CLIENT IP & ISP</span>
+                            <span style="font-size: 0.68rem; color: var(--text-muted); display: block; font-family: var(--font-mono);">SOURCE IP & ISP</span>
                             <strong style="font-family: var(--font-mono); font-size: 0.82rem; color: #fff;"><i class="fas fa-network-wired"></i> ${ip}</strong>
                             <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.2rem;">${isp}</div>
                         </div>
                         <div>
-                            <span style="font-size: 0.68rem; color: var(--text-muted); display: block; font-family: var(--font-mono);">DEVICE & SYSTEM</span>
+                            <span style="font-size: 0.68rem; color: var(--text-muted); display: block; font-family: var(--font-mono);">ENVIRONMENT & DEVICE</span>
                             <strong style="font-family: var(--font-mono); font-size: 0.82rem; color: #fff;"><i class="${osIcon}"></i> ${os} (${devType})</strong>
                             <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.2rem;"><i class="fab fa-chrome"></i> ${browser}</div>
                         </div>
                         <div>
-                            <span style="font-size: 0.68rem; color: var(--text-muted); display: block; font-family: var(--font-mono);">RESOLUTION & PATH</span>
+                            <span style="font-size: 0.68rem; color: var(--text-muted); display: block; font-family: var(--font-mono);">RESOLUTION & TARGET</span>
                             <strong style="font-family: var(--font-mono); font-size: 0.82rem; color: #fff;"><i class="fas fa-expand"></i> ${screen}</strong>
                             <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.2rem;"><i class="fas fa-link"></i> ${path}</div>
                         </div>
                     </div>
 
-                    <div class="inbox-message-box" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);"><i class="fas fa-terminal"></i> <strong>DETAILS:</strong> ${detailsStr}</span>
+                    <div class="inbox-message-box" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; background: rgba(0,0,0,0.25); padding: 0.6rem 1rem; border-radius: 8px;">
+                        <div style="font-family: var(--font-mono); font-size: 0.78rem;">
+                            ${actionSummary}
+                        </div>
                         <button type="button" class="cyber-btn sm" style="padding: 0.25rem 0.6rem; font-size: 0.68rem;" onclick="viewRawLogData(${index})"><i class="fas fa-code"></i> RAW JSON</button>
                     </div>
                 </div>
@@ -2124,7 +2301,7 @@ function initSecurityLogsEngine() {
     // Refresh Button
     if (btnRefresh) {
         btnRefresh.addEventListener('click', () => {
-            showToast("REFRESHING SECURITY TELEMETRY...");
+            showToast("REFRESHING SECURITY & TELEMETRY FEEDS...");
             syncAndRenderLogs();
         });
     }
@@ -2137,10 +2314,10 @@ function initSecurityLogsEngine() {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `obscura_security_logs_${Date.now()}.json`;
+            a.download = `obscura_audit_security_logs_${Date.now()}.json`;
             a.click();
             URL.revokeObjectURL(url);
-            showToast("TELEMETRY LOGS EXPORTED AS JSON!");
+            showToast("ALL TELEMETRY LOGS EXPORTED AS JSON!");
         });
     }
 
@@ -2170,23 +2347,26 @@ function initSecurityLogsEngine() {
             const encodedUri = encodeURI(csvContent);
             const a = document.createElement('a');
             a.href = encodedUri;
-            a.download = `obscura_security_logs_${Date.now()}.csv`;
+            a.download = `obscura_audit_security_logs_${Date.now()}.csv`;
             a.click();
-            showToast("TELEMETRY LOGS EXPORTED AS CSV!");
+            showToast("ALL TELEMETRY LOGS EXPORTED AS CSV!");
         });
     }
 
     // Clear Logs
     if (btnClearLogs) {
         btnClearLogs.addEventListener('click', () => {
-            if (!confirm("Are you sure you want to PURGE ALL SECURITY & TELEMETRY LOGS from the database?")) return;
+            if (!confirm("Are you sure you want to PURGE ALL SECURITY, VISITOR & AUDIT LOGS from the database?")) return;
             Promise.all([
                 db.ref('siteData/security/logs').remove(),
+                db.ref('siteData/submissions/visitor_logs').remove(),
+                db.ref('siteData/submissions/security_logs').remove(),
                 db.ref('siteData/security/violations').remove(),
                 db.ref('siteData/security/globalAlarm').set({ active: false, time: Date.now() }),
                 db.ref('security_logs').remove()
             ]).then(() => {
                 rawTelemetryLogs = [];
+                rawVisitorLogs = [];
                 rawViolations = [];
                 rawAuditLogs = [];
                 cachedSecurityLogs = [];
