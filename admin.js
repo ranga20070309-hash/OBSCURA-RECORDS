@@ -349,7 +349,9 @@ function initGlobalsSync() {
             site_maintenanceMode: data.maintenanceMode || "Disabled",
             security_rootKey: data.rootKey || "ORC ADMINS PASS 2026",
             site_maintenanceTitle: data.maintenanceTitle || "OBSCURA RECORD // UNDER RENOVATION",
-            site_maintenanceMsg: data.maintenanceMsg || "Quantum upgrades in progress.",
+            site_maintenanceMsg: data.maintenanceMsg || "Quantum upgrades in progress. Frequencies will resume shortly.",
+            site_sidebarLogoText: data.sidebarLogoText || "OBSCURA <span>RECORD</span>",
+            site_sidebarPortalLabel: data.sidebarPortalLabel || "CORE PORTAL",
             site_showUpcoming: data.showUpcoming || "Visible",
             site_showGhostProduction: data.showGhostProduction || "Visible",
             site_v: data.v || "1.0",
@@ -406,6 +408,8 @@ function initGlobalsSync() {
             const updates = {
                 v: customV,
                 siteTitle: document.getElementById('site_siteTitle').value,
+                sidebarLogoText: document.getElementById('site_sidebarLogoText')?.value || "OBSCURA <span>RECORD</span>",
+                sidebarPortalLabel: document.getElementById('site_sidebarPortalLabel')?.value || "CORE PORTAL",
                 heroTitle: document.getElementById('site_heroTitle').value,
                 heroDesc: document.getElementById('site_heroDesc').value,
                 archiveTitle: document.getElementById('site_archiveTitle').value,
@@ -2026,32 +2030,28 @@ function initSecurityLogsEngine() {
     // 3. Listen to Primary Telemetry Logs Stream
     db.ref('siteData/security/logs').limitToLast(250).on('value', (snapshot) => {
         const data = snapshot.val();
-        rawTelemetryLogs = data ? Object.values(data) : [];
+        rawTelemetryLogs = data ? Object.entries(data).map(([key, d]) => ({ ...d, dbKey: key, dbPath: 'siteData/security/logs' })) : [];
         syncAndRenderLogs();
     });
 
     // 3.1 Listen to Visitor Logs Telemetry
     db.ref('siteData/telemetry/visitor_logs').limitToLast(250).on('value', (snapshot) => {
         const data = snapshot.val();
-        rawVisitorLogs = data ? Object.values(data) : [];
+        rawVisitorLogs = data ? Object.entries(data).map(([key, d]) => ({ ...d, dbKey: key, dbPath: 'siteData/telemetry/visitor_logs' })) : [];
         syncAndRenderLogs();
     });
 
     // 4. Listen to Violations Stream
     db.ref('siteData/security/violations').limitToLast(150).on('value', (snapshot) => {
         const data = snapshot.val();
-        rawViolations = data ? Object.values(data) : [];
+        rawViolations = data ? Object.entries(data).map(([key, d]) => ({ ...d, dbKey: key, dbPath: 'siteData/security/violations' })) : [];
         syncAndRenderLogs();
     });
 
     // 5. Listen to Administrative Audit Logs (Syncs & Saves)
     db.ref('siteData/security/audit_logs').limitToLast(250).on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data) {
-            rawAuditLogs = Object.values(data);
-        } else {
-            rawAuditLogs = [];
-        }
+        rawAuditLogs = data ? Object.entries(data).map(([key, d]) => ({ ...d, dbKey: key, dbPath: 'siteData/security/audit_logs' })) : [];
         syncAndRenderLogs();
     });
 
@@ -2061,6 +2061,9 @@ function initSecurityLogsEngine() {
         if (data) {
             rawDemoLogs = Object.entries(data).map(([key, d]) => ({
                 id: 'DEMO_SUB_' + key,
+                dbKey: key,
+                dbPath: 'siteData/submissions/demo',
+                altDbPath: 'demo_submissions',
                 type: 'DEMO_SUBMISSION',
                 timestamp: d.timestamp || (d.submittedAt ? new Date(d.submittedAt).getTime() : Date.now()),
                 timeISO: d.submittedAt || new Date().toISOString(),
@@ -2071,7 +2074,7 @@ function initSecurityLogsEngine() {
                 isp: d.isp || 'PUBLIC WEB',
                 device: d.device || { os: 'Audio Client', browser: 'Web', type: 'Music Creator' },
                 path: '/#demo-modal',
-                details: { artist: d.artistName || 'Unknown Artist', track: d.trackTitle || 'Demo Track', genre: d.genre || 'EDM', email: d.email || '' }
+                details: { artist: d.artistName || d.artist || 'Unknown Artist', track: d.trackTitle || d.track || d.name || 'Demo Track', genre: d.genre || 'EDM', email: d.email || '', link: d.link || d.streamUrl || '' }
             }));
         } else {
             rawDemoLogs = [];
@@ -2085,6 +2088,9 @@ function initSecurityLogsEngine() {
         if (data) {
             rawContactLogs = Object.entries(data).map(([key, c]) => ({
                 id: 'CONTACT_SUB_' + key,
+                dbKey: key,
+                dbPath: 'siteData/submissions/contact',
+                altDbPath: 'contact_messages',
                 type: 'CONTACT_MESSAGE',
                 timestamp: c.timestamp || (c.submittedAt ? new Date(c.submittedAt).getTime() : Date.now()),
                 timeISO: c.submittedAt || new Date().toISOString(),
@@ -2257,7 +2263,10 @@ function initSecurityLogsEngine() {
                         <div style="font-family: var(--font-mono); font-size: 0.78rem;">
                             ${actionSummary}
                         </div>
-                        <button type="button" class="cyber-btn sm" style="padding: 0.25rem 0.6rem; font-size: 0.68rem;" onclick="viewRawLogData(${index})"><i class="fas fa-code"></i> RAW JSON</button>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <button type="button" class="cyber-btn sm" style="padding: 0.25rem 0.6rem; font-size: 0.68rem;" onclick="viewRawLogData(${index})"><i class="fas fa-code"></i> RAW JSON</button>
+                            <button type="button" class="cyber-btn danger sm" style="padding: 0.25rem 0.6rem; font-size: 0.68rem;" onclick="deleteSingleLogEntry(${index})" title="Delete this single entry"><i class="fas fa-trash-alt"></i> DELETE</button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -2466,6 +2475,58 @@ function initSecurityLogsEngine() {
         const item = cachedSecurityLogs[index];
         if (!item) return;
         alert(JSON.stringify(item, null, 2));
+    };
+
+    // Delete Single Log / Submission Record Helper
+    window.deleteSingleLogEntry = function(index) {
+        const item = cachedSecurityLogs[index];
+        if (!item) return;
+        
+        let confirmMsg = "Are you sure you want to permanently delete this record from the database?";
+        if (item.type === 'DEMO_SUBMISSION') {
+            confirmMsg = `Delete Demo Submission by "${item.details?.artist || 'Unknown'}"?`;
+        } else if (item.type === 'CONTACT_MESSAGE') {
+            confirmMsg = `Delete Contact Message from "${item.details?.name || 'User'}"?`;
+        }
+
+        if (!confirm(confirmMsg)) return;
+
+        const promises = [];
+        const dbKey = item.dbKey;
+
+        if (item.dbPath && dbKey) {
+            promises.push(db.ref(item.dbPath + '/' + dbKey).remove());
+        }
+        if (item.altDbPath && dbKey) {
+            promises.push(db.ref(item.altDbPath + '/' + dbKey).remove());
+        }
+
+        // Fallbacks if dbKey/dbPath was not set directly
+        if (promises.length === 0) {
+            const rawId = item.id || '';
+            if (item.type === 'DEMO_SUBMISSION') {
+                const k = rawId.replace('DEMO_SUB_', '');
+                promises.push(db.ref('siteData/submissions/demo/' + k).remove());
+                promises.push(db.ref('demo_submissions/' + k).remove());
+            } else if (item.type === 'CONTACT_MESSAGE') {
+                const k = rawId.replace('CONTACT_SUB_', '');
+                promises.push(db.ref('siteData/submissions/contact/' + k).remove());
+                promises.push(db.ref('contact_messages/' + k).remove());
+            } else if (item.type === 'ADMIN_AUDIT') {
+                promises.push(db.ref('siteData/security/audit_logs/' + rawId).remove());
+            } else if (item.type === 'VISITOR_ACCESS') {
+                promises.push(db.ref('siteData/telemetry/visitor_logs/' + rawId).remove());
+            } else {
+                promises.push(db.ref('siteData/security/logs/' + rawId).remove());
+                promises.push(db.ref('siteData/security/violations/' + rawId).remove());
+            }
+        }
+
+        Promise.all(promises).then(() => {
+            showToast("RECORD DELETED FROM DATABASE!");
+        }).catch(err => {
+            showToast("DELETE FAILED: " + err.message, 'error');
+        });
     };
 }
 
