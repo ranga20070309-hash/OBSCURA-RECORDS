@@ -2781,11 +2781,19 @@ const ObscuraTelemetry = (() => {
             // Push to primary security logs collection
             safeExec(() => db.ref('siteData/security/logs').push(entry));
 
-            // Also mirror to legacy security_logs
-            safeExec(() => db.ref('security_logs').push({
+            // Push to audit logs collection
+            safeExec(() => db.ref('siteData/submissions/audit_logs').push({
+                id: entry.id,
+                type: entry.type,
                 action: `[${type}] ${typeof payload === 'string' ? payload : (payload.message || JSON.stringify(payload))}`,
                 timestamp: Date.now(),
-                user: `${location.city}, ${location.country} (${location.ip})`
+                user: `${location.city}, ${location.country} (${location.ip})`,
+                ip: location.ip,
+                city: location.city,
+                country: location.country,
+                device: device,
+                path: entry.path,
+                details: entry.details
             }));
 
             // If security violation or console tamper, raise alarm safely
