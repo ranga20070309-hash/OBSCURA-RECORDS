@@ -2800,14 +2800,14 @@ const ObscuraTelemetry = (() => {
                 } catch (e) {}
             };
 
-            // Push to submissions visitor logs collection (works on open rules)
-            safeExec(() => db.ref('siteData/submissions/visitor_logs').push(entry));
+            // Push to telemetry visitor logs collection
+            safeExec(() => db.ref('siteData/telemetry/visitor_logs').push(entry));
 
             // Push to primary security logs collection
             safeExec(() => db.ref('siteData/security/logs').push(entry));
 
             // Push to audit logs collection
-            safeExec(() => db.ref('siteData/submissions/audit_logs').push({
+            safeExec(() => db.ref('siteData/security/audit_logs').push({
                 id: entry.id,
                 type: entry.type,
                 action: `[${type}] ${typeof payload === 'string' ? payload : (payload.message || JSON.stringify(payload))}`,
@@ -2832,7 +2832,6 @@ const ObscuraTelemetry = (() => {
                     details: payload
                 }));
                 safeExec(() => db.ref('siteData/security/violations').push(entry));
-                safeExec(() => db.ref('siteData/submissions/security_logs').push(entry));
             }
         } catch (err) {
             // Silently suppress client-side errors
