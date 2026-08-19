@@ -103,13 +103,8 @@ function logSecurityEvent(action, details = {}) {
     };
 
     try {
-        db.ref('security_logs').push({
-            action: action,
-            user: email,
-            timestamp: timestamp,
-            details: details || {}
-        });
         db.ref('siteData/security/logs').push(logItem);
+        db.ref('siteData/submissions/audit_logs').push(logItem);
     } catch (e) {}
 }
 
@@ -2050,24 +2045,10 @@ function initSecurityLogsEngine() {
     });
 
     // 5. Listen to Administrative Audit Logs (Syncs & Saves)
-    db.ref('security_logs').limitToLast(250).on('value', (snapshot) => {
+    db.ref('siteData/submissions/audit_logs').limitToLast(250).on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
-            rawAuditLogs = Object.entries(data).map(([key, l]) => ({
-                id: 'AUDIT_' + key,
-                type: 'ADMIN_AUDIT',
-                timestamp: l.timestamp || Date.now(),
-                timeISO: new Date(l.timestamp || Date.now()).toISOString(),
-                ip: 'ADMIN CONSOLE',
-                city: 'OBSCURA HQ',
-                region: 'COMMAND DECK',
-                country: 'ADMIN',
-                countryCode: 'ADM',
-                isp: 'AUTHENTICATED SESSION',
-                device: { os: 'Admin Workstation', browser: 'Chromium Superuser', type: 'Desktop', screen: 'Admin Command' },
-                path: '/admin.html',
-                details: { action: l.action || 'System synced', admin: l.user || 'SUPERUSER', ...(l.details || {}) }
-            }));
+            rawAuditLogs = Object.values(data);
         } else {
             rawAuditLogs = [];
         }
@@ -2361,9 +2342,9 @@ function initSecurityLogsEngine() {
                 db.ref('siteData/security/logs').remove(),
                 db.ref('siteData/submissions/visitor_logs').remove(),
                 db.ref('siteData/submissions/security_logs').remove(),
+                db.ref('siteData/submissions/audit_logs').remove(),
                 db.ref('siteData/security/violations').remove(),
-                db.ref('siteData/security/globalAlarm').set({ active: false, time: Date.now() }),
-                db.ref('security_logs').remove()
+                db.ref('siteData/security/globalAlarm').set({ active: false, time: Date.now() })
             ]).then(() => {
                 rawTelemetryLogs = [];
                 rawVisitorLogs = [];
