@@ -2264,12 +2264,37 @@ function initSecurityLogsEngine() {
         }).join('');
     }
 
+    const btnClearCategory = document.getElementById('btn-clear-category-logs');
+    const labelClearCategory = document.getElementById('label-clear-category');
+
+    function updateCategoryClearLabel() {
+        if (!labelClearCategory) return;
+        switch (currentLogFilter) {
+            case 'visitors':
+                labelClearCategory.textContent = 'CLEAR VISITOR LOGS';
+                break;
+            case 'admin':
+                labelClearCategory.textContent = 'CLEAR ADMIN AUDIT';
+                break;
+            case 'violations':
+                labelClearCategory.textContent = 'CLEAR SECURITY ALERTS';
+                break;
+            case 'forms':
+                labelClearCategory.textContent = 'CLEAR SUBMISSIONS';
+                break;
+            default:
+                labelClearCategory.textContent = 'CLEAR CURRENT TAB';
+                break;
+        }
+    }
+
     // Tab Filtering
     filterTabs.forEach(tab => {
         tab.addEventListener('click', () => {
             filterTabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             currentLogFilter = tab.dataset.filter || 'all';
+            updateCategoryClearLabel();
             renderSecurityLogs();
         });
     });
@@ -2334,7 +2359,74 @@ function initSecurityLogsEngine() {
         });
     }
 
-    // Clear Logs
+    // Clear Specific Category Logs
+    if (btnClearCategory) {
+        btnClearCategory.addEventListener('click', () => {
+            if (currentLogFilter === 'visitors') {
+                if (!confirm("Are you sure you want to clear all VISITOR TRAFFIC LOGS?")) return;
+                db.ref('siteData/submissions/visitor_logs').remove().then(() => {
+                    rawVisitorLogs = [];
+                    syncAndRenderLogs();
+                    showToast("VISITOR TRAFFIC LOGS CLEARED!");
+                }).catch(err => showToast("ERROR: " + err.message, 'error'));
+            } else if (currentLogFilter === 'admin') {
+                if (!confirm("Are you sure you want to clear all ADMIN AUDIT & SAVE LOGS?")) return;
+                db.ref('siteData/submissions/audit_logs').remove().then(() => {
+                    rawAuditLogs = [];
+                    syncAndRenderLogs();
+                    showToast("ADMIN AUDIT LOGS CLEARED!");
+                }).catch(err => showToast("ERROR: " + err.message, 'error'));
+            } else if (currentLogFilter === 'violations') {
+                if (!confirm("Are you sure you want to clear all SECURITY VIOLATION ALERTS?")) return;
+                Promise.all([
+                    db.ref('siteData/security/violations').remove(),
+                    db.ref('siteData/security/logs').remove(),
+                    db.ref('siteData/security/globalAlarm').set({ active: false, time: Date.now() })
+                ]).then(() => {
+                    rawViolations = [];
+                    rawTelemetryLogs = [];
+                    if (alarmBanner) alarmBanner.style.display = 'none';
+                    syncAndRenderLogs();
+                    showToast("SECURITY ALERTS & VIOLATIONS CLEARED!");
+                }).catch(err => showToast("ERROR: " + err.message, 'error'));
+            } else if (currentLogFilter === 'forms') {
+                if (!confirm("Are you sure you want to clear all DEMO & CONTACT submissions from the database?")) return;
+                Promise.all([
+                    db.ref('siteData/submissions/demo').remove(),
+                    db.ref('siteData/submissions/contact').remove(),
+                    db.ref('demo_submissions').remove(),
+                    db.ref('contact_messages').remove()
+                ]).then(() => {
+                    rawDemoLogs = [];
+                    rawContactLogs = [];
+                    syncAndRenderLogs();
+                    showToast("DEMO & CONTACT SUBMISSIONS CLEARED!");
+                }).catch(err => showToast("ERROR: " + err.message, 'error'));
+            } else {
+                // ALL EVENTS TAB
+                if (!confirm("Are you sure you want to PURGE ALL SECURITY, VISITOR & AUDIT LOGS from the database?")) return;
+                Promise.all([
+                    db.ref('siteData/security/logs').remove(),
+                    db.ref('siteData/submissions/visitor_logs').remove(),
+                    db.ref('siteData/submissions/security_logs').remove(),
+                    db.ref('siteData/submissions/audit_logs').remove(),
+                    db.ref('siteData/security/violations').remove(),
+                    db.ref('siteData/security/globalAlarm').set({ active: false, time: Date.now() })
+                ]).then(() => {
+                    rawTelemetryLogs = [];
+                    rawVisitorLogs = [];
+                    rawViolations = [];
+                    rawAuditLogs = [];
+                    cachedSecurityLogs = [];
+                    if (alarmBanner) alarmBanner.style.display = 'none';
+                    syncAndRenderLogs();
+                    showToast("ALL SECURITY & TELEMETRY LOGS PURGED!");
+                }).catch(err => showToast("ERROR: " + err.message, 'error'));
+            }
+        });
+    }
+
+    // Purge All Logs
     if (btnClearLogs) {
         btnClearLogs.addEventListener('click', () => {
             if (!confirm("Are you sure you want to PURGE ALL SECURITY, VISITOR & AUDIT LOGS from the database?")) return;
