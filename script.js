@@ -981,6 +981,20 @@ const initPortal = () => {
                 const linkInput = subForm.querySelector('input[name="link"]');
                 const messageInput = subForm.querySelector('textarea[name="message"]');
 
+                const artistVal = artistInput?.value?.trim() || "";
+                const nameVal = nameInput?.value?.trim() || "";
+                const emailVal = emailInput?.value?.trim() || "";
+                const genreVal = genreInput?.value?.trim() || "";
+                const linkVal = linkInput?.value?.trim() || "";
+                const messageVal = messageInput?.value?.trim() || "";
+
+                if (!artistVal || !nameVal || !emailVal || !linkVal || linkVal === '#' || emailVal.length < 5) {
+                    alert("TRANSMISSION BLOCKED: Please fill in all required fields (Name, Artist Name, Valid Email, Demo Streaming Link).");
+                    btn.textContent = originalBtnText;
+                    btn.disabled = false;
+                    return;
+                }
+
                 // Dynamic Multi-Link Collection Logic
                 const spotifyLinks = Array.from(subForm.querySelectorAll('input[name="spotify[]"]'))
                     .map(input => input.value.trim())
@@ -997,13 +1011,13 @@ const initPortal = () => {
                 const submission = {
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
                     date: new Date().toLocaleString(),
-                    name: nameInput?.value || "N/A",
-                    artist: artistInput?.value || "N/A",
-                    email: emailInput?.value || "N/A",
-                    genre: genreInput?.value || "N/A",
-                    link: linkInput?.value || "#",
+                    name: nameVal,
+                    artist: artistVal,
+                    email: emailVal,
+                    genre: genreVal || "Electronic / Phonk",
+                    link: linkVal,
                     spotify: spotifyData,
-                    message: messageInput?.value || "No additional bio.",
+                    message: messageVal || "No additional bio.",
                     recaptcha_token: token
                 };
 
@@ -1105,10 +1119,21 @@ const initPortal = () => {
                 const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'contact_submission' });
 
                 const formData = new FormData(contactForm);
+                const nameVal = (formData.get('name') || '').trim();
+                const emailVal = (formData.get('email') || '').trim();
+                const messageVal = (formData.get('message') || '').trim();
+
+                if (!nameVal || !emailVal || !messageVal || emailVal.length < 5) {
+                    alert("TRANSMISSION BLOCKED: Please fill in all required contact fields.");
+                    btn.innerHTML = originalBtnText;
+                    btn.disabled = false;
+                    return;
+                }
+
                 const data = {
-                    name: formData.get('name'),
-                    email: formData.get('email'),
-                    message: formData.get('message'),
+                    name: nameVal,
+                    email: emailVal,
+                    message: messageVal,
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
                     recaptcha_token: token
                 };
