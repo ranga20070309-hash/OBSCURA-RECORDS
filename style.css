@@ -39,12 +39,46 @@ html {
     -ms-user-select: none;
 }
 
-/* Allow selection for interactive/input elements */
+    /* Allow selection for interactive/input elements */
 input,
 textarea,
 [contenteditable="true"] {
     user-select: text;
     -webkit-user-select: text;
+}
+
+/* Zero 300ms Mobile Delay & Instant High-Performance Touch Interactions */
+button,
+a,
+.nav-item,
+.cyber-btn,
+.cta-primary,
+.cta-secondary,
+.release-card,
+.popular-card,
+.artist-item,
+.social-link,
+.faq-question,
+.menu-trigger,
+.sfx-toggle-btn {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 60FPS Hardware GPU Acceleration for Smooth Motion & Anti-Aliasing */
+.glass-nav,
+.release-card,
+.release-card-large,
+.popular-card,
+.artist-item,
+.artist-card-3d,
+.modal-box,
+.social-sidebar,
+.cta-primary {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
 }
 
 /* --- SCROLL LOCK FOR INTRO & MAINTENANCE --- */
@@ -389,10 +423,12 @@ body.admin-preview-active header {
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.35rem;
     flex-wrap: nowrap;
     flex-shrink: 1;
-    justify-content: center;
+    justify-content: flex-end;
+    margin-left: auto;
+    margin-right: 0;
 }
 
 .nav-links a,
@@ -406,9 +442,10 @@ body.admin-preview-active header {
     font-weight: 600;
     letter-spacing: 0.1rem;
     border-radius: 20px;
-    transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
     white-space: nowrap;
+    touch-action: manipulation;
 }
 
 .nav-links a:hover,
@@ -429,7 +466,7 @@ body.admin-preview-active header {
     background: #00f0ff;
     border-radius: 2px;
     box-shadow: 0 0 8px #00f0ff;
-    transition: transform 0.3s ease;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .nav-links .nav-item:hover::after,
@@ -439,21 +476,23 @@ body.admin-preview-active header {
 
 /* Send Demo Nav Pill Accent - Perfectly Centered Between Contact and SFX/Menu */
 #open-form.nav-item {
-    margin-left: 0.8rem;
+    margin-left: 1.1rem;
     margin-right: 0.8rem;
-    padding: 0.52rem 1.2rem;
+    padding: 0.5rem 1.25rem;
     background: rgba(0, 240, 255, 0.12);
-    border: 1px solid rgba(0, 240, 255, 0.4);
+    border: 1px solid rgba(0, 240, 255, 0.45);
     color: #00f0ff;
     font-weight: 700;
     border-radius: 30px;
-    box-shadow: 0 0 18px rgba(0, 240, 255, 0.15);
+    box-shadow: 0 0 18px rgba(0, 240, 255, 0.18);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     align-self: center;
     letter-spacing: 0.1rem;
     white-space: nowrap;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    touch-action: manipulation;
 }
 
 #open-form.nav-item:hover {
@@ -472,7 +511,8 @@ body.admin-preview-active header {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.55rem;
+    margin-left: 0.4rem;
     flex-shrink: 0;
     white-space: nowrap;
 }
@@ -2469,8 +2509,8 @@ footer {
         letter-spacing: 0.08rem;
     }
     #open-form.nav-item {
-        margin-left: 0.6rem;
-        margin-right: 0.6rem;
+        margin-left: 0.8rem;
+        margin-right: 0.5rem;
         padding: 0.45rem 1rem;
         font-size: 0.74rem;
     }
@@ -2493,7 +2533,7 @@ footer {
         letter-spacing: 0.04rem;
     }
     #open-form.nav-item {
-        margin-left: 0.35rem;
+        margin-left: 0.5rem;
         margin-right: 0.35rem;
         padding: 0.4rem 0.8rem;
         font-size: 0.68rem;
