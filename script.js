@@ -1,9 +1,9 @@
 // --- BROWSER URL SANITIZER (Eliminates Chrome Text Fragments & Ugly Hashes) ---
 const sanitizeBrowserURL = () => {
     try {
-        if (window.location.hash || window.location.href.includes(':~:text=') || window.location.href.includes('%20')) {
+        if (window.location.hash || window.location.href.indexOf('#') !== -1 || window.location.href.indexOf(':~:text=') !== -1) {
             const cleanPath = window.location.pathname || '/';
-            const cleanSearch = window.location.search && !window.location.search.includes('preview=') ? window.location.search : '';
+            const cleanSearch = (window.location.search && !window.location.search.includes('preview=')) ? window.location.search : '';
             window.history.replaceState(null, document.title, cleanPath + cleanSearch);
         }
     } catch (e) {}
