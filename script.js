@@ -1234,7 +1234,7 @@ const initPortal = () => {
     window.bindAccordionListeners('privacy-container');
 
     // --- CLEAN URL NAVIGATION SYSTEM (Zero URL Pollution On Button Clicks) ---
-    const navLinks = document.querySelectorAll('.nav-links a, .nav-item, .logo-link, .sidebar-nav-item, a[href^="#"]');
+    const navLinks = document.querySelectorAll('.nav-links a, .nav-links .nav-item[data-target], .logo-link, .sidebar-nav-item[data-target], a[href^="#"]:not([href="#"])');
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             const target = link.getAttribute('data-target') || link.getAttribute('href');
@@ -1246,8 +1246,8 @@ const initPortal = () => {
                 return;
             }
 
-            // Only intercept internal section links
-            if (target && target.startsWith('#')) {
+            // Only intercept valid internal section links (e.g. #releases, #artists, #home)
+            if (target && target.startsWith('#') && target.length > 1) {
                 e.preventDefault();
 
                 // Clean the browser address bar immediately so #section or text fragments NEVER appear
