@@ -1979,6 +1979,8 @@ const initPortal = () => {
                             el.textContent = data[key];
                         } else if (syncTarget === 'placeholder') {
                             el.placeholder = data[key];
+                        } else if (syncTarget === 'src') {
+                            el.src = data[key];
                         } else if (syncTarget === 'style') {
                             el.style.cssText = data[key];
                         } else if (syncTarget === 'href') {
@@ -1991,6 +1993,43 @@ const initPortal = () => {
                         }
                     }
                 });
+
+                // DISCORD BOT SECTION VISIBILITY & STATUS GATING
+                const botSection = document.getElementById('discord-bot');
+                const navBot = document.getElementById('nav-bot');
+                const sideNavBot = document.getElementById('side-nav-bot');
+                if (botSection) {
+                    if (data.showDiscordBot === 'Hidden') {
+                        botSection.style.setProperty('display', 'none', 'important');
+                        if (navBot) navBot.style.setProperty('display', 'none', 'important');
+                        if (sideNavBot) sideNavBot.style.setProperty('display', 'none', 'important');
+                    } else {
+                        botSection.style.removeProperty('display');
+                        if (navBot) navBot.style.removeProperty('display');
+                        if (sideNavBot) sideNavBot.style.removeProperty('display');
+                    }
+                }
+
+                // Bot Status & Live Indicator Color
+                const botStatusText = document.getElementById('bot-status-text');
+                const botStatusDot = document.getElementById('bot-status-dot');
+                const botLivePulse = document.getElementById('bot-live-pulse');
+                const rawStatus = (data.botStatus || 'ONLINE // OPERATIONAL').toUpperCase();
+                if (botStatusText) botStatusText.textContent = rawStatus;
+
+                if (rawStatus.includes('OFFLINE')) {
+                    if (botStatusText) botStatusText.className = 'bot-status-value offline';
+                    if (botStatusDot) { botStatusDot.className = 'bot-status-dot offline'; botStatusDot.title = 'Bot Status: Offline'; }
+                    if (botLivePulse) botLivePulse.className = 'bot-status-pulse offline';
+                } else if (rawStatus.includes('IDLE') || rawStatus.includes('MAINTENANCE') || rawStatus.includes('UPGRAD')) {
+                    if (botStatusText) botStatusText.className = 'bot-status-value idle';
+                    if (botStatusDot) { botStatusDot.className = 'bot-status-dot idle'; botStatusDot.title = 'Bot Status: Idle / Maintenance'; }
+                    if (botLivePulse) botLivePulse.className = 'bot-status-pulse idle';
+                } else {
+                    if (botStatusText) botStatusText.className = 'bot-status-value online';
+                    if (botStatusDot) { botStatusDot.className = 'bot-status-dot online'; botStatusDot.title = 'Bot Status: Online & Active'; }
+                    if (botLivePulse) botLivePulse.className = 'bot-status-pulse online';
+                }
                 
                 // DYNAMIC PORTAL ENGINE VERSION SYNC
                 if (data.v) {
