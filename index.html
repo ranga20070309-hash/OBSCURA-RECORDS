@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en" class="no-scroll">
-
 <head>
     <script>
         // INSTANT URL SANITIZER: Purges Chrome scroll-to-text fragments (#:~:text=...), dirty hash fragments and query strings
@@ -32,7 +31,6 @@
     <meta name="google-site-verification" content="EobLbKFk8O5qOMkycnSnUyz0ApzsycuIaspkpVRiwhM" />
     <link rel="icon" type="image/png" href="assets/OCR.png?v=61.0">
     <link rel="apple-touch-icon" href="assets/OCR_solid.png?v=61.0">
-
         <meta name="description"
         content="Official portal of Obscura Record. Independent music label specializing in high-energy Phonk, Funk, and futuristic electronics. Discover new releases and join the sonic void.">
     <meta name="keywords"
@@ -42,35 +40,28 @@
     <meta name="designer" content="OBSCURA CORE TEAM">
     <meta name="copyright" content="Obscura Record">
     <meta name="robots" content="index, follow">
-
         <meta property="og:type" content="website">
     <meta property="og:url" content="https://obscurarecords.com/">
     <meta property="og:title" content="OBSCURA RECORD | Into the Sonic Void">
     <meta property="og:description"
         content="Discover high-energy Phonk and futuristic vibrations. Official label archive and artist releases.">
     <meta property="og:image" content="assets/og-preview.png">
-
         <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:title" content="OBSCURA RECORD | Into the Sonic Void">
     <meta property="twitter:description"
         content="Discover high-energy Phonk and futuristic vibrations. Official label archive.">
     <link rel="stylesheet" href="style.css?v=60.1">
-
         <script src="https://www.google.com/recaptcha/api.js?render=6LcFNKgsAAAAAEEdRhYJrwgeWzaRyMmzbgNy3swn"></script>
         <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Space+Grotesk:wght@300;500;700&family=Syne:wght@800&display=swap"
         rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-
-
         <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCHf_R1n2Qn-q4NHAjfJt6xD_TWIRjiN1o",
@@ -81,10 +72,8 @@
             messagingSenderId: "831882873428",
             appId: "1:831882873428:web:3cf009875e160a9f8efbc1"
         };
-
         // Bootstrapping the site engine
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-
         // Single fetch to determine latest version
         firebase.database().ref('siteData/globals/v').once('value').then((snapshot) => {
             const v = snapshot.val() || '1.0';
@@ -94,9 +83,7 @@
             console.log("ENGINE BOOT: v" + v);
         });
     </script>
-
 </head>
-
 <body class="no-scroll">
         <div id="portal-loader" class="portal-loader">
         <div class="loader-content">
@@ -107,9 +94,7 @@
             <div class="loader-status">ESTABLISHING CONNECTION...</div>
         </div>
     </div>
-
         <div class="space-bg"></div>
-    <!-- Real-Time Audio Bass-Reactive Ambient Lighting -->
     <div class="ambient-bass-lighting" id="ambient-bass-lighting">
         <div class="bass-light-orb orb-cyan"></div>
         <div class="bass-light-orb orb-purple"></div>
@@ -119,56 +104,40 @@
     <canvas id="particle-bg"></canvas>
     <div class="noise-overlay"></div>
     <div class="scanlines"></div>
-
         <div class="cursor-glow"></div>
     <div class="cursor-outer"></div>
-
         <div id="entrance-screen">
         <div class="splash-content">
             <img src="assets/OCR.png" class="splash-logo" alt="OCR LOGO">
         </div>
     </div>
-
-    <!-- Ultra-Luxury Cyberpunk Space Maintenance Mode Overlay -->
     <div id="maintenance-overlay" class="maintenance-screen" style="display: none;">
         <canvas id="m-space-canvas"></canvas>
         <div class="m-nebula-glow m-nebula-cyan"></div>
         <div class="m-nebula-glow m-nebula-purple"></div>
         <div class="m-grid-scanlines"></div>
-
         <div class="m-center-wrapper">
             <div class="m-glass-card">
-                <!-- Tech Corner Brackets -->
                 <div class="m-corner top-left"></div>
                 <div class="m-corner top-right"></div>
                 <div class="m-corner bottom-left"></div>
                 <div class="m-corner bottom-right"></div>
-
-                <!-- Holographic Emblem with Cyber Orbit Rings -->
                 <div class="m-emblem-container">
                     <div class="m-orbit-ring ring-1"></div>
                     <div class="m-orbit-ring ring-2"></div>
                     <div class="m-emblem-glow"></div>
                     <img src="assets/OCR.png" class="m-emblem" alt="OBSCURA RECORD">
                 </div>
-
-                <!-- Brand Name with Cyber Neon Shimmer Effect -->
                 <div class="m-brand-header">
                     <h2 class="m-brand-name">OBSCURA <span>RECORD</span></h2>
                     <div class="m-brand-sub">SONIC VOID TRANSMISSION // SYSTEM DIRECTIVE</div>
                 </div>
-
-                <!-- Status Pill Tag -->
                 <div class="m-status-pill">
                     <span class="m-live-pulse"></span>
                     <span class="m-status-tag" id="m-status-tag">ORBITAL UPGRADE IN PROGRESS</span>
                 </div>
-
-                <!-- Main Message Header & Subtext -->
                 <h1 class="m-main-title" id="m-title">UNDER RENOVATION</h1>
                 <p class="m-sub-text" id="m-msg">We are currently upgrading the portal experience. System transmissions will resume shortly.</p>
-
-                <!-- Connected Digital Channels -->
                 <div class="m-social-links">
                     <a href="https://discord.gg/E3Sn72cpBR" target="_blank" class="m-social-btn" title="Discord">
                         <i class="fab fa-discord"></i>
@@ -190,7 +159,6 @@
             </div>
         </div>
     </div>
-
         <main id="main-site" style="opacity: 0; visibility: hidden;">
                 <header>
             <nav class="glass-nav">
@@ -222,13 +190,11 @@
                 </div>
             </nav>
         </header>
-
                 <div id="social-sidebar" class="social-sidebar glass no-tilt">
             <div class="sidebar-header">
                 <h3>NETWORK</h3>
                 <button id="close-sidebar" class="close-sidebar">&times;</button>
             </div>
-            <!-- High-Priority Navigation Links -->
             <div class="sidebar-nav">
                 <span data-target="#home" class="sidebar-nav-item nav-item">
                     <i class="fas fa-home"></i> <span data-sync="navHome" data-sync-target="text">HOME</span>
@@ -255,11 +221,9 @@
                     <i class="fas fa-paper-plane"></i> <span>SEND DEMO</span>
                 </span>
             </div>
-
             <div class="sidebar-header compact">
                 <h3 style="font-size: 0.8rem; letter-spacing: 0.4rem; opacity: 0.6;">NETWORK</h3>
             </div>
-
             <div class="sidebar-links-grid">
                 <a href="https://www.instagram.com/recordsobscura" target="_blank" data-sync="socialInstaUrl"
                     data-sync-target="href">
@@ -295,7 +259,6 @@
             </div>
         </div>
         <div id="sidebar-overlay" class="sidebar-overlay"></div>
-
                 <section id="home" class="hero">
             <div class="hero-container">
                 <div class="hero-content">
@@ -309,12 +272,9 @@
                         <span data-target="#releases" class="cta-primary nav-item">RELEASES</span>
                     </div>
                 </div>
-
-                <!-- STREETX SPOTLIGHT FEATURE | CATCHY POST STYLE -->
                 <div class="streetx-feature-card" data-sync="streetxUrl" data-sync-target="onclick_navigate">
                     <div class="feature-bg" style="background-image: url('assets/STREETX.PNG');"></div>
                     <div class="feature-overlay"></div>
-
                     <div class="feature-content">
                         <div class="feature-badge" data-sync="streetxBadge" data-sync-target="text">OFFICIAL CLOTHING
                             DIVISION</div>
@@ -322,7 +282,6 @@
                                 class="accent">CLOTHING</span></h3>
                         <p class="feature-desc" data-sync="streetxDesc" data-sync-target="text">PREMIUM STREETWEAR IDENTITY
                             & APPAREL DROP 01</p>
-
                         <a href="streetx-clothing/" target="_blank" class="feature-cta" data-sync="streetxUrl"
                             data-sync-target="href">
                             <span data-sync="streetxCta" data-sync-target="text">EXPLORE COLLECTION</span>
@@ -332,7 +291,6 @@
                 </div>
             </div>
         </section>
-
                 <section id="popular" class="popular-releases">
             <div class="section-header archive-header">
                 <div class="header-content">
@@ -344,17 +302,11 @@
                     <button class="slider-nav-btn popular-next"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
-
             <div class="slider-wrapper">
                 <div class="popular-grid" id="popular-grid">
-                    <!-- Popular release cards will be injected here via JS -->
                 </div>
             </div>
         </section>
-
-
-
-
                 <section id="upcoming" class="upcoming-archive">
             <div class="section-header archive-header">
                 <div class="header-content">
@@ -366,14 +318,11 @@
                     <button class="slider-nav-btn upcoming-next"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
-
             <div class="slider-wrapper">
                 <div class="upcoming-grid" id="upcoming-grid">
-                    <!-- Upcoming release cards will populate here -->
                 </div>
             </div>
         </section>
-
                 <section id="releases" class="releases-archive">
             <div class="section-header archive-header">
                 <div class="header-content">
@@ -387,10 +336,8 @@
                     <button class="slider-nav-btn next"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
-
             <div class="slider-wrapper">
                 <div class="releases-slider">
-                    <!-- Card 1 -->
                     <div class="release-card-large glass">
                         <div class="release-cover-large">
                             <div class="cyber-laser-scanner"></div>
@@ -411,8 +358,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Card 2 -->
                     <div class="release-card-large glass">
                         <div class="release-cover-large">
                             <div class="cyber-laser-scanner"></div>
@@ -435,8 +380,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Card 3 -->
                     <div class="release-card-large glass">
                         <div class="release-cover-large">
                             <div class="cyber-laser-scanner"></div>
@@ -459,8 +402,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Card 4 -->
                     <div class="release-card-large glass">
                         <div class="release-cover-large">
                             <div class="cyber-laser-scanner"></div>
@@ -486,7 +427,6 @@
                 </div>
             </div>
         </section>
-
                 <section id="ghost-production" class="ghost-production">
             <div class="section-header archive-header">
                 <div class="header-content">
@@ -495,15 +435,12 @@
                         any style. Secure professional production for a flat fee.</p>
                 </div>
             </div>
-
             <div class="ghost-card-wrapper glass no-tilt">
                 <div
                     style="position: absolute; top: -10%; right: -10%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(0, 240, 255, 0.05) 0%, transparent 70%); z-index: 0;">
                 </div>
-
                 <div
                     style="position: relative; z-index: 1; display: flex; gap: 4rem; align-items: center; flex-wrap: wrap;">
-                    <!-- Left Side: Icon & Info -->
                     <div style="flex: 1; min-width: 320px; text-align: left;">
                         <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem;">
                             <i class="fas fa-ghost"
@@ -520,17 +457,14 @@
                                 </div>
                             </div>
                         </div>
-
                         <p style="color: var(--text-primary); font-size: 1.1rem; line-height: 1.7; opacity: 0.9; margin-bottom: 2.5rem;"
                             data-sync="ghostServiceDesc" data-sync-target="text">
                             Submit your preferred musical style and vision to our portal. Our elite producers will craft
                             a bespoke, professional track tailored specifically to your requirements. Secure your unique
                             sound today and own it forever.
                         </p>
-
                         <div
                             style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 3rem; margin-bottom: 4rem; text-align: left;">
-                            <!-- Column 1: Production Packages -->
                             <div class="pricing-group">
                                 <h4
                                     style="font-family: var(--font-heading); color: var(--accent-blue); letter-spacing: 0.2rem; margin-bottom: 1.5rem; font-size: 0.9rem; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 0.5rem; text-transform: uppercase;">
@@ -565,8 +499,6 @@
                                     </li>
                                 </ul>
                             </div>
-
-                            <!-- Column 2: Service Inclusions -->
                             <div class="pricing-group">
                                 <h4
                                     style="font-family: var(--font-heading); color: var(--accent-blue); letter-spacing: 0.2rem; margin-bottom: 1.5rem; font-size: 0.9rem; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 0.5rem; text-transform: uppercase;">
@@ -599,8 +531,6 @@
                                     </li>
                                 </ul>
                             </div>
-
-                            <!-- Column 3: Delivery Timeline -->
                             <div class="pricing-group">
                                 <h4 style="font-family: var(--font-heading); color: var(--accent-blue); letter-spacing: 0.2rem; margin-bottom: 1.5rem; font-size: 0.9rem; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 0.5rem; text-transform: uppercase;"
                                     data-sync="ghostDeliveryTitle" data-sync-target="text">DELIVERY</h4>
@@ -623,8 +553,6 @@
                                 </ul>
                             </div>
                         </div>
-
-                        <!-- Special Offer Banner -->
                         <div class="special-offer glass"
                             style="background: linear-gradient(90deg, rgba(0, 240, 255, 0.1), rgba(183, 0, 255, 0.1)); border: 1px solid var(--accent-blue); padding: 2.5rem; border-radius: 20px; text-align: left; margin-bottom: 3rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
                             <div style="flex: 0 0 auto;">
@@ -650,7 +578,6 @@
                                     data-sync="ghostSpecialPrice" data-sync-target="text">$300</span>
                             </div>
                         </div>
-
                         <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
                             <div id="order-ghost" class="cta-primary"
                                 style="width: 100%; max-width: 400px; text-align: center; padding: 1.2rem; cursor: pointer;">
@@ -659,34 +586,26 @@
                             <p style="font-size: 0.75rem; opacity: 0.5; letter-spacing: 0.05rem;">All transactions are
                                 encrypted and secured.</p>
                         </div>
-                    </div> <!-- Closes 372 -->
-                </div> <!-- Closes 370 -->
-            </div> <!-- Closes 367 -->
+                    </div> 
+                </div> 
+            </div> 
         </section>
-
                 <section id="artists" class="artists">
             <div class="section-header">
                 <h2 class="section-title" data-sync="staffTitle" data-sync-target="html">OBSCURA <span class="accent">STAFF</span></h2>
                 <p class="section-desc" data-sync="staffDesc" data-sync-target="text">MEET THE MINDS BEHIND THE OBSCURA SOUNDSCAPE</p>
             </div>
             <div id="staff-grid" class="artists-grid">
-                <!-- Dynamically rendered from Firebase staff_status/ by script.js -->
             </div>
         </section>
-
                 <section id="partners" class="artists">
             <div class="section-header">
                 <h2 class="section-title" data-sync="partnersTitle" data-sync-target="html">LABEL <span class="accent">PARTNERS</span></h2>
                 <p class="section-desc" data-sync="partnersDesc" data-sync-target="text">CREATIVE COLLABORATORS & AFFILIATED ALLIANCES</p>
             </div>
             <div id="partners-grid" class="artists-grid">
-                <!-- Dynamically rendered from Firebase partner_status/ by script.js -->
             </div>
         </section>
-
-        <!-- =================================================================
-             DISCORD BOT & REAL-TIME COMMUNITY WIDGET CARD
-             ================================================================= -->
         <section id="discord-gateway" class="discord-widget-section">
             <div class="discord-compact-card glass">
                 <div class="dc-top-row">
@@ -708,8 +627,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Real-Time Discord Status Metrics -->
                 <div class="dc-status-bar">
                     <div class="dc-status-item">
                         <i class="fas fa-users dc-icon members"></i>
@@ -718,7 +635,6 @@
                             <span class="dc-stat-label">MEMBERS</span>
                         </div>
                     </div>
-
                     <div class="dc-status-item">
                         <span class="status-indicator online"><i class="fas fa-circle"></i></span>
                         <div class="dc-stat-col">
@@ -726,7 +642,6 @@
                             <span class="dc-stat-label">ONLINE</span>
                         </div>
                     </div>
-
                     <div class="dc-status-item">
                         <span class="status-indicator idle"><i class="fas fa-moon"></i></span>
                         <div class="dc-stat-col">
@@ -734,7 +649,6 @@
                             <span class="dc-stat-label">IDLE</span>
                         </div>
                     </div>
-
                     <div class="dc-status-item">
                         <span class="status-indicator dnd"><i class="fas fa-minus-circle"></i></span>
                         <div class="dc-stat-col">
@@ -742,7 +656,6 @@
                             <span class="dc-stat-label">DND</span>
                         </div>
                     </div>
-
                     <div class="dc-status-item">
                         <i class="fas fa-robot dc-icon bots"></i>
                         <div class="dc-stat-col">
@@ -751,8 +664,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Short & Sweet Features / Bullet Points In Same Card -->
                 <div class="dc-features-row">
                     <div class="dc-feature-pill">
                         <i class="fas fa-server"></i>
@@ -771,8 +682,6 @@
                         <span data-sync="botF4Short" data-sync-target="text">Music Submissions And Integrative Help Ticket System</span>
                     </div>
                 </div>
-
-                <!-- Card Footer Action -->
                 <div class="dc-action-row">
                     <a href="https://discord.gg/E3Sn72cpBR" id="bot-join-discord-btn" target="_blank" class="dc-join-btn" data-sync="botDiscordInvite" data-sync-target="href">
                         <i class="fab fa-discord"></i> <span data-sync="botBtnJoinText" data-sync-target="text">JOIN DISCORD SERVER</span>
@@ -780,7 +689,6 @@
                 </div>
             </div>
         </section>
-
                 <section id="contact" class="contact-section">
             <div class="contact-container glass">
                 <h2 class="section-title" data-sync="contactTitle" data-sync-target="html">CONNECT WITH <span
@@ -815,7 +723,6 @@
                 </div>
             </div>
         </section>
-
                 <div id="contact-modal" class="modal">
             <div class="modal-overlay"></div>
             <div class="modal-content glass">
@@ -830,7 +737,6 @@
                                 data-sync="socialEmailText" data-sync-target="text">sayurux@gmail.com</span></a>
                     </div>
                 </div>
-
                 <div class="demo-channels"
                     style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem;">
                     <a href="https://www.instagram.com/recordsobscura?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
@@ -867,7 +773,6 @@
                     portal feedback, reach out via the channels above.</p>
             </div>
         </div>
-
                 <div id="demo-modal" class="modal">
             <div class="modal-overlay"></div>
             <div class="modal-content glass">
@@ -877,7 +782,6 @@
                     style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">We are looking for the next evolution of
                     sound. If your music pushes the boundaries of Funk, Phonk, or Futuristic Electronic music, our
                     portal is open for your transmissions.</p>
-
                 <div class="demo-channels" style="display: flex; flex-direction: column; gap: 1rem;">
                     <a href="https://discord.gg/E3Sn72cpBR" target="_blank" data-sync="socialDiscordUrl"
                         data-sync-target="href" class="faq-item glass"
@@ -890,7 +794,6 @@
                                 data-sync-target="text">Faster review & community vibes.</div>
                         </div>
                     </a>
-
                     <a href="mailto:sayurux@gmail.com" class="faq-item glass" data-sync="socialEmailUrl" data-sync-target="href"
                         style="text-decoration: none; display: flex; align-items: center; gap: 1rem;">
                         <i class="fas fa-envelope" style="color: var(--accent-blue); font-size: 1.5rem;"></i>
@@ -904,7 +807,6 @@
                 </div>
             </div>
         </div>
-
                 <div id="faq-modal" class="modal">
             <div class="modal-overlay"></div>
             <div class="modal-content glass">
@@ -960,7 +862,6 @@
                 </div>
             </div>
         </div>
-
                 <div id="privacy-modal" class="modal">
             <div class="modal-overlay"></div>
             <div class="modal-content glass">
@@ -1042,8 +943,6 @@
                 </div>
             </div>
         </div>
-
-
                 <div id="submission-modal" class="modal">
             <div class="modal-overlay"></div>
             <div class="modal-content glass demo-grid-wide no-tilt">
@@ -1111,7 +1010,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label data-sync="formLabelLink" data-sync-target="text">Private streaming link (SoundCloud /
                             Dropbox / Drive)</label>
@@ -1121,7 +1019,6 @@
                             <div class="mirror-display"></div>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label data-sync="formLabelMessage" data-sync-target="text">Message / Biography
                             (Optional)</label>
@@ -1129,7 +1026,6 @@
                             placeholder="A brief transmission regarding your sound..."
                             data-sync="formPlaceholderMessage" data-sync-target="placeholder"></textarea>
                     </div>
-
                                         <div class="demo-guidelines"
                         style="margin-top: 1rem; margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.8rem;">
                         <label class="cyber-check-item glass">
@@ -1176,7 +1072,6 @@
                 <div id="submission-status" class="form-status">TRANSMISSION DEPLOYED SUCCESSFULLY.</div>
             </div>
         </div>
-
                 <div id="contact-modal" class="modal">
             <div class="modal-overlay"></div>
             <div class="modal-content glass no-tilt" style="max-width: 500px;">
@@ -1208,18 +1103,14 @@
                 <div id="contact-status" class="form-status">MESSAGE LOGGED SUCCESSFULLY.</div>
             </div>
         </div>
-
                 <div id="artist-modal" class="modal">
             <div class="modal-overlay"></div>
             <div class="modal-content glass artist-modal-content no-tilt">
                 <button class="close-modal">&times;</button>
-                
-                <!-- Dynamic Profile Banner (Staff & Partner) -->
                 <div class="artist-modal-banner" id="artist-modal-banner">
                     <img id="artist-modal-banner-img" class="artist-modal-banner-img" src="" alt="" style="display:none;" onerror="this.src='assets/cover.png';">
                     <div class="artist-modal-banner-overlay"></div>
                 </div>
-
                 <div class="artist-modal-inner">
                     <div class="artist-modal-header">
                         <div class="artist-modal-img-wrapper" style="width: 120px; height: 120px; position: relative;">
@@ -1242,13 +1133,11 @@
                             encrypted artist profile... no secondary transmission found.</p>
                         <div id="artist-modal-links" class="artist-modal-links"
                             style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
-                            <!-- Dynamic Links -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
         <footer>
             <div class="footer-content">
                 <div class="kernel-monitor" id="kernel-monitor">
@@ -1284,9 +1173,7 @@
                             style="color:var(--accent-blue);">ACCESSING...</span>
                     </div>
                 </div>
-
                 <div class="footer-divider"></div>
-
                 <p data-sync="footerCopyright" data-sync-target="text">&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED.
                 </p>
                 <div class="footer-links">
@@ -1309,19 +1196,14 @@
                     <span class="tech-node"><i class="fas fa-shield-alt"></i> RECAPTCHA V3</span>
                     <span class="tech-node"><i class="fas fa-signal"></i> NODES ONLINE</span>
                 </div>
-
                 <div id="visitor-connection-node" class="visitor-node">
                     [ ACCESSING CONNECTION FREQUENCY... ]
                 </div>
-
-                <!-- Development Status Node -->
                 <div class="dev-status-tag">
                     SYSTEM OPTIMIZATION IN PROGRESS // ENHANCING USER INTERFACE
                 </div>
             </div>
         </footer>
-
-        <!-- Floating Cyberpunk Music Stream Player & Real-time Visualizer -->
         <div id="floating-audio-player" class="floating-player-bar hidden">
             <div class="fp-glow-stream"></div>
             <div class="floating-player-track-info">
@@ -1336,14 +1218,12 @@
                     <div id="fp-artist" class="fp-track-artist">OBSCURA RECORD</div>
                 </div>
             </div>
-            
             <div class="floating-player-center">
                 <div class="floating-player-controls">
                     <button id="fp-prev-btn" class="fp-btn" title="Previous Track"><i class="fas fa-step-backward"></i></button>
                     <button id="fp-play-btn" class="fp-btn fp-play-btn" title="Play / Pause"><i class="fas fa-play"></i></button>
                     <button id="fp-next-btn" class="fp-btn" title="Next Track"><i class="fas fa-step-forward"></i></button>
                 </div>
-                
                 <div class="floating-player-progress-row">
                     <span id="fp-current-time" class="fp-time">0:00</span>
                     <div class="fp-progress-container" id="fp-progress-container">
@@ -1352,7 +1232,6 @@
                     <span id="fp-total-time" class="fp-time">0:30</span>
                 </div>
             </div>
-            
             <div class="floating-player-actions">
                 <div class="fp-volume-wrapper">
                     <button id="fp-mute-btn" class="fp-icon-btn" title="Mute/Unmute"><i class="fas fa-volume-up"></i></button>
@@ -1367,7 +1246,6 @@
         </div>
     </main>
     <canvas id="data-pulse-canvas" class="data-flow-canvas"></canvas>
-
         <svg style="position: absolute; width: 0; height: 0;" xmlns="http://www.w3.org/2000/svg" version="1.1">
         <defs>
             <filter id="glitch-filter">
@@ -1388,13 +1266,9 @@
             </filter>
         </defs>
     </svg>
-
         <div id="yt-player-container"
         style="position: fixed; left: -9999px; top: -9999px; width: 320px; height: 180px; pointer-events: none; opacity: 0;">
     </div>
-
-
     <script src="https://www.youtube.com/iframe_api"></script>
 </body>
-
 </html>
