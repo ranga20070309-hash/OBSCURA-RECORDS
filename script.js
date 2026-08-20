@@ -1612,7 +1612,15 @@ const initPortal = () => {
             db.ref('partner_status').on('value', snapshot => {
                 partnersGrid.innerHTML = '';
                 const allPartners = snapshot.val() || {};
-                const sortedPartners = Object.entries(allPartners).sort((a, b) => {
+                const sortedPartners = Object.entries(allPartners).filter(([id, data]) => {
+                    if (!data) return false;
+                    const name = (data.name || '').trim().toLowerCase();
+                    const tagline = (data.tagline || '').trim().toLowerCase();
+                    // Filter out legacy ITX record label card or old unlinked bot ghost
+                    if (id === '859727100758982666' && (name.includes('itx') || !name)) return false;
+                    if (name.includes('itx record') || tagline.includes('itx record') || name === 'itx') return false;
+                    return true;
+                }).sort((a, b) => {
                     const orderA = (a[1] && typeof a[1].order === 'number') ? a[1].order : 99;
                     const orderB = (b[1] && typeof b[1].order === 'number') ? b[1].order : 99;
                     return orderA - orderB;
