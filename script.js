@@ -1994,41 +1994,36 @@ const initPortal = () => {
                     }
                 });
 
-                // DISCORD BOT SECTION VISIBILITY & STATUS GATING
-                const botSection = document.getElementById('discord-bot');
-                const navBot = document.getElementById('nav-bot');
-                const sideNavBot = document.getElementById('side-nav-bot');
-                if (botSection) {
+                // DISCORD WIDGET CARD VISIBILITY & REAL-TIME STATUS
+                const botGatewaySection = document.getElementById('discord-gateway');
+                if (botGatewaySection) {
                     if (data.showDiscordBot === 'Hidden') {
-                        botSection.style.setProperty('display', 'none', 'important');
-                        if (navBot) navBot.style.setProperty('display', 'none', 'important');
-                        if (sideNavBot) sideNavBot.style.setProperty('display', 'none', 'important');
+                        botGatewaySection.style.setProperty('display', 'none', 'important');
                     } else {
-                        botSection.style.removeProperty('display');
-                        if (navBot) navBot.style.removeProperty('display');
-                        if (sideNavBot) sideNavBot.style.removeProperty('display');
+                        botGatewaySection.style.removeProperty('display');
                     }
                 }
 
                 // Bot Status & Live Indicator Color
                 const botStatusText = document.getElementById('bot-status-text');
+                const botStatusBadge = document.getElementById('bot-status-badge');
                 const botStatusDot = document.getElementById('bot-status-dot');
                 const botLivePulse = document.getElementById('bot-live-pulse');
-                const rawStatus = (data.botStatus || 'ONLINE // OPERATIONAL').toUpperCase();
+                const rawStatus = (data.botStatus || 'ONLINE').toUpperCase();
                 if (botStatusText) botStatusText.textContent = rawStatus;
 
                 if (rawStatus.includes('OFFLINE')) {
-                    if (botStatusText) botStatusText.className = 'bot-status-value offline';
-                    if (botStatusDot) { botStatusDot.className = 'bot-status-dot offline'; botStatusDot.title = 'Bot Status: Offline'; }
-                    if (botLivePulse) botLivePulse.className = 'bot-status-pulse offline';
-                } else if (rawStatus.includes('IDLE') || rawStatus.includes('MAINTENANCE') || rawStatus.includes('UPGRAD')) {
-                    if (botStatusText) botStatusText.className = 'bot-status-value idle';
-                    if (botStatusDot) { botStatusDot.className = 'bot-status-dot idle'; botStatusDot.title = 'Bot Status: Idle / Maintenance'; }
-                    if (botLivePulse) botLivePulse.className = 'bot-status-pulse idle';
+                    if (botStatusBadge) botStatusBadge.className = 'dc-live-badge offline';
+                    if (botStatusDot) { botStatusDot.className = 'dc-status-dot offline'; botStatusDot.title = 'Bot Status: Offline'; }
+                    if (botLivePulse) botLivePulse.className = 'dc-pulse-dot offline';
+                } else if (rawStatus.includes('IDLE') || rawStatus.includes('MAINTENANCE')) {
+                    if (botStatusBadge) botStatusBadge.className = 'dc-live-badge idle';
+                    if (botStatusDot) { botStatusDot.className = 'dc-status-dot idle'; botStatusDot.title = 'Bot Status: Idle'; }
+                    if (botLivePulse) botLivePulse.className = 'dc-pulse-dot idle';
                 } else {
-                    if (botStatusText) botStatusText.className = 'bot-status-value online';
-                    if (botStatusDot) { botStatusDot.className = 'bot-status-dot online'; botStatusDot.title = 'Bot Status: Online & Active'; }
-                    if (botLivePulse) botLivePulse.className = 'bot-status-pulse online';
+                    if (botStatusBadge) botStatusBadge.className = 'dc-live-badge online';
+                    if (botStatusDot) { botStatusDot.className = 'dc-status-dot online'; botStatusDot.title = 'Bot Status: Online'; }
+                    if (botLivePulse) botLivePulse.className = 'dc-pulse-dot online';
                 }
                 
                 // DYNAMIC PORTAL ENGINE VERSION SYNC
@@ -2040,6 +2035,38 @@ const initPortal = () => {
                 }
             }
         });
+
+        // Real-Time Discord Bot Presence & Server Telemetry Sync
+        try {
+            const syncDiscordStats = (snap) => {
+                const stats = snap ? snap.val() : null;
+                if (!stats) return;
+                const mEl = document.getElementById('bot-member-count');
+                const onEl = document.getElementById('bot-online-count');
+                const idleEl = document.getElementById('bot-idle-count');
+                const dndEl = document.getElementById('bot-dnd-count');
+                const botEl = document.getElementById('bot-bots-count');
+                const statusText = document.getElementById('bot-status-text');
+                const statusBadge = document.getElementById('bot-status-badge');
+                const statusDot = document.getElementById('bot-status-dot');
+
+                if (stats.members !== undefined && mEl) mEl.textContent = stats.members;
+                if (stats.online !== undefined && onEl) onEl.textContent = stats.online;
+                if (stats.idle !== undefined && idleEl) idleEl.textContent = stats.idle;
+                if (stats.dnd !== undefined && dndEl) dndEl.textContent = stats.dnd;
+                if (stats.bots !== undefined && botEl) botEl.textContent = stats.bots;
+                if (stats.status) {
+                    const st = String(stats.status).toUpperCase();
+                    if (statusText) statusText.textContent = st;
+                    const cls = st.includes('OFF') ? 'offline' : (st.includes('IDLE') ? 'idle' : 'online');
+                    if (statusBadge) statusBadge.className = 'dc-live-badge ' + cls;
+                    if (statusDot) statusDot.className = 'dc-status-dot ' + cls;
+                }
+            };
+
+            db.ref('discord_stats').on('value', syncDiscordStats);
+            db.ref('bot_status').on('value', syncDiscordStats);
+        } catch (e) {}
 
         // Sync Modal Dynamic Collections (FAQ & Privacy)
         function renderAccordion(containerId, items) {
