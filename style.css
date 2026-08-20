@@ -2129,6 +2129,533 @@ section {
     font-family: var(--font-heading);
 }
 
+/* ==========================================================================
+   DISCORD BOT & REAL-TIME COMMUNITY NEXUS SECTION
+   ========================================================================== */
+.discord-bot-section {
+    padding: 6rem 4% 4rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    position: relative;
+    z-index: 10;
+}
+
+/* Header Badge Pill */
+.bot-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: rgba(0, 240, 255, 0.06);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    padding: 0.4rem 1.1rem;
+    border-radius: 30px;
+    margin-bottom: 1.2rem;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+.bot-badge-text {
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14rem;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+}
+
+/* Live Pulsing Dot Indicator */
+.bot-status-pulse {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #00ff8c;
+    box-shadow: 0 0 12px #00ff8c;
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.bot-status-pulse::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid #00ff8c;
+    animation: botPulseRing 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+.bot-status-pulse.idle {
+    background: #ffaa00;
+    box-shadow: 0 0 12px #ffaa00;
+}
+.bot-status-pulse.idle::after {
+    border-color: #ffaa00;
+}
+
+.bot-status-pulse.offline {
+    background: #ff0055;
+    box-shadow: 0 0 12px #ff0055;
+}
+.bot-status-pulse.offline::after {
+    border-color: #ff0055;
+    animation: none;
+}
+
+@keyframes botPulseRing {
+    0% { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(2.4); opacity: 0; }
+}
+
+/* Master HUD Glassmorphic Container */
+.bot-hud-wrapper {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(10, 10, 20, 0.6) 100%);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-radius: 28px;
+    padding: 2.4rem;
+    margin-bottom: 2.8rem;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    backdrop-filter: blur(25px);
+}
+
+.bot-hud-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-blue), var(--accent-magenta), transparent);
+}
+
+/* HUD Left: Bot Avatar & Profile */
+.bot-hud-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1 1 340px;
+}
+
+.bot-avatar-wrap {
+    position: relative;
+    width: 82px;
+    height: 82px;
+    flex-shrink: 0;
+}
+
+.bot-avatar-glow {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 240, 255, 0.4), transparent 70%);
+    animation: botAvatarBreath 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes botAvatarBreath {
+    0% { transform: scale(0.95); opacity: 0.5; }
+    100% { transform: scale(1.1); opacity: 0.9; }
+}
+
+.bot-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(0, 240, 255, 0.5);
+    background: #0d0d18;
+    position: relative;
+    z-index: 2;
+}
+
+.bot-status-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 3px solid #0a0a14;
+    background: #00ff8c;
+    box-shadow: 0 0 10px #00ff8c;
+    z-index: 3;
+}
+.bot-status-dot.idle {
+    background: #ffaa00;
+    box-shadow: 0 0 10px #ffaa00;
+}
+.bot-status-dot.offline {
+    background: #ff0055;
+    box-shadow: 0 0 10px #ff0055;
+}
+
+.bot-profile-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.bot-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.bot-identity h3 {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: 0.08rem;
+    color: #fff;
+    margin: 0;
+}
+
+.bot-tag-badge {
+    background: #5865f2;
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    letter-spacing: 0.06rem;
+    font-family: sans-serif;
+}
+
+.bot-verified-check {
+    color: var(--accent-blue);
+    font-size: 0.95rem;
+}
+
+.bot-tagline {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+    font-family: var(--font-body);
+}
+
+.bot-status-indicator-box {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.3rem;
+}
+
+.bot-status-label {
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08rem;
+    color: var(--text-secondary);
+}
+
+.bot-status-value {
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+
+.bot-status-value.online {
+    color: #00ff8c;
+    background: rgba(0, 255, 140, 0.1);
+    border: 1px solid rgba(0, 255, 140, 0.3);
+}
+.bot-status-value.idle {
+    color: #ffaa00;
+    background: rgba(255, 170, 0, 0.1);
+    border: 1px solid rgba(255, 170, 0, 0.3);
+}
+.bot-status-value.offline {
+    color: #ff0055;
+    background: rgba(255, 0, 85, 0.1);
+    border: 1px solid rgba(255, 0, 85, 0.3);
+}
+
+/* HUD Metrics Grid */
+.bot-metrics-grid {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    flex: 2 1 450px;
+    justify-content: center;
+}
+
+.bot-metric-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 1rem 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1 1 0;
+    min-width: 140px;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    backdrop-filter: blur(10px);
+}
+
+.bot-metric-card:hover {
+    transform: translateY(-3px);
+    background: rgba(0, 240, 255, 0.06);
+    border-color: rgba(0, 240, 255, 0.3);
+    box-shadow: 0 10px 25px rgba(0, 240, 255, 0.15);
+}
+
+.metric-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(88, 101, 242, 0.15);
+    border: 1px solid rgba(88, 101, 242, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5865f2;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.metric-icon-wrap.cyan {
+    background: rgba(0, 240, 255, 0.12);
+    border-color: rgba(0, 240, 255, 0.35);
+    color: var(--accent-blue);
+}
+
+.metric-icon-wrap.magenta {
+    background: rgba(183, 0, 255, 0.12);
+    border-color: rgba(183, 0, 255, 0.35);
+    color: var(--accent-magenta);
+}
+
+.metric-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.metric-number {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 0.04rem;
+    line-height: 1.2;
+}
+
+.metric-label {
+    font-family: var(--font-heading);
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 0.08rem;
+    text-transform: uppercase;
+}
+
+/* Actions Row in HUD */
+.bot-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1 1 100%;
+    justify-content: flex-end;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 1.5rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.bot-btn-glow {
+    box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.bot-invite-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+/* Bot Features 6-Card Grid */
+.bot-features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.bot-feature-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(12, 12, 22, 0.7) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    padding: 2rem 1.8rem;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    backdrop-filter: blur(15px);
+}
+
+.bot-feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.5), transparent);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.bot-feature-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(0, 240, 255, 0.35);
+    background: linear-gradient(145deg, rgba(0, 240, 255, 0.05) 0%, rgba(14, 14, 28, 0.85) 100%);
+    box-shadow: 0 15px 35px rgba(0, 240, 255, 0.12);
+}
+
+.bot-feature-card:hover::before {
+    opacity: 1;
+}
+
+.feat-icon-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(88, 101, 242, 0.12);
+    border: 1px solid rgba(88, 101, 242, 0.3);
+    color: #5865f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    margin-bottom: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.feat-icon-box.cyan {
+    background: rgba(0, 240, 255, 0.12);
+    border-color: rgba(0, 240, 255, 0.3);
+    color: var(--accent-blue);
+}
+
+.feat-icon-box.magenta {
+    background: rgba(183, 0, 255, 0.12);
+    border-color: rgba(183, 0, 255, 0.3);
+    color: var(--accent-magenta);
+}
+
+.bot-feature-card:hover .feat-icon-box {
+    transform: scale(1.08);
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+}
+
+.feat-badge {
+    display: inline-block;
+    width: fit-content;
+    font-family: var(--font-heading);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.12rem;
+    color: var(--accent-blue);
+    background: rgba(0, 240, 255, 0.08);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+}
+
+.bot-feature-card h4 {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 0.6rem 0;
+    letter-spacing: 0.04rem;
+}
+
+.bot-feature-card p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+    font-family: var(--font-body);
+}
+
+/* Responsive queries */
+@media (max-width: 1024px) {
+    .bot-features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .bot-metrics-grid {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .discord-bot-section {
+        padding: 4rem 4% 3rem;
+    }
+    .bot-hud-wrapper {
+        padding: 1.6rem 1.2rem;
+        border-radius: 20px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.4rem;
+    }
+    .bot-hud-left {
+        flex-direction: row;
+        gap: 1rem;
+    }
+    .bot-avatar-wrap {
+        width: 64px;
+        height: 64px;
+    }
+    .bot-identity h3 {
+        font-size: 1.15rem;
+    }
+    .bot-metrics-grid {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.8rem;
+    }
+    .bot-metric-card {
+        width: 100%;
+        padding: 0.85rem 1.1rem;
+    }
+    .bot-actions-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.8rem;
+    }
+    .bot-actions-row a {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+    .bot-features-grid {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+    }
+    .bot-feature-card {
+        padding: 1.6rem 1.4rem;
+        border-radius: 18px;
+    }
+}
+
 /* Contact Section (Social Links) */
 .contact-section {
     padding: 7rem 4%;
