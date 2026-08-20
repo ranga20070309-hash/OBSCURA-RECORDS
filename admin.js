@@ -1305,6 +1305,22 @@ function initStaffEngine() {
 
     db.ref('partner_status').on('value', (snap) => {
         cachedPartners = snap.val() || {};
+
+        // Automatic permanent cleanup of legacy Discord bot ID (859727100758982666) / ITX ghosts
+        if (firebase.auth().currentUser && cachedPartners['859727100758982666']) {
+            const legacyData = cachedPartners['859727100758982666'];
+            const legacyName = (legacyData.name || '').trim().toLowerCase();
+            if (legacyName && !legacyName.includes('itx') && !cachedPartners['goost_music']) {
+                // If it was renamed to GOOST MUSIC or similar, migrate cleanly to 'goost_music'
+                db.ref('partner_status/goost_music').set(legacyData).then(() => {
+                    db.ref('partner_status/859727100758982666').remove();
+                }).catch(() => {});
+            } else {
+                // Permanently remove legacy ITX ID from Firebase
+                db.ref('partner_status/859727100758982666').remove().catch(() => {});
+            }
+        }
+
         updateStaffCountBadge();
         if (currentStaffView === 'partner') renderStaffProfiles();
     });
@@ -1318,7 +1334,21 @@ function initStaffEngine() {
     function renderStaffProfiles() {
         if (!container) return;
         const isPartner = currentStaffView === 'partner';
-        const dataObj = isPartner ? cachedPartners : cachedStaff;
+        const rawDataObj = isPartner ? cachedPartners : cachedStaff;
+        const dataObj = {};
+
+        for (const [k, v] of Object.entries(rawDataObj)) {
+            if (!v) continue;
+            if (isPartner) {
+                const name = (v.name || '').trim().toLowerCase();
+                const tagline = (v.tagline || '').trim().toLowerCase();
+                // Filter out legacy ITX ghost / old bot entries
+                if (k === '859727100758982666' && (name.includes('itx') || !name)) continue;
+                if (name.includes('itx record') || tagline.includes('itx record') || name === 'itx') continue;
+            }
+            dataObj[k] = v;
+        }
+
         const entries = Object.entries(dataObj).sort((a, b) => {
             const orderA = (a[1] && typeof a[1].order === 'number') ? a[1].order : 99;
             const orderB = (b[1] && typeof b[1].order === 'number') ? b[1].order : 99;
