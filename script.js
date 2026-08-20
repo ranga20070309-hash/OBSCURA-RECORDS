@@ -1749,15 +1749,44 @@ const initPortal = () => {
             }
 
             const handleResize = () => {
-                width = canvas.width = window.innerWidth;
-                height = canvas.height = window.innerHeight;
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                canvas.style.width = width + 'px';
+                canvas.style.height = height + 'px';
+                ctx.scale(dpr, dpr);
             };
 
+            handleResize();
             window.addEventListener('resize', handleResize);
+            window.addEventListener('orientationchange', handleResize);
 
             if (mCanvasAnimId) cancelAnimationFrame(mCanvasAnimId);
             render();
         }
+
+        // Strict iOS Safari & Mobile Touchmove / Rubber-band Lock for Maintenance Mode
+        window.addEventListener('touchmove', (e) => {
+            if (document.body.classList.contains('maintenance-active')) {
+                const card = e.target.closest('.m-glass-card');
+                if (card && card.scrollHeight > card.clientHeight) {
+                    return;
+                }
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        window.addEventListener('wheel', (e) => {
+            if (document.body.classList.contains('maintenance-active')) {
+                const card = e.target.closest('.m-glass-card');
+                if (card && card.scrollHeight > card.clientHeight) {
+                    return;
+                }
+                e.preventDefault();
+            }
+        }, { passive: false });
 
         // --- FLOATING ADMIN PREVIEW BANNER ENGINE ---
         function renderAdminPreviewBanner(active) {
@@ -1782,7 +1811,7 @@ const initPortal = () => {
                     box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
                     color: #fff;
                     padding: 8px 16px;
-                    z-index: 999999;
+                    z-index: 99999999;
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
@@ -1810,15 +1839,24 @@ const initPortal = () => {
 
                 document.getElementById('apb-toggle-screen').addEventListener('click', () => {
                     const overlay = document.getElementById('maintenance-overlay');
+                    const mainSite = document.getElementById('main-site');
                     if (overlay) {
                         if (overlay.style.display === 'none' || !overlay.style.display) {
                             overlay.style.display = 'flex';
                             document.body.classList.add('no-scroll', 'maintenance-active');
                             document.documentElement.classList.add('no-scroll', 'maintenance-active');
+                            if (mainSite) {
+                                mainSite.style.setProperty('display', 'none', 'important');
+                                mainSite.style.setProperty('visibility', 'hidden', 'important');
+                            }
                         } else {
                             overlay.style.display = 'none';
                             document.body.classList.remove('no-scroll', 'maintenance-active');
                             document.documentElement.classList.remove('no-scroll', 'maintenance-active');
+                            if (mainSite) {
+                                mainSite.style.removeProperty('display');
+                                mainSite.style.removeProperty('visibility');
+                            }
                         }
                     }
                 });
@@ -1838,6 +1876,8 @@ const initPortal = () => {
             if (data) {
                 // --- MAINTENANCE MODE OVERRIDE (ADMIN SITE ONLY) ---
                 const maintenanceOverlay = document.getElementById('maintenance-overlay');
+                const mainSite = document.getElementById('main-site');
+                const entrance = document.getElementById('entrance-screen');
                 
                 // Retrieve root key from siteData globals or fallback to master passphrase
                 const activeRootKey = (data.security && data.security.rootKey) ? data.security.rootKey : "ORC ADMINS PASS 2026";
@@ -1860,6 +1900,15 @@ const initPortal = () => {
                         maintenanceOverlay.style.display = 'flex';
                         document.body.classList.add('no-scroll', 'maintenance-active');
                         document.documentElement.classList.add('no-scroll', 'maintenance-active');
+
+                        if (mainSite) {
+                            mainSite.style.setProperty('display', 'none', 'important');
+                            mainSite.style.setProperty('visibility', 'hidden', 'important');
+                        }
+                        if (entrance) {
+                            entrance.style.setProperty('display', 'none', 'important');
+                        }
+
                         const mTitle = document.getElementById('m-title');
                         const mMsg = document.getElementById('m-msg');
                         const mTag = document.getElementById('m-status-tag');
@@ -1872,6 +1921,11 @@ const initPortal = () => {
                         maintenanceOverlay.style.display = 'none';
                         document.body.classList.remove('no-scroll', 'maintenance-active');
                         document.documentElement.classList.remove('no-scroll', 'maintenance-active');
+
+                        if (mainSite) {
+                            mainSite.style.removeProperty('display');
+                            mainSite.style.removeProperty('visibility');
+                        }
 
                         if (mCanvasAnimId) cancelAnimationFrame(mCanvasAnimId);
                     }
