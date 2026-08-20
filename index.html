@@ -206,6 +206,7 @@
                     <span data-target="#artists" class="nav-item" data-sync="navStaff"
                         data-sync-target="text">STAFF</span>
                     <span data-target="#partners" class="nav-item">PARTNERS</span>
+                    <span id="nav-bot" data-target="#discord-bot" class="nav-item" data-sync="navDiscordBot" data-sync-target="text">DISCORD BOT</span>
                     <span data-target="#contact" class="nav-item" data-sync="navContact"
                         data-sync-target="text">CONTACT</span>
                     <span id="open-form" class="nav-item">SEND DEMO</span>
@@ -246,6 +247,9 @@
                 </span>
                 <span data-target="#partners" class="sidebar-nav-item nav-item">
                     <i class="fas fa-handshake"></i> <span>PARTNERS</span>
+                </span>
+                <span id="side-nav-bot" data-target="#discord-bot" class="sidebar-nav-item nav-item">
+                    <i class="fas fa-robot"></i> <span data-sync="navDiscordBot" data-sync-target="text">DISCORD BOT</span>
                 </span>
                 <span data-target="#contact" class="sidebar-nav-item nav-item">
                     <i class="fas fa-satellite-dish"></i> <span data-sync="navContact"
@@ -681,6 +685,131 @@
             </div>
             <div id="partners-grid" class="artists-grid">
                 <!-- Dynamically rendered from Firebase partner_status/ by script.js -->
+            </div>
+        </section>
+
+        <!-- =================================================================
+             DISCORD BOT & REAL-TIME COMMUNITY NEXUS SECTION
+             ================================================================= -->
+        <section id="discord-bot" class="discord-bot-section">
+            <div class="section-header">
+                <div class="bot-badge-pill">
+                    <span class="bot-status-pulse" id="bot-live-pulse"></span>
+                    <span class="bot-badge-text" id="bot-header-badge" data-sync="botHeaderBadge" data-sync-target="text">DISCORD BOT // NEURAL GATEWAY</span>
+                </div>
+                <h2 class="section-title" data-sync="botSectionTitle" data-sync-target="html">OBSCURA <span class="accent">DISCORD BOT</span></h2>
+                <p class="section-desc" data-sync="botSectionDesc" data-sync-target="text">REAL-TIME DISCORD GATEWAY // 24/7 MUSIC STREAMING, COMMUNITY AUTOMATION & ARTIST PROTOCOLS</p>
+            </div>
+
+            <!-- Live Telemetry & Server Metrics HUD -->
+            <div class="bot-hud-wrapper glass">
+                <div class="bot-hud-left">
+                    <div class="bot-avatar-wrap">
+                        <div class="bot-avatar-glow"></div>
+                        <img src="assets/OCR.png" id="bot-avatar-img" class="bot-avatar" alt="Obscura Bot" data-sync="botAvatarUrl" data-sync-target="src" onerror="this.src='assets/OCR.png'">
+                        <span class="bot-status-dot online" id="bot-status-dot" title="Bot Status: Online"></span>
+                    </div>
+                    <div class="bot-profile-meta">
+                        <div class="bot-identity">
+                            <h3 id="bot-name-display" data-sync="botName" data-sync-target="text">OBSCURA SOUND BOT</h3>
+                            <span class="bot-tag-badge">BOT</span>
+                            <span class="bot-verified-check"><i class="fas fa-check-circle"></i></span>
+                        </div>
+                        <p class="bot-tagline" id="bot-tagline-display" data-sync="botTagline" data-sync-target="text">Official Void Transmission & Audio Hub</p>
+                        <div class="bot-status-indicator-box">
+                            <span class="bot-status-label">STATUS:</span>
+                            <span class="bot-status-value online" id="bot-status-text" data-sync="botStatus" data-sync-target="text">ONLINE // OPERATIONAL</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Numerical Telemetry Counters -->
+                <div class="bot-metrics-grid">
+                    <div class="bot-metric-card">
+                        <div class="metric-icon-wrap"><i class="fas fa-users"></i></div>
+                        <div class="metric-info">
+                            <span class="metric-number" id="bot-member-count" data-sync="botMemberCount" data-sync-target="text">1,250+</span>
+                            <span class="metric-label">COMMUNITY MEMBERS</span>
+                        </div>
+                    </div>
+
+                    <div class="bot-metric-card">
+                        <div class="metric-icon-wrap cyan"><i class="fas fa-headphones-alt"></i></div>
+                        <div class="metric-info">
+                            <span class="metric-number" id="bot-online-count" data-sync="botOnlineCount" data-sync-target="text">420+</span>
+                            <span class="metric-label">ONLINE & LISTENING</span>
+                        </div>
+                    </div>
+
+                    <div class="bot-metric-card">
+                        <div class="metric-icon-wrap magenta"><i class="fas fa-robot"></i></div>
+                        <div class="metric-info">
+                            <span class="metric-number" id="bot-active-count" data-sync="botActiveBotsCount" data-sync-target="text">3 BOTS</span>
+                            <span class="metric-label">CLUSTER BOTS ACTIVE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Direct Action CTAs -->
+                <div class="bot-actions-row">
+                    <a href="https://discord.gg/E3Sn72cpBR" id="bot-join-discord-btn" target="_blank" class="cta-primary-small bot-btn-glow" data-sync="botDiscordInvite" data-sync-target="href">
+                        <i class="fab fa-discord"></i> <span data-sync="botBtnJoinText" data-sync-target="text">JOIN DISCORD COMMUNITY</span>
+                    </a>
+                    <a href="https://discord.gg/E3Sn72cpBR" id="bot-invite-btn" target="_blank" class="cyber-btn secondary sm bot-invite-link" data-sync="botInviteUrl" data-sync-target="href">
+                        <i class="fas fa-plus-circle"></i> <span data-sync="botBtnInviteText" data-sync-target="text">ACCESS / INVITE BOT</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Bot Features & Capabilities Grid -->
+            <div class="bot-features-grid">
+                <!-- Feature 1 -->
+                <div class="bot-feature-card glass">
+                    <div class="feat-icon-box"><i class="fas fa-compact-disc"></i></div>
+                    <div class="feat-badge" data-sync="botF1Badge" data-sync-target="text">320KBPS HD AUDIO</div>
+                    <h4 data-sync="botF1Title" data-sync-target="text">Lossless Music Streaming</h4>
+                    <p data-sync="botF1Desc" data-sync-target="text">Crystal-clear lossless sound playback with 24/7 uninterrupted radio queues, Spotify, SoundCloud, YouTube and direct audio stream support.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bot-feature-card glass">
+                    <div class="feat-icon-box cyan"><i class="fas fa-upload"></i></div>
+                    <div class="feat-badge" data-sync="botF2Badge" data-sync-target="text">DIRECT SUBMISSION</div>
+                    <h4 data-sync="botF2Title" data-sync-target="text">Instant Demo Drop & Review</h4>
+                    <p data-sync="botF2Desc" data-sync-target="text">Producers can submit unreleased tracks via Discord slash commands, track A&R review stages in real-time, and receive instant feedback.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bot-feature-card glass">
+                    <div class="feat-icon-box magenta"><i class="fas fa-sliders-h"></i></div>
+                    <div class="feat-badge" data-sync="botF3Badge" data-sync-target="text">DSP AUDIO FX</div>
+                    <h4 data-sync="botF3Title" data-sync-target="text">Custom Soundboard & Modulators</h4>
+                    <p data-sync="botF3Desc" data-sync-target="text">Interactive real-time audio filters including slowed+reverb, nightcore, 8D audio spatializer, bass booster, and customizable studio SFX.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="bot-feature-card glass">
+                    <div class="feat-icon-box"><i class="fas fa-wave-square"></i></div>
+                    <div class="feat-badge" data-sync="botF4Badge" data-sync-target="text">KEY & BPM DETECT</div>
+                    <h4 data-sync="botF4Title" data-sync-target="text">Sonic Analyzer & Waveforms</h4>
+                    <p data-sync="botF4Desc" data-sync-target="text">Live spectrum waveform generation, automatic musical key and tempo BPM detection, lyric sync, and producer collaboration matchmaking.</p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="bot-feature-card glass">
+                    <div class="feat-icon-box cyan"><i class="fas fa-id-badge"></i></div>
+                    <div class="feat-badge" data-sync="botF5Badge" data-sync-target="text">CREATOR PROTOCOL</div>
+                    <h4 data-sync="botF5Title" data-sync-target="text">Artist Roles & Stems Access</h4>
+                    <p data-sync="botF5Desc" data-sync-target="text">Automatic verification of verified artists, access to exclusive sample packs, stem libraries, remix contests, and VIP studio voice rooms.</p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="bot-feature-card glass">
+                    <div class="feat-icon-box magenta"><i class="fas fa-shield-alt"></i></div>
+                    <div class="feat-badge" data-sync="botF6Badge" data-sync-target="text">24/7 AI GUARDIAN</div>
+                    <h4 data-sync="botF6Title" data-sync-target="text">Autonomous Cluster Security</h4>
+                    <p data-sync="botF6Desc" data-sync-target="text">High-speed raid protection, automated release drops, smart role syncing, and integrated Obscura Records database telemetry.</p>
+                </div>
             </div>
         </section>
 
