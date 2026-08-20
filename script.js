@@ -2189,26 +2189,27 @@ const initPortal = () => {
                 }
 
                 // 2. Auto URL Artwork Detector Fallback (YouTube)
-                // (Runs instantly, but Spotify will overwrite it if Spotify URL exists and succeeds)
                 if (ytLink && ytLink.href && (ytLink.href.includes('youtube.com/watch') || ytLink.href.includes('youtu.be/'))) {
                     try {
                         let videoId = '';
                         if (ytLink.href.includes('youtube.com/watch')) {
-                            videoId = new URL(ytLink.href).searchParams.get('v');
+                            videoId = new URL(ytLink.href).searchParams.get('v') || '';
                         } else if (ytLink.href.includes('youtu.be/')) {
-                            videoId = ytLink.href.split('youtu.be/')[1].split('?')[0];
+                            videoId = ytLink.href.split('youtu.be/')[1].split('?')[0] || '';
                         }
-                        // Only set YouTube cover if it hasn't been set by Spotify yet (or if Spotify is still loading, Spotify will safely override)
-                        if (videoId && coverImg && coverImg.src.includes('cover')) {
+                        // Valid YouTube video IDs are 11 characters
+                        if (videoId && videoId.length === 11 && coverImg && coverImg.src.includes('cover')) {
                             const ytThumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                            coverImg.onerror = () => { coverImg.src = 'assets/cover.jpg'; };
                             coverImg.src = ytThumb;
                             coverImg.style.filter = "none";
-                            if (cdImg) cdImg.src = ytThumb;
+                            if (cdImg) {
+                                cdImg.onerror = () => { cdImg.src = 'assets/cover.jpg'; };
+                                cdImg.src = ytThumb;
+                            }
                             if (playBtn) playBtn.setAttribute('data-image', ytThumb);
                         }
-                    } catch (e) {
-                        console.warn('URL Parse Error:', e);
-                    }
+                    } catch (e) {}
                 }
 
                 if (playBtn) {
@@ -2781,33 +2782,13 @@ const initKernelSecurity = () => {
         if ((widthDiff || heightDiff) && !devToolsOpen) {
             devToolsOpen = true;
             if (kmShield) {
-                kmShield.textContent = "VIOLATION DETECTED";
-                kmShield.style.color = "#ff0080";
-                kmShield.classList.add('scanning');
-            }
-            
-            // DEPLOY INTELLIGENT TRACE & LOG
-            reportIntrusion('CONSOLE_TAMPER');
-            
-            console.warn("%c KERNEL VIOLATION DETECTED: UNAUTHORIZED ACCESS ATTEMPTED ", "background: #ff0080; color: #fff; font-size: 20px; font-weight: bold;");
-        } else if (!(widthDiff || heightDiff) && devToolsOpen) {
-            devToolsOpen = false;
-            if (kmShield) {
                 kmShield.textContent = "SHIELD ARMED";
                 kmShield.style.color = "var(--accent-blue)";
-                kmShield.classList.remove('scanning');
             }
-            // AUTO-CLEAR ALARM AFTER 5 SECONDS OF PEACE
-            setTimeout(() => {
-                if (!devToolsOpen && typeof firebase !== 'undefined') {
-                    try {
-                        const p = firebase.database().ref('siteData/security/globalAlarm/active').set(false);
-                        if (p && typeof p.catch === 'function') p.catch(() => {});
-                    } catch (e) {}
-                }
-            }, 5000);
+        } else if (!(widthDiff || heightDiff) && devToolsOpen) {
+            devToolsOpen = false;
         }
-    }, 1500);
+    }, 2000);
 };
 
 // --- PRO-GRADE SECURITY & VISITOR TELEMETRY ENGINE ---
@@ -2941,23 +2922,28 @@ const ObscuraTelemetry = (() => {
                 details: typeof payload === 'string' ? { message: payload } : (payload || {})
             };
 
-            const safeExec = (fn) => {
+            const silentPush = (refPath, dataObj) => {
                 try {
-                    const result = fn();
-                    if (result && typeof result.catch === 'function') {
-                        result.catch(() => {});
-                    }
+                    const p = db.ref(refPath).push(dataObj, () => {});
+                    if (p && typeof p.catch === 'function') p.catch(() => {});
+                } catch (e) {}
+            };
+
+            const silentSet = (refPath, dataObj) => {
+                try {
+                    const p = db.ref(refPath).set(dataObj, () => {});
+                    if (p && typeof p.catch === 'function') p.catch(() => {});
                 } catch (e) {}
             };
 
             // Push to telemetry visitor logs collection
-            safeExec(() => db.ref('siteData/telemetry/visitor_logs').push(entry));
+            silentPush('siteData/telemetry/visitor_logs', entry);
 
             // Push to primary security logs collection
-            safeExec(() => db.ref('siteData/security/logs').push(entry));
+            silentPush('siteData/security/logs', entry);
 
             // Push to audit logs collection
-            safeExec(() => db.ref('siteData/security/audit_logs').push({
+            silentPush('siteData/security/audit_logs', {
                 id: entry.id,
                 type: entry.type,
                 action: `[${type}] ${typeof payload === 'string' ? payload : (payload.message || JSON.stringify(payload))}`,
@@ -2969,20 +2955,7 @@ const ObscuraTelemetry = (() => {
                 device: device,
                 path: entry.path,
                 details: entry.details
-            }));
-
-            // If security violation or console tamper, raise alarm safely
-            if (type === 'CONSOLE_TAMPER' || type === 'INJECTION_ATTEMPT' || type === 'SECURITY_VIOLATION') {
-                safeExec(() => db.ref('siteData/security/globalAlarm').set({
-                    active: true,
-                    type: type,
-                    time: Date.now(),
-                    ip: location.ip,
-                    location: `${location.city}, ${location.country}`,
-                    details: payload
-                }));
-                safeExec(() => db.ref('siteData/security/violations').push(entry));
-            }
+            });
         } catch (err) {
             // Silently suppress client-side errors
         }
