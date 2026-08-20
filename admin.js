@@ -279,6 +279,7 @@ function initDashboardEngine() {
     initReleasesEngine();
     initUpcomingEngine();
     initGhostProdEngine();
+    initDiscordBotAdminEngine();
     initStaffEngine();
     initDemosEngine();
     initContactEngine();
@@ -300,6 +301,7 @@ function initNavigation() {
         'releases-panel': { title: '<i class="fas fa-compact-disc"></i> RELEASE CATALOG ARCHIVE', desc: 'Publish, edit, and reorder music releases with instant audio streaming IDs.' },
         'upcoming-panel': { title: '<i class="fas fa-clock"></i> UPCOMING RELEASES & TEASERS', desc: 'Configure teaser artwork, countdown date, and production status tags.' },
         'ghost-production-panel': { title: '<i class="fas fa-ghost"></i> GHOST PRODUCTION DIRECTIVES', desc: 'Manage custom production pricing tiers, turnaround timeline, and feature lists.' },
+        'bot-admin-panel': { title: '<i class="fas fa-robot"></i> DISCORD BOT // NEURAL GATEWAY', desc: 'Real-time telemetry, server metrics, bot avatar, capabilities showcase, and destination invite links.' },
         'staff-panel': { title: '<i class="fas fa-users-cog"></i> PERSONNEL & COLLABORATOR PROFILES', desc: 'Custom avatars, banners, biographies, sort order, and social platforms for personnel.' },
         'demo-inbox-panel': { title: '<i class="fas fa-inbox"></i> DEMO SUBMISSIONS INBOX', desc: 'Review, stream, analyze link security, and tag artist demo transmissions.' },
         'contact-inbox-panel': { title: '<i class="fas fa-envelope-open-text"></i> CONTACT INQUIRIES', desc: 'Direct communications submitted via the public contact portal.' },
@@ -1178,6 +1180,144 @@ function initGhostProdEngine() {
             db.ref('siteData/globals').update(updates).then(() => {
                 bumpSiteVersion("Updated All Ghost Production Options");
                 showToast("ALL GHOST PRODUCTION OPTIONS SAVED & SYNCED!");
+            }).catch(err => showToast("ERROR: " + err.message, 'error'));
+        });
+    }
+}
+
+// --- 5.5 DISCORD BOT & REAL-TIME COMMUNITY ENGINE ---
+function initDiscordBotAdminEngine() {
+    const avatarInput = document.getElementById('site_botAvatarUrl');
+    const avatarFile = document.getElementById('bot_avatar_file');
+    const avatarPreview = document.getElementById('bot-avatar-preview');
+
+    // Local file browser for Bot Avatar
+    if (avatarFile && avatarInput) {
+        avatarFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                avatarInput.value = event.target.result;
+                if (avatarPreview) avatarPreview.innerHTML = `<img src="${event.target.result}" alt="Bot Avatar">`;
+                showToast("BOT AVATAR IMAGE LOADED FROM LOCAL MACHINE!");
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (avatarInput && avatarPreview) {
+        avatarInput.addEventListener('input', () => {
+            const url = avatarInput.value.trim();
+            avatarPreview.innerHTML = url ? `<img src="${url}" alt="Bot Avatar" onerror="this.src='assets/OCR.png'">` : '<i class="fas fa-robot"></i>';
+        });
+    }
+
+    // Section Visibility Selector Handler
+    const showBotEl = document.getElementById('site_showDiscordBot');
+    if (showBotEl) {
+        showBotEl.addEventListener('change', () => {
+            const val = showBotEl.value;
+            db.ref('siteData/globals/showDiscordBot').set(val).then(() => {
+                bumpSiteVersion(`Discord Bot Section Set To: ${val}`);
+                showToast(`DISCORD BOT SECTION IS NOW ${val.toUpperCase()}!`);
+            });
+        });
+    }
+
+    // Global listener for Discord Bot data
+    db.ref('siteData/globals').on('value', (snap) => {
+        const data = snap.val() || {};
+        const map = {
+            site_showDiscordBot: data.showDiscordBot || "Visible",
+            site_botHeaderBadge: data.botHeaderBadge || "DISCORD BOT // NEURAL GATEWAY",
+            site_botSectionTitle: data.botSectionTitle || "OBSCURA <span class='accent'>DISCORD BOT</span>",
+            site_botSectionDesc: data.botSectionDesc || "REAL-TIME DISCORD GATEWAY // 24/7 MUSIC STREAMING, COMMUNITY AUTOMATION & ARTIST PROTOCOLS",
+            site_botName: data.botName || "OBSCURA SOUND BOT",
+            site_botTagline: data.botTagline || "Official Void Transmission & Audio Hub",
+            site_botAvatarUrl: data.botAvatarUrl || "assets/OCR.png",
+            site_botStatus: data.botStatus || "ONLINE // OPERATIONAL",
+            site_botMemberCount: data.botMemberCount || "1,250+",
+            site_botOnlineCount: data.botOnlineCount || "420+",
+            site_botActiveBotsCount: data.botActiveBotsCount || "3 BOTS",
+            site_botDiscordInvite: data.botDiscordInvite || "https://discord.gg/E3Sn72cpBR",
+            site_botInviteUrl: data.botInviteUrl || "https://discord.gg/E3Sn72cpBR",
+            site_botBtnJoinText: data.botBtnJoinText || "JOIN DISCORD COMMUNITY",
+            site_botBtnInviteText: data.botBtnInviteText || "ACCESS / INVITE BOT",
+            // Features 1-6
+            site_botF1Badge: data.botF1Badge || "320KBPS HD AUDIO",
+            site_botF1Title: data.botF1Title || "Lossless Music Streaming",
+            site_botF1Desc: data.botF1Desc || "Crystal-clear lossless sound playback with 24/7 uninterrupted radio queues, Spotify, SoundCloud, YouTube and direct audio stream support.",
+            site_botF2Badge: data.botF2Badge || "DIRECT SUBMISSION",
+            site_botF2Title: data.botF2Title || "Instant Demo Drop & Review",
+            site_botF2Desc: data.botF2Desc || "Producers can submit unreleased tracks via Discord slash commands, track A&R review stages in real-time, and receive instant feedback.",
+            site_botF3Badge: data.botF3Badge || "DSP AUDIO FX",
+            site_botF3Title: data.botF3Title || "Custom Soundboard & Modulators",
+            site_botF3Desc: data.botF3Desc || "Interactive real-time audio filters including slowed+reverb, nightcore, 8D audio spatializer, bass booster, and customizable studio SFX.",
+            site_botF4Badge: data.botF4Badge || "KEY & BPM DETECT",
+            site_botF4Title: data.botF4Title || "Sonic Analyzer & Waveforms",
+            site_botF4Desc: data.botF4Desc || "Live spectrum waveform generation, automatic musical key and tempo BPM detection, lyric sync, and producer collaboration matchmaking.",
+            site_botF5Badge: data.botF5Badge || "CREATOR PROTOCOL",
+            site_botF5Title: data.botF5Title || "Artist Roles & Stems Access",
+            site_botF5Desc: data.botF5Desc || "Automatic verification of verified artists, access to exclusive sample packs, stem libraries, remix contests, and VIP studio voice rooms.",
+            site_botF6Badge: data.botF6Badge || "24/7 AI GUARDIAN",
+            site_botF6Title: data.botF6Title || "Autonomous Cluster Security",
+            site_botF6Desc: data.botF6Desc || "High-speed raid protection, automated release drops, smart role syncing, and integrated Obscura Records database telemetry."
+        };
+
+        for (const [id, val] of Object.entries(map)) {
+            const el = document.getElementById(id);
+            if (el) el.value = val;
+        }
+
+        if (avatarPreview && data.botAvatarUrl) {
+            avatarPreview.innerHTML = `<img src="${data.botAvatarUrl}" alt="Bot Avatar" onerror="this.src='assets/OCR.png'">`;
+        }
+    });
+
+    const btnSave = document.getElementById('save-discord-bot');
+    if (btnSave) {
+        btnSave.addEventListener('click', () => {
+            const updates = {
+                showDiscordBot: document.getElementById('site_showDiscordBot')?.value || "Visible",
+                botHeaderBadge: document.getElementById('site_botHeaderBadge')?.value || "DISCORD BOT // NEURAL GATEWAY",
+                botSectionTitle: document.getElementById('site_botSectionTitle')?.value || "OBSCURA <span class='accent'>DISCORD BOT</span>",
+                botSectionDesc: document.getElementById('site_botSectionDesc')?.value || "",
+                botName: document.getElementById('site_botName')?.value || "OBSCURA SOUND BOT",
+                botTagline: document.getElementById('site_botTagline')?.value || "Official Void Transmission & Audio Hub",
+                botAvatarUrl: document.getElementById('site_botAvatarUrl')?.value || "assets/OCR.png",
+                botStatus: document.getElementById('site_botStatus')?.value || "ONLINE // OPERATIONAL",
+                botMemberCount: document.getElementById('site_botMemberCount')?.value || "1,250+",
+                botOnlineCount: document.getElementById('site_botOnlineCount')?.value || "420+",
+                botActiveBotsCount: document.getElementById('site_botActiveBotsCount')?.value || "3 BOTS",
+                botDiscordInvite: document.getElementById('site_botDiscordInvite')?.value || "https://discord.gg/E3Sn72cpBR",
+                botInviteUrl: document.getElementById('site_botInviteUrl')?.value || "https://discord.gg/E3Sn72cpBR",
+                botBtnJoinText: document.getElementById('site_botBtnJoinText')?.value || "JOIN DISCORD COMMUNITY",
+                botBtnInviteText: document.getElementById('site_botBtnInviteText')?.value || "ACCESS / INVITE BOT",
+                // Features
+                botF1Badge: document.getElementById('site_botF1Badge')?.value || "320KBPS HD AUDIO",
+                botF1Title: document.getElementById('site_botF1Title')?.value || "Lossless Music Streaming",
+                botF1Desc: document.getElementById('site_botF1Desc')?.value || "",
+                botF2Badge: document.getElementById('site_botF2Badge')?.value || "DIRECT SUBMISSION",
+                botF2Title: document.getElementById('site_botF2Title')?.value || "Instant Demo Drop & Review",
+                botF2Desc: document.getElementById('site_botF2Desc')?.value || "",
+                botF3Badge: document.getElementById('site_botF3Badge')?.value || "DSP AUDIO FX",
+                botF3Title: document.getElementById('site_botF3Title')?.value || "Custom Soundboard & Modulators",
+                botF3Desc: document.getElementById('site_botF3Desc')?.value || "",
+                botF4Badge: document.getElementById('site_botF4Badge')?.value || "KEY & BPM DETECT",
+                botF4Title: document.getElementById('site_botF4Title')?.value || "Sonic Analyzer & Waveforms",
+                botF4Desc: document.getElementById('site_botF4Desc')?.value || "",
+                botF5Badge: document.getElementById('site_botF5Badge')?.value || "CREATOR PROTOCOL",
+                botF5Title: document.getElementById('site_botF5Title')?.value || "Artist Roles & Stems Access",
+                botF5Desc: document.getElementById('site_botF5Desc')?.value || "",
+                botF6Badge: document.getElementById('site_botF6Badge')?.value || "24/7 AI GUARDIAN",
+                botF6Title: document.getElementById('site_botF6Title')?.value || "Autonomous Cluster Security",
+                botF6Desc: document.getElementById('site_botF6Desc')?.value || ""
+            };
+
+            db.ref('siteData/globals').update(updates).then(() => {
+                bumpSiteVersion("Updated All Discord Bot Directives");
+                showToast("DISCORD BOT DIRECTIVES & METRICS SAVED & SYNCED!");
             }).catch(err => showToast("ERROR: " + err.message, 'error'));
         });
     }
