@@ -1241,10 +1241,10 @@ function initDiscordBotAdminEngine() {
             site_botActiveBotsCount: data.botActiveBotsCount || "3",
             site_botDiscordInvite: data.botDiscordInvite || "https://discord.gg/E3Sn72cpBR",
             site_botBtnJoinText: data.botBtnJoinText || "JOIN DISCORD SERVER",
-            site_botF1Short: data.botF1Short || "24/7 Ultra-HD Lossless Music Streaming & Radio",
+            site_botF1Short: data.botF1Short || "24/7 Active on our Server",
             site_botF2Short: data.botF2Short || "Direct Song Demo Drop & A&R Review Tracking",
-            site_botF3Short: data.botF3Short || "Live Audio DSP Modulators & Bass Booster",
-            site_botF4Short: data.botF4Short || "Verified Producer Roles, Sample Packs & Stems"
+            site_botF3Short: data.botF3Short || "YT And TIKTOK Instant Notification",
+            site_botF4Short: data.botF4Short || "Music Submissions And Integrative Help Ticket System"
         };
 
         for (const [id, val] of Object.entries(map)) {
@@ -1273,10 +1273,10 @@ function initDiscordBotAdminEngine() {
                 botActiveBotsCount: document.getElementById('site_botActiveBotsCount')?.value || "3",
                 botDiscordInvite: document.getElementById('site_botDiscordInvite')?.value || "https://discord.gg/E3Sn72cpBR",
                 botBtnJoinText: document.getElementById('site_botBtnJoinText')?.value || "JOIN DISCORD SERVER",
-                botF1Short: document.getElementById('site_botF1Short')?.value || "24/7 Ultra-HD Lossless Music Streaming & Radio",
+                botF1Short: document.getElementById('site_botF1Short')?.value || "24/7 Active on our Server",
                 botF2Short: document.getElementById('site_botF2Short')?.value || "Direct Song Demo Drop & A&R Review Tracking",
-                botF3Short: document.getElementById('site_botF3Short')?.value || "Live Audio DSP Modulators & Bass Booster",
-                botF4Short: document.getElementById('site_botF4Short')?.value || "Verified Producer Roles, Sample Packs & Stems"
+                botF3Short: document.getElementById('site_botF3Short')?.value || "YT And TIKTOK Instant Notification",
+                botF4Short: document.getElementById('site_botF4Short')?.value || "Music Submissions And Integrative Help Ticket System"
             };
 
             db.ref('siteData/globals').update(updates).then(() => {
