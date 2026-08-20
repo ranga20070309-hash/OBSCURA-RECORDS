@@ -81,9 +81,7 @@ a,
     -webkit-font-smoothing: antialiased;
 }
 
-/* --- SCROLL LOCK FOR INTRO & MAINTENANCE --- */
-html.no-scroll,
-body.no-scroll,
+/* --- SCROLL LOCK FOR FULL-SCREEN MAINTENANCE LOCK ONLY --- */
 html.maintenance-active,
 body.maintenance-active {
     position: fixed !important;
@@ -101,6 +99,12 @@ body.maintenance-active {
     -webkit-overflow-scrolling: auto !important;
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
+}
+
+/* --- SCROLL LOCK FOR POPUPS & MODALS (PREVENTS JUMPING TO TOP) --- */
+body.no-scroll {
+    overflow: hidden !important;
+    overscroll-behavior: contain !important;
 }
 
 body.maintenance-active #main-site,
@@ -3924,10 +3928,8 @@ footer {
 /* --- END KERNEL SECURITY --- */
 
 /* --- SCROLL LOCK FOR INTRO & POPUPS --- */
-html.no-scroll,
 body.no-scroll {
     overflow: hidden !important;
-    touch-action: none !important;
 }
 
 /* --- CORE SYSTEM OPTIMIZATION TAG --- */
