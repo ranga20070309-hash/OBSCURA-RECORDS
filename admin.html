@@ -114,6 +114,9 @@
                     <a href="#" class="nav-btn" data-target="ghost-production-panel">
                         <i class="fas fa-ghost"></i> <span>GHOST PRODUCTION</span>
                     </a>
+                    <a href="#" class="nav-btn" data-target="bot-admin-panel">
+                        <i class="fas fa-robot"></i> <span>DISCORD BOT</span>
+                    </a>
                     <a href="#" class="nav-btn" data-target="staff-panel">
                         <i class="fas fa-users-cog"></i> <span>STAFF & PARTNERS</span>
                         <span class="badge" id="badge-staff-count">0</span>
@@ -811,6 +814,208 @@
                 <div class="action-footer">
                     <button class="cyber-btn primary" id="save-ghost-prod"><i class="fas fa-save"></i> SAVE & SYNC ALL GHOST PRODUCTION OPTIONS</button>
                     <span id="save-msg-ghost" class="save-status-indicator"></span>
+                </div>
+            </section>
+
+            <!-- 5.5 DISCORD BOT & COMMUNITY TELEMETRY PANEL -->
+            <section id="bot-admin-panel" class="panel">
+                <div class="panel-action-bar" style="margin-bottom: 1.5rem;">
+                    <div class="section-visibility-group">
+                        <label><i class="fas fa-eye"></i> DISCORD BOT SECTION VISIBILITY:</label>
+                        <select id="site_showDiscordBot" class="cyber-select-sm">
+                            <option value="Visible">Visible (Show On Main Site)</option>
+                            <option value="Hidden">Hidden (Hide From Main Site)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card-grid">
+                    <!-- Core Bot Directives -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-robot card-icon"></i>
+                            <div>
+                                <h3>DISCORD BOT // HEADERS & BRAND IDENTITY</h3>
+                                <p>Titles, subheadings, bot display name, avatar, and tagline displayed on the live site.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>SECTION TOP BADGE</label>
+                                <input type="text" id="site_botHeaderBadge" value="DISCORD BOT // NEURAL GATEWAY">
+                            </div>
+                            <div class="input-group">
+                                <label>SECTION MAIN TITLE</label>
+                                <input type="text" id="site_botSectionTitle" value="OBSCURA <span class='accent'>DISCORD BOT</span>">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION SUB-HEADING / DESCRIPTION</label>
+                                <input type="text" id="site_botSectionDesc" value="REAL-TIME DISCORD GATEWAY // 24/7 MUSIC STREAMING, COMMUNITY AUTOMATION & ARTIST PROTOCOLS">
+                            </div>
+                            <div class="input-group">
+                                <label>BOT DISPLAY NAME</label>
+                                <input type="text" id="site_botName" value="OBSCURA SOUND BOT">
+                            </div>
+                            <div class="input-group">
+                                <label>BOT TAGLINE / ROLE</label>
+                                <input type="text" id="site_botTagline" value="Official Void Transmission & Audio Hub">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-image"></i> BOT AVATAR / DP (URL OR BROWSE FROM COMPUTER)</label>
+                                <div class="input-with-preview">
+                                    <input type="text" id="site_botAvatarUrl" value="assets/OCR.png" placeholder="assets/OCR.png or https://i.imgur.com/...">
+                                    <input type="file" id="bot_avatar_file" accept="image/*" style="display: none;">
+                                    <button type="button" class="cyber-btn secondary sm" onclick="document.getElementById('bot_avatar_file').click()">
+                                        <i class="fas fa-folder-open"></i> BROWSE FILE
+                                    </button>
+                                    <div class="img-preview-box" id="bot-avatar-preview">
+                                        <img src="assets/OCR.png" alt="Bot Avatar">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Telemetry & Server Stats -->
+                    <div class="cyber-card">
+                        <div class="card-header">
+                            <i class="fas fa-chart-line card-icon"></i>
+                            <div>
+                                <h3>REAL-TIME METRICS & STATUS</h3>
+                                <p>Configure server member counts, online listeners, active bots, and live status.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>BOT SYSTEM STATUS</label>
+                                <select id="site_botStatus" class="cyber-select">
+                                    <option value="ONLINE // OPERATIONAL">ONLINE // OPERATIONAL</option>
+                                    <option value="ACTIVE // STREAMING">ACTIVE // STREAMING</option>
+                                    <option value="IDLE // STANDBY">IDLE // STANDBY</option>
+                                    <option value="MAINTENANCE // UPGRADING">MAINTENANCE // UPGRADING</option>
+                                    <option value="OFFLINE">OFFLINE</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>TOTAL COMMUNITY MEMBERS</label>
+                                <input type="text" id="site_botMemberCount" value="1,250+">
+                            </div>
+                            <div class="input-group">
+                                <label>ONLINE & LISTENING USERS</label>
+                                <input type="text" id="site_botOnlineCount" value="420+">
+                            </div>
+                            <div class="input-group">
+                                <label>ACTIVE CLUSTER BOTS</label>
+                                <input type="text" id="site_botActiveBotsCount" value="3 BOTS">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Community Destination Links -->
+                    <div class="cyber-card">
+                        <div class="card-header">
+                            <i class="fab fa-discord card-icon"></i>
+                            <div>
+                                <h3>DISCORD DESTINATION LINKS & CTAS</h3>
+                                <p>Invite links and buttons to join the server and invite/launch the bot.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group full">
+                                <label>DISCORD SERVER INVITE LINK</label>
+                                <input type="text" id="site_botDiscordInvite" value="https://discord.gg/E3Sn72cpBR">
+                            </div>
+                            <div class="input-group full">
+                                <label>BOT OAUTH2 / ACCESS INVITE URL</label>
+                                <input type="text" id="site_botInviteUrl" value="https://discord.gg/E3Sn72cpBR">
+                            </div>
+                            <div class="input-group">
+                                <label>JOIN BUTTON TEXT</label>
+                                <input type="text" id="site_botBtnJoinText" value="JOIN DISCORD COMMUNITY">
+                            </div>
+                            <div class="input-group">
+                                <label>INVITE BUTTON TEXT</label>
+                                <input type="text" id="site_botBtnInviteText" value="ACCESS / INVITE BOT">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bot Capability Cards Configuration (Features 1-6) -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-cubes card-icon"></i>
+                            <div>
+                                <h3>BOT CAPABILITIES & PRODUCER FEATURES</h3>
+                                <p>Configure the 6 feature showcase cards displayed to music creators and community members.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <!-- Feature 1 -->
+                            <div class="feat-edit-box full" style="border: 1px solid var(--border-dim); padding: 1rem; border-radius: 10px; background: rgba(0,240,255,0.02); margin-bottom: 0.8rem; width: 100%;">
+                                <h4 style="color: var(--accent-blue); font-size: 0.82rem; margin-bottom: 0.6rem;"><i class="fas fa-compact-disc"></i> FEATURE 1: MUSIC STREAMING</h4>
+                                <div class="form-grid">
+                                    <div class="input-group"><label>BADGE</label><input type="text" id="site_botF1Badge" value="320KBPS HD AUDIO"></div>
+                                    <div class="input-group"><label>TITLE</label><input type="text" id="site_botF1Title" value="Lossless Music Streaming"></div>
+                                    <div class="input-group full"><label>DESCRIPTION</label><textarea id="site_botF1Desc" rows="2">Crystal-clear lossless sound playback with 24/7 uninterrupted radio queues, Spotify, SoundCloud, YouTube and direct audio stream support.</textarea></div>
+                                </div>
+                            </div>
+
+                            <!-- Feature 2 -->
+                            <div class="feat-edit-box full" style="border: 1px solid var(--border-dim); padding: 1rem; border-radius: 10px; background: rgba(0,240,255,0.02); margin-bottom: 0.8rem; width: 100%;">
+                                <h4 style="color: var(--accent-blue); font-size: 0.82rem; margin-bottom: 0.6rem;"><i class="fas fa-upload"></i> FEATURE 2: DEMO DROP & REVIEW</h4>
+                                <div class="form-grid">
+                                    <div class="input-group"><label>BADGE</label><input type="text" id="site_botF2Badge" value="DIRECT SUBMISSION"></div>
+                                    <div class="input-group"><label>TITLE</label><input type="text" id="site_botF2Title" value="Instant Demo Drop & Review"></div>
+                                    <div class="input-group full"><label>DESCRIPTION</label><textarea id="site_botF2Desc" rows="2">Producers can submit unreleased tracks via Discord slash commands, track A&R review stages in real-time, and receive instant feedback.</textarea></div>
+                                </div>
+                            </div>
+
+                            <!-- Feature 3 -->
+                            <div class="feat-edit-box full" style="border: 1px solid var(--border-dim); padding: 1rem; border-radius: 10px; background: rgba(183,0,255,0.02); margin-bottom: 0.8rem; width: 100%;">
+                                <h4 style="color: var(--accent-magenta); font-size: 0.82rem; margin-bottom: 0.6rem;"><i class="fas fa-sliders-h"></i> FEATURE 3: SOUNDBOARD & DSP FX</h4>
+                                <div class="form-grid">
+                                    <div class="input-group"><label>BADGE</label><input type="text" id="site_botF3Badge" value="DSP AUDIO FX"></div>
+                                    <div class="input-group"><label>TITLE</label><input type="text" id="site_botF3Title" value="Custom Soundboard & Modulators"></div>
+                                    <div class="input-group full"><label>DESCRIPTION</label><textarea id="site_botF3Desc" rows="2">Interactive real-time audio filters including slowed+reverb, nightcore, 8D audio spatializer, bass booster, and customizable studio SFX.</textarea></div>
+                                </div>
+                            </div>
+
+                            <!-- Feature 4 -->
+                            <div class="feat-edit-box full" style="border: 1px solid var(--border-dim); padding: 1rem; border-radius: 10px; background: rgba(0,240,255,0.02); margin-bottom: 0.8rem; width: 100%;">
+                                <h4 style="color: var(--accent-blue); font-size: 0.82rem; margin-bottom: 0.6rem;"><i class="fas fa-wave-square"></i> FEATURE 4: SONIC ANALYZER & KEY DETECT</h4>
+                                <div class="form-grid">
+                                    <div class="input-group"><label>BADGE</label><input type="text" id="site_botF4Badge" value="KEY & BPM DETECT"></div>
+                                    <div class="input-group"><label>TITLE</label><input type="text" id="site_botF4Title" value="Sonic Analyzer & Waveforms"></div>
+                                    <div class="input-group full"><label>DESCRIPTION</label><textarea id="site_botF4Desc" rows="2">Live spectrum waveform generation, automatic musical key and tempo BPM detection, lyric sync, and producer collaboration matchmaking.</textarea></div>
+                                </div>
+                            </div>
+
+                            <!-- Feature 5 -->
+                            <div class="feat-edit-box full" style="border: 1px solid var(--border-dim); padding: 1rem; border-radius: 10px; background: rgba(0,240,255,0.02); margin-bottom: 0.8rem; width: 100%;">
+                                <h4 style="color: var(--accent-blue); font-size: 0.82rem; margin-bottom: 0.6rem;"><i class="fas fa-id-badge"></i> FEATURE 5: ARTIST ROLES & STEMS</h4>
+                                <div class="form-grid">
+                                    <div class="input-group"><label>BADGE</label><input type="text" id="site_botF5Badge" value="CREATOR PROTOCOL"></div>
+                                    <div class="input-group"><label>TITLE</label><input type="text" id="site_botF5Title" value="Artist Roles & Stems Access"></div>
+                                    <div class="input-group full"><label>DESCRIPTION</label><textarea id="site_botF5Desc" rows="2">Automatic verification of verified artists, access to exclusive sample packs, stem libraries, remix contests, and VIP studio voice rooms.</textarea></div>
+                                </div>
+                            </div>
+
+                            <!-- Feature 6 -->
+                            <div class="feat-edit-box full" style="border: 1px solid var(--border-dim); padding: 1rem; border-radius: 10px; background: rgba(183,0,255,0.02); width: 100%;">
+                                <h4 style="color: var(--accent-magenta); font-size: 0.82rem; margin-bottom: 0.6rem;"><i class="fas fa-shield-alt"></i> FEATURE 6: CLUSTER SECURITY</h4>
+                                <div class="form-grid">
+                                    <div class="input-group"><label>BADGE</label><input type="text" id="site_botF6Badge" value="24/7 AI GUARDIAN"></div>
+                                    <div class="input-group"><label>TITLE</label><input type="text" id="site_botF6Title" value="Autonomous Cluster Security"></div>
+                                    <div class="input-group full"><label>DESCRIPTION</label><textarea id="site_botF6Desc" rows="2">High-speed raid protection, automated release drops, smart role syncing, and integrated Obscura Records database telemetry.</textarea></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-footer">
+                    <button class="cyber-btn primary" id="save-discord-bot"><i class="fas fa-save"></i> SAVE & SYNC DISCORD BOT DIRECTIVES</button>
+                    <span id="save-msg-bot" class="save-status-indicator"></span>
                 </div>
             </section>
 
