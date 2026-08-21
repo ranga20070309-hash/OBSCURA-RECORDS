@@ -3012,10 +3012,30 @@ function initTransmissionsEngine() {
         populateTransmissionsAdmin(snap.val() || {});
     });
 
-    db.ref('bot_status/latest_transmissions').on('value', snap => {
+    db.ref('bot_status/latest_transmissions').on('value', async snap => {
         const bData = snap.val();
-        if (bData && typeof bData === 'object') {
+        if (bData && typeof bData === 'object' && bData.tt_url) {
             populateTransmissionsAdmin(bData);
+            // If incoming from bot, ensure full thumbnail resolution and sync to globals
+            if (bData.tt_url.includes('tiktok.com')) {
+                const resolved = await fetchLatestTikTokDropLive(bData.tt_url);
+                if (resolved && resolved.thumb && resolved.thumb !== 'assets/cover.png') {
+                    if (document.getElementById('trans_tt_thumb')) document.getElementById('trans_tt_thumb').value = resolved.thumb;
+                    if (document.getElementById('trans_tt_title') && resolved.title) document.getElementById('trans_tt_title').value = resolved.title;
+                    const prev = document.getElementById('admin-tt-thumb-preview');
+                    if (prev) prev.style.backgroundImage = `url('${resolved.thumb}')`;
+                    
+                    // Auto-sync resolved data to siteData/globals
+                    db.ref('siteData/globals/latest_transmissions').update({
+                        tt_url: bData.tt_url,
+                        tt_thumb: resolved.thumb,
+                        tt_title: resolved.title || bData.tt_title || 'LATEST TIKTOK DROP',
+                        tt_desc: 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.',
+                        tt_tag: 'LATEST TIKTOK DROP',
+                        updatedAt: Date.now()
+                    }).catch(() => {});
+                }
+            }
         }
     });
 
