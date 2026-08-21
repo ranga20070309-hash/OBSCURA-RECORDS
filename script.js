@@ -2109,33 +2109,40 @@ const initPortal = () => {
             releaseSlider.innerHTML = '';
 
             releases.forEach(release => {
-                const badge = release.id && release.id.includes('NEW') ? "<span class='badge'>NEW</span>" : "";
-                const cleanId = release.id ? release.id.replace("<span class='badge'>NEW</span>", "").trim() : "";
+                const badge = release.id && typeof release.id === 'string' && release.id.includes('NEW') ? "<span class='badge'>NEW</span>" : "";
+                const cleanId = release.catalog || (release.id && typeof release.id === 'string' ? release.id.replace("<span class='badge'>NEW</span>", "").trim() : "");
 
-                // Smart Detector: Check YouTube link field AND Preview Audio field
-                let ytData = getYouTubeID(release.youtube);
-                const previewYT = getYouTubeID(release.preview);
-
-                // If Preview Audio field has a YT link, use THAT instead (it's more specific)
-                if (previewYT) ytData = previewYT;
-
+                // Preview player audio source (Priority: preview/streamUrl/youtubePreview, fallback to youtube)
+                const previewSource = release.streamUrl || release.youtubePreview || release.preview || release.youtube || '';
+                let ytData = getYouTubeID(previewSource);
                 const ytIdAttr = ytData ? ytData.id : '';
                 const ytTypeAttr = ytData ? ytData.type : 'video';
+
+                // YouTube Album / Full stream link for bottom action bar
+                const ytAlbumUrl = release.youtubeAlbum || release.youtubeUrl || release.youtube || (release.streamUrl ? release.streamUrl : '#');
+                const spotifyUrl = release.spotifyUrl || release.spotify || '#';
+                const appleUrl = release.appleUrl || release.apple || '#';
+                const soundcloudUrl = release.soundcloudUrl || release.soundcloud || '';
+                const dlUrl = release.dlUrl || '';
+                const relCover = release.cover || release.image || 'assets/cover.png';
+                const relTitle = release.title || 'UNKNOWN';
+                const relArtist = release.artist || release.producers || 'OBSCURA RECORD';
+                const relType = (release.type || 'SINGLE').toUpperCase();
 
                 const cardHtml = `
                     <div class="release-card-large glass">
                         <div class="release-cover-large">
                             <div class="cyber-laser-scanner"></div>
-                            <img src="${release.image || 'assets/cover.png'}" alt="${release.title}">
-                            <div class="release-type-badge">${release.type || 'SINGLE'}</div>
+                            <img src="${relCover}" alt="${relTitle}" onerror="this.onerror=null; this.src='assets/cover.png';">
+                            <div class="release-type-badge">${relType}</div>
                             <div class="player-overlay">
                                 <button class="play-btn" 
-                                    data-title="${(release.title || 'UNKNOWN').replace(/"/g, '&quot;')}"
-                                    data-artist="${(release.producers || 'OBSCURA RECORD').replace(/"/g, '&quot;')}"
-                                    data-image="${release.image || 'assets/cover.png'}"
-                                    data-spotify="${release.spotify || '#'}"
-                                    data-youtube="${release.youtube || '#'}"
-                                    data-preview="${release.preview || ''}" 
+                                    data-title="${relTitle.replace(/"/g, '&quot;')}"
+                                    data-artist="${relArtist.replace(/"/g, '&quot;')}"
+                                    data-image="${relCover}"
+                                    data-spotify="${spotifyUrl}"
+                                    data-youtube="${ytAlbumUrl}"
+                                    data-preview="${release.streamUrl || release.preview || ''}" 
                                     data-ytid="${ytIdAttr}" 
                                     data-yttype="${ytTypeAttr}">
                                     <i class="fas fa-play"></i>
@@ -2145,12 +2152,14 @@ const initPortal = () => {
                         </div>
                         <div class="release-info-large">
                             ${(cleanId || badge) ? `<span class="track-id">${cleanId} ${badge}</span>` : ''}
-                            <h4>${release.title || 'UNKNOWN'}</h4>
-                            <div class="producers-text">Produced by: <span>${release.producers || ''}</span></div>
+                            <h4>${relTitle}</h4>
+                            <div class="producers-text">Produced by: <span>${relArtist}</span></div>
                             <div class="release-actions">
-                                <a href="${release.spotify || '#'}" target="_blank" class="platform-link spotify"><i class="fab fa-spotify"></i></a>
-                                <a href="${release.apple || '#'}" target="_blank" class="platform-link apple"><i class="fab fa-apple"></i></a>
-                                <a href="${release.youtube || '#'}" target="_blank" class="platform-link youtube"><i class="fab fa-youtube"></i></a>
+                                <a href="${spotifyUrl}" target="_blank" class="platform-link spotify" title="Spotify"><i class="fab fa-spotify"></i></a>
+                                <a href="${appleUrl}" target="_blank" class="platform-link apple" title="Apple Music"><i class="fab fa-apple"></i></a>
+                                <a href="${ytAlbumUrl}" target="_blank" class="platform-link youtube" title="YouTube Album / Stream"><i class="fab fa-youtube"></i></a>
+                                ${soundcloudUrl ? `<a href="${soundcloudUrl}" target="_blank" class="platform-link soundcloud" title="SoundCloud"><i class="fab fa-soundcloud"></i></a>` : ''}
+                                ${dlUrl ? `<a href="${dlUrl}" target="_blank" class="platform-link download" title="Download"><i class="fas fa-download"></i></a>` : ''}
                             </div>
                         </div>
                     </div>
