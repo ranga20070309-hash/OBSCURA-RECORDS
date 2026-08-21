@@ -861,12 +861,28 @@
                                 <input type="text" id="site_botName" value="OBSCURA SOUND BOT">
                             </div>
                             <div class="input-group">
-                                <label>BOT LIVE STATUS</label>
+                                <label>FALLBACK / MANUAL STATUS</label>
                                 <select id="site_botStatus" class="cyber-select">
                                     <option value="ONLINE">ONLINE (ACTIVE)</option>
                                     <option value="IDLE">IDLE (STANDBY)</option>
                                     <option value="OFFLINE">OFFLINE</option>
                                 </select>
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fab fa-discord"></i> DISCORD SERVER ID (GUILD ID)</label>
+                                <input type="text" id="site_botServerId" value="1229829725447393402" placeholder="1229829725447393402">
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-robot"></i> BOT USER ID</label>
+                                <input type="text" id="site_botUserId" value="1467768793550946314" placeholder="1467768793550946314">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-satellite-dish"></i> REAL-TIME DISCORD AUTO-TRACKING</label>
+                                <select id="site_botAutoTrack" class="cyber-select">
+                                    <option value="Enabled">Enabled (Auto-Sync with Discord Server & Bot Status)</option>
+                                    <option value="Disabled">Disabled (Use Manual Status Setting Only)</option>
+                                </select>
+                                <small style="color: var(--text-dim); margin-top: 4px; display: block;">When enabled, the site automatically tracks whether Bot (${site_botUserId}) is Online/Idle/Offline directly via Discord's live widget stream.</small>
                             </div>
                             <div class="input-group full">
                                 <label>BOT SHORT DESCRIPTION / TAGLINE</label>
