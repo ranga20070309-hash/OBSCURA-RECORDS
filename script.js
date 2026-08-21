@@ -2357,40 +2357,57 @@ const initPortal = () => {
             async function fetchLiveTikTokDrop(usernameOrUrl) {
                 const raw = (usernameOrUrl || 'obscura.records').trim();
                 
-                // If specific video URL or shortlink provided
-                if (raw.includes('tiktok.com')) {
+                // Helper to fetch JSON from URL with proxies
+                async function fetchWithProxies(targetUrl) {
                     try {
-                        const oEmbedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(raw)}`;
-                        const res = await fetch(oEmbedUrl);
-                        if (res.ok) {
-                            const data = await res.json();
-                            const user = data.author_unique_id || (raw.includes('@') ? raw.split('@')[1].split('/')[0] : 'obscura.records');
-                            return {
-                                title: data.title || `LATEST TIKTOK DROP @${user.toUpperCase()}`,
-                                link: raw,
-                                thumb: data.thumbnail_url || 'assets/cover.png',
-                                desc: data.title || 'Stream our newest sound drop, trending audio, and phonk edits on TikTok.',
-                                tag: raw.includes('/video/') ? 'LATEST TIKTOK VIDEO' : 'OFFICIAL TIKTOK HUB'
-                            };
+                        const res = await fetch(targetUrl);
+                        if (res.ok) return await res.json();
+                    } catch (e) {}
+
+                    try {
+                        const aoRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+                        if (aoRes.ok) {
+                            const aoData = await aoRes.json();
+                            if (aoData.contents) return JSON.parse(aoData.contents);
                         }
                     } catch (e) {}
+
+                    try {
+                        const cpRes = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`);
+                        if (cpRes.ok) return await cpRes.json();
+                    } catch (e) {}
+
+                    return null;
+                }
+
+                // If specific video URL or shortlink provided
+                if (raw.includes('tiktok.com')) {
+                    const oEmbedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(raw)}`;
+                    const data = await fetchWithProxies(oEmbedUrl);
+                    if (data && (data.thumbnail_url || data.title)) {
+                        const user = data.author_unique_id || (raw.includes('@') ? raw.split('@')[1].split('/')[0] : 'obscura.records');
+                        return {
+                            title: data.title || `LATEST TIKTOK DROP @${user.toUpperCase()}`,
+                            link: raw,
+                            thumb: data.thumbnail_url || 'assets/cover.png',
+                            desc: data.title || 'Stream our newest sound drop, trending audio, and phonk edits on TikTok.',
+                            tag: raw.includes('/video/') ? 'LATEST TIKTOK VIDEO' : 'OFFICIAL TIKTOK HUB'
+                        };
+                    }
                 }
 
                 const user = cleanTikTokUsernameInput(raw);
-                try {
-                    const oEmbedUrl = `https://www.tiktok.com/oembed?url=https://www.tiktok.com/@${encodeURIComponent(user)}`;
-                    const res = await fetch(oEmbedUrl);
-                    if (res.ok) {
-                        const data = await res.json();
-                        return {
-                            title: data.author_name ? `${data.author_name.toUpperCase()} (@${user.toUpperCase()})` : `OBSCURA RECORDS (@${user.toUpperCase()})`,
-                            link: `https://www.tiktok.com/@${user}`,
-                            thumb: data.thumbnail_url || 'assets/cover.png',
-                            desc: 'Catch our newest sound drops, phonk visualizers, and trending edits on TikTok.',
-                            tag: 'OFFICIAL TIKTOK HUB'
-                        };
-                    }
-                } catch (e) {}
+                const profileOEmbedUrl = `https://www.tiktok.com/oembed?url=https://www.tiktok.com/@${encodeURIComponent(user)}`;
+                const data = await fetchWithProxies(profileOEmbedUrl);
+                if (data && (data.thumbnail_url || data.author_name)) {
+                    return {
+                        title: data.author_name ? `${data.author_name.toUpperCase()} (@${user.toUpperCase()})` : `OBSCURA RECORDS (@${user.toUpperCase()})`,
+                        link: `https://www.tiktok.com/@${user}`,
+                        thumb: data.thumbnail_url || 'assets/cover.png',
+                        desc: 'Catch our newest sound drops, phonk visualizers, and trending edits on TikTok.',
+                        tag: 'OFFICIAL TIKTOK HUB'
+                    };
+                }
 
                 return {
                     title: `OBSCURA RECORDS (@${user.toUpperCase()})`,
