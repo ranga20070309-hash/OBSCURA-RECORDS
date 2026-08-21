@@ -165,38 +165,104 @@ const playBleep = (freq = 600, type = 'sine', duration = 0.08) => {
 };
 
 
-// --- LOADER DISMISSAL (With Safety Timeout & Ignition Sync) ---
-let loaderDismissed = false; // Fixed: lowercase 'false'
-const dismissLoader = () => {
-    if (loaderDismissed) return;
-    loaderDismissed = true;
+// --- MASTER CYBERPUNK SILKY SMOOTH TYPEWRITER ENTRANCE ---
+let ignitionStarted = false;
 
-    const portalLoader = document.getElementById('portal-loader');
-    const loaderBar = document.getElementById('loader-bar');
-    if (!portalLoader) return;
+const runIgnition = () => {
+    if (ignitionStarted) return;
+    ignitionStarted = true;
 
-    gsap.to(loaderBar, {
-        width: '100%',
-        duration: 0.2,
-        ease: "power2.out",
-        onComplete: () => {
-            gsap.to(portalLoader, {
-                opacity: 0,
-                duration: 0.2,
-                ease: "power2.inOut",
-                onComplete: () => {
-                    portalLoader.style.display = 'none';
-                    // The site is now visible, but we keep scroll locked until the reveal is halfway or entirely done.
-                    // We'll remove it inside runIgnition for better flow control.
-                    if (typeof runIgnition === 'function') runIgnition();
-                }
-            });
+    const entranceScreen = document.getElementById('entrance-screen');
+    const mainSite = document.getElementById('main-site');
+    const typeTextEl = document.getElementById('splash-type-text');
+    if (!entranceScreen || !mainSite) return;
+
+    // 1. Smooth Fade & Float In Logo
+    gsap.fromTo(".splash-logo", 
+        { opacity: 0, scale: 0.88, filter: "drop-shadow(0 0 0px #00f0ff)" },
+        { opacity: 1, scale: 1, filter: "drop-shadow(0 0 25px rgba(0, 240, 255, 0.5))", duration: 0.55, ease: "power2.out" }
+    );
+
+    // 2. Silky Character-by-Character Typewriter
+    const phrase = "OBSCURA RECORDS";
+    let charIndex = 0;
+
+    const typeInterval = setInterval(() => {
+        charIndex++;
+        const currentStr = phrase.slice(0, charIndex);
+
+        if (typeTextEl) {
+            if (charIndex <= 7) {
+                // "OBSCURA"
+                typeTextEl.textContent = currentStr;
+            } else {
+                // "OBSCURA " + "<span class='accent-records'>RECORDS</span>"
+                const firstPart = "OBSCURA ";
+                const secondPart = currentStr.slice(8);
+                typeTextEl.innerHTML = `${firstPart}<span class="accent-records">${secondPart}</span>`;
+            }
         }
-    });
+
+        if (charIndex >= phrase.length) {
+            clearInterval(typeInterval);
+
+            // 3. Pause for Brand Impact & Seamless Dissolve
+            setTimeout(() => {
+                const tl = gsap.timeline({
+                    onComplete: () => {
+                        const critStyle = document.getElementById('critical-intro-scroll-lock');
+                        if (critStyle) critStyle.remove();
+                        document.body.classList.remove('no-scroll');
+                        document.documentElement.classList.remove('no-scroll');
+                        entranceScreen.style.display = 'none';
+
+                        if (!window.matchMedia("(hover: none) and (pointer: coarse)").matches && window.innerWidth > 1024) {
+                            gsap.to(".cursor-glow", { opacity: 1, duration: 1.2 });
+                        }
+
+                        const devStatusTag = document.querySelector('.dev-status-tag');
+                        if (devStatusTag) {
+                            devStatusTag.innerHTML = `<i class="fas fa-check-circle" style="font-size: 0.5rem;"></i> SYSTEM OPTIMIZED`;
+                            devStatusTag.style.opacity = "0.6";
+                            devStatusTag.style.color = "var(--accent-blue)";
+                        }
+                    }
+                });
+
+                // Soft Logo & Text Pulse Glow
+                tl.to(".splash-content", {
+                    scale: 1.03,
+                    opacity: 0.8,
+                    filter: "drop-shadow(0 0 35px rgba(0, 240, 255, 0.8))",
+                    duration: 0.25,
+                    ease: "power2.out"
+                });
+
+                // Butter-smooth Dissolve of Entrance Screen
+                tl.to(entranceScreen, {
+                    opacity: 0,
+                    duration: 0.65,
+                    ease: "power2.inOut",
+                    onStart: () => {
+                        gsap.set(mainSite, { visibility: 'visible', opacity: 1 });
+                        gsap.to("html", { "--sb-opacity": 0.2, duration: 1.2, ease: "power2.out" });
+                    }
+                }, "-=0.1");
+
+                // Main Site Nav & Hero Reveal
+                tl.to(".glass-nav", { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, "-=0.35");
+                tl.from(".hero-content", { y: 20, opacity: 0, duration: 0.7, ease: "power2.out" }, "-=0.4");
+            }, 320);
+        }
+    }, 45); // Snappy, natural typing speed (45ms/char)
 };
 
-window.addEventListener('load', dismissLoader);
-setTimeout(dismissLoader, 1500); // Safety Override: Ultra-Snappy 1.5s
+// Automatic Trigger on Page Load & Fast-Safety Fallback
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(runIgnition, 30);
+});
+window.addEventListener('load', runIgnition);
+setTimeout(runIgnition, 250);
 
 let pendingYTTrack = null;
 
@@ -245,205 +311,6 @@ function onPlayerStateChange(event) {
         if (typeof stopPlayback === 'function') stopPlayback();
     }
 }
-
-// --- THE AUTOMATIC SPLASH SEQUENCE (ENARMA STYLE) ---
-const runIgnition = () => {
-    const entranceScreen = document.getElementById('entrance-screen');
-    const mainSite = document.getElementById('main-site');
-    if (!entranceScreen || !mainSite) return;
-
-    const tl = gsap.timeline({
-        onComplete: () => {
-            // GENTLY REVEAL CURSOR GLOW AFTER EVERYTHING IS CLEAR
-            if (!window.matchMedia("(hover: none) and (pointer: coarse)").matches && window.innerWidth > 1024) {
-                gsap.to(".cursor-glow", { opacity: 1, duration: 1.5 });
-            }
-            console.log("PORTAL IGNITION COMPLETE.");
-
-            // --- SYSTEM OPTIMIZATION PROGRESSION ENGINE ---
-            const devStatusTag = document.querySelector('.dev-status-tag');
-            if (devStatusTag) {
-                let progress = 0;
-                
-                const timer = setInterval(() => {
-                    // Random small increments to make it feel realistic
-                    const randomInc = Math.random() * 1.5 + 0.2; 
-                    progress += randomInc;
-
-                    if (progress >= 100) {
-                        progress = 100;
-                        clearInterval(timer);
-                        devStatusTag.innerHTML = `<i class="fas fa-check-circle" style="font-size: 0.5rem;"></i> SYSTEM OPTIMIZED`;
-                        devStatusTag.style.opacity = "0.6";
-                        devStatusTag.style.color = "var(--accent-blue)";
-                    } else {
-                        devStatusTag.innerHTML = `SYSTEM OPTIMIZATION IN PROGRESS: ${Math.floor(progress)}%`;
-                    }
-                }, 100); // Update every 100ms
-            }
-        }
-    });
-
-    // 1. Snappy Initial Pause (Faster than before)
-    tl.to({}, { duration: 0.1 });
-
-    // 2. Mysterious Cinematic Reveal
-    tl.fromTo(".splash-logo",
-        {
-            opacity: 0,
-            scale: 1.05,
-            filter: "brightness(0) blur(6px)",
-        },
-        {
-            duration: 1.5, // Slower mysterious reveal
-            opacity: 1,
-            scale: 1.02, // Gentle float forward
-            filter: "brightness(1) blur(0px)",
-            ease: "sine.inOut",
-            onStart: () => {
-                const logo = document.querySelector('.splash-logo');
-                if (logo) logo.style.animation = "splashPulse 4s ease-in-out infinite, logoVibrate 3s infinite";
-            }
-        }
-    );
-
-    // 3. Pause for Brand Impact (Cinematic Tension)
-    tl.to({}, { duration: 1.2 });
-
-    // 4. Choreographed Realistic RGB Glitch Sequence
-    const glitchRed = document.getElementById('red-offset');
-    const glitchBlue = document.getElementById('blue-offset');
-    const glitchDisp = document.getElementById('glitch-disp');
-    const glitchTurb = document.getElementById('glitch-turbulence');
-
-    // Set initial filter state (Using only displacement, no channel offsets)
-    tl.set(".splash-logo", { filter: "url(#glitch-filter)" });
-
-    // Step-by-step glitch "impacts" (Realistic RGB Shifts + RAPID JITTER)
-    const addGlitchStep = (scale, clipInset, dx = 0, colorShift = 0) => {
-        tl.to(".splash-logo", {
-            duration: 0.03, // Accelerated for vibration
-            x: dx + (Math.random() * 4 - 2), // Random jitter
-            y: (Math.random() * 4 - 2),
-            skewX: dx * 0.8,
-            onUpdate: () => {
-                if (glitchDisp) glitchDisp.setAttribute('scale', scale);
-                if (glitchRed) glitchRed.setAttribute('dx', colorShift);
-                if (glitchBlue) glitchBlue.setAttribute('dx', -colorShift);
-                const logo = document.querySelector('.splash-logo');
-                if (logo) logo.style.clipPath = clipInset;
-            }
-        });
-    };
-
-    // Realistic Choreographed Sequence with Vibration Start
-    tl.set(".splash-logo", { animation: "logoVibrate 0.1s infinite" }); // ACTIVATE VIBRATION
-
-    addGlitchStep(40, "inset(12% 0 75% 0)", 10, 5);
-    addGlitchStep(60, "inset(45% 0 25% 0)", -15, -8);
-    addGlitchStep(0, "none", 0, 0);
-    tl.to({}, { duration: 0.04 });
-    addGlitchStep(120, "inset(75% 0 5% 0)", 25, 12);
-    addGlitchStep(30, "inset(15% 0 65% 0)", -8, -4);
-    addGlitchStep(150, "none", 0, 20); // Heavier vibration stage
-    addGlitchStep(10, "none", 4, 3);
-
-    // Final "Vibrate Line Dissolve" (SUPREME EXIT SEQUENCE)
-    tl.to(".splash-logo", {
-        duration: 0.1,
-        scaleY: 0.01, // Squash into a razor-thin line
-        scaleX: 1.8,  // Stretch wide
-        opacity: 0.9,
-        skewX: 60,
-        filter: "url(#glitch-filter) brightness(4)",
-        onStart: () => {
-            const logo = document.querySelector('.splash-logo');
-            if (logo) logo.style.animation = "none";
-        },
-        onUpdate: () => {
-            if (glitchDisp) glitchDisp.setAttribute('scale', 300); // MAX SHAKE
-            if (glitchRed) glitchRed.setAttribute('dx', 60);
-            if (glitchBlue) glitchBlue.setAttribute('dx', -60);
-            const logo = document.querySelector('.splash-logo');
-            if (logo) logo.style.clipPath = "inset(49% 0 50% 0)"; // Perfect horizontal slice
-        }
-    });
-
-    // Rapid Disintegration Fade
-    tl.to(".splash-logo", {
-        duration: 0.1,
-        opacity: 0,
-        scaleX: 3, // Dissolve outwards
-        ease: "power2.out"
-    });
-
-    // Environmental Pulse (Intensified)
-    tl.to(".scanlines", { duration: 0.04, opacity: 0.8, repeat: 10, yoyo: true }, "<");
-    tl.to(".noise-overlay", { duration: 0.04, opacity: 1, repeat: 10, yoyo: true }, "<");
-
-    // The "Patta" Exit (Aggressive Blur + Light Burst Collapse)
-    tl.to(".splash-logo", {
-        duration: 0.25,
-        opacity: 0,
-        scaleY: 0.01, // CRT Collapse effect
-        scaleX: 2.8,  // Horizontal stretch
-        filter: "brightness(20) blur(25px)",
-        ease: "expo.out",
-        onComplete: () => {
-            const logo = document.querySelector('.splash-logo');
-            if (logo) {
-                logo.style.filter = "none";
-                logo.style.clipPath = "none";
-                logo.style.transform = "none";
-            }
-        }
-    });
-
-    tl.to(entranceScreen, {
-        duration: 0.8,
-        opacity: 0,
-        filter: "blur(20px)",
-        ease: "expo.inOut",
-        onStart: () => {
-            gsap.set(mainSite, { visibility: 'visible', opacity: 1 });
-            // CINEMATIC SCROLLBAR FADE-IN
-            gsap.to("html", { "--sb-opacity": 0.2, duration: 1.5, ease: "power2.out" });
-        },
-        onComplete: () => {
-            const critStyle = document.getElementById('critical-intro-scroll-lock');
-            if (critStyle) critStyle.remove();
-            document.body.classList.remove('no-scroll');
-            document.documentElement.classList.remove('no-scroll'); // UNLOCK BOTH
-        }
-    }, "-=0.2");
-
-    tl.set(entranceScreen, { display: 'none' });
-
-    // 5. Main Site Materialization
-    tl.to(".glass-nav", {
-        y: 0,
-        opacity: 1,
-        duration: 0.8,
-        ease: "power2.out"
-    }, "-=0.5");
-
-    tl.from(".hero-content", {
-        x: -200,
-        opacity: 0,
-        skewX: 10,
-        duration: 1.5,
-        ease: "power4.out"
-    }, "-=1.2");
-
-    tl.from(".release-card", {
-        scale: 0.8,
-        opacity: 0,
-        y: 100,
-        rotateX: -45,
-        duration: 2,
-        ease: "power2.out"
-    }, "-=1");
-};
 
 function getYouTubeID(url) {
     if (!url) return null;
