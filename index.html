@@ -100,15 +100,6 @@
     </script>
 </head>
 <body class="no-scroll">
-        <div id="portal-loader" class="portal-loader">
-        <div class="loader-content">
-            <div class="loader-logo">OBSCURA <span>RECORD</span></div>
-            <div class="loader-bar-container">
-                <div id="loader-bar" class="loader-bar"></div>
-            </div>
-            <div class="loader-status">ESTABLISHING CONNECTION...</div>
-        </div>
-    </div>
         <div class="space-bg"></div>
     <div class="ambient-bass-lighting" id="ambient-bass-lighting">
         <div class="bass-light-orb orb-cyan"></div>
@@ -119,11 +110,17 @@
     <canvas id="particle-bg"></canvas>
     <div class="noise-overlay"></div>
     <div class="scanlines"></div>
-        <div class="cursor-glow"></div>
+    <div class="cursor-glow"></div>
     <div class="cursor-outer"></div>
-        <div id="entrance-screen">
+
+    <div id="entrance-screen">
         <div class="splash-content">
-            <img src="assets/OCR.png" class="splash-logo" alt="OCR LOGO">
+            <div class="splash-logo-box">
+                <img src="assets/OCR.png" class="splash-logo" alt="OBSCURA RECORD">
+            </div>
+            <div class="splash-type-row">
+                <span id="splash-type-text" class="splash-type-text"></span><span class="splash-cursor">|</span>
+            </div>
         </div>
     </div>
     <div id="maintenance-overlay" class="maintenance-screen" style="display: none;">
