@@ -134,6 +134,9 @@
                     <a href="#" class="nav-btn" data-target="modals-panel">
                         <i class="fas fa-window-restore"></i> <span>MODALS, FAQ & FOOTER</span>
                     </a>
+                    <a href="#" class="nav-btn" data-target="transmissions-panel">
+                        <i class="fas fa-broadcast-tower"></i> <span>MEDIA FEEDS (YT & TIKTOK)</span>
+                    </a>
 
                     <div class="nav-section-label">SYSTEM & AFFILIATES</div>
                     <a href="#" class="nav-btn" data-target="security-panel">
@@ -1472,7 +1475,182 @@
                 </div>
             </section>
 
-            
+            <!-- ==========================================================================
+                 MEDIA FEEDS & TRANSMISSIONS CONTROL PANEL
+                 ========================================================================== -->
+            <section id="transmissions-panel" class="panel">
+                <div class="form-section-header">
+                    <i class="fas fa-broadcast-tower"></i>
+                    <div>
+                        <h2>LATEST MEDIA TRANSMISSIONS (YOUTUBE & TIKTOK)</h2>
+                        <p>Configure the dedicated YouTube and TikTok latest release drops displayed on the main portal.</p>
+                    </div>
+                </div>
+
+                <div class="cyber-card-grid">
+                    <!-- Global Settings -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-sliders-h card-icon"></i>
+                            <div>
+                                <h3>1. SECTION DISPLAY & HEADER</h3>
+                                <p>Control section visibility and titles.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label><i class="fas fa-eye"></i> SECTION VISIBILITY</label>
+                                <select id="trans_showTransmissions" class="cyber-select">
+                                    <option value="Visible">Visible (Show on Main Site)</option>
+                                    <option value="Hidden">Hidden (Temporarily Hide)</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-heading"></i> SECTION HEADER TITLE</label>
+                                <input type="text" id="trans_title" placeholder="LATEST &lt;span class=&quot;accent&quot;&gt;TRANSMISSIONS&lt;/span&gt;">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-align-left"></i> SECTION DESCRIPTION SUBTITLE</label>
+                                <input type="text" id="trans_desc" placeholder="Intercept the newest soundwaves and visual drops across our networks">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1. YouTube Latest Drop Hub -->
+                    <div class="cyber-card">
+                        <div class="card-header" style="border-bottom-color: rgba(255, 0, 60, 0.3);">
+                            <i class="fab fa-youtube card-icon" style="color: #ff003c;"></i>
+                            <div>
+                                <h3 style="color: #ff003c;">2. YOUTUBE LATEST DROP HUB</h3>
+                                <p>Auto-sync from channel or configure manually.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label><i class="fas fa-sync-alt"></i> UPDATE MODE</label>
+                                <select id="trans_yt_mode" class="cyber-select">
+                                    <option value="Auto">Auto-Fetch Latest (Recommended)</option>
+                                    <option value="Manual">Manual Override</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-filter"></i> TRACK TYPE FILTER</label>
+                                <select id="trans_yt_filter" class="cyber-select">
+                                    <option value="full_only">Full Music Videos Only (Exclude Shorts)</option>
+                                    <option value="all">All Uploads (Include Shorts)</option>
+                                </select>
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-fingerprint"></i> YOUTUBE CHANNEL (ID, @HANDLE OR URL)</label>
+                                <input type="text" id="trans_yt_channel_id" placeholder="e.g. @Obscurarecordss or UCMeIV48_O_F0H2tL7x_ayHg">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-tag"></i> CATEGORY / RELEASE TAG</label>
+                                <input type="text" id="trans_yt_tag" placeholder="e.g. OFFICIAL RELEASE or NEW MUSIC VIDEO">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-heading"></i> VIDEO / TRACK TITLE</label>
+                                <input type="text" id="trans_yt_title" placeholder="e.g. OBSCURA - VOID TRANSMISSION VOL. 1">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-align-left"></i> SHORT DESCRIPTION</label>
+                                <textarea id="trans_yt_desc" rows="2" placeholder="Experience the latest official visualizer and soundwave release from our void archive."></textarea>
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fab fa-youtube"></i> YOUTUBE VIDEO / DROP URL</label>
+                                <input type="text" id="trans_yt_url" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/...">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-image"></i> THUMBNAIL / ARTWORK URL</label>
+                                <input type="text" id="trans_yt_thumb" placeholder="https://... or assets/cover.jpg">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-bell"></i> CHANNEL SUBSCRIBE URL</label>
+                                <input type="text" id="trans_yt_sub_url" placeholder="https://www.youtube.com/@recordsobscura?sub_confirmation=1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. TikTok Latest Drop Hub -->
+                    <div class="cyber-card">
+                        <div class="card-header" style="border-bottom-color: rgba(0, 240, 255, 0.3);">
+                            <i class="fab fa-tiktok card-icon" style="color: #00f0ff;"></i>
+                            <div>
+                                <h3 style="color: #00f0ff;">3. TIKTOK LATEST DROP HUB</h3>
+                                <p>Auto-sync from profile or configure manually.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label><i class="fas fa-sync-alt"></i> UPDATE MODE</label>
+                                <select id="trans_tt_mode" class="cyber-select">
+                                    <option value="Auto">Auto-Fetch Latest Clip (Recommended)</option>
+                                    <option value="Manual">Manual Override</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-at"></i> TIKTOK PROFILE (@USERNAME OR URL)</label>
+                                <input type="text" id="trans_tt_username" placeholder="e.g. @obscura.records or obscura.records">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-tag"></i> CATEGORY / SOUND TAG</label>
+                                <input type="text" id="trans_tt_tag" placeholder="e.g. FEATURED AUDIO CLIP or TRENDING SOUND">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-heading"></i> CLIP / SOUND TITLE</label>
+                                <input type="text" id="trans_tt_title" placeholder="e.g. NEW VOID PHONK SOUND DROP #01">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-align-left"></i> SHORT DESCRIPTION</label>
+                                <textarea id="trans_tt_desc" rows="2" placeholder="Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok."></textarea>
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fab fa-tiktok"></i> TIKTOK VIDEO / CLIP URL</label>
+                                <input type="text" id="trans_tt_url" placeholder="https://www.tiktok.com/@obscura.records/video/...">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-image"></i> THUMBNAIL / PREVIEW IMAGE URL</label>
+                                <input type="text" id="trans_tt_thumb" placeholder="https://... or assets/cover.jpg">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-user-plus"></i> PROFILE FOLLOW URL</label>
+                                <input type="text" id="trans_tt_follow_url" placeholder="https://www.tiktok.com/@obscura.records">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. 24/7 AUTO-SYNC WEBHOOK FOR TIKTOK -->
+                    <div class="cyber-card" style="border-color: rgba(0, 255, 140, 0.25);">
+                        <div class="card-header" style="border-bottom-color: rgba(0, 255, 140, 0.3);">
+                            <i class="fas fa-robot card-icon" style="color: #00ff8c;"></i>
+                            <div>
+                                <h3 style="color: #00ff8c;">4. 24/7 FULLY AUTOMATIC TIKTOK SYNC (MAKE.COM / WEBHOOK)</h3>
+                                <p>Set up once — every new TikTok upload updates the site in seconds with zero manual work.</p>
+                            </div>
+                        </div>
+                        <div class="card-body" style="padding: 1.2rem; font-size: 0.85rem; line-height: 1.6; color: rgba(255,255,255,0.85);">
+                            <p style="margin-bottom: 0.8rem;">
+                                <strong style="color: #00ff8c;">How it works:</strong> Link your TikTok to <strong>Make.com</strong> or <strong>IFTTT</strong> (Free). Whenever you post a new TikTok, it sends a webhook to Firebase, and your site updates automatically!
+                            </p>
+                            <div style="background: rgba(0,0,0,0.5); padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid rgba(0,255,140,0.2); margin-bottom: 0.8rem;">
+                                <div style="font-size: 0.75rem; color: #00f0ff; font-weight: bold; margin-bottom: 0.3rem;">FIREBASE REST WEBHOOK ENDPOINT:</div>
+                                <code style="word-break: break-all; color: #00ff8c; font-family: monospace; font-size: 0.8rem;">https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app/siteData/latest_transmissions.json</code>
+                            </div>
+                            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                                <button type="button" class="cyber-btn secondary sm" id="btn-copy-webhook-url"><i class="fas fa-copy"></i> COPY ENDPOINT URL</button>
+                                <button type="button" class="cyber-btn secondary sm" id="btn-copy-webhook-json"><i class="fas fa-code"></i> COPY JSON PAYLOAD TEMPLATE</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-footer" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                    <button class="cyber-btn secondary" id="btn-fetch-live-feeds" type="button"><i class="fas fa-bolt"></i> TEST & FETCH LIVE DROPS NOW</button>
+                    <button class="cyber-btn primary" id="save-transmissions-btn"><i class="fas fa-save"></i> SAVE & SYNC MEDIA FEEDS</button>
+                    <span id="save-msg-transmissions" class="save-status-indicator"></span>
+                </div>
+            </section>
+
             <section id="security-panel" class="panel">
                 
                 <div id="sec-global-alarm-banner" class="cyber-alert-banner" style="display: none;">
