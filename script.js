@@ -2052,6 +2052,7 @@ const initPortal = () => {
                 if (data.botAutoTrack !== 'Disabled') {
                     const targetServerId = data.botServerId || "1229829725447393402";
                     const targetBotId = data.botUserId || "1467768793550946314";
+                    const targetBotName = (data.botName || "OBSCURA").toLowerCase().trim();
 
                     function pollDiscordLivePresence() {
                         if (!targetServerId) return;
@@ -2061,17 +2062,24 @@ const initPortal = () => {
                                 return res.json();
                             })
                             .then(wData => {
-                                if (!wData || !wData.members) return;
+                                if (!wData || !Array.isArray(wData.members)) return;
                                 
-                                // Search for Bot user in the server's live active members
-                                const botMember = wData.members.find(m => 
-                                    m.id === targetBotId || 
-                                    (m.username && m.username.toLowerCase().includes('obscura') && m.bot)
-                                );
+                                // Discord Widget anonymizes IDs to 0,1,2 so match by bot username / name
+                                const botMember = wData.members.find(m => {
+                                    if (!m || !m.username) return false;
+                                    const u = m.username.toLowerCase().trim();
+                                    return u === targetBotName || 
+                                           u === 'obscura records' ||
+                                           u.includes('obscura') || 
+                                           (m.id && m.id === targetBotId);
+                                });
 
                                 let liveStatus = 'OFFLINE';
                                 if (botMember) {
-                                    liveStatus = (botMember.status || 'online').toUpperCase();
+                                    const rawSt = (botMember.status || 'online').toLowerCase();
+                                    if (rawSt === 'idle') liveStatus = 'IDLE';
+                                    else if (rawSt === 'dnd') liveStatus = 'ONLINE'; // DND counts as active
+                                    else liveStatus = 'ONLINE';
                                 }
 
                                 const onlineTotal = wData.presence_count !== undefined ? wData.presence_count : wData.members.length;
@@ -2091,7 +2099,7 @@ const initPortal = () => {
 
                     pollDiscordLivePresence();
                     if (window._discordLiveInterval) clearInterval(window._discordLiveInterval);
-                    window._discordLiveInterval = setInterval(pollDiscordLivePresence, 15000); // Check every 15s
+                    window._discordLiveInterval = setInterval(pollDiscordLivePresence, 10000); // Check every 10s
                 }
             }
         });
