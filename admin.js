@@ -284,6 +284,7 @@ function initDashboardEngine() {
     initDemosEngine();
     initContactEngine();
     initModalsEngine();
+    initTransmissionsEngine();
     initSecurityLogsEngine();
 }
 
@@ -306,6 +307,7 @@ function initNavigation() {
         'demo-inbox-panel': { title: '<i class="fas fa-inbox"></i> DEMO SUBMISSIONS INBOX', desc: 'Review, stream, analyze link security, and tag artist demo transmissions.' },
         'contact-inbox-panel': { title: '<i class="fas fa-envelope-open-text"></i> CONTACT INQUIRIES', desc: 'Direct communications submitted via the public contact portal.' },
         'modals-panel': { title: '<i class="fas fa-window-restore"></i> MODALS, FAQ & FOOTER', desc: 'Interactive FAQ question/answers accordion, footer links, and legal policy editor.' },
+        'transmissions-panel': { title: '<i class="fas fa-broadcast-tower"></i> MEDIA FEEDS & DROPS', desc: 'Configure dedicated YouTube and TikTok latest release drops displayed on the main portal.' },
         'security-panel': { title: '<i class="fas fa-shield-virus"></i> SECURITY & SYSTEM AUDIT', desc: 'Real-time database connection telemetry and administrative audit logs.' }
     };
 
@@ -2700,5 +2702,413 @@ function initSecurityLogsEngine() {
         });
     };
 }
+
+// --- 13. LATEST MEDIA TRANSMISSIONS ENGINE (YOUTUBE & TIKTOK) ---
+const KNOWN_YT_CHANNELS = {
+    'obscurarecordss': 'UCMeIV48_O_F0H2tL7x_ayHg',
+    'recordsobscura': 'UC0A5L7DUgls-AkYaQ4ZwxhA',
+    'obscura': 'UCMeIV48_O_F0H2tL7x_ayHg'
+};
+
+async function resolveYouTubeChannelIdFromInput(input) {
+    if (!input) return 'UCMeIV48_O_F0H2tL7x_ayHg';
+    let str = input.trim();
+
+    // Direct Channel ID (UC...)
+    if (str.startsWith('UC') && str.length === 24) {
+        return str;
+    }
+    if (str.includes('/channel/')) {
+        const parts = str.split('/channel/')[1].split('/')[0].split('?')[0];
+        if (parts.startsWith('UC')) return parts;
+    }
+
+    // If it's a handle (@name or url with @name)
+    let handle = str;
+    if (handle.includes('youtube.com/@')) {
+        handle = handle.split('youtube.com/@')[1].split('/')[0].split('?')[0];
+    }
+    const cleanKey = handle.replace('@', '').toLowerCase().trim();
+    if (KNOWN_YT_CHANNELS[cleanKey]) {
+        return KNOWN_YT_CHANNELS[cleanKey];
+    }
+
+    if (!handle.startsWith('@')) {
+        handle = '@' + handle;
+    }
+
+    // Resolve Handle via AllOrigins proxy
+    try {
+        const targetUrl = `https://www.youtube.com/${handle}`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+        const res = await fetch(proxyUrl);
+        if (res.ok) {
+            const html = await res.text();
+            const match = html.match(/"channelId":"(UC[a-zA-Z0-9_-]{22})"/);
+            if (match && match[1]) return match[1];
+
+            const match2 = html.match(/"externalId":"(UC[a-zA-Z0-9_-]{22})"/);
+            if (match2 && match2[1]) return match2[1];
+
+            const match3 = html.match(/<meta itemprop="channelId" content="(UC[a-zA-Z0-9_-]{22})"/);
+            if (match3 && match3[1]) return match3[1];
+        }
+    } catch (e) {
+        console.warn("Handle resolution attempt failed", e);
+    }
+
+    // Default fallback to @Obscurarecordss
+    return 'UCMeIV48_O_F0H2tL7x_ayHg';
+}
+
+function cleanTikTokUsernameInput(input) {
+    if (!input) return 'obscura.records';
+    let str = input.trim();
+    if (str.includes('tiktok.com/@')) {
+        str = str.split('tiktok.com/@')[1].split('/')[0].split('?')[0];
+    } else if (str.startsWith('@')) {
+        str = str.substring(1);
+    }
+    return str;
+}
+
+async function fetchLatestYouTubeDropLive(inputChannel, filterMode = 'full_only') {
+    const cid = await resolveYouTubeChannelIdFromInput(inputChannel);
+    const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${cid}`;
+
+    // Attempt 1: rss2json proxy
+    try {
+        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`);
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data.items && data.items.length > 0) {
+                let chosenItem = data.items[0];
+
+                if (filterMode === 'full_only' && data.items.length > 1) {
+                    // Look for the first non-short item (if first item has #shorts or short in title)
+                    for (const it of data.items) {
+                        const titleLower = (it.title || '').toLowerCase();
+                        const linkLower = (it.link || '').toLowerCase();
+                        if (!titleLower.includes('#shorts') && !titleLower.includes('#short') && !linkLower.includes('/shorts/')) {
+                            chosenItem = it;
+                            break;
+                        }
+                    }
+                }
+
+                let videoId = '';
+                if (chosenItem.guid && chosenItem.guid.includes(':')) {
+                    videoId = chosenItem.guid.split(':').pop();
+                } else if (chosenItem.link && chosenItem.link.includes('v=')) {
+                    videoId = new URL(chosenItem.link).searchParams.get('v');
+                } else if (chosenItem.link && chosenItem.link.includes('/shorts/')) {
+                    videoId = chosenItem.link.split('/shorts/')[1].split('?')[0];
+                }
+                const thumb = videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : (chosenItem.thumbnail || '');
+                return {
+                    cid: cid,
+                    title: chosenItem.title || 'OBSCURA - LATEST DROP',
+                    link: chosenItem.link || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : `https://www.youtube.com/channel/${cid}`),
+                    thumb: thumb,
+                    desc: (chosenItem.description || '').replace(/<[^>]*>?/gm, '').trim().substring(0, 180) || 'Experience the latest official visualizer and soundwave release from our void archive.',
+                    tag: 'OFFICIAL MUSIC VIDEO'
+                };
+            }
+        }
+    } catch (e) {
+        console.warn("RSS2JSON proxy attempt failed, trying allorigins fallback...", e);
+    }
+
+    // Attempt 2: Allorigins fallback XML parser
+    try {
+        const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`);
+        if (res.ok) {
+            const xmlText = await res.text();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+            const entries = xmlDoc.querySelectorAll("entry");
+            if (entries && entries.length > 0) {
+                let chosenEntry = entries[0];
+                if (filterMode === 'full_only' && entries.length > 1) {
+                    for (const ent of entries) {
+                        const t = ent.querySelector("title")?.textContent || '';
+                        if (!t.toLowerCase().includes('#shorts') && !t.toLowerCase().includes('#short')) {
+                            chosenEntry = ent;
+                            break;
+                        }
+                    }
+                }
+
+                const title = chosenEntry.querySelector("title")?.textContent || '';
+                const link = chosenEntry.querySelector("link")?.getAttribute("href") || '';
+                const videoId = chosenEntry.querySelector("yt\\:videoId, videoId")?.textContent || '';
+                const mediaDesc = chosenEntry.querySelector("media\\:description, description")?.textContent || '';
+                return {
+                    cid: cid,
+                    title: title || 'OBSCURA - LATEST DROP',
+                    link: link || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : ''),
+                    thumb: videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : '',
+                    desc: mediaDesc.replace(/<[^>]*>?/gm, '').trim().substring(0, 180) || 'Experience the latest official visualizer and soundwave release from our void archive.',
+                    tag: 'OFFICIAL MUSIC VIDEO'
+                };
+            }
+        }
+    } catch (e) {
+        console.warn("Allorigins XML attempt failed", e);
+    }
+    return null;
+}
+
+async function fetchLatestTikTokDropLive(usernameOrUrl) {
+    const raw = (usernameOrUrl || 'obscura.records').trim();
+    
+    // If specific video URL or shortlink provided
+    if (raw.includes('tiktok.com')) {
+        try {
+            const oEmbedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(raw)}`;
+            const res = await fetch(oEmbedUrl);
+            if (res.ok) {
+                const data = await res.json();
+                const user = data.author_unique_id || (raw.includes('@') ? raw.split('@')[1].split('/')[0] : 'obscura.records');
+                return {
+                    user: user,
+                    title: data.title || `LATEST TIKTOK DROP @${user.toUpperCase()}`,
+                    link: raw,
+                    thumb: data.thumbnail_url || 'assets/cover.png',
+                    desc: data.title || 'Stream our newest sound drop, trending audio, and phonk edits on TikTok.',
+                    tag: raw.includes('/video/') ? 'LATEST TIKTOK VIDEO' : 'OFFICIAL TIKTOK HUB'
+                };
+            }
+        } catch (e) {}
+    }
+
+    const user = cleanTikTokUsernameInput(raw);
+
+    // Try Profile oEmbed API
+    try {
+        const oEmbedUrl = `https://www.tiktok.com/oembed?url=https://www.tiktok.com/@${encodeURIComponent(user)}`;
+        const res = await fetch(oEmbedUrl);
+        if (res.ok) {
+            const data = await res.json();
+            return {
+                user: user,
+                title: data.author_name ? `${data.author_name.toUpperCase()} (@${user.toUpperCase()})` : `OBSCURA RECORDS (@${user.toUpperCase()})`,
+                link: `https://www.tiktok.com/@${user}`,
+                thumb: data.thumbnail_url || 'assets/cover.png',
+                desc: 'Catch our newest sound drops, phonk visualizers, and trending edits on TikTok.',
+                tag: 'OFFICIAL TIKTOK HUB'
+            };
+        }
+    } catch (e) {}
+
+    return {
+        user: user,
+        title: `OBSCURA RECORDS (@${user.toUpperCase()})`,
+        link: `https://www.tiktok.com/@${user}`,
+        thumb: 'assets/cover.png',
+        desc: 'Catch our newest sound drops, phonk visualizers, and trending edits on TikTok.',
+        tag: 'OFFICIAL TIKTOK HUB'
+    };
+}
+
+function initTransmissionsEngine() {
+    const saveBtn = document.getElementById('save-transmissions-btn');
+    const fetchLiveBtn = document.getElementById('btn-fetch-live-feeds');
+    const msgEl = document.getElementById('save-msg-transmissions');
+
+    // Load current data from Firebase (siteData path for authorized access)
+    db.ref('siteData/latest_transmissions').on('value', snap => {
+        const data = snap.val() || {};
+        
+        const showEl = document.getElementById('trans_showTransmissions');
+        if (showEl) showEl.value = data.showTransmissions || 'Visible';
+
+        const titleEl = document.getElementById('trans_title');
+        if (titleEl) titleEl.value = data.transTitle || 'LATEST <span class="accent">TRANSMISSIONS</span>';
+
+        const descEl = document.getElementById('trans_desc');
+        if (descEl) descEl.value = data.transDesc || 'Intercept the newest soundwaves and visual drops across our networks';
+
+        // YouTube
+        const ytMode = document.getElementById('trans_yt_mode');
+        if (ytMode) ytMode.value = data.yt_mode || 'Auto';
+
+        const ytCid = document.getElementById('trans_yt_channel_id');
+        if (ytCid) ytCid.value = data.yt_channel_id || '@Obscurarecordss';
+
+        const ytTag = document.getElementById('trans_yt_tag');
+        if (ytTag) ytTag.value = data.yt_tag || 'LATEST OFFICIAL DROP';
+
+        const ytTitle = document.getElementById('trans_yt_title');
+        if (ytTitle) ytTitle.value = data.yt_title || 'MONTAGEM ALMA GEMEA - NXPXLM';
+
+        const ytDesc = document.getElementById('trans_yt_desc');
+        if (ytDesc) ytDesc.value = data.yt_desc || 'Experience the newest track and soundwave visualizer drop from Obscura Recordss.';
+
+        const ytUrl = document.getElementById('trans_yt_url');
+        if (ytUrl) ytUrl.value = data.yt_url || 'https://www.youtube.com/watch?v=kyS1AFiPa9I';
+
+        const ytThumb = document.getElementById('trans_yt_thumb');
+        if (ytThumb) ytThumb.value = data.yt_thumb || 'https://i4.ytimg.com/vi/kyS1AFiPa9I/hqdefault.jpg';
+
+        const ytSubUrl = document.getElementById('trans_yt_sub_url');
+        if (ytSubUrl) ytSubUrl.value = data.yt_sub_url || 'https://www.youtube.com/@Obscurarecordss?sub_confirmation=1';
+
+        // TikTok
+        const ttMode = document.getElementById('trans_tt_mode');
+        if (ttMode) ttMode.value = data.tt_mode || 'Auto';
+
+        const ttUser = document.getElementById('trans_tt_username');
+        if (ttUser) ttUser.value = data.tt_username || 'obscura.records';
+
+        const ttTag = document.getElementById('trans_tt_tag');
+        if (ttTag) ttTag.value = data.tt_tag || 'FEATURED AUDIO CLIP';
+
+        const ttTitle = document.getElementById('trans_tt_title');
+        if (ttTitle) ttTitle.value = data.tt_title || 'NEW VOID PHONK SOUND DROP #01';
+
+        const ttDesc = document.getElementById('trans_tt_desc');
+        if (ttDesc) ttDesc.value = data.tt_desc || 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.';
+
+        const ttUrl = document.getElementById('trans_tt_url');
+        if (ttUrl) ttUrl.value = data.tt_url || 'https://www.tiktok.com/@obscura.records';
+
+        const ttThumb = document.getElementById('trans_tt_thumb');
+        if (ttThumb) ttThumb.value = data.tt_thumb || 'assets/cover.png';
+
+        const ttFollowUrl = document.getElementById('trans_tt_follow_url');
+        if (ttFollowUrl) ttFollowUrl.value = data.tt_follow_url || 'https://www.tiktok.com/@obscura.records';
+    });
+
+    // Test & Live Fetch Button
+    if (fetchLiveBtn) {
+        fetchLiveBtn.addEventListener('click', async () => {
+            fetchLiveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> FETCHING LIVE DROPS...';
+            fetchLiveBtn.disabled = true;
+
+            try {
+                const ytChannelInput = document.getElementById('trans_yt_channel_id')?.value.trim() || '@Obscurarecordss';
+                const ytFilterMode = document.getElementById('trans_yt_filter')?.value || 'full_only';
+                const ttInput = document.getElementById('trans_tt_username')?.value.trim() || 'obscura.records';
+
+                showToast("CONTACTING YOUTUBE & TIKTOK FEEDS...");
+
+                // 1. YouTube Fetch
+                const ytData = await fetchLatestYouTubeDropLive(ytChannelInput, ytFilterMode);
+                if (ytData) {
+                    if (ytData.cid && document.getElementById('trans_yt_channel_id')) {
+                        document.getElementById('trans_yt_channel_id').value = ytData.cid;
+                    }
+                    if (document.getElementById('trans_yt_title')) document.getElementById('trans_yt_title').value = ytData.title;
+                    if (document.getElementById('trans_yt_url')) document.getElementById('trans_yt_url').value = ytData.link;
+                    if (document.getElementById('trans_yt_thumb') && ytData.thumb) document.getElementById('trans_yt_thumb').value = ytData.thumb;
+                    if (document.getElementById('trans_yt_desc') && ytData.desc) document.getElementById('trans_yt_desc').value = ytData.desc;
+                    if (document.getElementById('trans_yt_tag')) document.getElementById('trans_yt_tag').value = ytData.tag;
+                }
+
+                // 2. TikTok Fetch
+                const ttData = await fetchLatestTikTokDropLive(ttInput);
+                if (ttData) {
+                    if (document.getElementById('trans_tt_title')) document.getElementById('trans_tt_title').value = ttData.title;
+                    if (document.getElementById('trans_tt_url')) document.getElementById('trans_tt_url').value = ttData.link;
+                    if (document.getElementById('trans_tt_thumb') && ttData.thumb) document.getElementById('trans_tt_thumb').value = ttData.thumb;
+                    if (document.getElementById('trans_tt_desc') && ttData.desc) document.getElementById('trans_tt_desc').value = ttData.desc;
+                    if (document.getElementById('trans_tt_tag') && ttData.tag) document.getElementById('trans_tt_tag').value = ttData.tag;
+                }
+
+                showToast(ytData ? "LATEST DROPS RETRIEVED LIVE!" : "LIVE FETCH COMPLETED");
+            } catch (e) {
+                showToast("FETCH NOTICE: " + e.message, 'error');
+            } finally {
+                fetchLiveBtn.innerHTML = '<i class="fas fa-bolt"></i> TEST & FETCH LIVE DROPS NOW';
+                fetchLiveBtn.disabled = false;
+            }
+        });
+    }
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', (e) => {
+            if (e) e.preventDefault();
+
+            const payload = {
+                showTransmissions: String(document.getElementById('trans_showTransmissions')?.value || 'Visible'),
+                transTitle: String(document.getElementById('trans_title')?.value || 'LATEST <span class="accent">TRANSMISSIONS</span>'),
+                transDesc: String(document.getElementById('trans_desc')?.value || 'Intercept the newest soundwaves and visual drops across our networks'),
+                
+                yt_mode: String(document.getElementById('trans_yt_mode')?.value || 'Auto'),
+                yt_filter: String(document.getElementById('trans_yt_filter')?.value || 'full_only'),
+                yt_channel_id: String(document.getElementById('trans_yt_channel_id')?.value || '@Obscurarecordss').trim(),
+                yt_tag: String(document.getElementById('trans_yt_tag')?.value || 'OFFICIAL MUSIC VIDEO').trim(),
+                yt_title: String(document.getElementById('trans_yt_title')?.value || 'MONTAGEM ALMA GEMEA - NXPXLM').trim(),
+                yt_desc: String(document.getElementById('trans_yt_desc')?.value || '').trim(),
+                yt_url: String(document.getElementById('trans_yt_url')?.value || 'https://www.youtube.com/watch?v=kyS1AFiPa9I').trim(),
+                yt_thumb: String(document.getElementById('trans_yt_thumb')?.value || 'https://i4.ytimg.com/vi/kyS1AFiPa9I/hqdefault.jpg').trim(),
+                yt_sub_url: String(document.getElementById('trans_yt_sub_url')?.value || 'https://www.youtube.com/@Obscurarecordss?sub_confirmation=1').trim(),
+
+                tt_mode: String(document.getElementById('trans_tt_mode')?.value || 'Auto'),
+                tt_username: cleanTikTokUsernameInput(document.getElementById('trans_tt_username')?.value || 'obscura.records'),
+                tt_tag: String(document.getElementById('trans_tt_tag')?.value || 'OFFICIAL TIKTOK HUB').trim(),
+                tt_title: String(document.getElementById('trans_tt_title')?.value || 'OBSCURA RECORDS (@OBSCURA.RECORDS)').trim(),
+                tt_desc: String(document.getElementById('trans_tt_desc')?.value || '').trim(),
+                tt_url: String(document.getElementById('trans_tt_url')?.value || 'https://www.tiktok.com/@obscura.records').trim(),
+                tt_thumb: String(document.getElementById('trans_tt_thumb')?.value || 'assets/cover.png').trim(),
+                tt_follow_url: String(document.getElementById('trans_tt_follow_url')?.value || 'https://www.tiktok.com/@obscura.records').trim(),
+                updatedAt: Date.now()
+            };
+
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SAVING FEEDS...';
+            saveBtn.disabled = true;
+
+            db.ref('siteData/latest_transmissions').set(payload).then(() => {
+                bumpSiteVersion("Updated Latest Media Feeds (YouTube & TikTok)");
+                showToast("MEDIA FEEDS SAVED & SYNCED!");
+                if (msgEl) {
+                    msgEl.textContent = 'SAVED & SYNCED LIVE!';
+                    msgEl.style.color = '#00ff8c';
+                    setTimeout(() => { msgEl.textContent = ''; }, 3000);
+                }
+            }).catch(err => {
+                showToast("SAVE FAILED: " + err.message, 'error');
+                if (msgEl) {
+                    msgEl.textContent = 'ERROR: ' + err.message;
+                    msgEl.style.color = '#ff0055';
+                }
+            }).finally(() => {
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> SAVE & SYNC MEDIA FEEDS';
+                saveBtn.disabled = false;
+            });
+        });
+    }
+
+    // Webhook Copy Helpers
+    const copyUrlBtn = document.getElementById('btn-copy-webhook-url');
+    if (copyUrlBtn) {
+        copyUrlBtn.addEventListener('click', () => {
+            const url = 'https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app/siteData/latest_transmissions.json';
+            navigator.clipboard.writeText(url).then(() => {
+                showToast("FIREBASE WEBHOOK URL COPIED!");
+            });
+        });
+    }
+
+    const copyJsonBtn = document.getElementById('btn-copy-webhook-json');
+    if (copyJsonBtn) {
+        copyJsonBtn.addEventListener('click', () => {
+            const sampleJson = JSON.stringify({
+                tt_title: "NEW TIKTOK VIDEO TITLE",
+                tt_url: "https://www.tiktok.com/@obscura.records/video/...",
+                tt_thumb: "https://...",
+                tt_desc: "Catch our newest phonk visualizer drop on TikTok.",
+                tt_tag: "LATEST TIKTOK DROP",
+                tt_mode: "Auto",
+                updatedAt: Date.now()
+            }, null, 2);
+            navigator.clipboard.writeText(sampleJson).then(() => {
+                showToast("SAMPLE JSON PAYLOAD COPIED!");
+            });
+        });
+    }
+}
+
 
 
