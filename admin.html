@@ -1606,11 +1606,17 @@
                             </div>
                             <div class="input-group full">
                                 <label><i class="fab fa-tiktok"></i> TIKTOK VIDEO / CLIP URL</label>
-                                <input type="text" id="trans_tt_url" placeholder="https://www.tiktok.com/@obscura.records/video/...">
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" id="trans_tt_url" placeholder="https://www.tiktok.com/@obscura.records/video/..." style="flex: 1;">
+                                    <button type="button" class="cyber-btn secondary sm" id="btn-fetch-tt-single"><i class="fas fa-bolt"></i> GET PREVIEW</button>
+                                </div>
                             </div>
                             <div class="input-group full">
                                 <label><i class="fas fa-image"></i> THUMBNAIL / PREVIEW IMAGE URL</label>
-                                <input type="text" id="trans_tt_thumb" placeholder="https://... or assets/cover.jpg">
+                                <div style="display: flex; gap: 0.8rem; align-items: center;">
+                                    <input type="text" id="trans_tt_thumb" placeholder="https://... or assets/cover.png" style="flex: 1;">
+                                    <div id="admin-tt-thumb-preview" style="width: 48px; height: 48px; border-radius: 6px; background-size: cover; background-position: center; border: 1px solid #00f0ff; background-image: url('assets/cover.png');"></div>
+                                </div>
                             </div>
                             <div class="input-group full">
                                 <label><i class="fas fa-user-plus"></i> PROFILE FOLLOW URL</label>
