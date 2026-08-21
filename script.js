@@ -2420,9 +2420,9 @@ const initPortal = () => {
 
             let liveFeedFetched = false;
 
-            db.ref('siteData/globals/latest_transmissions').on('value', snap => {
-                const tData = snap.val() || {};
-                
+            function applyTransmissionData(tData) {
+                if (!tData || typeof tData !== 'object') return;
+
                 // 1. YouTube Drop Sync
                 const ytTitle = tData.yt_title || 'MONTAGEM ALMA GEMEA - NXPXLM';
                 const ytDesc  = tData.yt_desc || 'Experience the newest track and soundwave visualizer drop from Obscura Recordss.';
@@ -2515,6 +2515,19 @@ const initPortal = () => {
                             }
                         }).catch(() => {});
                     }
+                }
+            }
+
+            // Listen to Admin Saves
+            db.ref('siteData/globals/latest_transmissions').on('value', snap => {
+                applyTransmissionData(snap.val() || {});
+            });
+
+            // Listen to Discord Bot Saves (Immediate Real-Time Sync)
+            db.ref('bot_status/latest_transmissions').on('value', snap => {
+                const bData = snap.val();
+                if (bData && typeof bData === 'object') {
+                    applyTransmissionData(bData);
                 }
             });
         } catch (e) {
