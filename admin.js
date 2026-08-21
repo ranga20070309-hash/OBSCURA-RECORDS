@@ -831,10 +831,12 @@ function initReleasesEngine() {
         btnAddNew.addEventListener('click', () => {
             document.getElementById('rel_edit_index').value = '-1';
             document.getElementById('release-editor-title').textContent = 'ADD NEW RELEASE';
-            ['rel_title', 'rel_artist', 'rel_catalog', 'rel_date', 'rel_cover', 'rel_streamUrl', 'rel_spotifyUrl', 'rel_soundcloudUrl', 'rel_appleUrl', 'rel_dlUrl'].forEach(id => {
+            ['rel_title', 'rel_artist', 'rel_catalog', 'rel_date', 'rel_cover', 'rel_streamUrl', 'rel_youtubeUrl', 'rel_spotifyUrl', 'rel_soundcloudUrl', 'rel_appleUrl', 'rel_dlUrl'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
             });
+            const typeEl = document.getElementById('rel_type');
+            if (typeEl) typeEl.value = 'SINGLE';
             if (coverPreview) coverPreview.innerHTML = '<i class="fas fa-image"></i>';
             editorCard.style.display = 'block';
             editorCard.scrollIntoView({ behavior: 'smooth' });
@@ -864,10 +866,12 @@ function initReleasesEngine() {
             const title = r.title || '';
             const artist = r.artist || r.producers || '';
             const catalog = r.catalog || r.id || '';
+            const type = r.type || '';
             if (!query) return true;
             return title.toLowerCase().includes(query) ||
                    artist.toLowerCase().includes(query) ||
-                   catalog.toLowerCase().includes(query);
+                   catalog.toLowerCase().includes(query) ||
+                   type.toLowerCase().includes(query);
         });
 
         if (filtered.length === 0) {
@@ -879,7 +883,9 @@ function initReleasesEngine() {
             const actualIndex = cachedReleases.indexOf(rel);
             const cover = rel.cover || rel.image || 'assets/cover.png';
             const artist = rel.artist || rel.producers || 'UNKNOWN ARTIST';
-            const catalog = rel.catalog || rel.id || 'OCR---';
+            const catalog = rel.catalog || (rel.id && !rel.id.includes('NEW') ? rel.id : '');
+            const relType = (rel.type || 'SINGLE').toUpperCase();
+            const dateStr = rel.date || 'TBA';
             return `
                 <div class="admin-release-card">
                     <div class="rel-card-top">
@@ -887,7 +893,7 @@ function initReleasesEngine() {
                         <div class="rel-meta">
                             <h4>${rel.title || 'UNTITLED'}</h4>
                             <div class="rel-artist">${artist}</div>
-                            <div class="rel-code">${catalog} | ${rel.date || 'TBA'}</div>
+                            <div class="rel-code"><span class="rel-type-tag" style="display:inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.68rem; font-weight: 800; background: rgba(0, 240, 255, 0.15); color: var(--accent-blue); margin-right: 6px; letter-spacing: 0.05rem;">${relType}</span>${catalog ? `${catalog} | ` : ''}${dateStr}</div>
                         </div>
                     </div>
                     <div class="rel-card-actions">
@@ -919,30 +925,41 @@ function initReleasesEngine() {
                 return;
             }
 
-            const catalog = document.getElementById('rel_catalog').value.trim() || 'OCR000';
+            // Catalog code: only save what the user typed without auto-assigning OCR000
+            const catalog = document.getElementById('rel_catalog').value.trim();
+            const type = (document.getElementById('rel_type')?.value || 'SINGLE').trim().toUpperCase();
             const cover = document.getElementById('rel_cover').value.trim() || 'assets/cover.png';
-            const streamUrl = document.getElementById('rel_streamUrl').value.trim();
+            const streamUrl = document.getElementById('rel_streamUrl').value.trim(); // YouTube Preview / Player audio
+            const youtubeUrl = document.getElementById('rel_youtubeUrl').value.trim() || streamUrl; // YouTube Album / Full release link
             const spotifyUrl = document.getElementById('rel_spotifyUrl').value.trim();
             const appleUrl = document.getElementById('rel_appleUrl').value.trim();
+            const soundcloudUrl = document.getElementById('rel_soundcloudUrl').value.trim();
+            const dlUrl = document.getElementById('rel_dlUrl').value.trim();
 
-            // Store dual keys so both old and new site scripts work seamlessly
+            // Store dual keys so all site player systems and scripts work smoothly
             const item = {
                 title: title,
                 artist: artist,
                 producers: artist,
+                type: type,
                 catalog: catalog,
                 id: catalog,
                 date: document.getElementById('rel_date').value.trim() || '2026',
                 cover: cover,
                 image: cover,
                 streamUrl: streamUrl,
-                youtube: streamUrl,
+                preview: streamUrl,
+                youtubePreview: streamUrl,
+                youtube: youtubeUrl,
+                youtubeUrl: youtubeUrl,
+                youtubeAlbum: youtubeUrl,
                 spotifyUrl: spotifyUrl,
                 spotify: spotifyUrl,
-                soundcloudUrl: document.getElementById('rel_soundcloudUrl').value.trim(),
+                soundcloudUrl: soundcloudUrl,
+                soundcloud: soundcloudUrl,
                 appleUrl: appleUrl,
                 apple: appleUrl,
-                dlUrl: document.getElementById('rel_dlUrl').value.trim()
+                dlUrl: dlUrl
             };
 
             let updatedList = [...cachedReleases];
@@ -968,10 +985,13 @@ function initReleasesEngine() {
         document.getElementById('release-editor-title').textContent = `EDIT RELEASE: ${rel.title}`;
         document.getElementById('rel_title').value = rel.title || '';
         document.getElementById('rel_artist').value = rel.artist || rel.producers || '';
-        document.getElementById('rel_catalog').value = rel.catalog || rel.id || '';
+        const typeEl = document.getElementById('rel_type');
+        if (typeEl) typeEl.value = (rel.type || 'SINGLE').toUpperCase();
+        document.getElementById('rel_catalog').value = rel.catalog || (rel.id && !rel.id.includes('NEW') ? rel.id : '');
         document.getElementById('rel_date').value = rel.date || '';
         document.getElementById('rel_cover').value = rel.cover || rel.image || '';
-        document.getElementById('rel_streamUrl').value = rel.streamUrl || rel.youtube || '';
+        document.getElementById('rel_streamUrl').value = rel.streamUrl || rel.preview || rel.youtubePreview || '';
+        document.getElementById('rel_youtubeUrl').value = rel.youtubeAlbum || rel.youtubeUrl || rel.youtube || '';
         document.getElementById('rel_spotifyUrl').value = rel.spotifyUrl || rel.spotify || '';
         document.getElementById('rel_soundcloudUrl').value = rel.soundcloudUrl || rel.soundcloud || '';
         document.getElementById('rel_appleUrl').value = rel.appleUrl || rel.apple || '';
