@@ -2338,6 +2338,18 @@ const initPortal = () => {
                 if (ttWatchBtn && ttUrl) ttWatchBtn.href = ttUrl;
                 if (ttFollowBtn && ttFollowUrl) ttFollowBtn.href = ttFollowUrl;
 
+                // Dynamic client-side resolution if thumbnail is default but a real TikTok URL is provided
+                if (ttThumbBg && (ttThumb === 'assets/cover.png' || !ttThumb.startsWith('http')) && ttUrl && ttUrl.includes('tiktok.com')) {
+                    fetchLiveTikTokDrop(ttUrl).then(liveTt => {
+                        if (liveTt && liveTt.thumb && liveTt.thumb.startsWith('http')) {
+                            ttThumbBg.style.backgroundImage = `url("${liveTt.thumb}")`;
+                            if (ttTitleEl && liveTt.title && (!ttTitle || ttTitle.includes('@OBSCURA.RECORDS'))) {
+                                ttTitleEl.textContent = liveTt.title;
+                            }
+                        }
+                    }).catch(() => {});
+                }
+
                 // 3. Section Title & Description Live Sync
                 const transTitleEl = document.getElementById('trans-title-display');
                 const transDescEl  = document.getElementById('trans-desc-display');
