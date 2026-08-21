@@ -2983,6 +2983,25 @@ function initTransmissionsEngine() {
         if (ttFollowUrl) ttFollowUrl.value = data.tt_follow_url || 'https://www.tiktok.com/@obscura.records';
     });
 
+    // Auto-resolve TikTok metadata on URL paste / input
+    const ttUrlInput = document.getElementById('trans_tt_url');
+    if (ttUrlInput) {
+        ttUrlInput.addEventListener('change', async () => {
+            const val = ttUrlInput.value.trim();
+            if (val.includes('tiktok.com')) {
+                showToast("FETCHING TIKTOK VIDEO PREVIEW...");
+                const data = await fetchLatestTikTokDropLive(val);
+                if (data) {
+                    if (document.getElementById('trans_tt_title') && data.title) document.getElementById('trans_tt_title').value = data.title;
+                    if (document.getElementById('trans_tt_thumb') && data.thumb) document.getElementById('trans_tt_thumb').value = data.thumb;
+                    if (document.getElementById('trans_tt_desc') && data.desc) document.getElementById('trans_tt_desc').value = data.desc;
+                    if (document.getElementById('trans_tt_tag') && data.tag) document.getElementById('trans_tt_tag').value = data.tag;
+                    showToast("TIKTOK PREVIEW & THUMBNAIL LOADED!");
+                }
+            }
+        });
+    }
+
     // Test & Live Fetch Button
     if (fetchLiveBtn) {
         fetchLiveBtn.addEventListener('click', async () => {
@@ -2992,7 +3011,9 @@ function initTransmissionsEngine() {
             try {
                 const ytChannelInput = document.getElementById('trans_yt_channel_id')?.value.trim() || '@Obscurarecordss';
                 const ytFilterMode = document.getElementById('trans_yt_filter')?.value || 'full_only';
-                const ttInput = document.getElementById('trans_tt_username')?.value.trim() || 'obscura.records';
+                const ttVideoUrl = document.getElementById('trans_tt_url')?.value.trim();
+                const ttUsername = document.getElementById('trans_tt_username')?.value.trim() || 'obscura.records';
+                const ttTarget = (ttVideoUrl && ttVideoUrl.includes('tiktok.com')) ? ttVideoUrl : ttUsername;
 
                 showToast("CONTACTING YOUTUBE & TIKTOK FEEDS...");
 
@@ -3010,7 +3031,7 @@ function initTransmissionsEngine() {
                 }
 
                 // 2. TikTok Fetch
-                const ttData = await fetchLatestTikTokDropLive(ttInput);
+                const ttData = await fetchLatestTikTokDropLive(ttTarget);
                 if (ttData) {
                     if (document.getElementById('trans_tt_title')) document.getElementById('trans_tt_title').value = ttData.title;
                     if (document.getElementById('trans_tt_url')) document.getElementById('trans_tt_url').value = ttData.link;
@@ -3030,8 +3051,23 @@ function initTransmissionsEngine() {
     }
 
     if (saveBtn) {
-        saveBtn.addEventListener('click', (e) => {
+        saveBtn.addEventListener('click', async (e) => {
             if (e) e.preventDefault();
+
+            let ttThumbVal = String(document.getElementById('trans_tt_thumb')?.value || '').trim();
+            const ttUrlVal = String(document.getElementById('trans_tt_url')?.value || 'https://www.tiktok.com/@obscura.records').trim();
+
+            // If user pasted a video URL but thumbnail is empty or default, auto-fetch thumbnail before saving
+            if (ttUrlVal.includes('tiktok.com/video') && (!ttThumbVal || ttThumbVal === 'assets/cover.png')) {
+                try {
+                    const fetchedTt = await fetchLatestTikTokDropLive(ttUrlVal);
+                    if (fetchedTt && fetchedTt.thumb) {
+                        ttThumbVal = fetchedTt.thumb;
+                        if (document.getElementById('trans_tt_thumb')) document.getElementById('trans_tt_thumb').value = ttThumbVal;
+                        if (document.getElementById('trans_tt_title') && fetchedTt.title) document.getElementById('trans_tt_title').value = fetchedTt.title;
+                    }
+                } catch(e) {}
+            }
 
             const payload = {
                 showTransmissions: String(document.getElementById('trans_showTransmissions')?.value || 'Visible'),
@@ -3053,8 +3089,8 @@ function initTransmissionsEngine() {
                 tt_tag: String(document.getElementById('trans_tt_tag')?.value || 'OFFICIAL TIKTOK HUB').trim(),
                 tt_title: String(document.getElementById('trans_tt_title')?.value || 'OBSCURA RECORDS (@OBSCURA.RECORDS)').trim(),
                 tt_desc: String(document.getElementById('trans_tt_desc')?.value || '').trim(),
-                tt_url: String(document.getElementById('trans_tt_url')?.value || 'https://www.tiktok.com/@obscura.records').trim(),
-                tt_thumb: String(document.getElementById('trans_tt_thumb')?.value || 'assets/cover.png').trim(),
+                tt_url: ttUrlVal,
+                tt_thumb: ttThumbVal || 'assets/cover.png',
                 tt_follow_url: String(document.getElementById('trans_tt_follow_url')?.value || 'https://www.tiktok.com/@obscura.records').trim(),
                 updatedAt: Date.now()
             };
