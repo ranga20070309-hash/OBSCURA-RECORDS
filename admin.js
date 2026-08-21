@@ -1425,9 +1425,24 @@ function initStaffEngine() {
 
     [btnCloseProf, btnCancelProf].forEach(b => {
         if (b && profEditor) {
-            b.addEventListener('click', () => profEditor.style.display = 'none');
+            b.addEventListener('click', () => {
+                profEditor.style.display = 'none';
+                document.getElementById('prof_edit_id').value = '';
+            });
         }
     });
+
+    const profNameInput = document.getElementById('prof_name');
+    if (profNameInput) {
+        profNameInput.addEventListener('input', () => {
+            const editId = document.getElementById('prof_edit_id').value;
+            const profIdInput = document.getElementById('prof_id');
+            if (!editId && profIdInput) {
+                const slug = profNameInput.value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+                profIdInput.value = slug;
+            }
+        });
+    }
 
     db.ref('staff_status').on('value', (snap) => {
         cachedStaff = snap.val() || {};
@@ -1523,13 +1538,24 @@ function initStaffEngine() {
         btnSaveProf.addEventListener('click', () => {
             const isPartner = document.getElementById('prof_is_partner').value === 'true';
             const editId = document.getElementById('prof_edit_id').value.trim();
-            const profId = editId || document.getElementById('prof_id').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+            const rawEnteredId = document.getElementById('prof_id').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
             const name = document.getElementById('prof_name').value.trim();
             const role = document.getElementById('prof_role').value.trim();
 
-            if (!profId || !name) {
-                showToast("PLEASE FILL IN PROFILE ID AND NAME!", 'error');
+            if (!name) {
+                showToast("PLEASE FILL IN PARTNER / PROFILE NAME!", 'error');
                 return;
+            }
+
+            // Always ensure a unique, dedicated ID so multiple partner cards never overwrite each other
+            let profId = editId;
+            if (!profId) {
+                if (rawEnteredId) {
+                    profId = rawEnteredId;
+                } else {
+                    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+                    profId = (slug || (isPartner ? 'partner' : 'staff')) + '_' + Date.now().toString(36);
+                }
             }
 
             const socials = {};
@@ -1552,21 +1578,26 @@ function initStaffEngine() {
 
             const data = {
                 name: name,
-                role: role,
+                role: role || (isPartner ? 'Distribution Partner' : 'Staff Member'),
+                tagline: role || (isPartner ? 'Distribution Partner' : 'Staff Member'),
                 order: parseInt(document.getElementById('prof_order').value) || 99,
                 avatar_url: avatarUrl,
                 logoUrl: avatarUrl,
+                logo_url: avatarUrl,
                 banner_url: bannerUrl,
                 bannerUrl: bannerUrl,
+                banner: bannerUrl,
                 bio: document.getElementById('prof_bio').value.trim(),
-                socials: socials
+                socials: socials,
+                updatedAt: Date.now()
             };
 
             const path = isPartner ? 'partner_status/' : 'staff_status/';
-            db.ref(path + profId).update(data).then(() => {
+            db.ref(path + profId).set(data).then(() => {
                 bumpSiteVersion(`Saved Profile: ${name}`);
-                showToast("PROFILE SAVED & SYNCHRONIZED!");
+                showToast(`PARTNER/STAFF "${name.toUpperCase()}" SAVED SUCCESSFULLY!`);
                 if (profEditor) profEditor.style.display = 'none';
+                document.getElementById('prof_edit_id').value = '';
             }).catch(err => showToast("ERROR: " + err.message, 'error'));
         });
     }
