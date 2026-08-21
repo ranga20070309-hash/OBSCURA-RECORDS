@@ -168,14 +168,21 @@ const playBleep = (freq = 600, type = 'sine', duration = 0.08) => {
 // --- MASTER CYBERPUNK SILKY SMOOTH TYPEWRITER ENTRANCE ---
 let ignitionStarted = false;
 
-const runIgnition = () => {
-    if (ignitionStarted) return;
+const runIgnition = (forceReplay = false) => {
+    if (ignitionStarted && !forceReplay) return;
+    if (document.body.classList.contains('maintenance-active') && !forceReplay) return;
     ignitionStarted = true;
 
     const entranceScreen = document.getElementById('entrance-screen');
     const mainSite = document.getElementById('main-site');
     const typeTextEl = document.getElementById('splash-type-text');
     if (!entranceScreen || !mainSite) return;
+
+    entranceScreen.style.removeProperty('display');
+    entranceScreen.style.display = 'flex';
+    entranceScreen.style.opacity = '1';
+    entranceScreen.style.filter = 'none';
+    if (typeTextEl) typeTextEl.innerHTML = '';
 
     // 1. Smooth Fade & Float In Logo
     gsap.fromTo(".splash-logo", 
@@ -245,6 +252,8 @@ const runIgnition = () => {
                     ease: "power2.inOut",
                     onStart: () => {
                         gsap.set(mainSite, { visibility: 'visible', opacity: 1 });
+                        mainSite.style.removeProperty('display');
+                        mainSite.style.removeProperty('visibility');
                         gsap.to("html", { "--sb-opacity": 0.2, duration: 1.2, ease: "power2.out" });
                     }
                 }, "-=0.1");
@@ -1813,6 +1822,7 @@ const initPortal = () => {
                     const isBypassed = (sessionStorage.getItem('adminBypass') === 'true' || sessionStorage.getItem('rootAuth') === 'granted');
 
                     if (isMaint && !isBypassed) {
+                        window._wasMaintenanceActive = true;
                         maintenanceOverlay.style.display = 'flex';
                         document.body.classList.add('no-scroll', 'maintenance-active');
                         document.documentElement.classList.add('no-scroll', 'maintenance-active');
@@ -1835,15 +1845,29 @@ const initPortal = () => {
                         initSpaceCanvas();
                     } else {
                         maintenanceOverlay.style.display = 'none';
-                        document.body.classList.remove('no-scroll', 'maintenance-active');
-                        document.documentElement.classList.remove('no-scroll', 'maintenance-active');
-
-                        if (mainSite) {
-                            mainSite.style.removeProperty('display');
-                            mainSite.style.removeProperty('visibility');
-                        }
+                        document.body.classList.remove('maintenance-active');
+                        document.documentElement.classList.remove('maintenance-active');
 
                         if (mCanvasAnimId) cancelAnimationFrame(mCanvasAnimId);
+
+                        // If maintenance mode was active and just got turned off: Replay intro from the start!
+                        if (window._wasMaintenanceActive) {
+                            window._wasMaintenanceActive = false;
+                            document.body.classList.add('no-scroll');
+                            document.documentElement.classList.add('no-scroll');
+                            if (entrance) {
+                                entrance.style.removeProperty('display');
+                                entrance.style.display = 'flex';
+                                entrance.style.opacity = '1';
+                            }
+                            // Trigger full pristine logo & typewriter reveal!
+                            runIgnition(true);
+                        } else {
+                            if (mainSite) {
+                                mainSite.style.removeProperty('display');
+                                mainSite.style.removeProperty('visibility');
+                            }
+                        }
                     }
 
                     // Render Floating Admin Preview Banner when Maintenance is Active but Admin is Bypassing
