@@ -316,94 +316,94 @@ body.audio-playing .ambient-bass-lighting {
 
 
 
-/* Enarma-style Black Splash Screen */
+/* ==========================================================================
+   ULTRA-PREMIUM CYBERPUNK ENTRANCE & TYPING INTRO SCREEN
+   ========================================================================== */
+/* ==========================================================================
+   ULTRA-SMOOTH CYBERPUNK ENTRANCE & TYPEWRITER INTRO
+   ========================================================================== */
 #entrance-screen {
     position: fixed;
     inset: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #000;
+    background: #030407;
     z-index: 100000;
+    overflow: hidden;
 }
 
 .splash-content {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 250px;
-    height: 250px;
+    gap: 1.5rem;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
+
+.splash-logo-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .splash-logo {
-    max-width: 160px;
+    width: 110px;
+    height: auto;
     opacity: 0;
-    transform: scale(0.95);
-    filter: none;
-    position: relative;
-    overflow: hidden;
+    transform: scale(0.92);
+    filter: drop-shadow(0 0 25px rgba(0, 240, 255, 0.45));
+    transition: filter 0.5s ease;
 }
 
-.splash-logo::after {
-    content: '';
-    position: absolute;
-    top: -100%;
-    left: 0;
-    width: 100%;
-    height: 40%;
-    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.04), transparent);
-    animation: scanLine 2.5s linear infinite;
-    pointer-events: none;
+.splash-type-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.2rem;
 }
 
-@keyframes scanLine {
-    0% {
-        top: -100%;
-    }
-
-    100% {
-        top: 200%;
-    }
+.splash-type-text {
+    font-family: var(--font-heading), 'Space Grotesk', 'Syne', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.35rem;
+    color: #ffffff;
+    text-transform: uppercase;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4), 0 0 25px rgba(0, 240, 255, 0.3);
 }
 
-@keyframes splashPulse {
-
-    0%,
-    100% {
-        transform: scale(0.98);
-        opacity: 0.7;
-    }
-
-    50% {
-        transform: scale(1.01);
-        opacity: 1;
-        filter: none;
-    }
+.splash-type-text .accent-records {
+    color: var(--accent-blue, #00f0ff);
+    text-shadow: 0 0 18px rgba(0, 240, 255, 0.8), 0 0 32px rgba(0, 240, 255, 0.4);
 }
 
-@keyframes logoVibrate {
-    0% {
-        transform: translate(0, 0) skew(0deg);
-    }
+.splash-cursor {
+    display: inline-block;
+    color: var(--accent-blue, #00f0ff);
+    font-weight: 300;
+    font-size: 1.4rem;
+    margin-left: 2px;
+    opacity: 1;
+    animation: splashCursorBlink 0.7s infinite alternate ease-in-out;
+}
 
-    10% {
-        transform: translate(-1px, 0) skew(-0.5deg) scale(1.001);
-    }
+@keyframes splashCursorBlink {
+    0% { opacity: 1; text-shadow: 0 0 10px #00f0ff; }
+    100% { opacity: 0; }
+}
 
-    20% {
-        transform: translate(1px, 0) skew(0.5deg) scale(0.999);
+@media (max-width: 480px) {
+    .splash-logo {
+        width: 85px;
     }
-
-    30% {
-        transform: translate(-1.5px, 0) skew(-0.3deg);
-    }
-
-    40% {
-        transform: translate(1.5px, 0) skew(0.3deg);
-    }
-
-    100% {
-        transform: translate(0, 0) skew(0deg);
+    .splash-type-text {
+        font-size: 1.05rem;
+        letter-spacing: 0.2rem;
     }
 }
 
