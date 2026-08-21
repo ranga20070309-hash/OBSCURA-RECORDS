@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OBSCURA RECORD // Core Directive Command Deck</title>
     
-    <!-- Cyberpunk & Modern Fonts -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
     
     <link rel="stylesheet" href="admin.css">
 
-    <!-- Firebase Infrastructure (v10.7.1-compat) -->
+    
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -22,7 +22,7 @@
 
 <body>
 
-    <!-- REAL-TIME GLOBAL SECURITY ALARM OVERLAY -->
+    
     <div id="global-security-alarm" style="display: none;">
         <div class="alarm-box">
             <i class="fas fa-biohazard danger-icon"></i>
@@ -32,7 +32,7 @@
         </div>
     </div>
 
-    <!-- Ultra-Cyber Holographic Login Deck -->
+    
     <div id="login-overlay" class="login-screen">
         <canvas id="vibe-canvas"></canvas>
         <div class="login-glass">
@@ -75,10 +75,10 @@
         </div>
     </div>
 
-    <!-- Main Command Deck Layout -->
+    
     <div class="admin-wrapper" style="display: none;">
         
-        <!-- Left Sidebar Navigation -->
+        
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="brand-container">
@@ -156,10 +156,10 @@
             </div>
         </aside>
 
-        <!-- Main Content Viewport -->
+        
         <main class="content-area">
 
-            <!-- Top HUD Status Header -->
+            
             <header class="hud-topbar">
                 <div class="hud-left">
                     <h1 id="current-panel-title"><i class="fas fa-sliders-h"></i> GLOBALS & DIRECTIVES</h1>
@@ -180,11 +180,11 @@
                 </div>
             </header>
 
-            <!-- 1. GLOBALS & BRAND PANEL -->
+            
             <section id="settings-panel" class="panel active">
                 <div class="card-grid">
                     
-                    <!-- Core Branding & Texts Card -->
+                    
                     <div class="cyber-card">
                         <div class="card-header">
                             <i class="fas fa-heading card-icon"></i>
@@ -211,7 +211,7 @@
                         </div>
                     </div>
 
-                    <!-- Section Titles & Subtexts Card -->
+                    
                     <div class="cyber-card">
                         <div class="card-header">
                             <i class="fas fa-layer-group card-icon"></i>
@@ -256,7 +256,7 @@
                         </div>
                     </div>
 
-                    <!-- Master Security & Maintenance Switch Card -->
+                    
                     <div class="cyber-card highlight-card">
                         <div class="card-header">
                             <i class="fas fa-shield-alt card-icon warning"></i>
@@ -316,11 +316,11 @@
                 </div>
             </section>
 
-            <!-- 2. NAVIGATION & SOCIAL LINKS PANEL -->
+            
             <section id="links-panel" class="panel">
                 <div class="card-grid">
                     
-                    <!-- Navigation Labels Card -->
+                    
                     <div class="cyber-card">
                         <div class="card-header">
                             <i class="fas fa-compass card-icon"></i>
@@ -339,7 +339,7 @@
                         </div>
                     </div>
 
-                    <!-- Social Network URLs Card -->
+                    
                     <div class="cyber-card">
                         <div class="card-header">
                             <i class="fas fa-share-alt card-icon"></i>
@@ -376,7 +376,7 @@
                         </div>
                     </div>
 
-                    <!-- Hero StreetX Affiliate Card -->
+                    
                     <div class="cyber-card">
                         <div class="card-header">
                             <i class="fas fa-tshirt card-icon"></i>
@@ -417,7 +417,7 @@
                 </div>
             </section>
 
-            <!-- 2.5 POPULAR RELEASES PANEL -->
+            
             <section id="popular-panel" class="panel">
                 <div class="section-visibility-group">
                     <div class="toggle-wrapper">
@@ -460,7 +460,7 @@
                     <button class="cyber-btn primary" id="btn-add-new-popular"><i class="fas fa-plus-circle"></i> ADD NEW POPULAR HIT</button>
                 </div>
 
-                <!-- Add/Edit Popular Release Form Modal -->
+                
                 <div id="popular-editor-card" class="cyber-card editor-card" style="display: none; margin-bottom: 2rem;">
                     <div class="card-header">
                         <i class="fas fa-fire card-icon"></i>
@@ -489,7 +489,7 @@
                             <input type="text" id="pop_badge" value="TRENDING" placeholder="e.g. TRENDING, VIRAL, HOT">
                         </div>
 
-                        <!-- Cover Artwork with Local Browser -->
+                        
                         <div class="input-group full">
                             <label><i class="fas fa-image"></i> COVER ARTWORK (URL OR BROWSE LOCAL FILE) *</label>
                             <div style="display: flex; gap: 0.8rem; align-items: center;">
@@ -527,13 +527,13 @@
                     </div>
                 </div>
 
-                <!-- Popular Releases Grid -->
+                
                 <div class="releases-grid-container" id="popular-releases-list">
-                    <!-- Dynamic Popular Cards in Admin -->
+                    
                 </div>
             </section>
 
-            <!-- 3. RELEASES & CATALOG ARCHIVE PANEL -->
+            
             <section id="releases-panel" class="panel">
                 <div class="panel-action-bar">
                     <div class="search-box">
@@ -543,7 +543,7 @@
                     <button class="cyber-btn primary" id="btn-add-new-release"><i class="fas fa-plus-circle"></i> ADD NEW RELEASE</button>
                 </div>
 
-                <!-- Add/Edit Release Form Modal / Container -->
+                
                 <div id="release-editor-card" class="cyber-card editor-card" style="display: none;">
                     <div class="card-header">
                         <i class="fas fa-compact-disc card-icon"></i>
@@ -556,7 +556,7 @@
                     <div class="card-body form-grid">
                         <input type="hidden" id="rel_edit_index" value="-1">
                         <div class="input-group">
-                            <label><i class="fas fa-music"></i> TRACK TITLE *</label>
+                            <label><i class="fas fa-music"></i> TRACK / RELEASE TITLE *</label>
                             <input type="text" id="rel_title" placeholder="e.g. CYBERNETIC PULSE">
                         </div>
                         <div class="input-group">
@@ -564,8 +564,19 @@
                             <input type="text" id="rel_artist" placeholder="e.g. SAYURUX ft. OBSCURA">
                         </div>
                         <div class="input-group">
-                            <label><i class="fas fa-barcode"></i> CATALOG CODE *</label>
-                            <input type="text" id="rel_catalog" placeholder="e.g. OCR008">
+                            <label><i class="fas fa-layer-group"></i> RELEASE TYPE (EP / SINGLE / ALBUM) *</label>
+                            <select id="rel_type" class="cyber-select">
+                                <option value="SINGLE">SINGLE</option>
+                                <option value="EP">EP</option>
+                                <option value="ALBUM">ALBUM</option>
+                                <option value="LP">LP</option>
+                                <option value="REMIX">REMIX</option>
+                                <option value="COLLAB">COLLAB</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-barcode"></i> CATALOG CODE (OPTIONAL)</label>
+                            <input type="text" id="rel_catalog" placeholder="Leave empty or enter code (e.g. OCR008)">
                         </div>
                         <div class="input-group">
                             <label><i class="fas fa-calendar-alt"></i> RELEASE DATE</label>
@@ -581,9 +592,14 @@
                             </div>
                         </div>
                         <div class="input-group full">
-                            <label><i class="fab fa-youtube"></i> STREAMING AUDIO (YOUTUBE URL OR VIDEO ID) *</label>
-                            <input type="text" id="rel_streamUrl" placeholder="https://www.youtube.com/watch?v=XXXXXX or video ID">
-                            <small>Instant audio streaming plays seamlessly through the floating player on the main site.</small>
+                            <label><i class="fab fa-youtube"></i> 1. YOUTUBE PREVIEW / STREAMING AUDIO LINK (PLAY BUTTON) *</label>
+                            <input type="text" id="rel_streamUrl" placeholder="https://www.youtube.com/watch?v=XXXXXX or video ID (Plays on Card Preview)">
+                            <small>Instant audio streaming played when visitors click the Play button on the card.</small>
+                        </div>
+                        <div class="input-group full">
+                            <label><i class="fab fa-youtube"></i> 2. YOUTUBE ALBUM / FULL STREAM LINK (BOTTOM LINK BAR)</label>
+                            <input type="text" id="rel_youtubeUrl" placeholder="https://www.youtube.com/watch?v=... or https://youtube.com/playlist?list=... (Full Album URL)">
+                            <small>Direct link opened when visitors click the YouTube icon on the card's bottom actions bar.</small>
                         </div>
                         <div class="input-group">
                             <label><i class="fab fa-spotify"></i> SPOTIFY STREAM LINK</label>
@@ -608,13 +624,13 @@
                     </div>
                 </div>
 
-                <!-- Releases Grid List -->
+                
                 <div class="releases-admin-grid" id="releases-admin-container">
                     <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> SYNCING RELEASES WITH FIREBASE...</div>
                 </div>
             </section>
 
-            <!-- 4. UPCOMING TEASERS PANEL (WITH VISIBILITY SWITCH) -->
+            
             <section id="upcoming-panel" class="panel">
                 <div class="panel-action-bar">
                     <div class="section-visibility-group">
@@ -675,7 +691,7 @@
                 </div>
             </section>
 
-            <!-- 5. GHOST PRODUCTION PANEL (FULL DIRECTIVES & ALL OPTIONS) -->
+            
             <section id="ghost-production-panel" class="panel">
                 <div class="panel-action-bar" style="margin-bottom: 1.5rem;">
                     <div class="section-visibility-group">
@@ -689,7 +705,7 @@
 
                 <div class="card-grid">
                     
-                    <!-- Core Ghost Directives -->
+                    
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-ghost card-icon"></i>
@@ -718,7 +734,7 @@
                         </div>
                     </div>
 
-                    <!-- Production Tiers Pricing -->
+                    
                     <div class="cyber-card">
                         <div class="card-header">
                             <i class="fas fa-tags card-icon"></i>
@@ -751,7 +767,7 @@
                         </div>
                     </div>
 
-                    <!-- Service Features & Delivery Options -->
+                    
                     <div class="cyber-card">
                         <div class="card-header">
                             <i class="fas fa-check-double card-icon"></i>
@@ -788,7 +804,7 @@
                         </div>
                     </div>
 
-                    <!-- Special Offer Banner -->
+                    
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-star card-icon"></i>
@@ -817,7 +833,7 @@
                 </div>
             </section>
 
-            <!-- 5.5 DISCORD BOT & COMMUNITY TELEMETRY PANEL -->
+            
             <section id="bot-admin-panel" class="panel">
                 <div class="panel-action-bar" style="margin-bottom: 1.5rem;">
                     <div class="section-visibility-group">
@@ -830,7 +846,7 @@
                 </div>
 
                 <div class="card-grid">
-                    <!-- Core Bot Directives -->
+                    
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-robot card-icon"></i>
@@ -872,7 +888,7 @@
                         </div>
                     </div>
 
-                    <!-- Live Telemetry & Server Stats -->
+                    
                     <div class="cyber-card">
                         <div class="card-header">
                             <i class="fas fa-chart-line card-icon"></i>
@@ -905,7 +921,7 @@
                         </div>
                     </div>
 
-                    <!-- Community Destination Links -->
+                    
                     <div class="cyber-card">
                         <div class="card-header">
                             <i class="fab fa-discord card-icon"></i>
@@ -926,7 +942,7 @@
                         </div>
                     </div>
 
-                    <!-- Short Feature Bullet Points (In same card) -->
+                    
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-list-ul card-icon"></i>
@@ -962,7 +978,7 @@
                 </div>
             </section>
 
-            <!-- 6. STAFF & PARTNERS PERSONNEL PANEL (WITH LOCAL IMAGE BROWSER & MULTI-SOCIALS) -->
+            
             <section id="staff-panel" class="panel">
                 <div class="panel-action-bar">
                     <div class="tab-pill-group">
@@ -972,7 +988,7 @@
                     <button class="cyber-btn primary" id="btn-add-profile"><i class="fas fa-user-plus"></i> ADD NEW PROFILE</button>
                 </div>
 
-                <!-- Add/Edit Profile Modal / Container -->
+                
                 <div id="profile-editor-card" class="cyber-card editor-card" style="display: none; margin-bottom: 2rem;">
                     <div class="card-header">
                         <i class="fas fa-user-edit card-icon"></i>
@@ -1004,7 +1020,7 @@
                             <input type="number" id="prof_order" value="1">
                         </div>
                         
-                        <!-- Profile Avatar Upload / URL -->
+                        
                         <div class="input-group full">
                             <label><i class="fas fa-user-circle"></i> PROFILE AVATAR / DP (URL OR BROWSE FROM COMPUTER)</label>
                             <div class="input-with-preview">
@@ -1019,7 +1035,7 @@
                             </div>
                         </div>
 
-                        <!-- Profile Banner Upload / URL -->
+                        
                         <div class="input-group full">
                             <label><i class="fas fa-image"></i> PROFILE BANNER BACKGROUND (URL OR BROWSE FROM COMPUTER)</label>
                             <div class="input-with-preview">
@@ -1039,7 +1055,7 @@
                             <textarea id="prof_bio" rows="3" placeholder="A brief background about this personnel/partner..."></textarea>
                         </div>
 
-                        <!-- Social Links Container -->
+                        
                         <div class="social-links-builder full" style="grid-column: 1 / -1; border-top: 1px solid var(--border-dim); padding-top: 1.2rem;">
                             <label style="font-family: var(--font-mono); color: var(--primary); font-size: 0.78rem; font-weight: 700; margin-bottom: 0.8rem; display: block;">
                                 <i class="fas fa-share-alt"></i> CONNECTED SOCIAL PLATFORMS & LINKS
@@ -1083,7 +1099,7 @@
                 </div>
             </section>
 
-            <!-- 7. DEMO SUBMISSIONS INBOX PANEL -->
+            
             <section id="demo-inbox-panel" class="panel">
                 <div class="panel-action-bar">
                     <div class="search-box">
@@ -1105,7 +1121,7 @@
                 </div>
             </section>
 
-            <!-- 8. CONTACT MESSAGES INBOX PANEL -->
+            
             <section id="contact-inbox-panel" class="panel">
                 <div class="panel-action-bar">
                     <h3><i class="fas fa-envelope-open-text"></i> CONTACT INQUIRIES & DIRECT MESSAGES</h3>
@@ -1117,11 +1133,11 @@
                 </div>
             </section>
 
-            <!-- 9. MODALS, FAQ & FOOTER PANEL -->
+            
             <section id="modals-panel" class="panel">
                 <div class="card-grid">
                     
-                    <!-- 1. FOOTER BAR NAVIGATION BUTTONS -->
+                    
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-shoe-prints card-icon"></i>
@@ -1154,7 +1170,7 @@
                         </div>
                     </div>
 
-                    <!-- 2. FAQ POPUP MODAL -->
+                    
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-question-circle card-icon"></i>
@@ -1170,12 +1186,12 @@
                                 <input type="text" id="site_modalFaqTitle" value="FREQUENCY ASKED QUESTIONS">
                             </div>
                             <div id="faq-admin-container" class="full" style="grid-column: 1 / -1; margin-top: 1rem;">
-                                <!-- Dynamic FAQ Items -->
+                                
                             </div>
                         </div>
                     </div>
 
-                    <!-- 3. DEMO SUBMISSION POPUP MODAL -->
+                    
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-paper-plane card-icon"></i>
@@ -1194,7 +1210,7 @@
                                 <input type="text" id="site_formDesc" value="Transmit your audio frequency to the Obscura A&R department for priority review.">
                             </div>
 
-                            <!-- Input Field Labels & Placeholders -->
+                            
                             <div class="input-group">
                                 <label>REAL NAME LABEL</label>
                                 <input type="text" id="site_formLabelName" value="Real Name">
@@ -1258,7 +1274,7 @@
                                 <input type="text" id="site_formPlaceholderMessage" value="A brief transmission regarding your sound...">
                             </div>
 
-                            <!-- Rules -->
+                            
                             <div class="input-group full">
                                 <label>RULE 1: TITLE</label>
                                 <input type="text" id="site_formRule1Title" value="Is this track unreleased?">
@@ -1276,7 +1292,7 @@
                                 <textarea id="site_formRule2Desc" rows="2">Please provide the title for your track. If you haven't decided on a name yet, a reference title is sufficient so we can identify your submission.</textarea>
                             </div>
 
-                            <!-- Actions -->
+                            
                             <div class="input-group">
                                 <label>SUBMIT BUTTON TEXT</label>
                                 <input type="text" id="site_formSubmitBtn" value="Initiate Submission">
@@ -1292,7 +1308,7 @@
                         </div>
                     </div>
 
-                    <!-- 4. CONTACT US POPUP MODAL -->
+                    
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-envelope-open-text card-icon"></i>
@@ -1345,7 +1361,7 @@
                         </div>
                     </div>
 
-                    <!-- 5. PRIVACY POLICY POPUP MODAL -->
+                    
                     <div class="cyber-card full-card">
                         <div class="card-header">
                             <i class="fas fa-shield-alt card-icon"></i>
@@ -1360,7 +1376,7 @@
                                 <input type="text" id="site_modalPrivacyTitle" value="PRIVACY POLICY">
                             </div>
 
-                            <!-- Section 1 -->
+                            
                             <div class="input-group">
                                 <label>SECTION 1: TITLE</label>
                                 <input type="text" id="site_p1_q" value="INTELLECTUAL PROPERTY">
@@ -1370,7 +1386,7 @@
                                 <textarea id="site_p1_a" rows="2">All content in this dimension—including audio, graphics, logos, and visual art—is the property of Obscura Record or its licensors.</textarea>
                             </div>
 
-                            <!-- Section 2 -->
+                            
                             <div class="input-group">
                                 <label>SECTION 2: TITLE</label>
                                 <input type="text" id="site_p2_q" value="DATA SECURITY">
@@ -1380,7 +1396,7 @@
                                 <textarea id="site_p2_a" rows="2">Your portal data is encrypted and secure. We only collect what is necessary to maintain your connection.</textarea>
                             </div>
 
-                            <!-- Section 3 -->
+                            
                             <div class="input-group">
                                 <label>SECTION 3: TITLE</label>
                                 <input type="text" id="site_p3_q" value="PROMOTIONAL CONTENT">
@@ -1390,7 +1406,7 @@
                                 <textarea id="site_p3_a" rows="2">By connecting to our portal, you may receive updates on new releases, talent discoveries, and galactic events.</textarea>
                             </div>
 
-                            <!-- Section 4 -->
+                            
                             <div class="input-group">
                                 <label>SECTION 4: TITLE</label>
                                 <input type="text" id="site_p4_q" value="EXTERNAL EMBEDS">
@@ -1400,7 +1416,7 @@
                                 <textarea id="site_p4_a" rows="2">We use third-party players (SoundCloud/YouTube). Their respective privacy policies apply to your interactions on those platforms.</textarea>
                             </div>
 
-                            <!-- Section 5 -->
+                            
                             <div class="input-group">
                                 <label>SECTION 5: TITLE</label>
                                 <input type="text" id="site_p5_q" value="DATA RETENTION">
@@ -1410,7 +1426,7 @@
                                 <textarea id="site_p5_a" rows="2">We retain connection data only as long as necessary for community support and galactic record-keeping.</textarea>
                             </div>
 
-                            <!-- Section 6 -->
+                            
                             <div class="input-group">
                                 <label>SECTION 6: TITLE</label>
                                 <input type="text" id="site_p6_q" value="GOVERNING LAW">
@@ -1420,7 +1436,7 @@
                                 <textarea id="site_p6_a" rows="2">All legal matters are governed by the laws of our primary operational frequency. Disputes are resolved via cosmic mediation.</textarea>
                             </div>
 
-                            <!-- Section 7 -->
+                            
                             <div class="input-group">
                                 <label>SECTION 7: TITLE</label>
                                 <input type="text" id="site_p7_q" value="LEGAL CONTACT">
@@ -1440,9 +1456,9 @@
                 </div>
             </section>
 
-            <!-- 10. SECURITY & SYSTEM AUDIT PANEL -->
+            
             <section id="security-panel" class="panel">
-                <!-- Red Alert Banner for Violations / Console Tamper -->
+                
                 <div id="sec-global-alarm-banner" class="cyber-alert-banner" style="display: none;">
                     <div class="alert-content">
                         <i class="fas fa-exclamation-triangle alert-icon-pulse"></i>
@@ -1454,7 +1470,7 @@
                     <button type="button" class="cyber-btn danger sm" id="btn-dismiss-alarm"><i class="fas fa-times"></i> DISMISS ALARM</button>
                 </div>
 
-                <!-- 4 Real-time Telemetry Stat Cards -->
+                
                 <div class="stat-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; margin-bottom: 2rem;">
                     <div class="cyber-card" style="padding: 1.2rem; display: flex; align-items: center; gap: 1.2rem;">
                         <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(0, 240, 255, 0.1); border: 1px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--primary);">
@@ -1497,7 +1513,7 @@
                     </div>
                 </div>
 
-                <!-- Action Bar & Filter Controls -->
+                
                 <div class="panel-action-bar" style="margin-bottom: 1.5rem;">
                     <div class="tab-pill-group" id="sec-log-tabs">
                         <button type="button" class="tab-pill active" data-filter="all"><i class="fas fa-list"></i> ALL EVENTS <span class="tab-count-pill" id="count-filter-all">0</span></button>
@@ -1523,13 +1539,13 @@
                     </div>
                 </div>
 
-                <!-- Live Stream Feed Container -->
+                
                 <div id="security-live-stream" class="security-feed-container" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
-                    <!-- Real-Time Stream Cards Injected Dynamically -->
+                    
                     <div class="loading-state">STREAMING REAL-TIME SECURITY & VISITOR TELEMETRY...</div>
                 </div>
 
-                <!-- System Integrity & Kernel Details -->
+                
                 <div class="cyber-card full-card">
                     <div class="card-header">
                         <i class="fas fa-microchip card-icon"></i>
@@ -1564,7 +1580,7 @@
         </main>
     </div>
 
-    <!-- Audio Player Preview Overlay for Demo Inbox -->
+    
     <div id="admin-audio-preview" class="admin-audio-dock" style="display: none;">
         <div class="dock-left">
             <i class="fas fa-play-circle dock-icon"></i>
