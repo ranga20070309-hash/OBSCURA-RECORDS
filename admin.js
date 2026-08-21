@@ -2198,29 +2198,29 @@ function initSecurityLogsEngine() {
         renderSecurityLogs();
     }
 
-    // 3. Listen to Primary Telemetry Logs Stream
-    db.ref('siteData/security/logs').limitToLast(250).on('value', (snapshot) => {
+    // 3. Listen to Primary Telemetry Logs Stream (Bandwidth Optimized)
+    db.ref('siteData/security/logs').limitToLast(50).on('value', (snapshot) => {
         const data = snapshot.val();
         rawTelemetryLogs = data ? Object.entries(data).map(([key, d]) => ({ ...d, dbKey: key, dbPath: 'siteData/security/logs' })) : [];
         syncAndRenderLogs();
     });
 
-    // 3.1 Listen to Visitor Logs Telemetry
-    db.ref('siteData/telemetry/visitor_logs').limitToLast(250).on('value', (snapshot) => {
+    // 3.1 Listen to Visitor Logs Telemetry (Bandwidth Optimized)
+    db.ref('siteData/telemetry/visitor_logs').limitToLast(50).on('value', (snapshot) => {
         const data = snapshot.val();
         rawVisitorLogs = data ? Object.entries(data).map(([key, d]) => ({ ...d, dbKey: key, dbPath: 'siteData/telemetry/visitor_logs' })) : [];
         syncAndRenderLogs();
     });
 
-    // 4. Listen to Violations Stream
-    db.ref('siteData/security/violations').limitToLast(150).on('value', (snapshot) => {
+    // 4. Listen to Violations Stream (Bandwidth Optimized)
+    db.ref('siteData/security/violations').limitToLast(30).on('value', (snapshot) => {
         const data = snapshot.val();
         rawViolations = data ? Object.entries(data).map(([key, d]) => ({ ...d, dbKey: key, dbPath: 'siteData/security/violations' })) : [];
         syncAndRenderLogs();
     });
 
-    // 5. Listen to Administrative Audit Logs (Syncs & Saves)
-    db.ref('siteData/security/audit_logs').limitToLast(250).on('value', (snapshot) => {
+    // 5. Listen to Administrative Audit Logs (Bandwidth Optimized)
+    db.ref('siteData/security/audit_logs').limitToLast(50).on('value', (snapshot) => {
         const data = snapshot.val();
         rawAuditLogs = data ? Object.entries(data).map(([key, d]) => ({ ...d, dbKey: key, dbPath: 'siteData/security/audit_logs' })) : [];
         syncAndRenderLogs();
