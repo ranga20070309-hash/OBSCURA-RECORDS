@@ -3535,10 +3535,10 @@ if (typeof firebase !== 'undefined') {
         console.warn("Portal Protocol Link: DENIED. Check origin auth.", err);
     });
 
-    // Heartbeat ping every 25 seconds
+    // Heartbeat ping every 60 seconds (Bandwidth Efficient)
     setInterval(() => {
         connRef.update({ pingAt: Date.now() }).catch(() => {});
-    }, 25000);
+    }, 60000);
 
     // Clean up on unload
     window.addEventListener('beforeunload', () => {
