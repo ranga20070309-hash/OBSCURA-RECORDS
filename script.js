@@ -2403,7 +2403,7 @@ const initPortal = () => {
 
             let liveFeedFetched = false;
 
-            db.ref('siteData/latest_transmissions').on('value', snap => {
+            db.ref('siteData/globals/latest_transmissions').on('value', snap => {
                 const tData = snap.val() || {};
                 
                 // 1. YouTube Drop Sync
