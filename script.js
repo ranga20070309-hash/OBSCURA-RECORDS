@@ -2056,44 +2056,55 @@ const initPortal = () => {
 
                     function pollDiscordLivePresence() {
                         if (!targetServerId) return;
-                        fetch(`https://discord.com/api/guilds/${targetServerId}/widget.json?_t=${Date.now()}`, { cache: 'no-cache' })
+                        
+                        const parseWidget = (wData) => {
+                            if (!wData || !Array.isArray(wData.members)) return;
+                            
+                            // Discord Widget anonymizes IDs to 0,1,2 so match by bot username / name
+                            const botMember = wData.members.find(m => {
+                                if (!m || !m.username) return false;
+                                const u = m.username.toLowerCase().trim();
+                                return u === targetBotName || 
+                                       u === 'obscura records' ||
+                                       u.includes('obscura') || 
+                                       (m.id && m.id === targetBotId);
+                            });
+
+                            let liveStatus = 'OFFLINE';
+                            if (botMember) {
+                                const rawSt = (botMember.status || 'online').toLowerCase();
+                                if (rawSt === 'idle') liveStatus = 'IDLE';
+                                else if (rawSt === 'dnd') liveStatus = 'ONLINE'; // DND counts as active
+                                else liveStatus = 'ONLINE';
+                            }
+
+                            const onlineTotal = wData.presence_count !== undefined ? wData.presence_count : wData.members.length;
+                            const idleCount = wData.members.filter(m => m.status === 'idle').length;
+                            const dndCount = wData.members.filter(m => m.status === 'dnd').length;
+
+                            updateBotStatusUI(liveStatus, {
+                                online: onlineTotal,
+                                idle: idleCount,
+                                dnd: dndCount
+                            });
+                        };
+
+                        // Use fast CORS proxy to bypass browser origin blocking
+                        const targetUrl = `https://discord.com/api/guilds/${targetServerId}/widget.json?_t=${Date.now()}`;
+                        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+
+                        fetch(proxyUrl, { cache: 'no-cache' })
                             .then(res => {
                                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                                 return res.json();
                             })
-                            .then(wData => {
-                                if (!wData || !Array.isArray(wData.members)) return;
-                                
-                                // Discord Widget anonymizes IDs to 0,1,2 so match by bot username / name
-                                const botMember = wData.members.find(m => {
-                                    if (!m || !m.username) return false;
-                                    const u = m.username.toLowerCase().trim();
-                                    return u === targetBotName || 
-                                           u === 'obscura records' ||
-                                           u.includes('obscura') || 
-                                           (m.id && m.id === targetBotId);
-                                });
-
-                                let liveStatus = 'OFFLINE';
-                                if (botMember) {
-                                    const rawSt = (botMember.status || 'online').toLowerCase();
-                                    if (rawSt === 'idle') liveStatus = 'IDLE';
-                                    else if (rawSt === 'dnd') liveStatus = 'ONLINE'; // DND counts as active
-                                    else liveStatus = 'ONLINE';
-                                }
-
-                                const onlineTotal = wData.presence_count !== undefined ? wData.presence_count : wData.members.length;
-                                const idleCount = wData.members.filter(m => m.status === 'idle').length;
-                                const dndCount = wData.members.filter(m => m.status === 'dnd').length;
-
-                                updateBotStatusUI(liveStatus, {
-                                    online: onlineTotal,
-                                    idle: idleCount,
-                                    dnd: dndCount
-                                });
-                            })
-                            .catch(err => {
-                                // Graceful fallback: Keep current status if widget is offline or restricted
+                            .then(parseWidget)
+                            .catch(() => {
+                                // Direct fallback
+                                fetch(targetUrl, { cache: 'no-cache' })
+                                    .then(r => r.ok ? r.json() : null)
+                                    .then(d => d && parseWidget(d))
+                                    .catch(() => {});
                             });
                     }
 
@@ -2274,8 +2285,8 @@ const initPortal = () => {
                         } else if (ytLink.href.includes('youtu.be/')) {
                             videoId = ytLink.href.split('youtu.be/')[1].split('?')[0] || '';
                         }
-                        // Valid YouTube video IDs are 11 characters
-                        if (videoId && videoId.length === 11 && coverImg && coverImg.src.includes('cover')) {
+                        // Valid YouTube video IDs are strictly 11 alphanumeric characters
+                        if (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId) && coverImg && coverImg.src.includes('cover')) {
                             const ytThumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
                             coverImg.onerror = () => { coverImg.src = 'assets/cover.jpg'; };
                             coverImg.src = ytThumb;
@@ -2993,8 +3004,8 @@ const ObscuraTelemetry = (() => {
 
             const silentPush = (refPath, dataObj) => {
                 try {
-                    const p = db.ref(refPath).push(dataObj, () => {});
-                    if (p && typeof p.catch === 'function') p.catch(() => {});
+                    const newRef = db.ref(refPath).push();
+                    newRef.set(dataObj).catch(() => {});
                 } catch (e) {}
             };
 
