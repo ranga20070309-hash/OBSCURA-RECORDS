@@ -3597,31 +3597,83 @@ footer {
 
 @media (max-width: 768px) {
     header {
-        padding: 0.8rem 3% !important;
+        padding: 0.6rem 3% !important;
     }
 
     .glass-nav {
-        padding: 0.65rem 1rem !important;
+        padding: 0.5rem 0.85rem !important;
         border-radius: 40px !important;
+        gap: 0.5rem !important;
     }
 
     .logo {
-        font-size: 1rem !important;
-        letter-spacing: 0.1rem !important;
+        font-size: 0.95rem !important;
+        letter-spacing: 0.08rem !important;
+    }
+
+    #open-form.nav-item {
+        display: none !important; /* Prominently present in mobile drawer */
     }
 
     .sfx-toggle-btn {
-        margin-right: 0.2rem;
-        padding: 0.4rem 0.6rem;
+        margin-right: 0;
+        padding: 0.4rem 0.55rem !important;
+        font-size: 0.75rem;
     }
 
     .sfx-label {
-        display: none;
+        display: none !important;
     }
 
     .menu-trigger {
-        padding: 0.45rem 0.85rem;
-        font-size: 0.68rem;
+        padding: 0.4rem 0.75rem !important;
+        font-size: 0.65rem !important;
+        letter-spacing: 0.08rem !important;
+    }
+
+    /* Mobile Hero Styling */
+    .hero {
+        min-height: auto !important;
+        padding: 5.5rem 1.2rem 2.5rem !important;
+        display: block !important;
+    }
+
+    .hero-container {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        min-height: auto !important;
+        gap: 1.5rem !important;
+    }
+
+    .hero-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: block !important;
+    }
+
+    .hero-content h2 {
+        font-size: clamp(1.85rem, 7.5vw, 2.6rem) !important;
+        line-height: 1.18 !important;
+        margin-bottom: 1rem !important;
+        word-break: break-word !important;
+    }
+
+    .hero-content p {
+        font-size: 0.95rem !important;
+        line-height: 1.6 !important;
+        margin-bottom: 1.5rem !important;
+        color: rgba(255, 255, 255, 0.75) !important;
+    }
+
+    .streetx-feature-card {
+        position: relative !important;
+        margin-top: 1rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 250px !important;
     }
 
     .artists-grid {
@@ -3636,16 +3688,16 @@ footer {
 
 @media (max-width: 480px) {
     header {
-        padding: 0.6rem 2% !important;
+        padding: 0.5rem 2% !important;
     }
 
     .glass-nav {
-        padding: 0.55rem 0.85rem !important;
+        padding: 0.45rem 0.75rem !important;
     }
 
     .logo {
-        font-size: 0.92rem !important;
-        letter-spacing: 0.05rem !important;
+        font-size: 0.85rem !important;
+        letter-spacing: 0.04rem !important;
     }
 
     .artist-item {
