@@ -2390,7 +2390,7 @@ const initPortal = () => {
                             title: data.title || `LATEST TIKTOK DROP @${user.toUpperCase()}`,
                             link: raw,
                             thumb: data.thumbnail_url || 'assets/cover.png',
-                            desc: data.title || 'Stream our newest sound drop, trending audio, and phonk edits on TikTok.',
+                            desc: 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.',
                             tag: raw.includes('/video/') ? 'LATEST TIKTOK VIDEO' : 'OFFICIAL TIKTOK HUB'
                         };
                     }
@@ -2404,7 +2404,7 @@ const initPortal = () => {
                         title: data.author_name ? `${data.author_name.toUpperCase()} (@${user.toUpperCase()})` : `OBSCURA RECORDS (@${user.toUpperCase()})`,
                         link: `https://www.tiktok.com/@${user}`,
                         thumb: data.thumbnail_url || 'assets/cover.png',
-                        desc: 'Catch our newest sound drops, phonk visualizers, and trending edits on TikTok.',
+                        desc: 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.',
                         tag: 'OFFICIAL TIKTOK HUB'
                     };
                 }
@@ -2413,7 +2413,7 @@ const initPortal = () => {
                     title: `OBSCURA RECORDS (@${user.toUpperCase()})`,
                     link: `https://www.tiktok.com/@${user}`,
                     thumb: 'assets/cover.png',
-                    desc: 'Catch our newest sound drops, phonk visualizers, and trending edits on TikTok.',
+                    desc: 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.',
                     tag: 'OFFICIAL TIKTOK HUB'
                 };
             }
@@ -2449,7 +2449,7 @@ const initPortal = () => {
 
                 // 2. TikTok Drop Sync
                 const ttTitle = tData.tt_title || 'OBSCURA RECORDS (@OBSCURA.RECORDS)';
-                const ttDesc  = tData.tt_desc || 'Catch our newest sound drops, phonk visualizers, and trending edits on TikTok.';
+                const ttDesc  = tData.tt_desc || 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.';
                 const ttTag   = tData.tt_tag || 'OFFICIAL TIKTOK HUB';
                 const ttUrl   = tData.tt_url || 'https://www.tiktok.com/@obscura.records';
                 const ttThumb = tData.tt_thumb || 'assets/cover.png';
@@ -2470,6 +2470,13 @@ const initPortal = () => {
                 if (ttPlayBtn && ttUrl) ttPlayBtn.href = ttUrl;
                 if (ttWatchBtn && ttUrl) ttWatchBtn.href = ttUrl;
                 if (ttFollowBtn && ttFollowUrl) ttFollowBtn.href = ttFollowUrl;
+
+                // 3. Section Title & Description Live Sync
+                const transTitleEl = document.getElementById('trans-title-display');
+                const transDescEl  = document.getElementById('trans-desc-display');
+
+                if (transTitleEl && tData.transTitle) transTitleEl.innerHTML = tData.transTitle;
+                if (transDescEl && tData.transDesc) transDescEl.textContent = tData.transDesc;
 
                 // Section visibility toggle
                 const transSec = document.getElementById('transmissions');
