@@ -2004,27 +2004,41 @@ const initPortal = () => {
                     }
                 }
 
-                // Bot Status & Live Indicator Color
-                const botStatusText = document.getElementById('bot-status-text');
-                const botStatusBadge = document.getElementById('bot-status-badge');
-                const botStatusDot = document.getElementById('bot-status-dot');
-                const botLivePulse = document.getElementById('bot-live-pulse');
-                const rawStatus = (data.botStatus || 'ONLINE').toUpperCase();
-                if (botStatusText) botStatusText.textContent = rawStatus;
+                // Bot Status & Live Indicator Helper
+                function updateBotStatusUI(status, liveStats) {
+                    const botStatusText = document.getElementById('bot-status-text');
+                    const botStatusBadge = document.getElementById('bot-status-badge');
+                    const botStatusDot = document.getElementById('bot-status-dot');
+                    const botLivePulse = document.getElementById('bot-live-pulse');
+                    const rawStatus = (status || 'ONLINE').toUpperCase();
+                    if (botStatusText) botStatusText.textContent = rawStatus;
 
-                if (rawStatus.includes('OFFLINE')) {
-                    if (botStatusBadge) botStatusBadge.className = 'dc-live-badge offline';
-                    if (botStatusDot) { botStatusDot.className = 'dc-status-dot offline'; botStatusDot.title = 'Bot Status: Offline'; }
-                    if (botLivePulse) botLivePulse.className = 'dc-pulse-dot offline';
-                } else if (rawStatus.includes('IDLE') || rawStatus.includes('MAINTENANCE')) {
-                    if (botStatusBadge) botStatusBadge.className = 'dc-live-badge idle';
-                    if (botStatusDot) { botStatusDot.className = 'dc-status-dot idle'; botStatusDot.title = 'Bot Status: Idle'; }
-                    if (botLivePulse) botLivePulse.className = 'dc-pulse-dot idle';
-                } else {
-                    if (botStatusBadge) botStatusBadge.className = 'dc-live-badge online';
-                    if (botStatusDot) { botStatusDot.className = 'dc-status-dot online'; botStatusDot.title = 'Bot Status: Online'; }
-                    if (botLivePulse) botLivePulse.className = 'dc-pulse-dot online';
+                    if (rawStatus.includes('OFFLINE')) {
+                        if (botStatusBadge) botStatusBadge.className = 'dc-live-badge offline';
+                        if (botStatusDot) { botStatusDot.className = 'dc-status-dot offline'; botStatusDot.title = 'Bot Status: Offline'; }
+                        if (botLivePulse) botLivePulse.className = 'dc-pulse-dot offline';
+                    } else if (rawStatus.includes('IDLE') || rawStatus.includes('MAINTENANCE') || rawStatus.includes('STANDBY')) {
+                        if (botStatusBadge) botStatusBadge.className = 'dc-live-badge idle';
+                        if (botStatusDot) { botStatusDot.className = 'dc-status-dot idle'; botStatusDot.title = 'Bot Status: Idle'; }
+                        if (botLivePulse) botLivePulse.className = 'dc-pulse-dot idle';
+                    } else {
+                        if (botStatusBadge) botStatusBadge.className = 'dc-live-badge online';
+                        if (botStatusDot) { botStatusDot.className = 'dc-status-dot online'; botStatusDot.title = 'Bot Status: Online'; }
+                        if (botLivePulse) botLivePulse.className = 'dc-pulse-dot online';
+                    }
+
+                    if (liveStats) {
+                        const onEl = document.getElementById('bot-online-count');
+                        const idleEl = document.getElementById('bot-idle-count');
+                        const dndEl = document.getElementById('bot-dnd-count');
+                        if (liveStats.online !== undefined && onEl) onEl.textContent = liveStats.online;
+                        if (liveStats.idle !== undefined && idleEl) idleEl.textContent = liveStats.idle;
+                        if (liveStats.dnd !== undefined && dndEl) dndEl.textContent = liveStats.dnd;
+                    }
                 }
+
+                // Initial Firebase fallback status apply
+                updateBotStatusUI(data.botStatus || 'ONLINE');
                 
                 // DYNAMIC PORTAL ENGINE VERSION SYNC
                 if (data.v) {
@@ -2033,10 +2047,56 @@ const initPortal = () => {
                     const sideVEl = document.getElementById('sidebar-portal-version');
                     if (sideVEl) sideVEl.textContent = 'v' + data.v;
                 }
+
+                // --- REAL-TIME DISCORD SERVER WIDGET & BOT LIVE PRESENCE TRACKER ---
+                if (data.botAutoTrack !== 'Disabled') {
+                    const targetServerId = data.botServerId || "1229829725447393402";
+                    const targetBotId = data.botUserId || "1467768793550946314";
+
+                    function pollDiscordLivePresence() {
+                        if (!targetServerId) return;
+                        fetch(`https://discord.com/api/guilds/${targetServerId}/widget.json?_t=${Date.now()}`, { cache: 'no-cache' })
+                            .then(res => {
+                                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                                return res.json();
+                            })
+                            .then(wData => {
+                                if (!wData || !wData.members) return;
+                                
+                                // Search for Bot user in the server's live active members
+                                const botMember = wData.members.find(m => 
+                                    m.id === targetBotId || 
+                                    (m.username && m.username.toLowerCase().includes('obscura') && m.bot)
+                                );
+
+                                let liveStatus = 'OFFLINE';
+                                if (botMember) {
+                                    liveStatus = (botMember.status || 'online').toUpperCase();
+                                }
+
+                                const onlineTotal = wData.presence_count !== undefined ? wData.presence_count : wData.members.length;
+                                const idleCount = wData.members.filter(m => m.status === 'idle').length;
+                                const dndCount = wData.members.filter(m => m.status === 'dnd').length;
+
+                                updateBotStatusUI(liveStatus, {
+                                    online: onlineTotal,
+                                    idle: idleCount,
+                                    dnd: dndCount
+                                });
+                            })
+                            .catch(err => {
+                                // Graceful fallback: Keep current status if widget is offline or restricted
+                            });
+                    }
+
+                    pollDiscordLivePresence();
+                    if (window._discordLiveInterval) clearInterval(window._discordLiveInterval);
+                    window._discordLiveInterval = setInterval(pollDiscordLivePresence, 15000); // Check every 15s
+                }
             }
         });
 
-        // Real-Time Discord Bot Presence & Server Telemetry Sync
+        // Real-Time Discord Bot Presence & Server Telemetry Sync from Firebase
         try {
             const syncDiscordStats = (snap) => {
                 const stats = snap ? snap.val() : null;
