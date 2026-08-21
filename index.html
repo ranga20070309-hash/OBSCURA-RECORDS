@@ -25,6 +25,21 @@
             }, 200);
         })();
     </script>
+    <style id="critical-intro-scroll-lock">
+        html, body {
+            overflow: hidden !important;
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar,
+        ::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            background: transparent !important;
+        }
+    </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OBSCURA RECORD | Official Label Portal</title>
@@ -184,9 +199,9 @@
                     <span data-target="#partners" class="nav-item">PARTNERS</span>
                     <span data-target="#contact" class="nav-item" data-sync="navContact"
                         data-sync-target="text">CONTACT</span>
-                    <span id="open-form" class="nav-item">SEND DEMO</span>
                 </div>
                 <div class="social-menu">
+                    <span id="open-form" class="nav-item">SEND DEMO</span>
                     <button id="sfx-toggle-btn" class="sfx-toggle-btn" title="Toggle UI Sound Effects">
                         <i class="fas fa-volume-up"></i>
                         <span class="sfx-label">SFX ON</span>
@@ -606,12 +621,12 @@
             <div id="staff-grid" class="artists-grid">
             </div>
         </section>
-                <section id="partners" class="artists">
+        <section id="partners" class="partners-section">
             <div class="section-header">
-                <h2 class="section-title" data-sync="partnersTitle" data-sync-target="html">LABEL <span class="accent">PARTNERS</span></h2>
-                <p class="section-desc" data-sync="partnersDesc" data-sync-target="text">CREATIVE COLLABORATORS & AFFILIATED ALLIANCES</p>
+                <h2 class="section-title" data-sync="partnersTitle" data-sync-target="html">DISTRIBUTION <span class="accent">PARTNER</span></h2>
+                <p class="section-desc" data-sync="partnersDesc" data-sync-target="text">OBSCURA RECORDS DISTRIBUTION PARTNER</p>
             </div>
-            <div id="partners-grid" class="artists-grid">
+            <div id="partners-grid">
             </div>
         </section>
         <section id="discord-gateway" class="discord-widget-section">
@@ -731,7 +746,90 @@
                 </div>
             </div>
         </section>
-                <div id="contact-modal" class="modal">
+
+        <!-- ==========================================================================
+             FEATURE: LATEST DIGITAL TRANSMISSIONS (SEPARATE YOUTUBE & TIKTOK CYBER HUBS)
+             ========================================================================== -->
+        <section id="transmissions" class="transmissions-section">
+            <div class="section-header">
+                <h2 class="section-title" data-sync="transTitle" data-sync-target="html">LATEST <span class="accent">TRANSMISSIONS</span></h2>
+                <p class="section-desc" data-sync="transDesc" data-sync-target="text">Intercept the newest soundwaves and visual drops across our networks</p>
+            </div>
+            <div class="transmissions-grid" id="transmissions-grid">
+                <!-- 1. YOUTUBE LATEST DROP HUB -->
+                <div class="media-hub-card youtube-card">
+                    <div class="media-card-header">
+                        <div class="media-card-badge yt-badge">
+                            <i class="fab fa-youtube"></i>
+                            <span>YOUTUBE DROP</span>
+                        </div>
+                        <div class="media-live-tag">
+                            <span class="pulse-dot red"></span>
+                            <span>NEW SIGNAL</span>
+                        </div>
+                    </div>
+                    <div class="media-preview-container" id="yt-preview-box">
+                        <div class="media-preview-bg" id="yt-thumb-bg" style="background-image: url('https://i4.ytimg.com/vi/kyS1AFiPa9I/hqdefault.jpg');"></div>
+                        <div class="media-preview-overlay"></div>
+                        <a href="https://www.youtube.com/watch?v=kyS1AFiPa9I" id="yt-play-trigger" target="_blank" rel="noopener noreferrer" class="media-play-btn yt-glow" title="Watch on YouTube">
+                            <i class="fas fa-play"></i>
+                        </a>
+                    </div>
+                    <div class="media-card-body">
+                        <span class="media-category-pill yt-pill" id="yt-tag-display">LATEST OFFICIAL DROP</span>
+                        <h3 class="media-card-title" id="yt-title-display">MONTAGEM ALMA GEMEA - NXPXLM</h3>
+                        <p class="media-card-desc" id="yt-desc-display">Experience the newest track and soundwave visualizer drop from Obscura Recordss.</p>
+                        <div class="media-card-actions">
+                            <a href="https://www.youtube.com/watch?v=kyS1AFiPa9I" id="yt-watch-btn" target="_blank" rel="noopener noreferrer" class="cyber-btn primary-yt">
+                                <i class="fab fa-youtube"></i> <span>WATCH ON YOUTUBE</span>
+                            </a>
+                            <a href="https://www.youtube.com/@Obscurarecordss?sub_confirmation=1" id="yt-sub-btn" target="_blank" rel="noopener noreferrer" class="cyber-btn ghost-yt" title="Subscribe to Channel">
+                                <i class="fas fa-bell"></i> <span>SUBSCRIBE</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. TIKTOK LATEST DROP HUB -->
+                <div class="media-hub-card tiktok-card">
+                    <div class="media-card-header">
+                        <div class="media-card-badge tt-badge">
+                            <i class="fab fa-tiktok"></i>
+                            <span>TIKTOK DROP</span>
+                        </div>
+                        <div class="media-live-tag">
+                            <span class="pulse-dot cyan"></span>
+                            <span>TRENDING</span>
+                        </div>
+                    </div>
+                    <div class="media-preview-container" id="tt-preview-box">
+                        <div class="media-preview-bg" id="tt-thumb-bg" style="background-image: url('assets/cover.png');"></div>
+                        <div class="media-preview-overlay"></div>
+                        <div class="tiktok-sound-wave">
+                            <span></span><span></span><span></span><span></span><span></span>
+                        </div>
+                        <a href="https://www.tiktok.com/@obscura.records" id="tt-play-trigger" target="_blank" rel="noopener noreferrer" class="media-play-btn tt-glow" title="Watch on TikTok">
+                            <i class="fab fa-tiktok"></i>
+                        </a>
+                    </div>
+                    <div class="media-card-body">
+                        <span class="media-category-pill tt-pill" id="tt-tag-display">OFFICIAL TIKTOK HUB</span>
+                        <h3 class="media-card-title" id="tt-title-display">OBSCURA RECORDS (@OBSCURA.RECORDS)</h3>
+                        <p class="media-card-desc" id="tt-desc-display">Catch our newest sound drops, phonk visualizers, and trending edits on TikTok.</p>
+                        <div class="media-card-actions">
+                            <a href="https://www.tiktok.com/@obscura.records" id="tt-watch-btn" target="_blank" rel="noopener noreferrer" class="cyber-btn primary-tt">
+                                <i class="fab fa-tiktok"></i> <span>WATCH ON TIKTOK</span>
+                            </a>
+                            <a href="https://www.tiktok.com/@obscura.records" id="tt-follow-btn" target="_blank" rel="noopener noreferrer" class="cyber-btn ghost-tt" title="Follow on TikTok">
+                                <i class="fas fa-plus"></i> <span>FOLLOW</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="contact-modal" class="modal">
             <div class="modal-overlay"></div>
             <div class="modal-content glass">
                 <button class="close-modal">&times;</button>
