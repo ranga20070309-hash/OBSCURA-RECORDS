@@ -2485,8 +2485,8 @@ const initPortal = () => {
                     }
 
                     // TikTok Auto Fetch
-                    if (tData.tt_mode !== 'Manual') {
-                        const ttInput = tData.tt_username || 'obscura.records';
+                    if (tData.tt_mode !== 'Manual' || (tData.tt_url && tData.tt_url.includes('tiktok.com/video'))) {
+                        const ttInput = (tData.tt_url && tData.tt_url.includes('tiktok.com/video')) ? tData.tt_url : (tData.tt_username || 'obscura.records');
                         fetchLiveTikTokDrop(ttInput).then(liveTt => {
                             if (liveTt && liveTt.link && liveTt.title) {
                                 if (ttTitleEl) ttTitleEl.textContent = liveTt.title;
