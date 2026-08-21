@@ -2119,7 +2119,18 @@ function initSecurityLogsEngine() {
         });
     }
 
-    // 2. Listen to Live Active Visitor Nodes
+    // 2. Register Admin Active Connection & Listen to Live Active Visitor Nodes
+    try {
+        const adminConnRef = db.ref('siteData/activeConnections').push();
+        adminConnRef.onDisconnect().remove();
+        adminConnRef.set({
+            pingAt: firebase.database.ServerValue.TIMESTAMP,
+            role: 'admin',
+            device: (navigator.userAgent || '').substring(0, 80)
+        });
+        window.addEventListener('beforeunload', () => adminConnRef.remove());
+    } catch (e) {}
+
     db.ref('siteData/activeConnections').on('value', (snapshot) => {
         const count = snapshot.numChildren();
         if (statNodes) statNodes.textContent = Math.max(1, count);
