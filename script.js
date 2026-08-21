@@ -1912,24 +1912,27 @@ const initPortal = () => {
                     const key = el.getAttribute('data-sync');
                     const syncTarget = el.getAttribute('data-sync-target') || 'html';
 
-                    if (data[key] !== undefined) {
-                        if (syncTarget === 'html') {
-                            el.innerHTML = data[key];
-                        } else if (syncTarget === 'text') {
-                            el.textContent = data[key];
-                        } else if (syncTarget === 'placeholder') {
-                            el.placeholder = data[key];
-                        } else if (syncTarget === 'src') {
-                            el.src = data[key];
-                        } else if (syncTarget === 'style') {
-                            el.style.cssText = data[key];
-                        } else if (syncTarget === 'href') {
-                            let value = data[key];
-                            // Auto-redirect for Email links if prefix is missing
-                            if (key.toLowerCase().includes('email') && !value.startsWith('mailto:') && value.includes('@')) {
-                                value = 'mailto:' + value;
+                    if (data[key] !== undefined && data[key] !== null) {
+                        const valStr = String(data[key]).trim();
+                        if (valStr !== "") {
+                            if (syncTarget === 'html') {
+                                el.innerHTML = data[key];
+                            } else if (syncTarget === 'text') {
+                                el.textContent = data[key];
+                            } else if (syncTarget === 'placeholder') {
+                                el.placeholder = data[key];
+                            } else if (syncTarget === 'src') {
+                                el.src = data[key];
+                            } else if (syncTarget === 'style') {
+                                el.style.cssText = data[key];
+                            } else if (syncTarget === 'href') {
+                                let value = data[key];
+                                // Auto-redirect for Email links if prefix is missing
+                                if (key.toLowerCase().includes('email') && !value.startsWith('mailto:') && value.includes('@')) {
+                                    value = 'mailto:' + value;
+                                }
+                                el.href = value;
                             }
-                            el.href = value;
                         }
                     }
                 });
