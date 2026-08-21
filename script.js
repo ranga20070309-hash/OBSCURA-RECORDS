@@ -2338,10 +2338,10 @@ const initPortal = () => {
                 if (ttWatchBtn && ttUrl) ttWatchBtn.href = ttUrl;
                 if (ttFollowBtn && ttFollowUrl) ttFollowBtn.href = ttFollowUrl;
 
-                // Dynamic client-side resolution if thumbnail is default but a real TikTok URL is provided
-                if (ttThumbBg && (ttThumb === 'assets/cover.png' || !ttThumb.startsWith('http')) && ttUrl && ttUrl.includes('tiktok.com')) {
+                // Only attempt client-side resolution if thumbnail is completely missing or default AND a valid video URL exists
+                if (ttThumbBg && (ttThumb === 'assets/cover.png' || !ttThumb || !ttThumb.startsWith('http')) && ttUrl && ttUrl.includes('tiktok.com/video/')) {
                     fetchLiveTikTokDrop(ttUrl).then(liveTt => {
-                        if (liveTt && liveTt.thumb && liveTt.thumb.startsWith('http')) {
+                        if (liveTt && liveTt.thumb && liveTt.thumb.startsWith('http') && liveTt.thumb !== 'assets/cover.png') {
                             ttThumbBg.style.backgroundImage = `url("${liveTt.thumb}")`;
                             if (ttTitleEl && liveTt.title && (!ttTitle || ttTitle.includes('@OBSCURA.RECORDS'))) {
                                 ttTitleEl.textContent = liveTt.title;
@@ -2364,42 +2364,6 @@ const initPortal = () => {
                         transSec.style.setProperty('display', 'none', 'important');
                     } else {
                         transSec.style.removeProperty('display');
-                    }
-                }
-
-                // 3. Automatic Background Live Sync if Auto Mode is enabled
-                if (!liveFeedFetched) {
-                    liveFeedFetched = true;
-                    
-                    // YouTube Auto Fetch
-                    if (tData.yt_mode !== 'Manual') {
-                        const ytCid = tData.yt_channel_id || '@Obscurarecordss';
-                        const ytFilter = tData.yt_filter || 'full_only';
-                        fetchLiveYouTubeDrop(ytCid, ytFilter).then(liveYt => {
-                            if (liveYt && liveYt.link && liveYt.title) {
-                                if (ytTitleEl) ytTitleEl.textContent = liveYt.title;
-                                if (ytDescEl && liveYt.desc) ytDescEl.textContent = liveYt.desc;
-                                if (ytTagEl && liveYt.tag) ytTagEl.textContent = liveYt.tag;
-                                if (ytThumbBg && liveYt.thumb) ytThumbBg.style.backgroundImage = `url("${liveYt.thumb}")`;
-                                if (ytPlayBtn) ytPlayBtn.href = liveYt.link;
-                                if (ytWatchBtn) ytWatchBtn.href = liveYt.link;
-                            }
-                        }).catch(() => {});
-                    }
-
-                    // TikTok Auto Fetch
-                    if (tData.tt_mode !== 'Manual' || (tData.tt_url && tData.tt_url.includes('tiktok.com/video'))) {
-                        const ttInput = (tData.tt_url && tData.tt_url.includes('tiktok.com/video')) ? tData.tt_url : (tData.tt_username || 'obscura.records');
-                        fetchLiveTikTokDrop(ttInput).then(liveTt => {
-                            if (liveTt && liveTt.link && liveTt.title) {
-                                if (ttTitleEl) ttTitleEl.textContent = liveTt.title;
-                                if (ttDescEl && liveTt.desc) ttDescEl.textContent = liveTt.desc;
-                                if (ttTagEl && liveTt.tag) ttTagEl.textContent = liveTt.tag;
-                                if (ttThumbBg && liveTt.thumb) ttThumbBg.style.backgroundImage = `url("${liveTt.thumb}")`;
-                                if (ttPlayBtn) ttPlayBtn.href = liveTt.link;
-                                if (ttWatchBtn) ttWatchBtn.href = liveTt.link;
-                            }
-                        }).catch(() => {});
                     }
                 }
             }
