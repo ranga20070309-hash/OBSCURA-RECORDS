@@ -2862,44 +2862,64 @@ async function fetchLatestYouTubeDropLive(inputChannel, filterMode = 'full_only'
 async function fetchLatestTikTokDropLive(usernameOrUrl) {
     const raw = (usernameOrUrl || 'obscura.records').trim();
     
-    // If specific video URL or shortlink provided
-    if (raw.includes('tiktok.com')) {
+    // Helper to fetch JSON from URL with proxies
+    async function fetchWithProxies(targetUrl) {
+        // Direct attempt
         try {
-            const oEmbedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(raw)}`;
-            const res = await fetch(oEmbedUrl);
-            if (res.ok) {
-                const data = await res.json();
-                const user = data.author_unique_id || (raw.includes('@') ? raw.split('@')[1].split('/')[0] : 'obscura.records');
-                return {
-                    user: user,
-                    title: data.title || `LATEST TIKTOK DROP @${user.toUpperCase()}`,
-                    link: raw,
-                    thumb: data.thumbnail_url || 'assets/cover.png',
-                    desc: data.title || 'Stream our newest sound drop, trending audio, and phonk edits on TikTok.',
-                    tag: raw.includes('/video/') ? 'LATEST TIKTOK VIDEO' : 'OFFICIAL TIKTOK HUB'
-                };
+            const res = await fetch(targetUrl);
+            if (res.ok) return await res.json();
+        } catch (e) {}
+
+        // AllOrigins proxy
+        try {
+            const aoRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+            if (aoRes.ok) {
+                const aoData = await aoRes.json();
+                if (aoData.contents) return JSON.parse(aoData.contents);
             }
         } catch (e) {}
+
+        // CorsProxy.io
+        try {
+            const cpRes = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`);
+            if (cpRes.ok) return await cpRes.json();
+        } catch (e) {}
+
+        return null;
+    }
+
+    // If specific video URL or shortlink provided
+    if (raw.includes('tiktok.com')) {
+        const oEmbedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(raw)}`;
+        const data = await fetchWithProxies(oEmbedUrl);
+        if (data && (data.thumbnail_url || data.title)) {
+            const user = data.author_unique_id || (raw.includes('@') ? raw.split('@')[1].split('/')[0] : 'obscura.records');
+            return {
+                user: user,
+                title: data.title || `LATEST TIKTOK DROP @${user.toUpperCase()}`,
+                link: raw,
+                thumb: data.thumbnail_url || 'assets/cover.png',
+                desc: data.title || 'Stream our newest sound drop, trending audio, and phonk edits on TikTok.',
+                tag: raw.includes('/video/') ? 'LATEST TIKTOK VIDEO' : 'OFFICIAL TIKTOK HUB'
+            };
+        }
     }
 
     const user = cleanTikTokUsernameInput(raw);
 
     // Try Profile oEmbed API
-    try {
-        const oEmbedUrl = `https://www.tiktok.com/oembed?url=https://www.tiktok.com/@${encodeURIComponent(user)}`;
-        const res = await fetch(oEmbedUrl);
-        if (res.ok) {
-            const data = await res.json();
-            return {
-                user: user,
-                title: data.author_name ? `${data.author_name.toUpperCase()} (@${user.toUpperCase()})` : `OBSCURA RECORDS (@${user.toUpperCase()})`,
-                link: `https://www.tiktok.com/@${user}`,
-                thumb: data.thumbnail_url || 'assets/cover.png',
-                desc: 'Catch our newest sound drops, phonk visualizers, and trending edits on TikTok.',
-                tag: 'OFFICIAL TIKTOK HUB'
-            };
-        }
-    } catch (e) {}
+    const profileOEmbedUrl = `https://www.tiktok.com/oembed?url=https://www.tiktok.com/@${encodeURIComponent(user)}`;
+    const data = await fetchWithProxies(profileOEmbedUrl);
+    if (data && (data.thumbnail_url || data.author_name)) {
+        return {
+            user: user,
+            title: data.author_name ? `${data.author_name.toUpperCase()} (@${user.toUpperCase()})` : `OBSCURA RECORDS (@${user.toUpperCase()})`,
+            link: `https://www.tiktok.com/@${user}`,
+            thumb: data.thumbnail_url || 'assets/cover.png',
+            desc: 'Catch our newest sound drops, phonk visualizers, and trending edits on TikTok.',
+            tag: 'OFFICIAL TIKTOK HUB'
+        };
+    }
 
     return {
         user: user,
@@ -2914,6 +2934,7 @@ async function fetchLatestTikTokDropLive(usernameOrUrl) {
 function initTransmissionsEngine() {
     const saveBtn = document.getElementById('save-transmissions-btn');
     const fetchLiveBtn = document.getElementById('btn-fetch-live-feeds');
+    const fetchTtSingleBtn = document.getElementById('btn-fetch-tt-single');
     const msgEl = document.getElementById('save-msg-transmissions');
 
     // Load current data from Firebase (using siteData/globals authorized path)
@@ -2977,28 +2998,46 @@ function initTransmissionsEngine() {
         if (ttUrl) ttUrl.value = data.tt_url || 'https://www.tiktok.com/@obscura.records';
 
         const ttThumb = document.getElementById('trans_tt_thumb');
-        if (ttThumb) ttThumb.value = data.tt_thumb || 'assets/cover.png';
+        if (ttThumb) {
+            ttThumb.value = data.tt_thumb || 'assets/cover.png';
+            const prev = document.getElementById('admin-tt-thumb-preview');
+            if (prev) prev.style.backgroundImage = `url('${data.tt_thumb || 'assets/cover.png'}')`;
+        }
 
         const ttFollowUrl = document.getElementById('trans_tt_follow_url');
         if (ttFollowUrl) ttFollowUrl.value = data.tt_follow_url || 'https://www.tiktok.com/@obscura.records';
     });
 
-    // Auto-resolve TikTok metadata on URL paste / input
+    // Auto-resolve TikTok metadata on URL paste / input / click
+    async function resolveTikTokInput(val) {
+        if (!val) return;
+        showToast("FETCHING TIKTOK VIDEO PREVIEW...");
+        const data = await fetchLatestTikTokDropLive(val);
+        if (data) {
+            if (document.getElementById('trans_tt_title') && data.title) document.getElementById('trans_tt_title').value = data.title;
+            if (document.getElementById('trans_tt_thumb') && data.thumb) {
+                document.getElementById('trans_tt_thumb').value = data.thumb;
+                const prev = document.getElementById('admin-tt-thumb-preview');
+                if (prev) prev.style.backgroundImage = `url('${data.thumb}')`;
+            }
+            if (document.getElementById('trans_tt_desc') && data.desc) document.getElementById('trans_tt_desc').value = data.desc;
+            if (document.getElementById('trans_tt_tag') && data.tag) document.getElementById('trans_tt_tag').value = data.tag;
+            showToast("TIKTOK PREVIEW & THUMBNAIL LOADED!");
+        }
+    }
+
     const ttUrlInput = document.getElementById('trans_tt_url');
     if (ttUrlInput) {
-        ttUrlInput.addEventListener('change', async () => {
-            const val = ttUrlInput.value.trim();
-            if (val.includes('tiktok.com')) {
-                showToast("FETCHING TIKTOK VIDEO PREVIEW...");
-                const data = await fetchLatestTikTokDropLive(val);
-                if (data) {
-                    if (document.getElementById('trans_tt_title') && data.title) document.getElementById('trans_tt_title').value = data.title;
-                    if (document.getElementById('trans_tt_thumb') && data.thumb) document.getElementById('trans_tt_thumb').value = data.thumb;
-                    if (document.getElementById('trans_tt_desc') && data.desc) document.getElementById('trans_tt_desc').value = data.desc;
-                    if (document.getElementById('trans_tt_tag') && data.tag) document.getElementById('trans_tt_tag').value = data.tag;
-                    showToast("TIKTOK PREVIEW & THUMBNAIL LOADED!");
-                }
-            }
+        ttUrlInput.addEventListener('change', () => resolveTikTokInput(ttUrlInput.value.trim()));
+        ttUrlInput.addEventListener('paste', () => {
+            setTimeout(() => resolveTikTokInput(ttUrlInput.value.trim()), 100);
+        });
+    }
+
+    if (fetchTtSingleBtn) {
+        fetchTtSingleBtn.addEventListener('click', () => {
+            const val = document.getElementById('trans_tt_url')?.value.trim() || document.getElementById('trans_tt_username')?.value.trim();
+            resolveTikTokInput(val);
         });
     }
 
