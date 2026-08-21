@@ -3047,8 +3047,21 @@ function initTransmissionsEngine() {
         const bData = snap.val();
         if (bData && typeof bData === 'object' && bData.tt_url) {
             populateTransmissionsAdmin(bData);
-            // If incoming from bot, ensure full thumbnail resolution and sync to globals
-            if (bData.tt_url.includes('tiktok.com')) {
+            
+            // 1. If incoming from bot has valid thumbnail, persist immediately to siteData/globals
+            if (bData.tt_thumb && bData.tt_thumb.startsWith('http') && bData.tt_thumb !== 'assets/cover.png') {
+                db.ref('siteData/globals/latest_transmissions').update({
+                    tt_url: bData.tt_url,
+                    tt_thumb: bData.tt_thumb,
+                    tt_title: bData.tt_title || 'LATEST TIKTOK DROP',
+                    tt_desc: bData.tt_desc || 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.',
+                    tt_tag: bData.tt_tag || 'LATEST TIKTOK DROP',
+                    tt_follow_url: bData.tt_follow_url || 'https://www.tiktok.com/@obscura.records',
+                    updatedAt: Date.now()
+                }).catch(() => {});
+            } 
+            // 2. If thumbnail is missing, attempt live resolution
+            else if (bData.tt_url.includes('tiktok.com')) {
                 const resolved = await fetchLatestTikTokDropLive(bData.tt_url);
                 if (resolved && resolved.thumb && resolved.thumb !== 'assets/cover.png') {
                     if (document.getElementById('trans_tt_thumb')) document.getElementById('trans_tt_thumb').value = resolved.thumb;
@@ -3056,7 +3069,6 @@ function initTransmissionsEngine() {
                     const prev = document.getElementById('admin-tt-thumb-preview');
                     if (prev) prev.style.backgroundImage = `url('${resolved.thumb}')`;
                     
-                    // Auto-sync resolved data to siteData/globals
                     db.ref('siteData/globals/latest_transmissions').update({
                         tt_url: bData.tt_url,
                         tt_thumb: resolved.thumb,
