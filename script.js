@@ -410,6 +410,8 @@ const runIgnition = () => {
             gsap.to("html", { "--sb-opacity": 0.2, duration: 1.5, ease: "power2.out" });
         },
         onComplete: () => {
+            const critStyle = document.getElementById('critical-intro-scroll-lock');
+            if (critStyle) critStyle.remove();
             document.body.classList.remove('no-scroll');
             document.documentElement.classList.remove('no-scroll'); // UNLOCK BOTH
         }
@@ -1234,7 +1236,7 @@ const initPortal = () => {
     window.bindAccordionListeners('privacy-container');
 
     // --- CLEAN URL NAVIGATION SYSTEM (Zero URL Pollution On Button Clicks) ---
-    const navLinks = document.querySelectorAll('.nav-links a, .nav-links .nav-item[data-target], .logo-link, .sidebar-nav-item[data-target], a[href^="#"]:not([href="#"])');
+    const navLinks = document.querySelectorAll('.nav-links a, .nav-links .nav-item[data-target], .logo-link, .sidebar-nav-item[data-target], .cta-primary[data-target], [data-target^="#"], [data-target="reload"], a[href^="#"]:not([href="#"])');
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             const target = link.getAttribute('data-target') || link.getAttribute('href');
@@ -1391,7 +1393,9 @@ const initPortal = () => {
             }
 
             // 2. Name
-            if (mName) mName.textContent = opts.name || 'PERSONNEL PROFILE';
+            if (mName) {
+                mName.innerHTML = `${opts.name || 'PERSONNEL PROFILE'} <span class="staff-verified-badge modal-badge" title="Verified Obscura Personnel"><i class="fas fa-check"></i></span>`;
+            }
 
             // 3. Status Indicator (Hidden for Partners, Dynamic for Staff)
             if (mStatus) {
@@ -1468,7 +1472,10 @@ const initPortal = () => {
                     <div class="artist-img"></div>
                     <img src="" class="avatar-decoration" alt="Frame" style="display:none;">
                 </div>
-                <h4>${data.name || (isPartner ? 'PARTNER' : 'STAFF')}</h4>
+                <h4>
+                    <span class="staff-name-text">${data.name || (isPartner ? 'PARTNER' : 'STAFF')}</span>
+                    <span class="staff-verified-badge" title="Verified Obscura Staff"><i class="fas fa-check"></i></span>
+                </h4>
                 <p>Status: <span class="status-indicator">LOADING...</span></p>
                 <span class="artist-loc">Discord Presence</span>
             `;
@@ -1478,7 +1485,7 @@ const initPortal = () => {
             const avatar     = item.querySelector('.artist-img');
             const decoration = item.querySelector('.avatar-decoration');
             const statusEl   = item.querySelector('.status-indicator');
-            const nameEl     = item.querySelector('h4');
+            const nameEl     = item.querySelector('.staff-name-text');
 
             const applyData = (d) => {
                 if (!d) {
@@ -1486,7 +1493,7 @@ const initPortal = () => {
                     statusEl.className = 'status-indicator offline';
                     return;
                 }
-                if (d.name) nameEl.textContent = d.name;
+                if (d.name && nameEl) nameEl.textContent = d.name;
                 const status = (d.status || 'offline').toLowerCase();
                 statusEl.textContent = status.toUpperCase();
                 statusEl.className = `status-indicator ${status}`;
@@ -1547,54 +1554,96 @@ const initPortal = () => {
             });
         }
 
-        // --- DYNAMIC PARTNER CARD BUILDER (100% EXACT COPY OF STAFF CARD DESIGN - NO STATUS) ---
+        // --- DYNAMIC PARTNER CARD BUILDER (CLEAN & AESTHETIC CYBER CARD) ---
         function createPartnerCard(partnerId, data, gridEl) {
             const item = document.createElement('div');
-            item.className = 'artist-item glass';
+            item.className = 'partner-cyber-card';
             item.dataset.partnerId = partnerId;
             item.innerHTML = `
-                <div class="avatar-wrapper">
-                    <div class="artist-img"></div>
-                    <img src="" class="avatar-decoration" alt="Frame" style="display:none;">
+                <!-- 1. Header Cover Banner -->
+                <div class="partner-cyber-banner">
+                    <div class="partner-cyber-banner-bg"></div>
+                    <div class="partner-cyber-banner-overlay"></div>
+                    <div class="partner-alliance-tag">
+                        <i class="fas fa-handshake"></i>
+                        <span>ALLIANCE</span>
+                    </div>
                 </div>
-                <h4>PARTNER</h4>
-                <span class="artist-loc">Label Partner</span>
+
+                <!-- 2. Floating Avatar Profile DP -->
+                <div class="partner-cyber-avatar-wrap">
+                    <div class="partner-cyber-avatar-halo"></div>
+                    <div class="partner-cyber-avatar-img"></div>
+                    <div class="partner-cyber-status-dot" title="Alliance Active"></div>
+                </div>
+
+                <!-- 3. Body Content -->
+                <div class="partner-cyber-body">
+                    <h4 class="partner-cyber-title">
+                        <span class="title-text">PARTNER</span>
+                        <i class="fas fa-check-circle" style="font-size:0.95rem; color:var(--accent-blue);" title="Verified Distribution Partner"></i>
+                    </h4>
+                    <span class="partner-cyber-badge tagline-text">DISTRIBUTION PARTNER</span>
+                    <p class="partner-cyber-bio">Encrypted record label partnership transmission...</p>
+                    <div class="partner-cyber-socials"></div>
+                </div>
             `;
             gridEl.appendChild(item);
 
-            const avatar  = item.querySelector('.artist-img');
-            const nameEl  = item.querySelector('h4');
-            const locEl   = item.querySelector('.artist-loc');
+            const bannerBg  = item.querySelector('.partner-cyber-banner-bg');
+            const avatar    = item.querySelector('.partner-cyber-avatar-img');
+            const nameEl    = item.querySelector('.title-text');
+            const tagEl     = item.querySelector('.tagline-text');
+            const bioEl     = item.querySelector('.partner-cyber-bio');
+            const socialsEl = item.querySelector('.partner-cyber-socials');
 
             const applyPartnerData = (d) => {
                 if (!d) return;
                 const name = d.name || 'LABEL PARTNER';
-                const tagline = d.tagline || 'Label Partner';
-                const bio = d.bio || 'Encrypted record label partnership transmission.';
+                const tagline = d.tagline || 'Distribution Partner';
+                const bio = d.bio || 'Official verified distribution alliance network powering Obscura Records catalog across worldwide DSP platforms.';
                 const logoUrl = (d.logo_url && d.logo_url.trim() !== '') ? d.logo_url : (d.avatar_url && d.avatar_url.trim() !== '' ? d.avatar_url : 'assets/staff/default.png');
-                const bannerUrl = (d.banner_url && d.banner_url.trim() !== '') ? d.banner_url : (d.banner || '');
-                const bannerColor = d.banner_color || d.accent_color || '';
+                const bannerUrl = (d.banner_url && d.banner_url.trim() !== '') ? d.banner_url : (d.banner || 'assets/cover.jpg');
 
                 if (nameEl) nameEl.textContent = name;
-                if (locEl) locEl.textContent = tagline;
+                if (tagEl) tagEl.textContent = tagline;
+                if (bioEl) bioEl.textContent = bio;
+
                 if (avatar) {
                     avatar.style.backgroundImage = `url("${logoUrl}")`;
-                    avatar.style.backgroundSize = 'cover';
-                    avatar.style.backgroundPosition = 'center';
                 }
 
-                item.style.cursor = 'pointer';
-                item.onclick = () => {
-                    openProfileModal({
-                        name: name,
-                        bio: bio,
-                        avatarUrl: logoUrl,
-                        bannerUrl: bannerUrl,
-                        bannerColor: bannerColor,
-                        socials: d.socials,
-                        isPartner: true
-                    });
-                };
+                if (bannerBg) {
+                    bannerBg.style.backgroundImage = `url("${bannerUrl}")`;
+                }
+
+                // Direct social links on the card itself
+                if (socialsEl) {
+                    socialsEl.innerHTML = '';
+                    const socialIcons = {
+                        website: 'fas fa-globe',
+                        spotify: 'fab fa-spotify',
+                        instagram: 'fab fa-instagram',
+                        discord: 'fab fa-discord',
+                        soundcloud: 'fab fa-soundcloud',
+                        youtube: 'fab fa-youtube',
+                        twitter: 'fab fa-x-twitter'
+                    };
+                    if (d.socials && typeof d.socials === 'object') {
+                        Object.entries(d.socials).forEach(([key, url]) => {
+                            if (!url || typeof url !== 'string' || !url.trim()) return;
+                            const iconClass = socialIcons[key.toLowerCase()] || 'fas fa-link';
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.target = '_blank';
+                            a.rel = 'noopener noreferrer';
+                            a.className = 'partner-cyber-social-btn';
+                            a.title = key.toUpperCase();
+                            a.innerHTML = `<i class="${iconClass}"></i>`;
+                            socialsEl.appendChild(a);
+                        });
+                    }
+                }
             };
 
             applyPartnerData(data);
@@ -2167,6 +2216,292 @@ const initPortal = () => {
                 container.insertAdjacentHTML('beforeend', html);
             });
             window.bindAccordionListeners(containerId);
+        }
+
+        // --- REAL-TIME LATEST MEDIA TRANSMISSIONS (YOUTUBE & TIKTOK) ---
+        try {
+            const KNOWN_YT_CHANNELS = {
+                'obscurarecordss': 'UCMeIV48_O_F0H2tL7x_ayHg',
+                'recordsobscura': 'UC0A5L7DUgls-AkYaQ4ZwxhA',
+                'obscura': 'UCMeIV48_O_F0H2tL7x_ayHg'
+            };
+
+            async function resolveYouTubeChannelIdFromInput(input) {
+                if (!input) return 'UCMeIV48_O_F0H2tL7x_ayHg';
+                let str = input.trim();
+
+                if (str.startsWith('UC') && str.length === 24) return str;
+                if (str.includes('/channel/')) {
+                    const parts = str.split('/channel/')[1].split('/')[0].split('?')[0];
+                    if (parts.startsWith('UC')) return parts;
+                }
+
+                let handle = str;
+                if (handle.includes('youtube.com/@')) {
+                    handle = handle.split('youtube.com/@')[1].split('/')[0].split('?')[0];
+                }
+                const cleanKey = handle.replace('@', '').toLowerCase().trim();
+                if (KNOWN_YT_CHANNELS[cleanKey]) {
+                    return KNOWN_YT_CHANNELS[cleanKey];
+                }
+
+                if (!handle.startsWith('@')) handle = '@' + handle;
+
+                try {
+                    const targetUrl = `https://www.youtube.com/${handle}`;
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+                    const res = await fetch(proxyUrl);
+                    if (res.ok) {
+                        const html = await res.text();
+                        const match = html.match(/"channelId":"(UC[a-zA-Z0-9_-]{22})"/);
+                        if (match && match[1]) return match[1];
+                        const match2 = html.match(/"externalId":"(UC[a-zA-Z0-9_-]{22})"/);
+                        if (match2 && match2[1]) return match2[1];
+                    }
+                } catch (e) {}
+
+                return 'UCMeIV48_O_F0H2tL7x_ayHg';
+            }
+
+            function cleanTikTokUsernameInput(input) {
+                if (!input) return 'obscura.records';
+                let str = input.trim();
+                if (str.includes('tiktok.com/@')) {
+                    str = str.split('tiktok.com/@')[1].split('/')[0].split('?')[0];
+                } else if (str.startsWith('@')) {
+                    str = str.substring(1);
+                }
+                return str;
+            }
+
+            async function fetchLiveYouTubeDrop(channelId, filterMode = 'full_only') {
+                const cid = await resolveYouTubeChannelIdFromInput(channelId);
+                const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${cid}`;
+
+                try {
+                    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.items && data.items.length > 0) {
+                            let chosenItem = data.items[0];
+
+                            if (filterMode === 'full_only' && data.items.length > 1) {
+                                for (const it of data.items) {
+                                    const titleLower = (it.title || '').toLowerCase();
+                                    const linkLower = (it.link || '').toLowerCase();
+                                    if (!titleLower.includes('#shorts') && !titleLower.includes('#short') && !linkLower.includes('/shorts/')) {
+                                        chosenItem = it;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            let videoId = '';
+                            if (chosenItem.guid && chosenItem.guid.includes(':')) {
+                                videoId = chosenItem.guid.split(':').pop();
+                            } else if (chosenItem.link && chosenItem.link.includes('v=')) {
+                                videoId = new URL(chosenItem.link).searchParams.get('v');
+                            } else if (chosenItem.link && chosenItem.link.includes('/shorts/')) {
+                                videoId = chosenItem.link.split('/shorts/')[1].split('?')[0];
+                            }
+                            const thumb = videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : (chosenItem.thumbnail || '');
+                            return {
+                                cid: cid,
+                                title: chosenItem.title || 'OBSCURA - LATEST DROP',
+                                link: chosenItem.link || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : `https://www.youtube.com/channel/${cid}`),
+                                thumb: thumb,
+                                desc: (chosenItem.description || '').replace(/<[^>]*>?/gm, '').trim().substring(0, 180) || 'Experience the latest official visualizer and soundwave release from our void archive.',
+                                tag: 'OFFICIAL MUSIC VIDEO'
+                            };
+                        }
+                    }
+                } catch (e) {}
+
+                try {
+                    const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`);
+                    if (res.ok) {
+                        const xmlText = await res.text();
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+                        const entries = xmlDoc.querySelectorAll("entry");
+                        if (entries && entries.length > 0) {
+                            let chosenEntry = entries[0];
+                            if (filterMode === 'full_only' && entries.length > 1) {
+                                for (const ent of entries) {
+                                    const t = ent.querySelector("title")?.textContent || '';
+                                    if (!t.toLowerCase().includes('#shorts') && !t.toLowerCase().includes('#short')) {
+                                        chosenEntry = ent;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            const title = chosenEntry.querySelector("title")?.textContent || '';
+                            const link = chosenEntry.querySelector("link")?.getAttribute("href") || '';
+                            const videoId = chosenEntry.querySelector("yt\\:videoId, videoId")?.textContent || '';
+                            const mediaDesc = chosenEntry.querySelector("media\\:description, description")?.textContent || '';
+                            return {
+                                cid: cid,
+                                title: title || 'OBSCURA - LATEST DROP',
+                                link: link || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : ''),
+                                thumb: videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : '',
+                                desc: mediaDesc.replace(/<[^>]*>?/gm, '').trim().substring(0, 180) || 'Experience the latest official visualizer and soundwave release from our void archive.',
+                                tag: 'OFFICIAL MUSIC VIDEO'
+                            };
+                        }
+                    }
+                } catch (e) {}
+                return null;
+            }
+
+            async function fetchLiveTikTokDrop(usernameOrUrl) {
+                const raw = (usernameOrUrl || 'obscura.records').trim();
+                
+                // If specific video URL or shortlink provided
+                if (raw.includes('tiktok.com')) {
+                    try {
+                        const oEmbedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(raw)}`;
+                        const res = await fetch(oEmbedUrl);
+                        if (res.ok) {
+                            const data = await res.json();
+                            const user = data.author_unique_id || (raw.includes('@') ? raw.split('@')[1].split('/')[0] : 'obscura.records');
+                            return {
+                                title: data.title || `LATEST TIKTOK DROP @${user.toUpperCase()}`,
+                                link: raw,
+                                thumb: data.thumbnail_url || 'assets/cover.png',
+                                desc: data.title || 'Stream our newest sound drop, trending audio, and phonk edits on TikTok.',
+                                tag: raw.includes('/video/') ? 'LATEST TIKTOK VIDEO' : 'OFFICIAL TIKTOK HUB'
+                            };
+                        }
+                    } catch (e) {}
+                }
+
+                const user = cleanTikTokUsernameInput(raw);
+                try {
+                    const oEmbedUrl = `https://www.tiktok.com/oembed?url=https://www.tiktok.com/@${encodeURIComponent(user)}`;
+                    const res = await fetch(oEmbedUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        return {
+                            title: data.author_name ? `${data.author_name.toUpperCase()} (@${user.toUpperCase()})` : `OBSCURA RECORDS (@${user.toUpperCase()})`,
+                            link: `https://www.tiktok.com/@${user}`,
+                            thumb: data.thumbnail_url || 'assets/cover.png',
+                            desc: 'Catch our newest sound drops, phonk visualizers, and trending edits on TikTok.',
+                            tag: 'OFFICIAL TIKTOK HUB'
+                        };
+                    }
+                } catch (e) {}
+
+                return {
+                    title: `OBSCURA RECORDS (@${user.toUpperCase()})`,
+                    link: `https://www.tiktok.com/@${user}`,
+                    thumb: 'assets/cover.png',
+                    desc: 'Catch our newest sound drops, phonk visualizers, and trending edits on TikTok.',
+                    tag: 'OFFICIAL TIKTOK HUB'
+                };
+            }
+
+            let liveFeedFetched = false;
+
+            db.ref('siteData/latest_transmissions').on('value', snap => {
+                const tData = snap.val() || {};
+                
+                // 1. YouTube Drop Sync
+                const ytTitle = tData.yt_title || 'MONTAGEM ALMA GEMEA - NXPXLM';
+                const ytDesc  = tData.yt_desc || 'Experience the newest track and soundwave visualizer drop from Obscura Recordss.';
+                const ytTag   = tData.yt_tag || 'OFFICIAL MUSIC VIDEO';
+                const ytUrl   = tData.yt_url || 'https://www.youtube.com/watch?v=kyS1AFiPa9I';
+                const ytThumb = tData.yt_thumb || 'https://i4.ytimg.com/vi/kyS1AFiPa9I/hqdefault.jpg';
+                const ytSubUrl = tData.yt_sub_url || 'https://www.youtube.com/@Obscurarecordss?sub_confirmation=1';
+
+                const ytTitleEl = document.getElementById('yt-title-display');
+                const ytDescEl  = document.getElementById('yt-desc-display');
+                const ytTagEl   = document.getElementById('yt-tag-display');
+                const ytThumbBg = document.getElementById('yt-thumb-bg');
+                const ytPlayBtn = document.getElementById('yt-play-trigger');
+                const ytWatchBtn = document.getElementById('yt-watch-btn');
+                const ytSubBtn  = document.getElementById('yt-sub-btn');
+
+                if (ytTitleEl) ytTitleEl.textContent = ytTitle;
+                if (ytDescEl) ytDescEl.textContent = ytDesc;
+                if (ytTagEl) ytTagEl.textContent = ytTag;
+                if (ytThumbBg && ytThumb) ytThumbBg.style.backgroundImage = `url("${ytThumb}")`;
+                if (ytPlayBtn && ytUrl) ytPlayBtn.href = ytUrl;
+                if (ytWatchBtn && ytUrl) ytWatchBtn.href = ytUrl;
+                if (ytSubBtn && ytSubUrl) ytSubBtn.href = ytSubUrl;
+
+                // 2. TikTok Drop Sync
+                const ttTitle = tData.tt_title || 'OBSCURA RECORDS (@OBSCURA.RECORDS)';
+                const ttDesc  = tData.tt_desc || 'Catch our newest sound drops, phonk visualizers, and trending edits on TikTok.';
+                const ttTag   = tData.tt_tag || 'OFFICIAL TIKTOK HUB';
+                const ttUrl   = tData.tt_url || 'https://www.tiktok.com/@obscura.records';
+                const ttThumb = tData.tt_thumb || 'assets/cover.png';
+                const ttFollowUrl = tData.tt_follow_url || 'https://www.tiktok.com/@obscura.records';
+
+                const ttTitleEl = document.getElementById('tt-title-display');
+                const ttDescEl  = document.getElementById('tt-desc-display');
+                const ttTagEl   = document.getElementById('tt-tag-display');
+                const ttThumbBg = document.getElementById('tt-thumb-bg');
+                const ttPlayBtn = document.getElementById('tt-play-trigger');
+                const ttWatchBtn = document.getElementById('tt-watch-btn');
+                const ttFollowBtn = document.getElementById('tt-follow-btn');
+
+                if (ttTitleEl) ttTitleEl.textContent = ttTitle;
+                if (ttDescEl) ttDescEl.textContent = ttDesc;
+                if (ttTagEl) ttTagEl.textContent = ttTag;
+                if (ttThumbBg && ttThumb) ttThumbBg.style.backgroundImage = `url("${ttThumb}")`;
+                if (ttPlayBtn && ttUrl) ttPlayBtn.href = ttUrl;
+                if (ttWatchBtn && ttUrl) ttWatchBtn.href = ttUrl;
+                if (ttFollowBtn && ttFollowUrl) ttFollowBtn.href = ttFollowUrl;
+
+                // Section visibility toggle
+                const transSec = document.getElementById('transmissions');
+                if (transSec) {
+                    if (tData.showTransmissions === 'Hidden') {
+                        transSec.style.setProperty('display', 'none', 'important');
+                    } else {
+                        transSec.style.removeProperty('display');
+                    }
+                }
+
+                // 3. Automatic Background Live Sync if Auto Mode is enabled
+                if (!liveFeedFetched) {
+                    liveFeedFetched = true;
+                    
+                    // YouTube Auto Fetch
+                    if (tData.yt_mode !== 'Manual') {
+                        const ytCid = tData.yt_channel_id || '@Obscurarecordss';
+                        const ytFilter = tData.yt_filter || 'full_only';
+                        fetchLiveYouTubeDrop(ytCid, ytFilter).then(liveYt => {
+                            if (liveYt && liveYt.link && liveYt.title) {
+                                if (ytTitleEl) ytTitleEl.textContent = liveYt.title;
+                                if (ytDescEl && liveYt.desc) ytDescEl.textContent = liveYt.desc;
+                                if (ytTagEl && liveYt.tag) ytTagEl.textContent = liveYt.tag;
+                                if (ytThumbBg && liveYt.thumb) ytThumbBg.style.backgroundImage = `url("${liveYt.thumb}")`;
+                                if (ytPlayBtn) ytPlayBtn.href = liveYt.link;
+                                if (ytWatchBtn) ytWatchBtn.href = liveYt.link;
+                            }
+                        }).catch(() => {});
+                    }
+
+                    // TikTok Auto Fetch
+                    if (tData.tt_mode !== 'Manual') {
+                        const ttInput = tData.tt_username || 'obscura.records';
+                        fetchLiveTikTokDrop(ttInput).then(liveTt => {
+                            if (liveTt && liveTt.link && liveTt.title) {
+                                if (ttTitleEl) ttTitleEl.textContent = liveTt.title;
+                                if (ttDescEl && liveTt.desc) ttDescEl.textContent = liveTt.desc;
+                                if (ttTagEl && liveTt.tag) ttTagEl.textContent = liveTt.tag;
+                                if (ttThumbBg && liveTt.thumb) ttThumbBg.style.backgroundImage = `url("${liveTt.thumb}")`;
+                                if (ttPlayBtn) ttPlayBtn.href = liveTt.link;
+                                if (ttWatchBtn) ttWatchBtn.href = liveTt.link;
+                            }
+                        }).catch(() => {});
+                    }
+                }
+            });
+        } catch (e) {
+            console.error("Transmissions Sync Error:", e);
         }
 
         /* -- Dynamic Accordion Rendering Disabled to preserve original structure --
@@ -3041,8 +3376,14 @@ const ObscuraTelemetry = (() => {
     };
 })();
 
-// Auto-Log Visitor Session reliably on access
+// Auto-Log Visitor Session reliably on access (Ignored during local development)
 (() => {
+    // Zero Firebase bandwidth during local testing
+    const isLocal = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' || 
+                    window.location.protocol === 'file:';
+    if (isLocal) return;
+
     const lastLogTime = parseInt(sessionStorage.getItem('obscura_last_visitor_log') || '0', 10);
     const now = Date.now();
     // Throttle per tab within 15 seconds to prevent spam, but log new visits & active tabs
