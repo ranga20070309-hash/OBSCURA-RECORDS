@@ -2923,51 +2923,43 @@ const ObscuraTelemetry = (() => {
         if (isFetchingLocation) return { ip: 'RESOLVING...', city: 'RESOLVING...', country: 'RESOLVING...', countryCode: 'XX', isp: 'ISP' };
         isFetchingLocation = true;
 
-        try {
-            const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(3500) }).catch(() => null);
-            if (res && res.ok) {
-                const d = await res.json();
-                cachedLocation = {
-                    ip: d.ip || 'UNKNOWN_IP',
-                    city: (d.city || 'UNKNOWN_CITY').toUpperCase(),
-                    region: (d.region || '').toUpperCase(),
-                    country: (d.country_name || 'UNKNOWN_COUNTRY').toUpperCase(),
-                    countryCode: (d.country_code || 'XX').toUpperCase(),
-                    isp: (d.org || d.asn || 'ISP').toUpperCase(),
-                    lat: d.latitude || 0,
-                    lon: d.longitude || 0
-                };
-                isFetchingLocation = false;
-                return cachedLocation;
-            }
-        } catch (e) {}
+        // Try fast IP/Geo services with short timeout
+        const tryFetch = async (url) => {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2000);
+                const res = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (res.ok) return await res.json();
+            } catch (e) {}
+            return null;
+        };
 
-        try {
-            const fbRes = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(3500) }).catch(() => null);
-            if (fbRes && fbRes.ok) {
-                const d = await fbRes.json();
-                cachedLocation = {
-                    ip: d.ip || 'UNKNOWN_IP',
-                    city: (d.city || 'UNKNOWN_CITY').toUpperCase(),
-                    region: (d.region || '').toUpperCase(),
-                    country: (d.country || 'UNKNOWN_COUNTRY').toUpperCase(),
-                    countryCode: (d.country_code || 'XX').toUpperCase(),
-                    isp: (d.connection ? d.connection.isp || d.connection.org : 'ISP').toUpperCase(),
-                    lat: d.latitude || 0,
-                    lon: d.longitude || 0
-                };
-                isFetchingLocation = false;
-                return cachedLocation;
-            }
-        } catch (e) {}
+        const ipData = await tryFetch('https://ipwho.is/') || await tryFetch('https://ipapi.co/json/');
+        if (ipData) {
+            cachedLocation = {
+                ip: ipData.ip || 'UNKNOWN_IP',
+                city: (ipData.city || 'CYBERSPACE').toUpperCase(),
+                region: (ipData.region || '').toUpperCase(),
+                country: (ipData.country || ipData.country_name || 'EARTH').toUpperCase(),
+                countryCode: (ipData.country_code || 'UN').toUpperCase(),
+                isp: (ipData.connection?.isp || ipData.org || ipData.asn || 'ISP').toUpperCase(),
+                lat: ipData.latitude || 0,
+                lon: ipData.longitude || 0
+            };
+            isFetchingLocation = false;
+            return cachedLocation;
+        }
 
+        // Fast client-side fallback
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
         cachedLocation = {
             ip: 'CLIENT_NODE',
-            city: 'CYBERSPACE',
-            region: 'GRID',
+            city: tz.split('/')[1]?.replace(/_/g, ' ')?.toUpperCase() || 'CYBERSPACE',
+            region: tz.split('/')[0]?.toUpperCase() || 'GRID',
             country: 'EARTH',
             countryCode: 'UN',
-            isp: 'STARLINK/FIBER',
+            isp: 'DIRECT CONNECTION',
             lat: 0,
             lon: 0
         };
@@ -3006,13 +2998,6 @@ const ObscuraTelemetry = (() => {
                 } catch (e) {}
             };
 
-            const silentSet = (refPath, dataObj) => {
-                try {
-                    const p = db.ref(refPath).set(dataObj, () => {});
-                    if (p && typeof p.catch === 'function') p.catch(() => {});
-                } catch (e) {}
-            };
-
             // Push to telemetry visitor logs collection
             silentPush('siteData/telemetry/visitor_logs', entry);
 
@@ -3045,19 +3030,24 @@ const ObscuraTelemetry = (() => {
     };
 })();
 
-// Auto-Log Visitor Session (throttled once per session)
-if (!sessionStorage.getItem('obscura_visitor_session_logged')) {
-    sessionStorage.setItem('obscura_visitor_session_logged', 'true');
-    setTimeout(() => {
-        if (typeof ObscuraTelemetry !== 'undefined') {
-            ObscuraTelemetry.logEvent('VISITOR_ACCESS', {
-                referrer: document.referrer || 'DIRECT',
-                screen: `${window.screen.width}x${window.screen.height}`,
-                userAgent: navigator.userAgent
-            });
-        }
-    }, 1500);
-}
+// Auto-Log Visitor Session reliably on access
+(() => {
+    const lastLogTime = parseInt(sessionStorage.getItem('obscura_last_visitor_log') || '0', 10);
+    const now = Date.now();
+    // Throttle per tab within 15 seconds to prevent spam, but log new visits & active tabs
+    if (now - lastLogTime > 15000) {
+        sessionStorage.setItem('obscura_last_visitor_log', String(now));
+        setTimeout(() => {
+            if (typeof ObscuraTelemetry !== 'undefined') {
+                ObscuraTelemetry.logEvent('VISITOR_ACCESS', {
+                    referrer: document.referrer || 'DIRECT',
+                    screen: `${window.screen.width}x${window.screen.height}`,
+                    userAgent: navigator.userAgent
+                });
+            }
+        }, 800);
+    }
+})();
 
 // --- FLOATING CYBERPUNK MUSIC PLAYER & VISUALIZER ENGINE ---
 let isFloatingPlayerPlaying = false;
@@ -3520,16 +3510,28 @@ if (typeof firebase !== 'undefined') {
     // Push the current session to active connections
     const connRef = db.ref('siteData/activeConnections').push();
 
-    // Auto-remove record on browser close
+    // Auto-remove record on browser close / disconnect
     connRef.onDisconnect().remove();
 
     // Set initial connection ping
     connRef.set({
-        pingAt: firebase.database.ServerValue.TIMESTAMP
+        pingAt: firebase.database.ServerValue.TIMESTAMP,
+        device: (navigator.userAgent || '').substring(0, 80),
+        url: window.location.href
     }).then(() => {
         console.log("Portal Protocol Link: SECURE. Node active.");
     }).catch(err => {
         console.warn("Portal Protocol Link: DENIED. Check origin auth.", err);
+    });
+
+    // Heartbeat ping every 25 seconds
+    setInterval(() => {
+        connRef.update({ pingAt: Date.now() }).catch(() => {});
+    }, 25000);
+
+    // Clean up on unload
+    window.addEventListener('beforeunload', () => {
+        connRef.remove();
     });
 
     // Listen globally for cluster count (Syncs with Discord Bot)
@@ -3537,7 +3539,7 @@ if (typeof firebase !== 'undefined') {
         const count = snapshot.numChildren();
         const liveNodesEl = document.getElementById('km-live-nodes');
         if (liveNodesEl) {
-            liveNodesEl.textContent = count;
+            liveNodesEl.textContent = Math.max(1, count);
         }
     });
 }
