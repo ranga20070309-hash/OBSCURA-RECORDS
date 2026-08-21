@@ -2916,8 +2916,8 @@ function initTransmissionsEngine() {
     const fetchLiveBtn = document.getElementById('btn-fetch-live-feeds');
     const msgEl = document.getElementById('save-msg-transmissions');
 
-    // Load current data from Firebase (siteData path for authorized access)
-    db.ref('siteData/latest_transmissions').on('value', snap => {
+    // Load current data from Firebase (using siteData/globals authorized path)
+    db.ref('siteData/globals/latest_transmissions').on('value', snap => {
         const data = snap.val() || {};
         
         const showEl = document.getElementById('trans_showTransmissions');
@@ -2933,11 +2933,14 @@ function initTransmissionsEngine() {
         const ytMode = document.getElementById('trans_yt_mode');
         if (ytMode) ytMode.value = data.yt_mode || 'Auto';
 
+        const ytFilter = document.getElementById('trans_yt_filter');
+        if (ytFilter) ytFilter.value = data.yt_filter || 'full_only';
+
         const ytCid = document.getElementById('trans_yt_channel_id');
         if (ytCid) ytCid.value = data.yt_channel_id || '@Obscurarecordss';
 
         const ytTag = document.getElementById('trans_yt_tag');
-        if (ytTag) ytTag.value = data.yt_tag || 'LATEST OFFICIAL DROP';
+        if (ytTag) ytTag.value = data.yt_tag || 'OFFICIAL MUSIC VIDEO';
 
         const ytTitle = document.getElementById('trans_yt_title');
         if (ytTitle) ytTitle.value = data.yt_title || 'MONTAGEM ALMA GEMEA - NXPXLM';
@@ -2962,13 +2965,13 @@ function initTransmissionsEngine() {
         if (ttUser) ttUser.value = data.tt_username || 'obscura.records';
 
         const ttTag = document.getElementById('trans_tt_tag');
-        if (ttTag) ttTag.value = data.tt_tag || 'FEATURED AUDIO CLIP';
+        if (ttTag) ttTag.value = data.tt_tag || 'OFFICIAL TIKTOK HUB';
 
         const ttTitle = document.getElementById('trans_tt_title');
-        if (ttTitle) ttTitle.value = data.tt_title || 'NEW VOID PHONK SOUND DROP #01';
+        if (ttTitle) ttTitle.value = data.tt_title || 'OBSCURA RECORDS (@OBSCURA.RECORDS)';
 
         const ttDesc = document.getElementById('trans_tt_desc');
-        if (ttDesc) ttDesc.value = data.tt_desc || 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.';
+        if (ttDesc) ttDesc.value = data.tt_desc || 'Catch our newest sound drops, phonk visualizers, and trending edits on TikTok.';
 
         const ttUrl = document.getElementById('trans_tt_url');
         if (ttUrl) ttUrl.value = data.tt_url || 'https://www.tiktok.com/@obscura.records';
@@ -3059,7 +3062,8 @@ function initTransmissionsEngine() {
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SAVING FEEDS...';
             saveBtn.disabled = true;
 
-            db.ref('siteData/latest_transmissions').set(payload).then(() => {
+            // Save under siteData/globals which has full authorized write permissions in Firebase Rules
+            db.ref('siteData/globals').update({ latest_transmissions: payload }).then(() => {
                 bumpSiteVersion("Updated Latest Media Feeds (YouTube & TikTok)");
                 showToast("MEDIA FEEDS SAVED & SYNCED!");
                 if (msgEl) {
