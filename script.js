@@ -2238,16 +2238,17 @@ const initPortal = () => {
                 }
             }
 
-            // Sync from all valid database paths (Admin saves & Discord Bot webhooks)
-            fetchWithCache('siteData/globals/latest_transmissions', (snap) => {
-                if (snap) applyTransmissionData(snap);
-            });
-            fetchWithCache('siteData/latest_transmissions', (snap) => {
-                if (snap) applyTransmissionData(snap);
-            });
-            fetchWithCache('bot_status/latest_transmissions', (snap) => {
-                if (snap) applyTransmissionData(snap);
-            });
+            // Sync live in real-time from all valid database paths (Admin saves & Discord Bot webhooks)
+            if (typeof firebase !== 'undefined') {
+                firebase.database().ref('siteData/globals/latest_transmissions').on('value', (snap) => {
+                    const val = snap.val();
+                    if (val) applyTransmissionData(val);
+                });
+                firebase.database().ref('bot_status/latest_transmissions').on('value', (snap) => {
+                    const val = snap.val();
+                    if (val) applyTransmissionData(val);
+                });
+            }
         } catch (e) {
             console.error("Transmissions Sync Error:", e);
         }
