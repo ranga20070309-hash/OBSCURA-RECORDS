@@ -2980,17 +2980,12 @@ function initTransmissionsEngine() {
                 updatedAt: Date.now()
             };
             db.ref('siteData/globals/latest_transmissions').update(updatePayload).catch(() => {});
-            db.ref('siteData/latest_transmissions').update(updatePayload).catch(() => {});
         }
     }
 
     // Load data from Firebase (Admin & Discord Bot sources)
     db.ref('siteData/globals/latest_transmissions').on('value', snap => {
         populateTransmissionsAdmin(snap.val() || {});
-    });
-
-    db.ref('siteData/latest_transmissions').on('value', snap => {
-        handleIncomingBotTransmission(snap.val());
     });
 
     db.ref('bot_status/latest_transmissions').on('value', snap => {
@@ -3010,39 +3005,35 @@ function initTransmissionsEngine() {
                 if (prev) prev.style.backgroundImage = `url('${data.thumb}')`;
             }
             if (document.getElementById('trans_tt_desc') && data.desc) document.getElementById('trans_tt_desc').value = data.desc;
-            if (document.getElementById('trans_tt_tag') && data.tag) document.getElementById('trans_tt_tag').value = data.tag;
-            showToast("TIKTOK PREVIEW & THUMBNAIL LOADED!");
+            showToast("TIKTOK PREVIEW LOADED!");
         }
     }
 
     const ttUrlInput = document.getElementById('trans_tt_url');
     if (ttUrlInput) {
-        ttUrlInput.addEventListener('change', () => resolveTikTokInput(ttUrlInput.value.trim()));
-        ttUrlInput.addEventListener('paste', () => {
+        ttUrlInput.addEventListener('change', (e) => resolveTikTokInput(e.target.value.trim()));
+        ttUrlInput.addEventListener('paste', (e) => {
             setTimeout(() => resolveTikTokInput(ttUrlInput.value.trim()), 100);
         });
     }
 
     if (fetchTtSingleBtn) {
         fetchTtSingleBtn.addEventListener('click', () => {
-            const val = document.getElementById('trans_tt_url')?.value.trim() || document.getElementById('trans_tt_username')?.value.trim();
+            const val = document.getElementById('trans_tt_url')?.value?.trim();
+            if (!val) {
+                showToast("PLEASE ENTER A TIKTOK VIDEO URL FIRST", "error");
+                return;
+            }
             resolveTikTokInput(val);
         });
     }
 
-    // Test & Live Fetch Button
+    // Full Live Feeds Fetch Engine
     if (fetchLiveBtn) {
         fetchLiveBtn.addEventListener('click', async () => {
             fetchLiveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> FETCHING LIVE DROPS...';
             fetchLiveBtn.disabled = true;
-
             try {
-                const ytChannelInput = document.getElementById('trans_yt_channel_id')?.value.trim() || '@Obscurarecordss';
-                const ytFilterMode = document.getElementById('trans_yt_filter')?.value || 'full_only';
-                const ttVideoUrl = document.getElementById('trans_tt_url')?.value.trim();
-                const ttUsername = document.getElementById('trans_tt_username')?.value.trim() || 'obscura.records';
-                const ttTarget = (ttVideoUrl && ttVideoUrl.includes('tiktok.com')) ? ttVideoUrl : ttUsername;
-
                 showToast("CONTACTING YOUTUBE & TIKTOK FEEDS...");
 
                 // 1. YouTube Fetch
@@ -3126,11 +3117,8 @@ function initTransmissionsEngine() {
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SAVING FEEDS...';
             saveBtn.disabled = true;
 
-            // Save under both siteData/globals and siteData/latest_transmissions
-            Promise.all([
-                db.ref('siteData/globals').update({ latest_transmissions: payload }),
-                db.ref('siteData/latest_transmissions').set(payload)
-            ]).then(() => {
+            // Save under siteData/globals which has full authorized write permissions in Firebase Rules
+            db.ref('siteData/globals').update({ latest_transmissions: payload }).then(() => {
                 bumpSiteVersion("Updated Latest Media Feeds (YouTube & TikTok)");
                 showToast("MEDIA FEEDS SAVED & SYNCED!");
                 if (msgEl) {
@@ -3155,7 +3143,7 @@ function initTransmissionsEngine() {
     const copyUrlBtn = document.getElementById('btn-copy-webhook-url');
     if (copyUrlBtn) {
         copyUrlBtn.addEventListener('click', () => {
-            const url = 'https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app/siteData/latest_transmissions.json';
+            const url = 'https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app/bot_status/latest_transmissions.json';
             navigator.clipboard.writeText(url).then(() => {
                 showToast("FIREBASE WEBHOOK URL COPIED!");
             });
