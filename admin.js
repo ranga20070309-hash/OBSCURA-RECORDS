@@ -2123,80 +2123,19 @@ function initSecurityLogsEngine() {
     const countViolations = document.getElementById('count-filter-violations');
     const countForms = document.getElementById('count-filter-forms');
 
-    // 1. Listen to Global Security Alarm (With 3-minute auto timeout)
-    db.ref('siteData/security/globalAlarm').on('value', (snap) => {
-        const alarm = snap.val();
-        const now = Date.now();
-        const isRecent = alarm && alarm.active && (now - (alarm.time || 0) < 180000);
-
-        if (isRecent) {
-            if (alarmBanner) {
-                alarmBanner.style.display = 'flex';
-                if (alarmTitle) alarmTitle.textContent = `CRITICAL ALERT: ${alarm.type || 'INTRUSION DETECTED'}`;
-                if (alarmDesc) alarmDesc.textContent = `Location: ${alarm.location || 'Unknown'} | IP: ${alarm.ip || 'Unknown'} | Intercepted at: ${new Date(alarm.time || now).toLocaleTimeString()}`;
-            }
-        } else {
-            if (alarmBanner) alarmBanner.style.display = 'none';
-            if (alarm && alarm.active && (now - (alarm.time || 0) >= 180000)) {
-                db.ref('siteData/security/globalAlarm').set({ active: false, time: now }).catch(() => {});
-            }
-        }
-    });
-
-    if (btnDismissAlarm) {
-        btnDismissAlarm.addEventListener('click', () => {
-            db.ref('siteData/security/globalAlarm').set({ active: false, time: Date.now() }).then(() => {
-                if (alarmBanner) alarmBanner.style.display = 'none';
-                showToast("SECURITY ALARM DISMISSED & RESET");
-            }).catch(() => {});
-        });
-    }
-
-    // 2. Register Admin Active Connection & Listen to Live Active Visitor Nodes
+    // Active connections count (Single initial read to save bandwidth)
     try {
-        const adminConnRef = db.ref('siteData/activeConnections').push();
-        adminConnRef.onDisconnect().remove();
-        adminConnRef.set({
-            pingAt: firebase.database.ServerValue.TIMESTAMP,
-            role: 'admin',
-            device: (navigator.userAgent || '').substring(0, 80)
-        });
-        window.addEventListener('beforeunload', () => adminConnRef.remove());
+        db.ref('siteData/activeConnections').once('value').then((snapshot) => {
+            const count = snapshot.numChildren();
+            if (statNodes) statNodes.textContent = Math.max(1, count);
+        }).catch(() => {});
     } catch (e) {}
-
-    db.ref('siteData/activeConnections').on('value', (snapshot) => {
-        const count = snapshot.numChildren();
-        if (statNodes) statNodes.textContent = Math.max(1, count);
-    });
 
     // Helper: Re-merge and sort all log collections
     function syncAndRenderLogs() {
         const logMap = new Map();
 
-        // 1. Add Telemetry Logs & Visitor submissions
-        rawTelemetryLogs.forEach(l => {
-            if (l && l.id) logMap.set(l.id, l);
-            else if (l) logMap.set('TL_' + (l.timestamp || Math.random()), l);
-        });
-
-        rawVisitorLogs.forEach(l => {
-            if (l && l.id) logMap.set(l.id, l);
-            else if (l) logMap.set('VL_' + (l.timestamp || Math.random()), l);
-        });
-
-        // 2. Add Violations
-        rawViolations.forEach(l => {
-            if (l && l.id) logMap.set(l.id, l);
-            else if (l) logMap.set('VIO_' + (l.timestamp || Math.random()), l);
-        });
-
-        // 3. Add Admin Audit Logs
-        rawAuditLogs.forEach(l => {
-            if (l && l.id) logMap.set(l.id, l);
-            else if (l) logMap.set('AUDIT_' + (l.timestamp || Math.random()), l);
-        });
-
-        // 4. Add Demo Submissions & Contact Forms
+        // 1. Add Demo Submissions & Contact Forms
         rawDemoLogs.forEach(l => {
             if (l && l.id) logMap.set(l.id, l);
         });
@@ -2211,53 +2150,17 @@ function initSecurityLogsEngine() {
             return timeB - timeA;
         });
 
-        // Compute Live Counters for All Tabs
+        // Compute Counters
         const totalCount = cachedSecurityLogs.length;
-        const visitorsCount = cachedSecurityLogs.filter(l => l.type === 'VISITOR_ACCESS').length;
-        const adminCount = cachedSecurityLogs.filter(l => l.type === 'ADMIN_AUDIT' || l.type === 'ADMIN_SAVE').length;
-        const violationCount = cachedSecurityLogs.filter(l => l.type === 'CONSOLE_TAMPER' || l.type === 'INJECTION_ATTEMPT' || l.type === 'SECURITY_VIOLATION').length;
         const formsCount = cachedSecurityLogs.filter(l => l.type === 'DEMO_SUBMISSION' || l.type === 'CONTACT_MESSAGE').length;
 
         if (statTotal) statTotal.textContent = totalCount;
-        if (statViolations) statViolations.textContent = violationCount;
         if (badgeSecurity) badgeSecurity.textContent = totalCount;
-
         if (countAll) countAll.textContent = totalCount;
-        if (countVisitors) countVisitors.textContent = visitorsCount;
-        if (countAdmin) countAdmin.textContent = adminCount;
-        if (countViolations) countViolations.textContent = violationCount;
         if (countForms) countForms.textContent = formsCount;
 
         renderSecurityLogs();
     }
-
-    // 3. Listen to Primary Telemetry Logs Stream (Bandwidth Optimized)
-    db.ref('siteData/security/logs').limitToLast(50).on('value', (snapshot) => {
-        const data = snapshot.val();
-        rawTelemetryLogs = data ? Object.entries(data).map(([key, d]) => ({ ...d, dbKey: key, dbPath: 'siteData/security/logs' })) : [];
-        syncAndRenderLogs();
-    });
-
-    // 3.1 Listen to Visitor Logs Telemetry (Bandwidth Optimized)
-    db.ref('siteData/telemetry/visitor_logs').limitToLast(50).on('value', (snapshot) => {
-        const data = snapshot.val();
-        rawVisitorLogs = data ? Object.entries(data).map(([key, d]) => ({ ...d, dbKey: key, dbPath: 'siteData/telemetry/visitor_logs' })) : [];
-        syncAndRenderLogs();
-    });
-
-    // 4. Listen to Violations Stream (Bandwidth Optimized)
-    db.ref('siteData/security/violations').limitToLast(30).on('value', (snapshot) => {
-        const data = snapshot.val();
-        rawViolations = data ? Object.entries(data).map(([key, d]) => ({ ...d, dbKey: key, dbPath: 'siteData/security/violations' })) : [];
-        syncAndRenderLogs();
-    });
-
-    // 5. Listen to Administrative Audit Logs (Bandwidth Optimized)
-    db.ref('siteData/security/audit_logs').limitToLast(50).on('value', (snapshot) => {
-        const data = snapshot.val();
-        rawAuditLogs = data ? Object.entries(data).map(([key, d]) => ({ ...d, dbKey: key, dbPath: 'siteData/security/audit_logs' })) : [];
-        syncAndRenderLogs();
-    });
 
     // 6. Listen to Demo Submissions for Forms Stream
     db.ref('siteData/submissions/demo').limitToLast(100).on('value', (snapshot) => {
