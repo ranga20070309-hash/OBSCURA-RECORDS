@@ -365,6 +365,49 @@ function getYouTubeID(url) {
     }
 }
 
+function playPreview(audioSrc, ytId, ytType, btn, row) {
+    if (!btn) return;
+    const isCurrentPlaying = (currentPlayingBtn === btn && (previewAudio && !previewAudio.paused || ytPlayer && typeof ytPlayer.getPlayerState === 'function' && ytPlayer.getPlayerState() === 1));
+
+    if (isCurrentPlaying) {
+        stopPlayback();
+        return;
+    }
+
+    stopPlayback();
+
+    const img = row ? row.querySelector('.release-cover-large img') : null;
+
+    // 1. If direct audio link (mp3, wav, etc.)
+    if (audioSrc && (audioSrc.endsWith('.mp3') || audioSrc.endsWith('.wav') || audioSrc.endsWith('.ogg') || audioSrc.includes('preview') || audioSrc.includes('assets/'))) {
+        try {
+            previewAudio.src = audioSrc;
+            previewAudio.currentTime = 0;
+            previewAudio.play().then(() => {
+                startUIPlayback(btn, row, img);
+            }).catch(e => {
+                console.warn("Direct audio preview error, trying YouTube:", e);
+                if (ytId) {
+                    playYouTubeTrack(ytId, ytType || 'video', btn, row, img);
+                }
+            });
+            return;
+        } catch (e) {}
+    }
+
+    // 2. If YouTube track ID or URL
+    if (ytId) {
+        playYouTubeTrack(ytId, ytType || 'video', btn, row, img);
+    } else {
+        const ytData = getYouTubeID(audioSrc);
+        if (ytData && ytData.id) {
+            playYouTubeTrack(ytData.id, ytData.type || 'video', btn, row, img);
+        } else {
+            console.warn("No playable audio source or YouTube ID for this track.");
+        }
+    }
+}
+
 function playYouTubeTrack(ytId, ytType, playBtn, row, coverImg) {
     if (!ytId) return;
 
@@ -2235,29 +2278,55 @@ const initPortal = () => {
             bindReleaseInteractions();
         }
 
+        function bindReleaseControls() {
+            const btnPrev = document.querySelector('#releases .slider-nav-btn.prev') || document.querySelector('.slider-nav-btn.prev');
+            const btnNext = document.querySelector('#releases .slider-nav-btn.next') || document.querySelector('.slider-nav-btn.next');
+
+            if (btnPrev && releaseSlider) {
+                btnPrev.onclick = (e) => {
+                    e.preventDefault();
+                    gsap.to(releaseSlider, { scrollLeft: releaseSlider.scrollLeft - 380, duration: 0.5, ease: "power2.out" });
+                    if (autoScrollInterval) {
+                        clearInterval(autoScrollInterval);
+                        setTimeout(startAutoScroll, 3000);
+                    }
+                };
+            }
+
+            if (btnNext && releaseSlider) {
+                btnNext.onclick = (e) => {
+                    e.preventDefault();
+                    gsap.to(releaseSlider, { scrollLeft: releaseSlider.scrollLeft + 380, duration: 0.5, ease: "power2.out" });
+                    if (autoScrollInterval) {
+                        clearInterval(autoScrollInterval);
+                        setTimeout(startAutoScroll, 3000);
+                    }
+                };
+            }
+        }
+
         function bindReleaseInteractions() {
-            const previewButtons = document.querySelectorAll('.releases-slider .preview-btn');
+            const previewButtons = document.querySelectorAll('.releases-slider .preview-btn, .releases-slider .play-btn');
             previewButtons.forEach(btn => {
-                btn.addEventListener('click', (e) => {
+                btn.onclick = (e) => {
                     e.stopPropagation();
                     const card = btn.closest('.release-card-large') || btn.closest('.release-card');
                     const isCurrentPlaying = (currentPlayingBtn === btn && (previewAudio && !previewAudio.paused || ytPlayer && typeof ytPlayer.getPlayerState === 'function' && ytPlayer.getPlayerState() === 1));
 
                     if (isCurrentPlaying) {
                         stopPlayback();
-                        if (typeof syncFloatingPlayer === 'function') syncFloatingPlayer(null, null, false);
                     } else {
-                        const audioSrc = btn.getAttribute('data-audio');
+                        const audioSrc = btn.getAttribute('data-audio') || '';
                         const ytId = btn.getAttribute('data-ytid');
                         const ytidFallback = getYouTubeID(btn.getAttribute('data-youtube'));
                         const finalYtId = ytId || (ytidFallback ? ytidFallback.id : null);
                         const finalYtType = btn.getAttribute('data-yttype') || (ytidFallback ? ytidFallback.type : 'video');
 
                         playPreview(audioSrc, finalYtId, finalYtType, btn, card);
-                        if (typeof syncFloatingPlayer === 'function') syncFloatingPlayer(card, btn, true);
                     }
-                });
+                };
             });
+            bindReleaseControls();
         }
 
         // Auto-Scroll Logic for Releases Slider
