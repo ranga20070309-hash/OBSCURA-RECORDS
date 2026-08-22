@@ -2845,8 +2845,23 @@ function initTransmissionsEngine() {
     const fetchTtSingleBtn = document.getElementById('btn-fetch-tt-single');
     const msgEl = document.getElementById('save-msg-transmissions');
 
-    function populateTransmissionsAdmin(data) {
-        if (!data || typeof data !== 'object') return;
+    function populateTransmissionsAdmin(rawData) {
+        if (!rawData || typeof rawData !== 'object') return;
+
+        const data = {
+            ...rawData,
+            tt_url: rawData.tt_url || rawData.ttUrl || rawData.ttLink || rawData.tiktok || rawData.tiktokUrl || rawData.url || rawData.link || '',
+            tt_thumb: rawData.tt_thumb || rawData.ttThumb || rawData.thumbnail || rawData.cover || rawData.image || '',
+            tt_title: rawData.tt_title || rawData.ttTitle || rawData.title || '',
+            tt_desc: rawData.tt_desc || rawData.ttDesc || rawData.desc || '',
+            tt_tag: rawData.tt_tag || rawData.ttTag || rawData.tag || '',
+            tt_follow_url: rawData.tt_follow_url || rawData.ttFollowUrl || rawData.followUrl || '',
+            yt_url: rawData.yt_url || rawData.ytUrl || rawData.ytLink || rawData.youtube || rawData.youtubeUrl || '',
+            yt_thumb: rawData.yt_thumb || rawData.ytThumb || rawData.thumbnail || rawData.cover || '',
+            yt_title: rawData.yt_title || rawData.ytTitle || rawData.title || '',
+            yt_desc: rawData.yt_desc || rawData.ytDesc || rawData.desc || '',
+            yt_tag: rawData.yt_tag || rawData.ytTag || rawData.tag || ''
+        };
 
         const showEl = document.getElementById('trans_showTransmissions');
         if (showEl && data.showTransmissions) showEl.value = data.showTransmissions;
@@ -2880,7 +2895,11 @@ function initTransmissionsEngine() {
         if (ytUrl && data.yt_url) ytUrl.value = data.yt_url;
 
         const ytThumb = document.getElementById('trans_yt_thumb');
-        if (ytThumb && data.yt_thumb) ytThumb.value = data.yt_thumb;
+        if (ytThumb && data.yt_thumb) {
+            ytThumb.value = data.yt_thumb;
+            const prev = document.getElementById('admin-yt-thumb-preview');
+            if (prev) prev.style.backgroundImage = `url('${data.yt_thumb}')`;
+        }
 
         const ytSubUrl = document.getElementById('trans_yt_sub_url');
         if (ytSubUrl && data.yt_sub_url) ytSubUrl.value = data.yt_sub_url;
@@ -2899,7 +2918,7 @@ function initTransmissionsEngine() {
         if (ttTitle && data.tt_title) ttTitle.value = data.tt_title;
 
         const ttDesc = document.getElementById('trans_tt_desc');
-        if (ttDesc) ttDesc.value = data.tt_desc || 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.';
+        if (ttDesc && data.tt_desc) ttDesc.value = data.tt_desc;
 
         const ttUrl = document.getElementById('trans_tt_url');
         if (ttUrl && data.tt_url) ttUrl.value = data.tt_url;
