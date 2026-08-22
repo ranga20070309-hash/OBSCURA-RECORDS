@@ -49,53 +49,27 @@ const API_BASE_URL = (window.location.hostname === "localhost" || window.locatio
 // --- INITIALIZE GSAP CONFIG (Silence Warnings) ---
 gsap.config({ nullTargetWarn: false });
 
-// --- BANDWIDTH-EFFICIENT FIREBASE CACHING & FETCH HELPER ---
-const _dbCache = {};
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes in-memory & session cache
-
-function fetchWithCache(path, callback, fallbackData = null) {
+// --- REAL-TIME FIREBASE SYNC ENGINE (INSTANT ADMIN UDPATES) ---
+function subscribeLiveData(path, callback, fallbackData = null) {
     if (typeof firebase === 'undefined') {
         if (fallbackData) callback(fallbackData);
         return;
     }
-
-    const sessionKey = 'obscura_cache_' + path.replace(/[\/\.]/g, '_');
-    const cachedItem = sessionStorage.getItem(sessionKey);
-    let hasRenderedCache = false;
-
-    if (cachedItem) {
-        try {
-            const parsed = JSON.parse(cachedItem);
-            if (parsed && (Date.now() - parsed.t < CACHE_TTL_MS)) {
-                callback(parsed.v);
-                hasRenderedCache = true;
-            }
-        } catch (e) {}
-    }
-
-    // Single fetch (.once) to avoid permanent websocket listener bandwidth
     try {
-        firebase.database().ref(path).once('value').then(snap => {
+        firebase.database().ref(path).on('value', (snap) => {
             const val = snap.val();
             if (val !== null && val !== undefined) {
-                try {
-                    sessionStorage.setItem(sessionKey, JSON.stringify({ t: Date.now(), v: val }));
-                } catch (e) {}
-                if (!hasRenderedCache || JSON.stringify(val) !== JSON.stringify(_dbCache[path])) {
-                    _dbCache[path] = val;
-                    callback(val);
-                }
-            } else if (!hasRenderedCache && fallbackData) {
+                callback(val);
+            } else if (fallbackData) {
                 callback(fallbackData);
             }
-        }).catch(err => {
-            console.warn(`[CacheFetch] ${path} fetch note:`, err);
-            if (!hasRenderedCache && fallbackData) callback(fallbackData);
         });
     } catch (err) {
-        if (!hasRenderedCache && fallbackData) callback(fallbackData);
+        console.warn(`[LiveSync] ${path} note:`, err);
+        if (fallbackData) callback(fallbackData);
     }
 }
+const fetchWithCache = subscribeLiveData; // Instant real-time updates for all site sections
 
 // --- CYBERPUNK UI SOUND SYNTHESIZER & SFX ENGINE ---
 let sfxAudioCtx = null;
@@ -2182,6 +2156,9 @@ const initPortal = () => {
             releases.forEach(release => {
                 const badge = release.id && typeof release.id === 'string' && release.id.includes('NEW') ? "<span class='badge'>NEW</span>" : "";
                 const cleanId = release.catalog || (release.id && typeof release.id === 'string' ? release.id.replace("<span class='badge'>NEW</span>", "").trim() : "");
+                const coverImg = release.cover || release.image || 'assets/cover.png';
+                const releaseType = release.type || 'SINGLE';
+                const artistName = release.producers || release.artist || 'OBSCURA';
 
                 // Preview player audio source (Priority: preview/streamUrl/youtubePreview, fallback to youtube)
                 const previewSource = release.streamUrl || release.youtubePreview || release.preview || release.youtube || '';
@@ -2190,31 +2167,35 @@ const initPortal = () => {
                 const ytTypeAttr = ytData ? ytData.type : 'video';
 
                 const cardHtml = `
-                    <div class="release-card glass">
-                        <div class="release-cover">
-                            <img src="${release.cover || release.image || 'assets/cover.png'}" alt="${release.title}" onerror="this.src='assets/cover.png'">
-                            <button class="preview-btn" 
-                                aria-label="Play Preview"
-                                data-title="${release.title}"
-                                data-artist="${release.producers || release.artist || ''}"
-                                data-image="${release.cover || release.image || 'assets/cover.png'}"
-                                data-spotify="${release.spotify || release.spotifyUrl || '#'}"
-                                data-youtube="${release.youtube || release.youtubeUrl || '#'}"
-                                data-audio="${previewSource}"
-                                data-ytid="${ytIdAttr}"
-                                data-yttype="${ytTypeAttr}">
-                                <i class="fas fa-play"></i>
-                            </button>
+                    <div class="release-card-large glass">
+                        <div class="release-cover-large">
+                            <div class="cyber-laser-scanner"></div>
+                            <img src="${coverImg}" alt="${release.title || 'Release'}" onerror="this.src='assets/cover.png'">
+                            <div class="release-type-badge">${releaseType}</div>
+                            <div class="player-overlay">
+                                <button class="play-btn preview-btn" 
+                                    aria-label="Play Preview"
+                                    data-title="${release.title || ''}"
+                                    data-artist="${artistName}"
+                                    data-image="${coverImg}"
+                                    data-spotify="${release.spotify || release.spotifyUrl || '#'}"
+                                    data-youtube="${release.youtube || release.youtubeUrl || '#'}"
+                                    data-audio="${previewSource}"
+                                    data-ytid="${ytIdAttr}"
+                                    data-yttype="${ytTypeAttr}">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="release-info">
-                            <span class="catalog-id">${cleanId} ${badge}</span>
-                            <h3>${release.title}</h3>
-                            <p class="producers-text">${release.producers || release.artist || 'OBSCURA'}</p>
-                            <div class="release-links">
-                                ${release.spotify ? `<a href="${release.spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
-                                ${release.youtube ? `<a href="${release.youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
-                                ${release.apple ? `<a href="${release.apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
-                                ${release.soundcloud ? `<a href="${release.soundcloud}" target="_blank" class="platform-link soundcloud" title="SoundCloud" onclick="event.stopPropagation()"><i class="fab fa-soundcloud"></i></a>` : ''}
+                        <div class="release-info-large">
+                            <span class="track-id">${cleanId} ${badge}</span>
+                            <h4>${release.title || 'UNTITLED'}</h4>
+                            <div class="producers-text">Produced by: <span>${artistName}</span></div>
+                            <div class="release-actions">
+                                ${release.spotify && release.spotify !== '#' ? `<a href="${release.spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
+                                ${release.apple && release.apple !== '#' ? `<a href="${release.apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
+                                ${release.youtube && release.youtube !== '#' ? `<a href="${release.youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
+                                ${release.soundcloud && release.soundcloud !== '#' ? `<a href="${release.soundcloud}" target="_blank" class="platform-link soundcloud" title="SoundCloud" onclick="event.stopPropagation()"><i class="fab fa-soundcloud"></i></a>` : ''}
                             </div>
                         </div>
                     </div>
@@ -2230,7 +2211,7 @@ const initPortal = () => {
             previewButtons.forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const card = btn.closest('.release-card');
+                    const card = btn.closest('.release-card-large') || btn.closest('.release-card');
                     const isCurrentPlaying = (currentPlayingBtn === btn && (previewAudio && !previewAudio.paused || ytPlayer && typeof ytPlayer.getPlayerState === 'function' && ytPlayer.getPlayerState() === 1));
 
                     if (isCurrentPlaying) {
