@@ -3040,64 +3040,44 @@ function initTransmissionsEngine() {
 
     // Load data from Firebase (Admin & Discord Bot sources)
     db.ref('siteData/globals/latest_transmissions').on('value', snap => {
-        const gData = snap.val();
-        if (gData && typeof gData === 'object') {
-            populateTransmissionsAdmin(gData);
-        }
+        populateTransmissionsAdmin(snap.val() || {});
     });
 
     db.ref('bot_status/latest_transmissions').on('value', async snap => {
         const bData = snap.val();
-        if (bData && typeof bData === 'object') {
-            // 1. Immediately populate all admin form inputs
+        if (bData && typeof bData === 'object' && bData.tt_url) {
             populateTransmissionsAdmin(bData);
-
-            // 2. Prepare payload to persist into siteData/globals
-            const syncPayload = {};
-            if (bData.tt_url) syncPayload.tt_url = bData.tt_url;
-            if (bData.tt_title) syncPayload.tt_title = bData.tt_title;
-            if (bData.tt_thumb) syncPayload.tt_thumb = bData.tt_thumb;
-            if (bData.tt_desc) syncPayload.tt_desc = bData.tt_desc;
-            if (bData.tt_tag) syncPayload.tt_tag = bData.tt_tag;
-            if (bData.tt_follow_url) syncPayload.tt_follow_url = bData.tt_follow_url;
-            if (bData.tt_mode) syncPayload.tt_mode = bData.tt_mode;
-
-            if (bData.yt_url) syncPayload.yt_url = bData.yt_url;
-            if (bData.yt_title) syncPayload.yt_title = bData.yt_title;
-            if (bData.yt_thumb) syncPayload.yt_thumb = bData.yt_thumb;
-            if (bData.yt_desc) syncPayload.yt_desc = bData.yt_desc;
-            if (bData.yt_tag) syncPayload.yt_tag = bData.yt_tag;
-            if (bData.yt_mode) syncPayload.yt_mode = bData.yt_mode;
-            syncPayload.updatedAt = Date.now();
-
-            // 3. If thumbnail is missing or default, resolve it live and save
-            if (bData.tt_url && (!bData.tt_thumb || bData.tt_thumb === 'assets/cover.png' || !bData.tt_thumb.startsWith('http'))) {
-                try {
-                    const resolved = await fetchLatestTikTokDropLive(bData.tt_url);
-                    if (resolved && resolved.thumb && resolved.thumb.startsWith('http') && resolved.thumb !== 'assets/cover.png') {
-                        syncPayload.tt_thumb = resolved.thumb;
-                        if (resolved.title) syncPayload.tt_title = resolved.title;
-
-                        const thumbInput = document.getElementById('trans_tt_thumb');
-                        if (thumbInput) thumbInput.value = resolved.thumb;
-                        const titleInput = document.getElementById('trans_tt_title');
-                        if (titleInput && resolved.title) titleInput.value = resolved.title;
-                        const prev = document.getElementById('admin-tt-thumb-preview');
-                        if (prev) prev.style.backgroundImage = `url('${resolved.thumb}')`;
-
-                        db.ref('bot_status/latest_transmissions').update({
-                            tt_thumb: resolved.thumb,
-                            tt_title: resolved.title || bData.tt_title || 'LATEST TIKTOK DROP'
-                        }).catch(() => {});
-                    }
-                } catch(e) {}
-            }
-
-            // Persist to siteData/globals
-            if (Object.keys(syncPayload).length > 0) {
-                db.ref('siteData/globals/latest_transmissions').update(syncPayload).then(() => {
-                    bumpSiteVersion("Auto-Synced Bot Media Transmission");
+            
+            // 1. If incoming from bot has valid thumbnail, persist immediately to siteData/globals
+            if (bData.tt_thumb && bData.tt_thumb.startsWith('http') && bData.tt_thumb !== 'assets/cover.png') {
+                db.ref('siteData/globals/latest_transmissions').update({
+                    tt_url: bData.tt_url,
+                    tt_thumb: bData.tt_thumb,
+                    tt_title: bData.tt_title || 'LATEST TIKTOK DROP',
+                    tt_desc: bData.tt_desc || 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.',
+                    tt_tag: bData.tt_tag || 'LATEST TIKTOK DROP',
+                    tt_follow_url: bData.tt_follow_url || 'https://www.tiktok.com/@obscura.records',
+                    updatedAt: Date.now()
                 }).catch(() => {});
+            } 
+            // 2. If thumbnail is missing, attempt live resolution
+            else if (bData.tt_url.includes('tiktok.com')) {
+                const resolved = await fetchLatestTikTokDropLive(bData.tt_url);
+                if (resolved && resolved.thumb && resolved.thumb !== 'assets/cover.png') {
+                    if (document.getElementById('trans_tt_thumb')) document.getElementById('trans_tt_thumb').value = resolved.thumb;
+                    if (document.getElementById('trans_tt_title') && resolved.title) document.getElementById('trans_tt_title').value = resolved.title;
+                    const prev = document.getElementById('admin-tt-thumb-preview');
+                    if (prev) prev.style.backgroundImage = `url('${resolved.thumb}')`;
+                    
+                    db.ref('siteData/globals/latest_transmissions').update({
+                        tt_url: bData.tt_url,
+                        tt_thumb: resolved.thumb,
+                        tt_title: resolved.title || bData.tt_title || 'LATEST TIKTOK DROP',
+                        tt_desc: 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.',
+                        tt_tag: 'LATEST TIKTOK DROP',
+                        updatedAt: Date.now()
+                    }).catch(() => {});
+                }
             }
         }
     });
