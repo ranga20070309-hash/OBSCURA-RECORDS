@@ -49,27 +49,60 @@ const API_BASE_URL = (window.location.hostname === "localhost" || window.locatio
 // --- INITIALIZE GSAP CONFIG (Silence Warnings) ---
 gsap.config({ nullTargetWarn: false });
 
-// --- REAL-TIME FIREBASE SYNC ENGINE (INSTANT ADMIN UDPATES) ---
-function subscribeLiveData(path, callback, fallbackData = null) {
+// --- ULTRA-EFFICIENT REAL-TIME SYNC & CACHE ENGINE (100% LIVE SYNC + ZERO BANDWIDTH) ---
+let currentLiveSiteVersion = sessionStorage.getItem('obscura_site_v') || null;
+
+function fetchWithCache(path, callback, fallbackData = null) {
+    const cacheKey = `obscura_data_${path}`;
+    const cached = sessionStorage.getItem(cacheKey);
+
+    if (cached) {
+        try {
+            const parsed = JSON.parse(cached);
+            callback(parsed);
+        } catch (e) {}
+    }
+
     if (typeof firebase === 'undefined') {
-        if (fallbackData) callback(fallbackData);
+        if (!cached && fallbackData) callback(fallbackData);
         return;
     }
-    try {
-        firebase.database().ref(path).on('value', (snap) => {
-            const val = snap.val();
-            if (val !== null && val !== undefined) {
-                callback(val);
-            } else if (fallbackData) {
-                callback(fallbackData);
-            }
-        });
-    } catch (err) {
-        console.warn(`[LiveSync] ${path} note:`, err);
-        if (fallbackData) callback(fallbackData);
-    }
+
+    // Single on-demand fetch
+    firebase.database().ref(path).once('value').then((snap) => {
+        const val = snap.val();
+        if (val !== null && val !== undefined) {
+            sessionStorage.setItem(cacheKey, JSON.stringify(val));
+            callback(val);
+        } else if (!cached && fallbackData) {
+            callback(fallbackData);
+        }
+    }).catch(() => {
+        if (!cached && fallbackData) callback(fallbackData);
+    });
 }
-const fetchWithCache = subscribeLiveData; // Instant real-time updates for all site sections
+
+// Single real-time listener on tiny 10-byte version node
+if (typeof firebase !== 'undefined') {
+    try {
+        firebase.database().ref('siteData/globals/v').on('value', (snap) => {
+            const latestV = String(snap.val() || '1.0');
+            if (currentLiveSiteVersion && currentLiveSiteVersion !== latestV) {
+                // Admin updated data: invalidate local cache and re-sync live
+                for (let i = sessionStorage.length - 1; i >= 0; i--) {
+                    const k = sessionStorage.key(i);
+                    if (k && k.startsWith('obscura_data_')) {
+                        sessionStorage.removeItem(k);
+                    }
+                }
+                if (typeof initPortal === 'function') initPortal();
+                if (typeof loadPopular === 'function') loadPopular();
+            }
+            currentLiveSiteVersion = latestV;
+            sessionStorage.setItem('obscura_site_v', latestV);
+        });
+    } catch (e) {}
+}
 
 // --- CYBERPUNK UI SOUND SYNTHESIZER & SFX ENGINE ---
 let sfxAudioCtx = null;
