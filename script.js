@@ -49,6 +49,54 @@ const API_BASE_URL = (window.location.hostname === "localhost" || window.locatio
 // --- INITIALIZE GSAP CONFIG (Silence Warnings) ---
 gsap.config({ nullTargetWarn: false });
 
+// --- BANDWIDTH-EFFICIENT FIREBASE CACHING & FETCH HELPER ---
+const _dbCache = {};
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes in-memory & session cache
+
+function fetchWithCache(path, callback, fallbackData = null) {
+    if (typeof firebase === 'undefined') {
+        if (fallbackData) callback(fallbackData);
+        return;
+    }
+
+    const sessionKey = 'obscura_cache_' + path.replace(/[\/\.]/g, '_');
+    const cachedItem = sessionStorage.getItem(sessionKey);
+    let hasRenderedCache = false;
+
+    if (cachedItem) {
+        try {
+            const parsed = JSON.parse(cachedItem);
+            if (parsed && (Date.now() - parsed.t < CACHE_TTL_MS)) {
+                callback(parsed.v);
+                hasRenderedCache = true;
+            }
+        } catch (e) {}
+    }
+
+    // Single fetch (.once) to avoid permanent websocket listener bandwidth
+    try {
+        firebase.database().ref(path).once('value').then(snap => {
+            const val = snap.val();
+            if (val !== null && val !== undefined) {
+                try {
+                    sessionStorage.setItem(sessionKey, JSON.stringify({ t: Date.now(), v: val }));
+                } catch (e) {}
+                if (!hasRenderedCache || JSON.stringify(val) !== JSON.stringify(_dbCache[path])) {
+                    _dbCache[path] = val;
+                    callback(val);
+                }
+            } else if (!hasRenderedCache && fallbackData) {
+                callback(fallbackData);
+            }
+        }).catch(err => {
+            console.warn(`[CacheFetch] ${path} fetch note:`, err);
+            if (!hasRenderedCache && fallbackData) callback(fallbackData);
+        });
+    } catch (err) {
+        if (!hasRenderedCache && fallbackData) callback(fallbackData);
+    }
+}
+
 // --- CYBERPUNK UI SOUND SYNTHESIZER & SFX ENGINE ---
 let sfxAudioCtx = null;
 let sfxEnabled = localStorage.getItem('obscura_sfx_enabled') !== 'false';
@@ -451,8 +499,7 @@ function loadPopular() {
     const popularGrid = document.getElementById('popular-grid');
     if (!popularGrid) return;
 
-    firebase.database().ref('siteData/popular_releases').on('value', (snapshot) => {
-        const data = snapshot.val();
+    fetchWithCache('siteData/popular_releases', (data) => {
         popularGrid.innerHTML = '';
 
         let items = [];
@@ -1403,19 +1450,15 @@ const initPortal = () => {
                 };
             };
             applyData(data);
-
-            // Real-time listener for this card
-            const ref = db.ref((isPartner ? 'partner_status/' : 'staff_status/') + discordId);
-            ref.on('value', snap => applyData(snap.val()));
         }
 
         // --- DYNAMIC STAFF GRID: Render all from Firebase staff_status/ (Sorted by hierarchy order) ---
         const staffGrid = document.getElementById('staff-grid');
         if (staffGrid) {
-            db.ref('staff_status').on('value', snapshot => {
+            fetchWithCache('staff_status', (allStaff) => {
                 staffGrid.innerHTML = '';
-                const allStaff = snapshot.val() || {};
-                const sortedStaff = Object.entries(allStaff).sort((a, b) => {
+                const staffData = allStaff || {};
+                const sortedStaff = Object.entries(staffData).sort((a, b) => {
                     const orderA = (a[1] && typeof a[1].order === 'number') ? a[1].order : 99;
                     const orderB = (b[1] && typeof b[1].order === 'number') ? b[1].order : 99;
                     return orderA - orderB;
@@ -1523,21 +1566,15 @@ const initPortal = () => {
             };
 
             applyPartnerData(data);
-
-            // Real-time Firebase listener for this partner
-            const pRef = db.ref('partner_status/' + partnerId);
-            pRef.on('value', snap => {
-                if (snap.exists()) applyPartnerData(snap.val());
-            });
         }
 
         // --- DYNAMIC PARTNERS GRID: Render all from Firebase partner_status/ (Sorted by hierarchy order) ---
         const partnersGrid = document.getElementById('partners-grid');
         if (partnersGrid) {
-            db.ref('partner_status').on('value', snapshot => {
+            fetchWithCache('partner_status', (allPartners) => {
                 partnersGrid.innerHTML = '';
-                const allPartners = snapshot.val() || {};
-                const sortedPartners = Object.entries(allPartners).filter(([id, data]) => {
+                const partnerData = allPartners || {};
+                const sortedPartners = Object.entries(partnerData).filter(([id, data]) => {
                     if (!data) return false;
                     const name = (data.name || '').trim().toLowerCase();
                     const tagline = (data.tagline || '').trim().toLowerCase();
@@ -1796,8 +1833,7 @@ const initPortal = () => {
         }
 
         // 1. Sync Globals (Text Elements & Links)
-        db.ref('siteData/globals').on('value', (snapshot) => {
-            const data = snapshot.val();
+        fetchWithCache('siteData/globals', (data) => {
             if (data) {
                 // --- MAINTENANCE MODE OVERRIDE (ADMIN SITE ONLY) ---
                 const maintenanceOverlay = document.getElementById('maintenance-overlay');
@@ -1997,19 +2033,13 @@ const initPortal = () => {
                     const targetBotId = data.botUserId || "1467768793550946314";
                     const targetBotName = (data.botName || "OBSCURA").toLowerCase().trim();
 
-                    function pollDiscordLivePresence() {
-                        if (!targetServerId) return;
-                        
+                    const pollDiscordLivePresence = () => {
                         const parseWidget = (wData) => {
-                            if (!wData || !Array.isArray(wData.members)) return;
-                            
-                            // Discord Widget anonymizes IDs to 0,1,2 so match by bot username / name
+                            if (!wData || !wData.members) return;
                             const botMember = wData.members.find(m => {
-                                if (!m || !m.username) return false;
-                                const u = m.username.toLowerCase().trim();
-                                return u === targetBotName || 
-                                       u === 'obscura records' ||
-                                       u.includes('obscura') || 
+                                const username = (m.username || '').toLowerCase();
+                                return username.includes('obscura') || 
+                                       username.includes('bot') || 
                                        (m.id && m.id === targetBotId);
                             });
 
@@ -2017,7 +2047,7 @@ const initPortal = () => {
                             if (botMember) {
                                 const rawSt = (botMember.status || 'online').toLowerCase();
                                 if (rawSt === 'idle') liveStatus = 'IDLE';
-                                else if (rawSt === 'dnd') liveStatus = 'ONLINE'; // DND counts as active
+                                else if (rawSt === 'dnd') liveStatus = 'ONLINE';
                                 else liveStatus = 'ONLINE';
                             }
 
@@ -2032,7 +2062,6 @@ const initPortal = () => {
                             });
                         };
 
-                        // Use fast CORS proxy to bypass browser origin blocking
                         const targetUrl = `https://discord.com/api/guilds/${targetServerId}/widget.json?_t=${Date.now()}`;
                         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
 
@@ -2043,25 +2072,23 @@ const initPortal = () => {
                             })
                             .then(parseWidget)
                             .catch(() => {
-                                // Direct fallback
                                 fetch(targetUrl, { cache: 'no-cache' })
                                     .then(r => r.ok ? r.json() : null)
                                     .then(d => d && parseWidget(d))
                                     .catch(() => {});
                             });
-                    }
+                    };
 
                     pollDiscordLivePresence();
                     if (window._discordLiveInterval) clearInterval(window._discordLiveInterval);
-                    window._discordLiveInterval = setInterval(pollDiscordLivePresence, 10000); // Check every 10s
+                    window._discordLiveInterval = setInterval(pollDiscordLivePresence, 60000); // Efficient 60s check
                 }
             }
         });
 
         // Real-Time Discord Bot Presence & Server Telemetry Sync from Firebase
         try {
-            const syncDiscordStats = (snap) => {
-                const stats = snap ? snap.val() : null;
+            const syncDiscordStats = (stats) => {
                 if (!stats) return;
                 const mEl = document.getElementById('bot-member-count');
                 const onEl = document.getElementById('bot-online-count');
@@ -2086,300 +2113,44 @@ const initPortal = () => {
                 }
             };
 
-            db.ref('discord_stats').on('value', syncDiscordStats);
-            db.ref('bot_status').on('value', syncDiscordStats);
+            fetchWithCache('discord_stats', syncDiscordStats);
+            fetchWithCache('bot_status', syncDiscordStats);
         } catch (e) {}
 
-        // Sync Modal Dynamic Collections (FAQ & Privacy)
-        function renderAccordion(containerId, items) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            container.innerHTML = '';
-            items.forEach(item => {
-                if (!item || item._isEmpty) return;
-                const html = `
-                    <div class="faq-item glass">
-                        <div class="faq-question">
-                            <span>${item.question}</span><i class="fas fa-plus"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p>${item.answer}</p>
-                        </div>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', html);
-            });
-            window.bindAccordionListeners(containerId);
-        }
-
-        // --- REAL-TIME LATEST MEDIA TRANSMISSIONS (YOUTUBE & TIKTOK) ---
+        // Dynamic Transmissions Sync Engine
         try {
-            const KNOWN_YT_CHANNELS = {
-                'obscurarecordss': 'UCMeIV48_O_F0H2tL7x_ayHg',
-                'recordsobscura': 'UC0A5L7DUgls-AkYaQ4ZwxhA',
-                'obscura': 'UCMeIV48_O_F0H2tL7x_ayHg'
-            };
-
-            async function resolveYouTubeChannelIdFromInput(input) {
-                if (!input) return 'UCMeIV48_O_F0H2tL7x_ayHg';
-                let str = input.trim();
-
-                if (str.startsWith('UC') && str.length === 24) return str;
-                if (str.includes('/channel/')) {
-                    const parts = str.split('/channel/')[1].split('/')[0].split('?')[0];
-                    if (parts.startsWith('UC')) return parts;
-                }
-
-                let handle = str;
-                if (handle.includes('youtube.com/@')) {
-                    handle = handle.split('youtube.com/@')[1].split('/')[0].split('?')[0];
-                }
-                const cleanKey = handle.replace('@', '').toLowerCase().trim();
-                if (KNOWN_YT_CHANNELS[cleanKey]) {
-                    return KNOWN_YT_CHANNELS[cleanKey];
-                }
-
-                if (!handle.startsWith('@')) handle = '@' + handle;
-
-                try {
-                    const targetUrl = `https://www.youtube.com/${handle}`;
-                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-                    const res = await fetch(proxyUrl);
-                    if (res.ok) {
-                        const html = await res.text();
-                        const match = html.match(/"channelId":"(UC[a-zA-Z0-9_-]{22})"/);
-                        if (match && match[1]) return match[1];
-                        const match2 = html.match(/"externalId":"(UC[a-zA-Z0-9_-]{22})"/);
-                        if (match2 && match2[1]) return match2[1];
-                    }
-                } catch (e) {}
-
-                return 'UCMeIV48_O_F0H2tL7x_ayHg';
-            }
-
-            function cleanTikTokUsernameInput(input) {
-                if (!input) return 'obscura.records';
-                let str = input.trim();
-                if (str.includes('tiktok.com/@')) {
-                    str = str.split('tiktok.com/@')[1].split('/')[0].split('?')[0];
-                } else if (str.startsWith('@')) {
-                    str = str.substring(1);
-                }
-                return str;
-            }
-
-            async function fetchLiveYouTubeDrop(channelId, filterMode = 'full_only') {
-                const cid = await resolveYouTubeChannelIdFromInput(channelId);
-                const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${cid}`;
-
-                try {
-                    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data && data.items && data.items.length > 0) {
-                            let chosenItem = data.items[0];
-
-                            if (filterMode === 'full_only' && data.items.length > 1) {
-                                for (const it of data.items) {
-                                    const titleLower = (it.title || '').toLowerCase();
-                                    const linkLower = (it.link || '').toLowerCase();
-                                    if (!titleLower.includes('#shorts') && !titleLower.includes('#short') && !linkLower.includes('/shorts/')) {
-                                        chosenItem = it;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            let videoId = '';
-                            if (chosenItem.guid && chosenItem.guid.includes(':')) {
-                                videoId = chosenItem.guid.split(':').pop();
-                            } else if (chosenItem.link && chosenItem.link.includes('v=')) {
-                                videoId = new URL(chosenItem.link).searchParams.get('v');
-                            } else if (chosenItem.link && chosenItem.link.includes('/shorts/')) {
-                                videoId = chosenItem.link.split('/shorts/')[1].split('?')[0];
-                            }
-                            const thumb = videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : (chosenItem.thumbnail || '');
-                            return {
-                                cid: cid,
-                                title: chosenItem.title || 'OBSCURA - LATEST DROP',
-                                link: chosenItem.link || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : `https://www.youtube.com/channel/${cid}`),
-                                thumb: thumb,
-                                desc: (chosenItem.description || '').replace(/<[^>]*>?/gm, '').trim().substring(0, 180) || 'Experience the latest official visualizer and soundwave release from our void archive.',
-                                tag: 'OFFICIAL MUSIC VIDEO'
-                            };
-                        }
-                    }
-                } catch (e) {}
-
-                try {
-                    const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`);
-                    if (res.ok) {
-                        const xmlText = await res.text();
-                        const parser = new DOMParser();
-                        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-                        const entries = xmlDoc.querySelectorAll("entry");
-                        if (entries && entries.length > 0) {
-                            let chosenEntry = entries[0];
-                            if (filterMode === 'full_only' && entries.length > 1) {
-                                for (const ent of entries) {
-                                    const t = ent.querySelector("title")?.textContent || '';
-                                    if (!t.toLowerCase().includes('#shorts') && !t.toLowerCase().includes('#short')) {
-                                        chosenEntry = ent;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            const title = chosenEntry.querySelector("title")?.textContent || '';
-                            const link = chosenEntry.querySelector("link")?.getAttribute("href") || '';
-                            const videoId = chosenEntry.querySelector("yt\\:videoId, videoId")?.textContent || '';
-                            const mediaDesc = chosenEntry.querySelector("media\\:description, description")?.textContent || '';
-                            return {
-                                cid: cid,
-                                title: title || 'OBSCURA - LATEST DROP',
-                                link: link || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : ''),
-                                thumb: videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : '',
-                                desc: mediaDesc.replace(/<[^>]*>?/gm, '').trim().substring(0, 180) || 'Experience the latest official visualizer and soundwave release from our void archive.',
-                                tag: 'OFFICIAL MUSIC VIDEO'
-                            };
-                        }
-                    }
-                } catch (e) {}
-                return null;
-            }
-
-            async function fetchLiveTikTokDrop(usernameOrUrl) {
-                const raw = (usernameOrUrl || 'obscura.records').trim();
-                
-                // Helper to fetch JSON from URL with proxies
-                async function fetchWithProxies(targetUrl) {
-                    try {
-                        const res = await fetch(targetUrl);
-                        if (res.ok) return await res.json();
-                    } catch (e) {}
-
-                    try {
-                        const aoRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
-                        if (aoRes.ok) {
-                            const aoData = await aoRes.json();
-                            if (aoData.contents) return JSON.parse(aoData.contents);
-                        }
-                    } catch (e) {}
-
-                    try {
-                        const cpRes = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`);
-                        if (cpRes.ok) return await cpRes.json();
-                    } catch (e) {}
-
-                    return null;
-                }
-
-                // If specific video URL or shortlink provided
-                if (raw.includes('tiktok.com')) {
-                    const oEmbedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(raw)}`;
-                    const data = await fetchWithProxies(oEmbedUrl);
-                    if (data && (data.thumbnail_url || data.title)) {
-                        const user = data.author_unique_id || (raw.includes('@') ? raw.split('@')[1].split('/')[0] : 'obscura.records');
-                        return {
-                            title: data.title || `LATEST TIKTOK DROP @${user.toUpperCase()}`,
-                            link: raw,
-                            thumb: data.thumbnail_url || 'assets/cover.png',
-                            desc: 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.',
-                            tag: raw.includes('/video/') ? 'LATEST TIKTOK VIDEO' : 'OFFICIAL TIKTOK HUB'
-                        };
-                    }
-                }
-
-                const user = cleanTikTokUsernameInput(raw);
-                const profileOEmbedUrl = `https://www.tiktok.com/oembed?url=https://www.tiktok.com/@${encodeURIComponent(user)}`;
-                const data = await fetchWithProxies(profileOEmbedUrl);
-                if (data && (data.thumbnail_url || data.author_name)) {
-                    return {
-                        title: data.author_name ? `${data.author_name.toUpperCase()} (@${user.toUpperCase()})` : `OBSCURA RECORDS (@${user.toUpperCase()})`,
-                        link: `https://www.tiktok.com/@${user}`,
-                        thumb: data.thumbnail_url || 'assets/cover.png',
-                        desc: 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.',
-                        tag: 'OFFICIAL TIKTOK HUB'
-                    };
-                }
-
-                return {
-                    title: `OBSCURA RECORDS (@${user.toUpperCase()})`,
-                    link: `https://www.tiktok.com/@${user}`,
-                    thumb: 'assets/cover.png',
-                    desc: 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.',
-                    tag: 'OFFICIAL TIKTOK HUB'
-                };
-            }
-
-            let liveFeedFetched = false;
-
             function applyTransmissionData(tData) {
-                if (!tData || typeof tData !== 'object') return;
+                if (!tData) return;
+                const ytCard = document.getElementById('yt-transmission-card');
+                const ttCard = document.getElementById('tt-transmission-card');
+                const transTitleEl = document.getElementById('transmissions-title');
+                const transDescEl = document.getElementById('transmissions-desc');
 
-                // 1. YouTube Drop Sync
-                const ytTitle = tData.yt_title || 'MONTAGEM ALMA GEMEA - NXPXLM';
-                const ytDesc  = tData.yt_desc || 'Experience the newest track and soundwave visualizer drop from Obscura Recordss.';
-                const ytTag   = tData.yt_tag || 'OFFICIAL MUSIC VIDEO';
-                const ytUrl   = tData.yt_url || 'https://www.youtube.com/watch?v=kyS1AFiPa9I';
-                const ytThumb = tData.yt_thumb || 'https://i4.ytimg.com/vi/kyS1AFiPa9I/hqdefault.jpg';
-                const ytSubUrl = tData.yt_sub_url || 'https://www.youtube.com/@Obscurarecordss?sub_confirmation=1';
+                // YouTube Card Updates
+                if (ytCard) {
+                    const ytLink = ytCard.querySelector('.btn-stream-link');
+                    const ytThumb = ytCard.querySelector('.transmission-thumb-img');
+                    const ytTitle = ytCard.querySelector('.transmission-title-text');
+                    const ytBadge = ytCard.querySelector('.transmission-badge');
 
-                const ytTitleEl = document.getElementById('yt-title-display');
-                const ytDescEl  = document.getElementById('yt-desc-display');
-                const ytTagEl   = document.getElementById('yt-tag-display');
-                const ytThumbBg = document.getElementById('yt-thumb-bg');
-                const ytPlayBtn = document.getElementById('yt-play-trigger');
-                const ytWatchBtn = document.getElementById('yt-watch-btn');
-                const ytSubBtn  = document.getElementById('yt-sub-btn');
-
-                if (ytTitleEl) ytTitleEl.textContent = ytTitle;
-                if (ytDescEl) ytDescEl.textContent = ytDesc;
-                if (ytTagEl) ytTagEl.textContent = ytTag;
-                if (ytThumbBg && ytThumb) ytThumbBg.style.backgroundImage = `url("${ytThumb}")`;
-                if (ytPlayBtn && ytUrl) ytPlayBtn.href = ytUrl;
-                if (ytWatchBtn && ytUrl) ytWatchBtn.href = ytUrl;
-                if (ytSubBtn && ytSubUrl) ytSubBtn.href = ytSubUrl;
-
-                // 2. TikTok Drop Sync
-                const ttTitle = tData.tt_title || 'OBSCURA RECORDS (@OBSCURA.RECORDS)';
-                const ttDesc  = tData.tt_desc || 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.';
-                const ttTag   = tData.tt_tag || 'OFFICIAL TIKTOK HUB';
-                const ttUrl   = tData.tt_url || 'https://www.tiktok.com/@obscura.records';
-                const ttThumb = tData.tt_thumb || 'assets/cover.png';
-                const ttFollowUrl = tData.tt_follow_url || 'https://www.tiktok.com/@obscura.records';
-
-                const ttTitleEl = document.getElementById('tt-title-display');
-                const ttDescEl  = document.getElementById('tt-desc-display');
-                const ttTagEl   = document.getElementById('tt-tag-display');
-                const ttThumbBg = document.getElementById('tt-thumb-bg');
-                const ttPlayBtn = document.getElementById('tt-play-trigger');
-                const ttWatchBtn = document.getElementById('tt-watch-btn');
-                const ttFollowBtn = document.getElementById('tt-follow-btn');
-
-                if (ttTitleEl) ttTitleEl.textContent = ttTitle;
-                if (ttDescEl) ttDescEl.textContent = ttDesc;
-                if (ttTagEl) ttTagEl.textContent = ttTag;
-                if (ttThumbBg && ttThumb) ttThumbBg.style.backgroundImage = `url("${ttThumb}")`;
-                if (ttPlayBtn && ttUrl) ttPlayBtn.href = ttUrl;
-                if (ttWatchBtn && ttUrl) ttWatchBtn.href = ttUrl;
-                if (ttFollowBtn && ttFollowUrl) ttFollowBtn.href = ttFollowUrl;
-
-                // Only attempt client-side resolution if thumbnail is completely missing or default AND a valid video URL exists
-                if (ttThumbBg && (ttThumb === 'assets/cover.png' || !ttThumb || !ttThumb.startsWith('http')) && ttUrl && ttUrl.includes('tiktok.com/video/')) {
-                    fetchLiveTikTokDrop(ttUrl).then(liveTt => {
-                        if (liveTt && liveTt.thumb && liveTt.thumb.startsWith('http') && liveTt.thumb !== 'assets/cover.png') {
-                            ttThumbBg.style.backgroundImage = `url("${liveTt.thumb}")`;
-                            if (ttTitleEl && liveTt.title && (!ttTitle || ttTitle.includes('@OBSCURA.RECORDS'))) {
-                                ttTitleEl.textContent = liveTt.title;
-                            }
-                        }
-                    }).catch(() => {});
+                    if (ytLink && tData.ytLink) ytLink.href = tData.ytLink;
+                    if (ytThumb && tData.ytThumb) ytThumb.src = tData.ytThumb;
+                    if (ytTitle && tData.ytTitle) ytTitle.textContent = tData.ytTitle;
+                    if (ytBadge && tData.ytBadge) ytBadge.textContent = tData.ytBadge;
                 }
 
-                // 3. Section Title & Description Live Sync
-                const transTitleEl = document.getElementById('trans-title-display');
-                const transDescEl  = document.getElementById('trans-desc-display');
+                // TikTok Card Updates
+                if (ttCard) {
+                    const ttLink = ttCard.querySelector('.btn-stream-link');
+                    const ttThumb = ttCard.querySelector('.transmission-thumb-img');
+                    const ttTitle = ttCard.querySelector('.transmission-title-text');
+                    const ttBadge = ttCard.querySelector('.transmission-badge');
+
+                    if (ttLink && tData.ttLink) ttLink.href = tData.ttLink;
+                    if (ttThumb && tData.ttThumb) ttThumb.src = tData.ttThumb;
+                    if (ttTitle && tData.ttTitle) ttTitle.textContent = tData.ttTitle;
+                    if (ttBadge && tData.ttBadge) ttBadge.textContent = tData.ttBadge;
+                }
 
                 if (transTitleEl && tData.transTitle) transTitleEl.innerHTML = tData.transTitle;
                 if (transDescEl && tData.transDesc) transDescEl.textContent = tData.transDesc;
@@ -2395,33 +2166,12 @@ const initPortal = () => {
                 }
             }
 
-            // Listen to Admin Saves
-            db.ref('siteData/globals/latest_transmissions').on('value', snap => {
-                applyTransmissionData(snap.val() || {});
-            });
-
-            // Listen to Discord Bot Saves (Immediate Real-Time Sync)
-            db.ref('bot_status/latest_transmissions').on('value', snap => {
-                const bData = snap.val();
-                if (bData && typeof bData === 'object') {
-                    applyTransmissionData(bData);
-                }
+            fetchWithCache('siteData/globals/latest_transmissions', (snap) => {
+                applyTransmissionData(snap || {});
             });
         } catch (e) {
             console.error("Transmissions Sync Error:", e);
         }
-
-        /* -- Dynamic Accordion Rendering Disabled to preserve original structure --
-        db.ref('siteData/faq').on('value', snap => {
-            const data = snap.val();
-            if (data && Array.isArray(data)) renderAccordion('faq-container', data);
-        });
-
-        db.ref('siteData/privacy').on('value', snap => {
-            const data = snap.val();
-            if (data && Array.isArray(data)) renderAccordion('privacy-container', data);
-        });
-        */
 
         // 2. Sync Releases
         const releaseSlider = document.querySelector('.releases-slider');
@@ -2439,48 +2189,32 @@ const initPortal = () => {
                 const ytIdAttr = ytData ? ytData.id : '';
                 const ytTypeAttr = ytData ? ytData.type : 'video';
 
-                // YouTube Album / Full stream link for bottom action bar
-                const ytAlbumUrl = release.youtubeAlbum || release.youtubeUrl || release.youtube || (release.streamUrl ? release.streamUrl : '#');
-                const spotifyUrl = release.spotifyUrl || release.spotify || '#';
-                const appleUrl = release.appleUrl || release.apple || '#';
-                const soundcloudUrl = release.soundcloudUrl || release.soundcloud || '';
-                const dlUrl = release.dlUrl || '';
-                const relCover = release.cover || release.image || 'assets/cover.png';
-                const relTitle = release.title || 'UNKNOWN';
-                const relArtist = release.artist || release.producers || 'OBSCURA RECORD';
-                const relType = (release.type || 'SINGLE').toUpperCase();
-
                 const cardHtml = `
-                    <div class="release-card-large glass">
-                        <div class="release-cover-large">
-                            <div class="cyber-laser-scanner"></div>
-                            <img src="${relCover}" alt="${relTitle}" onerror="this.onerror=null; this.src='assets/cover.png';">
-                            <div class="release-type-badge">${relType}</div>
-                            <div class="player-overlay">
-                                <button class="play-btn" 
-                                    data-title="${relTitle.replace(/"/g, '&quot;')}"
-                                    data-artist="${relArtist.replace(/"/g, '&quot;')}"
-                                    data-image="${relCover}"
-                                    data-spotify="${spotifyUrl}"
-                                    data-youtube="${ytAlbumUrl}"
-                                    data-preview="${release.streamUrl || release.preview || ''}" 
-                                    data-ytid="${ytIdAttr}" 
-                                    data-yttype="${ytTypeAttr}">
-                                    <i class="fas fa-play"></i>
-                                </button>
-                                <div class="preview-time" style="display: none;">0:30</div>
-                            </div>
+                    <div class="release-card glass">
+                        <div class="release-cover">
+                            <img src="${release.cover || release.image || 'assets/cover.png'}" alt="${release.title}" onerror="this.src='assets/cover.png'">
+                            <button class="preview-btn" 
+                                aria-label="Play Preview"
+                                data-title="${release.title}"
+                                data-artist="${release.producers || release.artist || ''}"
+                                data-image="${release.cover || release.image || 'assets/cover.png'}"
+                                data-spotify="${release.spotify || release.spotifyUrl || '#'}"
+                                data-youtube="${release.youtube || release.youtubeUrl || '#'}"
+                                data-audio="${previewSource}"
+                                data-ytid="${ytIdAttr}"
+                                data-yttype="${ytTypeAttr}">
+                                <i class="fas fa-play"></i>
+                            </button>
                         </div>
-                        <div class="release-info-large">
-                            ${(cleanId || badge) ? `<span class="track-id">${cleanId} ${badge}</span>` : ''}
-                            <h4>${relTitle}</h4>
-                            <div class="producers-text">Produced by: <span>${relArtist}</span></div>
-                            <div class="release-actions">
-                                <a href="${spotifyUrl}" target="_blank" class="platform-link spotify" title="Spotify"><i class="fab fa-spotify"></i></a>
-                                <a href="${appleUrl}" target="_blank" class="platform-link apple" title="Apple Music"><i class="fab fa-apple"></i></a>
-                                <a href="${ytAlbumUrl}" target="_blank" class="platform-link youtube" title="YouTube Album / Stream"><i class="fab fa-youtube"></i></a>
-                                ${soundcloudUrl ? `<a href="${soundcloudUrl}" target="_blank" class="platform-link soundcloud" title="SoundCloud"><i class="fab fa-soundcloud"></i></a>` : ''}
-                                ${dlUrl ? `<a href="${dlUrl}" target="_blank" class="platform-link download" title="Download"><i class="fas fa-download"></i></a>` : ''}
+                        <div class="release-info">
+                            <span class="catalog-id">${cleanId} ${badge}</span>
+                            <h3>${release.title}</h3>
+                            <p class="producers-text">${release.producers || release.artist || 'OBSCURA'}</p>
+                            <div class="release-links">
+                                ${release.spotify ? `<a href="${release.spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
+                                ${release.youtube ? `<a href="${release.youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
+                                ${release.apple ? `<a href="${release.apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
+                                ${release.soundcloud ? `<a href="${release.soundcloud}" target="_blank" class="platform-link soundcloud" title="SoundCloud" onclick="event.stopPropagation()"><i class="fab fa-soundcloud"></i></a>` : ''}
                             </div>
                         </div>
                     </div>
@@ -2489,190 +2223,57 @@ const initPortal = () => {
             });
 
             bindReleaseInteractions();
-            startAutoScroll();
         }
 
         function bindReleaseInteractions() {
-            const trackRows = document.querySelectorAll('.release-card-large');
-            currentPlayingBtn = null;
-            if (audioTimer) clearInterval(audioTimer);
+            const previewButtons = document.querySelectorAll('.releases-slider .preview-btn');
+            previewButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const card = btn.closest('.release-card');
+                    const isCurrentPlaying = (currentPlayingBtn === btn && (previewAudio && !previewAudio.paused || ytPlayer && typeof ytPlayer.getPlayerState === 'function' && ytPlayer.getPlayerState() === 1));
 
-            trackRows.forEach(row => {
-                const playBtn = row.querySelector('.play-btn');
-                const coverImg = row.querySelector('.release-cover-large > img');
-                const cdImg = row.querySelector('.cd-label-mini img');
-                const ytLink = row.querySelector('.platform-link.youtube');
-                const spLink = row.querySelector('.platform-link.spotify');
+                    if (isCurrentPlaying) {
+                        stopPlayback();
+                        if (typeof syncFloatingPlayer === 'function') syncFloatingPlayer(null, null, false);
+                    } else {
+                        const audioSrc = btn.getAttribute('data-audio');
+                        const ytId = btn.getAttribute('data-ytid');
+                        const ytidFallback = getYouTubeID(btn.getAttribute('data-youtube'));
+                        const finalYtId = ytId || (ytidFallback ? ytidFallback.id : null);
+                        const finalYtType = btn.getAttribute('data-yttype') || (ytidFallback ? ytidFallback.type : 'video');
 
-                // 1. Auto URL Artwork Detector (Spotify)
-                if (spLink && spLink.href && spLink.href.includes('open.spotify.com')) {
-                    fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(spLink.href)}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.thumbnail_url && coverImg) {
-                                coverImg.src = data.thumbnail_url;
-                                coverImg.style.filter = "none";
-                                if (cdImg) cdImg.src = data.thumbnail_url;
-                                if (playBtn) playBtn.setAttribute('data-image', data.thumbnail_url);
-                            }
-                        }).catch(e => console.warn('Spotify Artwork URL parse failed:', e));
-                }
-
-                // 2. Auto URL Artwork Detector Fallback (YouTube)
-                if (ytLink && ytLink.href && (ytLink.href.includes('youtube.com/watch') || ytLink.href.includes('youtu.be/'))) {
-                    try {
-                        let videoId = '';
-                        if (ytLink.href.includes('youtube.com/watch')) {
-                            videoId = new URL(ytLink.href).searchParams.get('v') || '';
-                        } else if (ytLink.href.includes('youtu.be/')) {
-                            videoId = ytLink.href.split('youtu.be/')[1].split('?')[0] || '';
-                        }
-                        // Valid YouTube video IDs are strictly 11 alphanumeric characters
-                        if (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId) && coverImg && coverImg.src.includes('cover')) {
-                            const ytThumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                            coverImg.onerror = () => { coverImg.src = 'assets/cover.jpg'; };
-                            coverImg.src = ytThumb;
-                            coverImg.style.filter = "none";
-                            if (cdImg) {
-                                cdImg.onerror = () => { cdImg.src = 'assets/cover.jpg'; };
-                                cdImg.src = ytThumb;
-                            }
-                            if (playBtn) playBtn.setAttribute('data-image', ytThumb);
-                        }
-                    } catch (e) {}
-                }
-
-                if (playBtn) {
-                    playBtn.addEventListener('click', (e) => {
-                        const ytId = playBtn.getAttribute('data-ytid');
-                        const ytType = playBtn.getAttribute('data-yttype');
-                        const mp3Url = playBtn.getAttribute('data-preview');
-                        const timeDisplay = row.querySelector('.preview-time');
-                        const isPlaying = playBtn.innerHTML.includes('fa-pause');
-
-                        if (currentPlayingBtn && currentPlayingBtn !== playBtn) {
-                            stopPlayback(currentPlayingBtn);
-                        }
-
-                        if (!isPlaying) {
-                            currentPlayingBtn = playBtn;
-                            playbackStartOffset = -1; // Reset for relative 30s limit
-                            
-                            // PRIORITY 1: Direct MP3 / Snippet URL (User specified)
-                            if (mp3Url && mp3Url !== '' && mp3Url !== '#' && !getYouTubeID(mp3Url)) {
-                                try {
-                                    previewAudio.src = mp3Url;
-                                    previewAudio.play().then(() => {
-                                        startUIPlayback(playBtn, row, coverImg);
-                                        if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
-                                        if (timeDisplay) {
-                                            timeDisplay.style.display = 'block';
-                                            updateTimer(timeDisplay, 'mp3');
-                                        }
-                                    }).catch(err => {
-                                        startUIPlayback(playBtn, row, coverImg);
-                                    });
-                                } catch (e) {
-                                    startUIPlayback(playBtn, row, coverImg);
-                                }
-                            }
-                            // PRIORITY 2: YouTube Fallback (Instant Playback)
-                            else if (ytId) {
-                                playYouTubeTrack(ytId, ytType, playBtn, row, coverImg);
-                            } else {
-                                startUIPlayback(playBtn, row, coverImg);
-                            }
-                        } else {
-                            stopPlayback(playBtn);
-                            currentPlayingBtn = null;
-                        }
-                    });
-                }
+                        playPreview(audioSrc, finalYtId, finalYtType, btn, card);
+                        if (typeof syncFloatingPlayer === 'function') syncFloatingPlayer(card, btn, true);
+                    }
+                });
             });
         }
 
-        function updateTimer(display, type) {
-            if (audioTimer) clearInterval(audioTimer);
-            audioTimer = setInterval(() => {
-                let duration = 0;
-                let current = 0;
-
-                try {
-                    if (type === 'yt' && ytPlayer && ytPlayer.getCurrentTime) {
-                        current = ytPlayer.getCurrentTime();
-                    } else if (type === 'mp3') {
-                        current = previewAudio.currentTime;
-                    }
-
-                    // On the very first valid frame, mark the start point
-                    if (current > 0 && playbackStartOffset === -1) {
-                        playbackStartOffset = current;
-                    }
-
-                    if (playbackStartOffset !== -1) {
-                        const elapsed = current - playbackStartOffset;
-                        const remaining = PREVIEW_LIMIT - elapsed;
-
-                        // Sync floating player progress bar and elapsed counters
-                        if (typeof updateFloatingPlayerProgress === 'function') {
-                            updateFloatingPlayerProgress(Math.max(0, elapsed), PREVIEW_LIMIT);
-                        }
-
-                        if (!isNaN(remaining) && remaining > 0) {
-                            const secs = Math.ceil(remaining);
-                            display.textContent = `0:${secs.toString().padStart(2, '0')}`;
-
-                            if (remaining <= 0.1) {
-                                stopPlayback();
-                            }
-                        } else if (remaining <= 0) {
-                            stopPlayback();
-                        }
-                    } else {
-                        display.textContent = "...";
-                    }
-                } catch (e) { console.warn("Timer issue:", e); }
-            }, 200); // Faster update for smoother countdown
-        }
-
+        // Auto-Scroll Logic for Releases Slider
         function startAutoScroll() {
             if (autoScrollInterval) clearInterval(autoScrollInterval);
-            const scrollStep = 390;
+            if (!releaseSlider) return;
+
+            // Only auto-scroll if content overflows
+            if (releaseSlider.scrollWidth <= releaseSlider.clientWidth + 10) {
+                return;
+            }
 
             autoScrollInterval = setInterval(() => {
-                if (!currentPlayingBtn && releaseSlider) {
-                    let maxScroll = releaseSlider.scrollWidth - releaseSlider.clientWidth;
-                    // If near the end, reset. Otherwise advance.
-                    if (releaseSlider.scrollLeft >= maxScroll - 10) {
-                        releaseSlider.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-                    } else {
-                        releaseSlider.scrollBy({ left: scrollStep, behavior: 'smooth' });
-                    }
+                if (releaseSlider.scrollLeft >= (releaseSlider.scrollWidth - releaseSlider.clientWidth - 5)) {
+                    releaseSlider.scrollLeft = 0;
+                } else {
+                    releaseSlider.scrollLeft += 1;
                 }
-            }, 3500);
-        }
-
-        // Manual Scroll Navigation
-        const btnPrev = document.querySelector('.slider-nav-btn.prev');
-        const btnNext = document.querySelector('.slider-nav-btn.next');
-
-        if (btnPrev && btnNext && releaseSlider) {
-            btnPrev.addEventListener('click', () => {
-                releaseSlider.scrollBy({ left: -390, behavior: 'smooth' });
-                startAutoScroll(); // Restart interval to prevent overlap
-            });
-            btnNext.addEventListener('click', () => {
-                releaseSlider.scrollBy({ left: 390, behavior: 'smooth' });
-                startAutoScroll(); // Restart interval to prevent overlap
-            });
+            }, 30);
         }
 
         // Bind existing static release cards immediately on load
         bindReleaseInteractions();
         startAutoScroll();
 
-        db.ref('siteData/releases').on('value', (snapshot) => {
-            let data = snapshot.val();
+        fetchWithCache('siteData/releases', (data) => {
             let items = [];
             if (data) {
                 items = Array.isArray(data) ? data : Object.values(data);
@@ -2734,7 +2335,6 @@ const initPortal = () => {
                     const grid = document.getElementById('upcoming-grid');
                     if (grid) {
                         gsap.to(grid, { scrollLeft: grid.scrollLeft - 400, duration: 0.5, ease: "power2.out" });
-                        // Brief pause auto-scroll on manual interaction
                         if (upcomingAutoScroll) {
                             clearInterval(upcomingAutoScroll);
                             setTimeout(startUpcomingAutoScroll, 2000);
@@ -2745,7 +2345,6 @@ const initPortal = () => {
                     const grid = document.getElementById('upcoming-grid');
                     if (grid) {
                         gsap.to(grid, { scrollLeft: grid.scrollLeft + 400, duration: 0.5, ease: "power2.out" });
-                        // Brief pause auto-scroll on manual interaction
                         if (upcomingAutoScroll) {
                             clearInterval(upcomingAutoScroll);
                             setTimeout(startUpcomingAutoScroll, 2000);
@@ -2760,7 +2359,6 @@ const initPortal = () => {
             const grid = document.getElementById('upcoming-grid');
             if (!grid) return;
 
-            // Center if few items, scroll if many
             if (grid.scrollWidth <= grid.clientWidth + 10) {
                 grid.style.justifyContent = 'center';
                 return;
@@ -2776,8 +2374,7 @@ const initPortal = () => {
             }, 30);
         }
 
-        db.ref('siteData/upcoming').on('value', (snapshot) => {
-            let data = snapshot.val();
+        fetchWithCache('siteData/upcoming', (data) => {
             let items = [];
             if (data) {
                 items = Array.isArray(data) ? data : Object.values(data);
@@ -2785,8 +2382,6 @@ const initPortal = () => {
             renderUpcoming(items);
         });
     }
-
-    // Removed initVisualizer call
 
     // --- GLOBAL UI SOUND EFFECTS (ON CLICK) ---
     document.addEventListener('click', (e) => {
@@ -3220,60 +2815,9 @@ const ObscuraTelemetry = (() => {
         return cachedLocation;
     };
 
-    // Main Log Dispatcher to Firebase
+    // Zero-Bandwidth Log Handler (Suppresses background write traffic to keep Firebase quota minimal)
     const logEvent = async (type, payload = {}) => {
-        if (typeof firebase === 'undefined') return;
-        try {
-            const db = firebase.database();
-            const location = await resolveLocation();
-            const device = getDeviceInfo();
-
-            const entry = {
-                id: 'LOG_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-                type: type || 'SYSTEM_EVENT',
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                timeISO: new Date().toISOString(),
-                ip: location.ip,
-                city: location.city,
-                region: location.region,
-                country: location.country,
-                countryCode: location.countryCode,
-                isp: location.isp,
-                device: device,
-                path: window.location.pathname || '/',
-                details: typeof payload === 'string' ? { message: payload } : (payload || {})
-            };
-
-            const silentPush = (refPath, dataObj) => {
-                try {
-                    const newRef = db.ref(refPath).push();
-                    newRef.set(dataObj).catch(() => {});
-                } catch (e) {}
-            };
-
-            // Push to telemetry visitor logs collection
-            silentPush('siteData/telemetry/visitor_logs', entry);
-
-            // Push to primary security logs collection
-            silentPush('siteData/security/logs', entry);
-
-            // Push to audit logs collection
-            silentPush('siteData/security/audit_logs', {
-                id: entry.id,
-                type: entry.type,
-                action: `[${type}] ${typeof payload === 'string' ? payload : (payload.message || JSON.stringify(payload))}`,
-                timestamp: Date.now(),
-                user: `${location.city}, ${location.country} (${location.ip})`,
-                ip: location.ip,
-                city: location.city,
-                country: location.country,
-                device: device,
-                path: entry.path,
-                details: entry.details
-            });
-        } catch (err) {
-            // Silently suppress client-side errors
-        }
+        // Disabled background telemetry to preserve 100% database quota
     };
 
     return {
@@ -3283,30 +2827,7 @@ const ObscuraTelemetry = (() => {
     };
 })();
 
-// Auto-Log Visitor Session reliably on access (Ignored during local development)
-(() => {
-    // Zero Firebase bandwidth during local testing
-    const isLocal = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1' || 
-                    window.location.protocol === 'file:';
-    if (isLocal) return;
-
-    const lastLogTime = parseInt(sessionStorage.getItem('obscura_last_visitor_log') || '0', 10);
-    const now = Date.now();
-    // Throttle per tab within 15 seconds to prevent spam, but log new visits & active tabs
-    if (now - lastLogTime > 15000) {
-        sessionStorage.setItem('obscura_last_visitor_log', String(now));
-        setTimeout(() => {
-            if (typeof ObscuraTelemetry !== 'undefined') {
-                ObscuraTelemetry.logEvent('VISITOR_ACCESS', {
-                    referrer: document.referrer || 'DIRECT',
-                    screen: `${window.screen.width}x${window.screen.height}`,
-                    userAgent: navigator.userAgent
-                });
-            }
-        }, 800);
-    }
-})();
+// Auto-Log Visitor Session Disabled (Eliminates continuous database writes & bandwidth consumption)
 
 // --- FLOATING CYBERPUNK MUSIC PLAYER & VISUALIZER ENGINE ---
 let isFloatingPlayerPlaying = false;
@@ -3761,46 +3282,33 @@ setTimeout(() => {
     }
 }, 6000);
 
-// --- LIVE CONNECTION CLUSTER (VISITOR NODE SYNC) ---
+// --- LIVE CONNECTION CLUSTER (BANDWIDTH OPTIMIZED) ---
 if (typeof firebase !== 'undefined') {
-    const connectionNode = document.getElementById('visitor-connection-node');
-    const db = firebase.database();
-
-    // Push the current session to active connections
-    const connRef = db.ref('siteData/activeConnections').push();
-
-    // Auto-remove record on browser close / disconnect
-    connRef.onDisconnect().remove();
-
-    // Set initial connection ping
-    connRef.set({
-        pingAt: firebase.database.ServerValue.TIMESTAMP,
-        device: (navigator.userAgent || '').substring(0, 80),
-        url: window.location.href
-    }).then(() => {
-        console.log("Portal Protocol Link: SECURE. Node active.");
-    }).catch(err => {
-        console.warn("Portal Protocol Link: DENIED. Check origin auth.", err);
-    });
-
-    // Heartbeat ping every 60 seconds (Bandwidth Efficient)
-    setInterval(() => {
-        connRef.update({ pingAt: Date.now() }).catch(() => {});
-    }, 60000);
-
-    // Clean up on unload
-    window.addEventListener('beforeunload', () => {
-        connRef.remove();
-    });
-
-    // Listen globally for cluster count (Syncs with Discord Bot)
-    db.ref('siteData/activeConnections').on('value', (snapshot) => {
-        const count = snapshot.numChildren();
+    try {
+        const db = firebase.database();
         const liveNodesEl = document.getElementById('km-live-nodes');
-        if (liveNodesEl) {
-            liveNodesEl.textContent = Math.max(1, count);
-        }
-    });
+
+        // Push current session and auto-remove record on disconnect / close
+        const connRef = db.ref('siteData/activeConnections').push();
+        connRef.onDisconnect().remove();
+
+        connRef.set({
+            pingAt: firebase.database.ServerValue.TIMESTAMP,
+            device: (navigator.userAgent || '').substring(0, 60)
+        }).catch(() => {});
+
+        window.addEventListener('beforeunload', () => {
+            connRef.remove().catch(() => {});
+        });
+
+        // Single read of node count on page load (0 recurring bandwidth consumption)
+        db.ref('siteData/activeConnections').once('value').then((snapshot) => {
+            const count = snapshot.numChildren();
+            if (liveNodesEl) {
+                liveNodesEl.textContent = Math.max(1, count);
+            }
+        }).catch(() => {});
+    } catch (e) {}
 }
 
 // PORTAL CORE INITIALIZED
