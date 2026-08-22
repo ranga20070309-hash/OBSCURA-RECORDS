@@ -79,33 +79,7 @@ function setSiteVersion(newVersion, actionDesc) {
 }
 
 function logSecurityEvent(action, details = {}) {
-    const user = firebase.auth().currentUser;
-    const email = user ? user.email : (sessionStorage.getItem('rootAuth') === 'granted' ? 'SUPERUSER ROOT' : 'ADMIN CONSOLE');
-    const timestamp = Date.now();
-    const timeISO = new Date(timestamp).toISOString();
-
-    const logItem = {
-        id: 'AUDIT_' + timestamp + '_' + Math.random().toString(36).substr(2, 5),
-        type: 'ADMIN_AUDIT',
-        action: action,
-        user: email,
-        timestamp: timestamp,
-        timeISO: timeISO,
-        ip: 'ADMIN CONSOLE',
-        city: 'OBSCURA HQ',
-        region: 'COMMAND DECK',
-        country: 'ADMIN',
-        countryCode: 'ADM',
-        isp: 'SUPERUSER AUTH',
-        device: { os: 'Admin Workstation', browser: 'Admin Console', type: 'Desktop', screen: `${window.innerWidth}x${window.innerHeight}` },
-        path: '/admin.html',
-        details: { action: action, admin: email, ...(typeof details === 'object' ? details : { info: details }) }
-    };
-
-    try {
-        db.ref('siteData/security/logs').push(logItem);
-        db.ref('siteData/security/audit_logs').push(logItem);
-    } catch (e) {}
+    // Disabled to eliminate database bandwidth and storage usage
 }
 
 // Safe navigation helper
