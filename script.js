@@ -2092,44 +2092,66 @@ const initPortal = () => {
         } catch (e) {}
 
         // Dynamic Transmissions Sync Engine
+        // Dynamic Transmissions Sync Engine (YouTube & TikTok Drops)
         try {
             function applyTransmissionData(tData) {
-                if (!tData) return;
-                const ytCard = document.getElementById('yt-transmission-card');
-                const ttCard = document.getElementById('tt-transmission-card');
-                const transTitleEl = document.getElementById('transmissions-title');
-                const transDescEl = document.getElementById('transmissions-desc');
+                if (!tData || typeof tData !== 'object') return;
 
-                // YouTube Card Updates
-                if (ytCard) {
-                    const ytLink = ytCard.querySelector('.btn-stream-link');
-                    const ytThumb = ytCard.querySelector('.transmission-thumb-img');
-                    const ytTitle = ytCard.querySelector('.transmission-title-text');
-                    const ytBadge = ytCard.querySelector('.transmission-badge');
+                // 1. YouTube Drop Card Elements
+                const ytThumbBg = document.getElementById('yt-thumb-bg');
+                const ytPlay = document.getElementById('yt-play-trigger');
+                const ytTitle = document.getElementById('yt-title-display');
+                const ytDesc = document.getElementById('yt-desc-display');
+                const ytTag = document.getElementById('yt-tag-display');
+                const ytWatch = document.getElementById('yt-watch-btn');
+                const ytSub = document.getElementById('yt-sub-btn');
 
-                    if (ytLink && tData.ytLink) ytLink.href = tData.ytLink;
-                    if (ytThumb && tData.ytThumb) ytThumb.src = tData.ytThumb;
-                    if (ytTitle && tData.ytTitle) ytTitle.textContent = tData.ytTitle;
-                    if (ytBadge && tData.ytBadge) ytBadge.textContent = tData.ytBadge;
-                }
+                const ytUrlVal = tData.yt_url || tData.ytUrl || tData.ytLink || tData.youtube || tData.youtubeUrl;
+                const ytThumbVal = tData.yt_thumb || tData.ytThumb || tData.thumbnail || tData.cover;
+                const ytTitleVal = tData.yt_title || tData.ytTitle || tData.title;
+                const ytDescVal = tData.yt_desc || tData.ytDesc || tData.desc;
+                const ytTagVal = tData.yt_tag || tData.ytTag || tData.tag;
+                const ytSubVal = tData.yt_sub_url || tData.ytSubUrl;
 
-                // TikTok Card Updates
-                if (ttCard) {
-                    const ttLink = ttCard.querySelector('.btn-stream-link');
-                    const ttThumb = ttCard.querySelector('.transmission-thumb-img');
-                    const ttTitle = ttCard.querySelector('.transmission-title-text');
-                    const ttBadge = ttCard.querySelector('.transmission-badge');
+                if (ytThumbBg && ytThumbVal) ytThumbBg.style.backgroundImage = `url("${ytThumbVal}")`;
+                if (ytPlay && ytUrlVal) ytPlay.href = ytUrlVal;
+                if (ytWatch && ytUrlVal) ytWatch.href = ytUrlVal;
+                if (ytTitle && ytTitleVal) ytTitle.textContent = ytTitleVal;
+                if (ytDesc && ytDescVal) ytDesc.textContent = ytDescVal;
+                if (ytTag && ytTagVal) ytTag.textContent = ytTagVal;
+                if (ytSub && ytSubVal) ytSub.href = ytSubVal;
 
-                    if (ttLink && tData.ttLink) ttLink.href = tData.ttLink;
-                    if (ttThumb && tData.ttThumb) ttThumb.src = tData.ttThumb;
-                    if (ttTitle && tData.ttTitle) ttTitle.textContent = tData.ttTitle;
-                    if (ttBadge && tData.ttBadge) ttBadge.textContent = tData.ttBadge;
-                }
+                // 2. TikTok Drop Card Elements
+                const ttThumbBg = document.getElementById('tt-thumb-bg');
+                const ttPlay = document.getElementById('tt-play-trigger');
+                const ttTitle = document.getElementById('tt-title-display');
+                const ttDesc = document.getElementById('tt-desc-display');
+                const ttTag = document.getElementById('tt-tag-display');
+                const ttWatch = document.getElementById('tt-watch-btn');
+                const ttFollow = document.getElementById('tt-follow-btn');
 
+                const ttUrlVal = tData.tt_url || tData.ttUrl || tData.ttLink || tData.tiktok || tData.tiktokUrl || tData.url || tData.link;
+                const ttThumbVal = tData.tt_thumb || tData.ttThumb || tData.thumbnail || tData.cover || tData.image;
+                const ttTitleVal = tData.tt_title || tData.ttTitle || tData.title;
+                const ttDescVal = tData.tt_desc || tData.ttDesc || tData.desc;
+                const ttTagVal = tData.tt_tag || tData.ttTag || tData.tag;
+                const ttFollowVal = tData.tt_follow_url || tData.ttFollowUrl || tData.followUrl;
+
+                if (ttThumbBg && ttThumbVal) ttThumbBg.style.backgroundImage = `url("${ttThumbVal}")`;
+                if (ttPlay && ttUrlVal) ttPlay.href = ttUrlVal;
+                if (ttWatch && ttUrlVal) ttWatch.href = ttUrlVal;
+                if (ttTitle && ttTitleVal) ttTitle.textContent = ttTitleVal;
+                if (ttDesc && ttDescVal) ttDesc.textContent = ttDescVal;
+                if (ttTag && ttTagVal) ttTag.textContent = ttTagVal;
+                if (ttFollow && ttFollowVal) ttFollow.href = ttFollowVal;
+
+                // 3. Section Titles & Descriptions
+                const transTitleEl = document.getElementById('trans-title-display') || document.getElementById('transmissions-title');
+                const transDescEl = document.getElementById('trans-desc-display') || document.getElementById('transmissions-desc');
                 if (transTitleEl && tData.transTitle) transTitleEl.innerHTML = tData.transTitle;
                 if (transDescEl && tData.transDesc) transDescEl.textContent = tData.transDesc;
 
-                // Section visibility toggle
+                // 4. Section Visibility Toggle
                 const transSec = document.getElementById('transmissions');
                 if (transSec) {
                     if (tData.showTransmissions === 'Hidden') {
@@ -2140,8 +2162,15 @@ const initPortal = () => {
                 }
             }
 
+            // Sync from all valid database paths (Admin saves & Discord Bot webhooks)
             fetchWithCache('siteData/globals/latest_transmissions', (snap) => {
-                applyTransmissionData(snap || {});
+                if (snap) applyTransmissionData(snap);
+            });
+            fetchWithCache('siteData/latest_transmissions', (snap) => {
+                if (snap) applyTransmissionData(snap);
+            });
+            fetchWithCache('bot_status/latest_transmissions', (snap) => {
+                if (snap) applyTransmissionData(snap);
             });
         } catch (e) {
             console.error("Transmissions Sync Error:", e);
