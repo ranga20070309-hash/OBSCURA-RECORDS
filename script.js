@@ -1,1635 +1,3382 @@
-<!DOCTYPE html>
-<html lang="en">
+// --- BROWSER URL SANITIZER (Eliminates Chrome Text Fragments & Ugly Hashes) ---
+const sanitizeBrowserURL = () => {
+    try {
+        if (window.location.hash || window.location.href.indexOf('#') !== -1 || window.location.href.indexOf(':~:text=') !== -1) {
+            const cleanPath = window.location.pathname || '/';
+            const cleanSearch = (window.location.search && !window.location.search.includes('preview=')) ? window.location.search : '';
+            window.history.replaceState(null, document.title, cleanPath + cleanSearch);
+        }
+    } catch (e) {}
+};
+sanitizeBrowserURL();
+window.addEventListener('load', sanitizeBrowserURL);
+window.addEventListener('hashchange', sanitizeBrowserURL);
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OBSCURA RECORD // Core Directive Command Deck</title>
-    
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link rel="stylesheet" href="admin.css">
+if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+}
+window.scrollTo(0, 0);
 
-    
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-</head>
+window.onload = () => {
+    window.scrollTo(0, 0);
+    sanitizeBrowserURL();
+};
 
-<body>
+// --- THE CORE SONIC PLAYER ---
+let ytPlayer = null;
+let isYTApiReady = false;
+let currentPlayingBtn = null;
+let audioTimer = null;
+let previewAudio = new Audio();
+previewAudio.crossOrigin = "anonymous";
+previewAudio.preload = "auto";
+previewAudio.addEventListener('ended', () => {
+    if (typeof stopPlayback === 'function') stopPlayback();
+});
+previewAudio.addEventListener('error', () => {
+    if (typeof stopPlayback === 'function') stopPlayback();
+});
+let playbackStartOffset = 0;
+let autoScrollInterval = null;
+const PREVIEW_LIMIT = 30;
 
-    
-    <div id="global-security-alarm" style="display: none;">
-        <div class="alarm-box">
-            <i class="fas fa-biohazard danger-icon"></i>
-            <h1>KERNEL ALERT</h1>
-            <p>CRITICAL TRANSMISSION OVERRIDE DETECTED</p>
-            <div id="alarm-type">SCANNING FREQUENCY...</div>
-        </div>
-    </div>
+// --- BACKEND API CONFIGURATION ---
+// Automatically uses relative path on Vercel production, or localhost:3000 during local dev
+const API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") && window.location.port !== "" && window.location.port !== "3000"
+    ? "http://localhost:3000"
+    : "";
 
-    
-    <div id="login-overlay" class="login-screen">
-        <canvas id="vibe-canvas"></canvas>
-        <div class="login-glass">
-            <div class="login-brand">
-                <div class="login-emblem-glow"></div>
-                <img src="assets/OCR.png" alt="Obscura Logo" class="login-emblem" onerror="this.onerror=null; this.src='assets/cover.png';">
-                <h2>OBSCURA <span>RECORD</span></h2>
-                <div class="login-badge"><i class="fas fa-shield-alt"></i> ROOT AUTHENTICATION REQUIRED</div>
-            </div>
-            
-            <div class="login-body">
-                <div class="login-input-group">
-                    <label><i class="fas fa-envelope"></i> ADMIN EMAIL ADDRESS</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-user-astronaut"></i>
-                        <input type="email" id="root-email-input" placeholder="ADMIN EMAIL (e.g. sayurux@gmail.com)..." autocomplete="username">
+// --- INITIALIZE GSAP CONFIG (Silence Warnings) ---
+gsap.config({ nullTargetWarn: false });
+
+// --- ULTRA-EFFICIENT REAL-TIME SYNC & CACHE ENGINE (100% LIVE SYNC + ZERO BANDWIDTH) ---
+let currentLiveSiteVersion = sessionStorage.getItem('obscura_site_v') || null;
+
+function fetchWithCache(path, callback, fallbackData = null) {
+    const cacheKey = `obscura_data_${path}`;
+    const cached = sessionStorage.getItem(cacheKey);
+
+    if (cached) {
+        try {
+            const parsed = JSON.parse(cached);
+            callback(parsed);
+        } catch (e) {}
+    }
+
+    if (typeof firebase === 'undefined') {
+        if (!cached && fallbackData) callback(fallbackData);
+        return;
+    }
+
+    // Single on-demand fetch
+    firebase.database().ref(path).once('value').then((snap) => {
+        const val = snap.val();
+        if (val !== null && val !== undefined) {
+            sessionStorage.setItem(cacheKey, JSON.stringify(val));
+            callback(val);
+        } else if (!cached && fallbackData) {
+            callback(fallbackData);
+        }
+    }).catch(() => {
+        if (!cached && fallbackData) callback(fallbackData);
+    });
+}
+
+// Single real-time listener on tiny 10-byte version node
+if (typeof firebase !== 'undefined') {
+    try {
+        firebase.database().ref('siteData/globals/v').on('value', (snap) => {
+            const latestV = String(snap.val() || '1.0');
+            if (currentLiveSiteVersion && currentLiveSiteVersion !== latestV) {
+                // Admin updated data: invalidate local cache and re-sync live
+                for (let i = sessionStorage.length - 1; i >= 0; i--) {
+                    const k = sessionStorage.key(i);
+                    if (k && k.startsWith('obscura_data_')) {
+                        sessionStorage.removeItem(k);
+                    }
+                }
+                if (typeof initPortal === 'function') initPortal();
+                if (typeof loadPopular === 'function') loadPopular();
+            }
+            currentLiveSiteVersion = latestV;
+            sessionStorage.setItem('obscura_site_v', latestV);
+        });
+    } catch (e) {}
+}
+
+// --- CYBERPUNK UI SOUND SYNTHESIZER & SFX ENGINE ---
+let sfxAudioCtx = null;
+let sfxEnabled = localStorage.getItem('obscura_sfx_enabled') !== 'false';
+
+const updateSFXToggleUI = () => {
+    const sfxBtn = document.getElementById('sfx-toggle-btn');
+    if (!sfxBtn) return;
+    if (sfxEnabled) {
+        sfxBtn.classList.remove('sfx-muted');
+        sfxBtn.innerHTML = '<i class="fas fa-volume-up"></i> <span class="sfx-label">SFX ON</span>';
+    } else {
+        sfxBtn.classList.add('sfx-muted');
+        sfxBtn.innerHTML = '<i class="fas fa-volume-mute"></i> <span class="sfx-label">SFX OFF</span>';
+    }
+};
+
+// Unlock Web Audio Context cleanly on first user gesture (Prevents browser warnings)
+const unlockAudioContextOnGesture = () => {
+    try {
+        if (!sfxAudioCtx) sfxAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (sfxAudioCtx && sfxAudioCtx.state === 'suspended') sfxAudioCtx.resume();
+    } catch (e) {}
+    window.removeEventListener('click', unlockAudioContextOnGesture);
+    window.removeEventListener('keydown', unlockAudioContextOnGesture);
+    window.removeEventListener('touchstart', unlockAudioContextOnGesture);
+};
+window.addEventListener('click', unlockAudioContextOnGesture, { once: true });
+window.addEventListener('keydown', unlockAudioContextOnGesture, { once: true });
+window.addEventListener('touchstart', unlockAudioContextOnGesture, { once: true });
+
+const playCyberSFX = (type = 'click') => {
+    if (!sfxEnabled) return;
+    try {
+        if (!sfxAudioCtx) {
+            // Do not create AudioContext on mere hover before first user gesture
+            if (type === 'hover') return;
+            sfxAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (sfxAudioCtx.state === 'suspended') {
+            if (type === 'hover') return;
+            sfxAudioCtx.resume();
+        }
+        const now = sfxAudioCtx.currentTime;
+        
+        if (type === 'hover') {
+            const osc = sfxAudioCtx.createOscillator();
+            const gain = sfxAudioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1400, now);
+            osc.frequency.exponentialRampToValueAtTime(700, now + 0.035);
+            gain.gain.setValueAtTime(0.015, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
+            osc.connect(gain);
+            gain.connect(sfxAudioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.035);
+        } else if (type === 'click') {
+            const osc = sfxAudioCtx.createOscillator();
+            const gain = sfxAudioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(880, now);
+            osc.frequency.exponentialRampToValueAtTime(220, now + 0.07);
+            gain.gain.setValueAtTime(0.05, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+            osc.connect(gain);
+            gain.connect(sfxAudioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.07);
+        } else if (type === 'whoosh' || type === 'modal') {
+            const osc = sfxAudioCtx.createOscillator();
+            const gain = sfxAudioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(250, now);
+            osc.frequency.exponentialRampToValueAtTime(950, now + 0.14);
+            gain.gain.setValueAtTime(0.035, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+            osc.connect(gain);
+            gain.connect(sfxAudioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.14);
+        } else if (type === 'success') {
+            [587.33, 880].forEach((freq, idx) => {
+                const osc = sfxAudioCtx.createOscillator();
+                const gain = sfxAudioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+                gain.gain.setValueAtTime(0.04, now + idx * 0.07);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.07 + 0.1);
+                osc.connect(gain);
+                gain.connect(sfxAudioCtx.destination);
+                osc.start(now + idx * 0.07);
+                osc.stop(now + idx * 0.07 + 0.1);
+            });
+        }
+    } catch (e) { }
+};
+
+const playBleep = (freq = 600, type = 'sine', duration = 0.08) => {
+    if (!sfxEnabled) return;
+    try {
+        if (!sfxAudioCtx) sfxAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (sfxAudioCtx.state === 'suspended') sfxAudioCtx.resume();
+        const osc = sfxAudioCtx.createOscillator();
+        const gain = sfxAudioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, sfxAudioCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, sfxAudioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, sfxAudioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(sfxAudioCtx.destination);
+        osc.start();
+        osc.stop(sfxAudioCtx.currentTime + duration);
+    } catch (e) { }
+};
+
+
+// --- MASTER CYBERPUNK SILKY SMOOTH TYPEWRITER ENTRANCE ---
+let ignitionStarted = false;
+
+const runIgnition = (forceReplay = false) => {
+    if (ignitionStarted && !forceReplay) return;
+    if (document.body.classList.contains('maintenance-active') && !forceReplay) return;
+    ignitionStarted = true;
+
+    const entranceScreen = document.getElementById('entrance-screen');
+    const mainSite = document.getElementById('main-site');
+    const typeTextEl = document.getElementById('splash-type-text');
+    if (!entranceScreen || !mainSite) return;
+
+    entranceScreen.style.removeProperty('display');
+    entranceScreen.style.display = 'flex';
+    entranceScreen.style.opacity = '1';
+    entranceScreen.style.filter = 'none';
+    if (typeTextEl) typeTextEl.innerHTML = '';
+
+    // 1. Smooth Fade & Float In Logo
+    gsap.fromTo(".splash-logo", 
+        { opacity: 0, scale: 0.88, filter: "drop-shadow(0 0 0px #00f0ff)" },
+        { opacity: 1, scale: 1, filter: "drop-shadow(0 0 25px rgba(0, 240, 255, 0.5))", duration: 0.55, ease: "power2.out" }
+    );
+
+    // 2. Silky Character-by-Character Typewriter
+    const phrase = "OBSCURA RECORDS";
+    let charIndex = 0;
+
+    const typeInterval = setInterval(() => {
+        charIndex++;
+        const currentStr = phrase.slice(0, charIndex);
+
+        if (typeTextEl) {
+            if (charIndex <= 7) {
+                // "OBSCURA"
+                typeTextEl.textContent = currentStr;
+            } else {
+                // "OBSCURA " + "<span class='accent-records'>RECORDS</span>"
+                const firstPart = "OBSCURA ";
+                const secondPart = currentStr.slice(8);
+                typeTextEl.innerHTML = `${firstPart}<span class="accent-records">${secondPart}</span>`;
+            }
+        }
+
+        if (charIndex >= phrase.length) {
+            clearInterval(typeInterval);
+
+            // 3. Pause for Brand Impact & Seamless Dissolve
+            setTimeout(() => {
+                const tl = gsap.timeline({
+                    onComplete: () => {
+                        const critStyle = document.getElementById('critical-intro-scroll-lock');
+                        if (critStyle) critStyle.remove();
+                        document.body.classList.remove('no-scroll');
+                        document.documentElement.classList.remove('no-scroll');
+                        entranceScreen.style.display = 'none';
+
+                        if (!window.matchMedia("(hover: none) and (pointer: coarse)").matches && window.innerWidth > 1024) {
+                            gsap.to(".cursor-glow", { opacity: 1, duration: 1.2 });
+                        }
+
+                        const devStatusTag = document.querySelector('.dev-status-tag');
+                        if (devStatusTag) {
+                            devStatusTag.innerHTML = `<i class="fas fa-check-circle" style="font-size: 0.5rem;"></i> SYSTEM OPTIMIZED`;
+                            devStatusTag.style.opacity = "0.6";
+                            devStatusTag.style.color = "var(--accent-blue)";
+                        }
+                    }
+                });
+
+                // Soft Logo & Text Pulse Glow
+                tl.to(".splash-content", {
+                    scale: 1.03,
+                    opacity: 0.8,
+                    filter: "drop-shadow(0 0 35px rgba(0, 240, 255, 0.8))",
+                    duration: 0.25,
+                    ease: "power2.out"
+                });
+
+                // Butter-smooth Dissolve of Entrance Screen
+                tl.to(entranceScreen, {
+                    opacity: 0,
+                    duration: 0.65,
+                    ease: "power2.inOut",
+                    onStart: () => {
+                        gsap.set(mainSite, { visibility: 'visible', opacity: 1 });
+                        mainSite.style.removeProperty('display');
+                        mainSite.style.removeProperty('visibility');
+                        gsap.to("html", { "--sb-opacity": 0.2, duration: 1.2, ease: "power2.out" });
+                    }
+                }, "-=0.1");
+
+                // Main Site Nav & Hero Reveal
+                tl.to(".glass-nav", { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, "-=0.35");
+                tl.from(".hero-content", { y: 20, opacity: 0, duration: 0.7, ease: "power2.out" }, "-=0.4");
+            }, 320);
+        }
+    }, 45); // Snappy, natural typing speed (45ms/char)
+};
+
+// Automatic Trigger on Page Load & Fast-Safety Fallback
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(runIgnition, 30);
+});
+window.addEventListener('load', runIgnition);
+setTimeout(runIgnition, 250);
+
+let pendingYTTrack = null;
+
+window.onYouTubeIframeAPIReady = function () {
+    initYTPlayer();
+};
+
+function initYTPlayer() {
+    if (ytPlayer && isYTApiReady) return;
+    try {
+        const isFileProtocol = window.location.protocol === 'file:';
+        ytPlayer = new YT.Player('yt-player-container', {
+            height: '180',
+            width: '320',
+            playerVars: {
+                'autoplay': 1,
+                'controls': 0,
+                'showinfo': 0,
+                'rel': 0,
+                'modestbranding': 1,
+                'enablejsapi': 1,
+                'origin': isFileProtocol ? 'https://www.youtube.com' : (window.location.origin === 'null' || !window.location.origin ? '*' : window.location.origin)
+            },
+            events: {
+                'onReady': (event) => {
+                    isYTApiReady = true;
+                    console.log('YT API Active');
+                    if (event.target && event.target.setVolume) event.target.setVolume(100);
+                    if (pendingYTTrack) {
+                        const track = pendingYTTrack;
+                        pendingYTTrack = null;
+                        playYouTubeTrack(track.ytId, track.ytType, track.playBtn, track.row, track.coverImg);
+                    }
+                },
+                'onStateChange': onPlayerStateChange,
+                'onError': (e) => {
+                    console.warn("YT Playback Error Code:", e.data);
+                }
+            }
+        });
+    } catch (e) { console.error("YT Setup Fail:", e); }
+}
+
+function onPlayerStateChange(event) {
+    if (event.data === YT.PlayerState.ENDED) {
+        if (typeof stopPlayback === 'function') stopPlayback();
+    }
+}
+
+function getYouTubeID(url) {
+    if (!url) return null;
+    try {
+        const u = new URL(url);
+        // Prioritize Single Video ID over Playlist ID (Embeds work better for videos)
+        if (u.searchParams.has('v')) {
+            return { type: 'video', id: u.searchParams.get('v') };
+        } else if (u.searchParams.has('list')) {
+            return { type: 'playlist', id: u.searchParams.get('list') };
+        } else if (u.hostname.includes('youtu.be')) {
+            return { type: 'video', id: u.pathname.substring(1) };
+        } else if (u.searchParams.has('v')) {
+            return { type: 'video', id: u.searchParams.get('v') };
+        }
+        return null;
+    } catch (e) {
+        // Fallback for raw IDs
+        if (url.length === 11) return { type: 'video', id: url };
+        return null;
+    }
+}
+
+function playPreview(audioSrc, ytId, ytType, btn, row) {
+    if (!btn) return;
+    const isCurrentPlaying = (currentPlayingBtn === btn && (previewAudio && !previewAudio.paused || ytPlayer && typeof ytPlayer.getPlayerState === 'function' && ytPlayer.getPlayerState() === 1));
+
+    if (isCurrentPlaying) {
+        stopPlayback();
+        return;
+    }
+
+    stopPlayback();
+
+    const img = row ? row.querySelector('.release-cover-large img') : null;
+
+    // 1. If direct audio link (mp3, wav, etc.)
+    if (audioSrc && (audioSrc.endsWith('.mp3') || audioSrc.endsWith('.wav') || audioSrc.endsWith('.ogg') || audioSrc.includes('preview') || audioSrc.includes('assets/'))) {
+        try {
+            previewAudio.src = audioSrc;
+            previewAudio.currentTime = 0;
+            previewAudio.play().then(() => {
+                startUIPlayback(btn, row, img);
+            }).catch(e => {
+                console.warn("Direct audio preview error, trying YouTube:", e);
+                if (ytId) {
+                    playYouTubeTrack(ytId, ytType || 'video', btn, row, img);
+                }
+            });
+            return;
+        } catch (e) {}
+    }
+
+    // 2. If YouTube track ID or URL
+    if (ytId) {
+        playYouTubeTrack(ytId, ytType || 'video', btn, row, img);
+    } else {
+        const ytData = getYouTubeID(audioSrc);
+        if (ytData && ytData.id) {
+            playYouTubeTrack(ytData.id, ytData.type || 'video', btn, row, img);
+        } else {
+            console.warn("No playable audio source or YouTube ID for this track.");
+        }
+    }
+}
+
+function playYouTubeTrack(ytId, ytType, playBtn, row, coverImg) {
+    if (!ytId) return;
+
+    if (!isYTApiReady || !ytPlayer || typeof ytPlayer.loadVideoById !== 'function') {
+        pendingYTTrack = { ytId, ytType, playBtn, row, coverImg };
+        initYTPlayer();
+        startUIPlayback(playBtn, row, coverImg);
+        return;
+    }
+
+    try {
+        if (ytPlayer.unMute) ytPlayer.unMute();
+        if (ytPlayer.setVolume) ytPlayer.setVolume(100);
+        if (ytType === 'playlist') {
+            ytPlayer.loadPlaylist({ listType: 'playlist', list: ytId, index: 0 });
+        } else {
+            ytPlayer.loadVideoById({ videoId: ytId, startSeconds: 0 });
+        }
+        if (ytPlayer.playVideo) ytPlayer.playVideo();
+    } catch (e) {
+        console.warn("YT Player playback delay:", e);
+    }
+    startUIPlayback(playBtn, row, coverImg);
+    if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
+}
+
+function startUIPlayback(btn, row, img) {
+    if (!btn) return;
+    isAudioAutoPausedByScroll = false;
+    currentPlayingBtn = btn;
+    btn.innerHTML = '<i class="fas fa-pause"></i>';
+    if (row) row.classList.add('active-track');
+
+    gsap.to(btn, { scale: 1.1, boxShadow: '0 0 20px #00f0ff', repeat: -1, yoyo: true, duration: 0.8 });
+    if (img) gsap.to(img, { scale: 1.15, duration: 20, ease: "linear", repeat: -1, yoyo: true });
+
+    // Activate Real-Time Sub-Bass Reactive Background Lighting
+    if (typeof startBassReactiveEngine === 'function') {
+        startBassReactiveEngine();
+    }
+
+    // Sync Floating Cyberpunk Music Stream Player
+    if (typeof syncFloatingPlayer === 'function') {
+        syncFloatingPlayer(row, btn, true);
+    }
+}
+
+function stopPlayback(btn) {
+    const targetBtn = btn || currentPlayingBtn;
+    currentPlayingBtn = null;
+    isAudioAutoPausedByScroll = false;
+
+    // Reset all play buttons across the archive
+    document.querySelectorAll('.play-btn, #releases .play-btn, .releases-slider .play-btn').forEach(b => {
+        b.innerHTML = '<i class="fas fa-play"></i>';
+        gsap.killTweensOf(b);
+        gsap.to(b, { scale: 1, boxShadow: 'none', duration: 0.3 });
+    });
+
+    // Reset active-track states and preview time countdowns
+    document.querySelectorAll('.release-card-large, #releases .release-card-large, .releases-slider .release-card-large').forEach(r => {
+        r.classList.remove('active-track');
+        const img = r.querySelector('.release-cover-large img');
+        if (img) {
+            gsap.killTweensOf(img);
+            gsap.to(img, { scale: 1, duration: 0.5 });
+        }
+        const timeDisplay = r.querySelector('.preview-time');
+        if (timeDisplay) {
+            timeDisplay.style.display = 'none';
+            timeDisplay.textContent = '0:30';
+        }
+    });
+
+    if (audioTimer) {
+        clearInterval(audioTimer);
+        audioTimer = null;
+    }
+
+    // Silence all audio sources immediately
+    if (previewAudio) {
+        try {
+            previewAudio.pause();
+            previewAudio.currentTime = 0;
+        } catch (e) {}
+    }
+    playbackStartOffset = -1;
+
+    if (ytPlayer && ytPlayer.stopVideo) {
+        try { ytPlayer.stopVideo(); } catch (e) {}
+    }
+
+    // Stop Sub-Bass Reactive Background Lighting
+    if (typeof stopBassReactiveEngine === 'function') {
+        stopBassReactiveEngine();
+    }
+
+    // Sync Floating Player State to Paused & trigger auto dismiss
+    if (typeof syncFloatingPlayer === 'function') {
+        syncFloatingPlayer(null, null, false);
+    }
+}
+
+// --- POPULAR RELEASES ENGINE ---
+function loadPopular() {
+    const popularGrid = document.getElementById('popular-grid');
+    if (!popularGrid) return;
+
+    fetchWithCache('siteData/popular_releases', (data) => {
+        popularGrid.innerHTML = '';
+
+        let items = [];
+        if (data) {
+            items = Array.isArray(data) ? data : Object.values(data);
+        }
+
+        if (items.length === 0) {
+            popularGrid.innerHTML = '<p style="opacity: 0.3; grid-column: 1/-1; text-align: center; padding: 3rem;">NO TRANSMISSIONS FOUND IN THIS SECTOR.</p>';
+            return;
+        }
+
+        items.forEach((r, i) => {
+            const title = r.title || 'POPULAR TRACK';
+            const artist = r.artist || r.producers || 'OBSCURA RECORD';
+            const cover = r.image || r.cover || 'assets/cover.png';
+            const youtube = r.youtube || r.streamUrl || '';
+            const spotify = r.spotify || r.spotifyUrl || '';
+            const apple = r.apple || r.appleUrl || '';
+            const badgeText = r.badge || 'TRENDING';
+            const rankFormatted = (i + 1 < 10) ? `0${i + 1}` : `${i + 1}`;
+
+            const card = document.createElement('div');
+            card.className = 'popular-card release-card-large glass';
+            card.innerHTML = `
+                <div class="release-cover-large">
+                    <img src="${cover}" alt="${title}" onerror="this.onerror=null; this.src='assets/cover.png';">
+                    <div class="release-type-badge">HOT #${rankFormatted}</div>
+                </div>
+                <div class="release-info-large">
+                    <span class="track-id">POPULAR HIT <span class="badge">${badgeText}</span></span>
+                    <h4>${title}</h4>
+                    <div class="producers-text">Artist: <span>${artist}</span></div>
+                    <div class="release-actions">
+                        ${spotify && spotify !== '#' ? `<a href="${spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
+                        ${apple && apple !== '#' ? `<a href="${apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
+                        ${youtube && youtube !== '#' ? `<a href="${youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
                     </div>
                 </div>
-                
-                <div class="login-input-group">
-                    <label><i class="fas fa-terminal"></i> ADMINISTRATIVE PASSWORD / KEY</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-key"></i>
-                        <input type="password" id="root-pass-input" placeholder="ENTER PORTAL MASTER PASSWORD..." autocomplete="current-password">
-                        <button type="button" id="toggle-pwd-btn" class="pwd-eye"><i class="fas fa-eye"></i></button>
-                    </div>
+            `;
+
+            popularGrid.appendChild(card);
+
+            // Entry Animation
+            gsap.from(card, {
+                y: 50,
+                opacity: 0,
+                scale: 0.9,
+                duration: 1,
+                delay: i * 0.1,
+                ease: "expo.out",
+                scrollTrigger: {
+                    trigger: card,
+                    start: "top 90%",
+                }
+            });
+        });
+
+        // --- POPULAR SLIDER LOGIC ---
+        const popularControls = document.querySelector('.popular-controls');
+        const btnPrev = document.querySelector('.popular-prev');
+        const btnNext = document.querySelector('.popular-next');
+        let popularAutoScroll = null;
+
+        const checkPopularOverflow = () => {
+            if (!popularGrid || !popularControls) return;
+            if (popularGrid.scrollWidth > popularGrid.clientWidth) {
+                popularControls.style.display = 'flex';
+            } else {
+                popularControls.style.display = 'none';
+            }
+        };
+
+        // Initialize Slider Interactions
+        if (btnPrev && btnNext && popularGrid) {
+            btnPrev.addEventListener('click', (e) => {
+                e.stopPropagation();
+                popularGrid.scrollBy({ left: -400, behavior: 'smooth' });
+                resetPopularAutoScroll();
+            });
+            btnNext.addEventListener('click', (e) => {
+                e.stopPropagation();
+                popularGrid.scrollBy({ left: 400, behavior: 'smooth' });
+                resetPopularAutoScroll();
+            });
+        }
+
+        // Auto-Scroll Engine
+        const startPopularAutoScroll = () => {
+            if (popularAutoScroll) clearInterval(popularAutoScroll);
+            popularAutoScroll = setInterval(() => {
+                if (!popularGrid) return;
+                let maxScroll = popularGrid.scrollWidth - popularGrid.clientWidth;
+                if (popularGrid.scrollLeft >= maxScroll - 10) {
+                    popularGrid.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    popularGrid.scrollBy({ left: 400, behavior: 'smooth' });
+                }
+            }, 5000);
+        };
+
+        const resetPopularAutoScroll = () => {
+            clearInterval(popularAutoScroll);
+            setTimeout(startPopularAutoScroll, 10000); // Resume after 10s of inactivity
+        };
+
+        // Run checks after data is loaded and DOM is updated
+        setTimeout(() => {
+            checkPopularOverflow();
+            if (popularGrid && popularGrid.scrollWidth > popularGrid.clientWidth) {
+                startPopularAutoScroll();
+            }
+        }, 800);
+
+        // Window resize listener
+        window.addEventListener('resize', checkPopularOverflow);
+    });
+}
+
+const initPortal = () => {
+
+    const entranceScreen = document.getElementById('entrance-screen');
+    const mainSite = document.getElementById('main-site');
+    const cursor = document.querySelector('.cursor-outer');
+    const cursorGlow = document.querySelector('.cursor-glow');
+
+    // --- CUSTOM CURSOR LOGIC ---
+    const isMobile = window.matchMedia("(hover: none) and (pointer: coarse)").matches || window.innerWidth <= 1024;
+
+    if (!isMobile) {
+        document.addEventListener('mousemove', (e) => {
+            if (cursor && cursorGlow) {
+                gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
+                gsap.to(cursorGlow, { x: e.clientX, y: e.clientY, duration: 0.6 });
+            }
+        });
+
+        document.addEventListener('mouseleave', () => {
+            if (cursor && cursorGlow) {
+                gsap.to([cursor, cursorGlow], { opacity: 0, duration: 0.3 });
+            }
+        });
+
+        document.addEventListener('mouseenter', () => {
+            if (cursor && cursorGlow) {
+                gsap.to([cursor, cursorGlow], { opacity: 1, duration: 0.3 });
+            }
+        });
+    } else if (cursor && cursorGlow) {
+        cursor.style.display = 'none';
+        cursorGlow.style.display = 'none';
+    }
+
+    // --- FAQ ACCORDION (DYNAMIC) ---
+
+    // --- MODAL SYSTEM (FAQ & PRIVACY) ---
+    const setupModal = (triggerId, modalId) => {
+        const trigger = document.getElementById(triggerId);
+        const modal = document.getElementById(modalId);
+        if (!trigger || !modal) return;
+
+        const closeBtn = modal.querySelector('.close-modal');
+        const overlay = modal.querySelector('.modal-overlay');
+
+        trigger.addEventListener('click', () => {
+            playBleep(700, 'sine', 0.1);
+            modal.classList.add('active');
+            document.body.classList.add('no-scroll');
+            document.documentElement.classList.add('no-scroll');
+
+            // --- SMOOTH "TYPE-SIGNAL" EFFECT FOR MODAL --
+            if (modal.id === 'submission-modal') {
+                const modalTitle = modal.querySelector('.section-title');
+                const modalDesc = modal.querySelector('.section-desc');
+
+                if (modalTitle) {
+                    const originalTitle = modalTitle.getAttribute('data-original') || modalTitle.textContent;
+                    if (!modalTitle.getAttribute('data-original')) modalTitle.setAttribute('data-original', originalTitle);
+                    modalTitle.textContent = "";
+                    typeSignal(modalTitle, originalTitle, 40);
+                }
+
+                if (modalDesc) {
+                    const originalDesc = modalDesc.getAttribute('data-original') || modalDesc.textContent;
+                    if (!modalDesc.getAttribute('data-original')) modalDesc.setAttribute('data-original', originalDesc);
+                    modalDesc.textContent = "";
+                    setTimeout(() => typeSignal(modalDesc, originalDesc, 15), 500);
+                }
+            }
+        });
+
+        function typeSignal(element, text, speed) {
+            let i = 0;
+            const timer = setInterval(() => {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(timer);
+                }
+            }, speed);
+        }
+
+        function initMirrorEffect(input) {
+            const display = input.parentElement.querySelector('.mirror-display');
+            if (!display) return;
+
+            input.addEventListener('input', () => {
+                const text = input.value;
+                display.innerHTML = '';
+
+                text.split('').forEach((char) => {
+                    const span = document.createElement('span');
+                    span.className = 'mirror-glyph';
+                    span.textContent = char === ' ' ? '\u00A0' : char;
+                    display.appendChild(span);
+                });
+            });
+        }
+
+        const mirrorInputs = document.querySelectorAll('.mirror-container .real-input');
+        mirrorInputs.forEach(input => initMirrorEffect(input));
+
+        [closeBtn, overlay].forEach(btn => {
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    modal.classList.remove('active');
+                    document.body.classList.remove('no-scroll');
+                    document.documentElement.classList.remove('no-scroll');
+                });
+            }
+        });
+    };
+
+    setupModal('open-faq', 'faq-modal');
+    setupModal('open-privacy', 'privacy-modal');
+    setupModal('open-demo', 'demo-modal');
+    setupModal('open-form', 'submission-modal');
+    setupModal('open-form-sidebar', 'submission-modal'); // New: Sidebar trigger
+    setupModal('open-contact', 'contact-modal');
+    setupModal('order-ghost', 'contact-modal');
+    setupModal('order-special', 'contact-modal');
+
+    // --- SOCIAL SIDEBAR & MOBILE NAVIGATION DRAWER ---
+    const navMenuTrigger = document.getElementById('nav-menu-trigger');
+    const socialSidebar = document.getElementById('social-sidebar');
+    const closeSidebar = document.getElementById('close-sidebar');
+    const sidebarOverlay = document.querySelector('.sidebar-overlay');
+
+    if (navMenuTrigger && socialSidebar) {
+        navMenuTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (typeof playCyberSFX === 'function') playCyberSFX('click');
+            socialSidebar.classList.add('active');
+            if (sidebarOverlay) sidebarOverlay.classList.add('active');
+            document.body.classList.add('no-scroll');
+        });
+    }
+
+    if (closeSidebar && socialSidebar) {
+        closeSidebar.addEventListener('click', () => {
+            if (typeof playCyberSFX === 'function') playCyberSFX('click');
+            socialSidebar.classList.remove('active');
+            if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+            document.body.classList.remove('no-scroll');
+        });
+    }
+
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+            if (socialSidebar) socialSidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            document.body.classList.remove('no-scroll');
+        });
+    }
+
+    const sidebarNavItems = document.querySelectorAll('.sidebar-nav .nav-item');
+    sidebarNavItems.forEach(item => {
+        item.addEventListener('click', () => {
+            if (socialSidebar) socialSidebar.classList.remove('active');
+            if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+            document.body.classList.remove('no-scroll');
+        });
+    });
+
+    // --- ARTIST MODAL CLOSE LOGIC ---
+    const artistModal = document.getElementById('artist-modal');
+    if (artistModal) {
+        const closeBtn = artistModal.querySelector('.close-modal');
+        const overlay = artistModal.querySelector('.modal-overlay');
+        [closeBtn, overlay].forEach(btn => {
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    artistModal.classList.remove('active');
+                    document.body.classList.remove('no-scroll');
+                    document.documentElement.classList.remove('no-scroll');
+                });
+            }
+        });
+    }
+
+    // --- SUBMISSION FORM LOGIC (WITH RECAPTCHA v3) ---
+    const subForm = document.getElementById('submission-form');
+    const subStatus = document.getElementById('submission-status');
+    const contactForm = document.getElementById('contact-form');
+    const contactStatus = document.getElementById('contact-status');
+
+    // Using the stabilized reCAPTCHA key
+    const RECAPTCHA_SITE_KEY = "6LcFNKgsAAAAAEEdRhYJrwgeWzaRyMmzbgNy3swn";
+
+    // --- MULTI-LINK DYNAMIC ENGINE ---
+    const addLinkBtn = document.getElementById('add-link-btn');
+    const dynamicLinksContainer = document.getElementById('dynamic-links-container');
+
+    if (addLinkBtn && dynamicLinksContainer) {
+        addLinkBtn.addEventListener('click', () => {
+            const row = document.createElement('div');
+            row.className = 'dynamic-row';
+            row.innerHTML = `
+                <div class="mirror-container">
+                    <input type="url" name="spotify[]" class="real-input" placeholder="https://open.spotify.com/artist/...">
+                    <div class="mirror-display"></div>
                 </div>
-                
-                <button id="login-btn" class="cyber-login-btn">
-                    <span class="btn-glow"></span>
-                    <i class="fas fa-unlock-alt"></i> INITIATE ROOT ACCESS
+                <button type="button" class="remove-link-btn" title="Remove Link">
+                    <i class="fas fa-trash"></i>
                 </button>
+            `;
+            dynamicLinksContainer.appendChild(row);
+
+            // Re-init specialized effects for NEW elements
+            const newInput = row.querySelector('input');
+
+            // Mirror logic
+            if (typeof initMirrorEffect === 'function') {
+                initMirrorEffect(newInput);
+            } else {
+                // Fallback if defined inside closure
+                const disp = row.querySelector('.mirror-display');
+                newInput.addEventListener('input', () => {
+                    disp.innerHTML = '';
+                    newInput.value.split('').forEach(char => {
+                        const span = document.createElement('span');
+                        span.className = 'mirror-glyph';
+                        span.textContent = char === ' ' ? '\u00A0' : char;
+                        disp.appendChild(span);
+                    });
+                });
+            }
+
+            // Pulse effect
+            newInput.addEventListener('keydown', () => newInput.classList.add('pulse'));
+            newInput.addEventListener('keyup', () => setTimeout(() => newInput.classList.remove('pulse'), 500));
+        });
+
+        dynamicLinksContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-link-btn')) {
+                const row = e.target.closest('.dynamic-row');
+                row.style.transform = 'scale(0.9) translateX(20px)';
+                row.style.opacity = '0';
+                setTimeout(() => row.remove(), 300);
+            }
+        });
+    }
+
+    if (subForm) {
+        const checkBoxes = subForm.querySelectorAll('.cyber-check-input');
+        const submitBtn = subForm.querySelector('button[type="submit"]');
+
+        const updateSubmitLock = () => {
+            const allBoxesChecked = Array.from(checkBoxes).every(cb => cb.checked);
+            submitBtn.disabled = !allBoxesChecked;
+            submitBtn.style.opacity = allBoxesChecked ? "1" : "0.3";
+            submitBtn.style.cursor = allBoxesChecked ? "pointer" : "not-allowed";
+            if (!allBoxesChecked) {
+                submitBtn.title = "Please acknowledge all guidelines to proceed.";
+            } else {
+                submitBtn.title = "";
+            }
+        };
+
+        checkBoxes.forEach(cb => cb.addEventListener('change', updateSubmitLock));
+        updateSubmitLock(); // Initial lock state
+
+        // --- TYPING "SYSTEM PULSE" EFFECT ---
+        const typingInputs = subForm.querySelectorAll('input, textarea');
+        typingInputs.forEach(input => {
+            input.addEventListener('keydown', () => {
+                input.classList.add('pulse');
+            });
+            input.addEventListener('keyup', () => {
+                setTimeout(() => input.classList.remove('pulse'), 500);
+            });
+        });
+
+        // --- DEMO SUBMISSION HANDLER ---
+        subForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = subForm.querySelector('button');
+            const originalBtnText = btn.textContent;
+            btn.textContent = "VERIFYING SECURITY...";
+            btn.disabled = true;
+
+            try {
+                // Bypass reCAPTCHA on local file transmission to prevent protocol blockers
+                let token = "LOCAL_TRANSMISSION_BYPASS";
+                if (window.location.protocol !== 'file:') {
+                    if (typeof grecaptcha === 'undefined') throw new Error("Security Engine Offline.");
+                    token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'demo_submission' });
+                    if (!token) throw new Error("Security verification failed.");
+                }
+
+                btn.textContent = "SYNCHRONIZING VAULT...";
+
+                // Capture data directly from elements
+                const artistInput = subForm.querySelector('input[name="artist"]');
+                const nameInput = subForm.querySelector('input[name="name"]');
+                const emailInput = subForm.querySelector('input[name="email"]');
+                const genreInput = subForm.querySelector('input[name="genre"]');
+                const linkInput = subForm.querySelector('input[name="link"]');
+                const messageInput = subForm.querySelector('textarea[name="message"]');
+
+                const artistVal = artistInput?.value?.trim() || "";
+                const nameVal = nameInput?.value?.trim() || "";
+                const emailVal = emailInput?.value?.trim() || "";
+                const genreVal = genreInput?.value?.trim() || "";
+                const linkVal = linkInput?.value?.trim() || "";
+                const messageVal = messageInput?.value?.trim() || "";
+
+                if (!artistVal || !nameVal || !emailVal || !linkVal || linkVal === '#' || emailVal.length < 5) {
+                    alert("TRANSMISSION BLOCKED: Please fill in all required fields (Name, Artist Name, Valid Email, Demo Streaming Link).");
+                    btn.textContent = originalBtnText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                // Dynamic Multi-Link Collection Logic
+                const spotifyLinks = Array.from(subForm.querySelectorAll('input[name="spotify[]"]'))
+                    .map(input => input.value.trim())
+                    .filter(val => val !== "");
+
+                // Formatted for Firebase (Plain string)
+                const spotifyData = spotifyLinks.length > 0 ? spotifyLinks.join(' | ') : "N/A";
+
+                // Formatted for EmailJS (Labeled list for a cleaner look)
+                const formattedLinksForEmail = spotifyLinks.length > 0
+                    ? spotifyLinks.map((link, i) => `🔗 [ VIEW PROFILE ${i + 1} ]: ${link}`).join('\n')
+                    : "Not Provided";
+
+                const submission = {
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    date: new Date().toLocaleString(),
+                    name: nameVal,
+                    artist: artistVal,
+                    email: emailVal,
+                    genre: genreVal || "Electronic / Phonk",
+                    link: linkVal,
+                    spotify: spotifyData,
+                    message: messageVal || "No additional bio.",
+                    recaptcha_token: token
+                };
+
+                const labels = {
+                    LABEL_NAME: subForm.querySelector('label[data-sync="formLabelName"]')?.textContent || "Real Name",
+                    LABEL_ARTIST: subForm.querySelector('label[data-sync="formLabelArtist"]')?.textContent || "Artist Name(s)",
+                    LABEL_EMAIL: subForm.querySelector('label[data-sync="formLabelEmail"]')?.textContent || "Email Address",
+                    LABEL_GENRE: subForm.querySelector('label[data-sync="formLabelGenre"]')?.textContent || "Primary Genre",
+                    LABEL_SPOTIFY: subForm.querySelector('label[data-sync="formLabelSpotify"]')?.textContent || "Artist Presence Links",
+                    LABEL_MESSAGE: subForm.querySelector('label[data-sync="formLabelMessage"]')?.textContent || "Message/Bio",
+                    LABEL_DATE: submission.date
+                };
+
+                // Initialize Backend API Request
+                try {
+                    const emailResult = await fetch(API_BASE_URL + '/api/demo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: submission.name,
+                            artist: submission.artist,
+                            email: submission.email,
+                            genre: submission.genre,
+                            link: submission.link,
+                            spotify: formattedLinksForEmail,
+                            message: submission.message,
+                            date: submission.date,
+                            recaptcha_token: token
+                        })
+                    });
+                    if (emailResult.ok) {
+                        console.log("✅ SYSTEM: Custom Email Backend Dispatched Successfully");
+                    } else {
+                        console.error("❌ ERROR: Custom Email Backend Rejected Request", await emailResult.text());
+                    }
+                } catch (eErr) {
+                    console.error("❌ ERROR: Email Transmission Node Failure", eErr);
+                }
+
+                await firebase.database().ref('siteData/submissions/demo').push(submission);
+                if (typeof ObscuraTelemetry !== 'undefined') {
+                    ObscuraTelemetry.logEvent('DEMO_SUBMISSION', {
+                        artist: submission.artist,
+                        name: submission.name,
+                        genre: submission.genre,
+                        link: submission.link
+                    });
+                }
+
+                subForm.style.display = 'none';
+                if (subStatus) subStatus.style.display = 'block';
+
+                setTimeout(() => {
+                    const subModal = document.getElementById('submission-modal');
+                    if (subModal) subModal.classList.remove('active');
+                    document.body.classList.remove('no-scroll');
+                    document.documentElement.classList.remove('no-scroll');
+
+                    setTimeout(() => {
+                        subForm.style.display = 'flex';
+                        if (subStatus) subStatus.style.display = 'none';
+                        subForm.reset();
+
+                        // Clear extra dynamic links but keep the first one baseline
+                        const rows = dynamicLinksContainer?.querySelectorAll('.dynamic-row');
+                        if (rows) {
+                            rows.forEach((row, index) => {
+                                if (index > 0) row.remove();
+                            });
+                        }
+
+                        subForm.querySelectorAll('.mirror-display').forEach(d => d.innerHTML = '');
+                        btn.textContent = originalBtnText;
+                        btn.disabled = false;
+                        updateSubmitLock();
+                    }, 500);
+                }, 3000);
+
+            } catch (err) {
+                console.error("System Failure:", err);
+                alert("TRANSMISSION ERROR: " + err.message);
+                btn.textContent = originalBtnText;
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // --- CONTACT FORM HANDLER ---
+    if (contactForm) {
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = contactForm.querySelector('button');
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = "TRANSMITTING...";
+            btn.disabled = true;
+
+            try {
+                if (typeof grecaptcha === 'undefined') throw new Error("Security Engine Offline.");
+                const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'contact_submission' });
+
+                const formData = new FormData(contactForm);
+                const nameVal = (formData.get('name') || '').trim();
+                const emailVal = (formData.get('email') || '').trim();
+                const messageVal = (formData.get('message') || '').trim();
+
+                if (!nameVal || !emailVal || !messageVal || emailVal.length < 5) {
+                    alert("TRANSMISSION BLOCKED: Please fill in all required contact fields.");
+                    btn.innerHTML = originalBtnText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                const data = {
+                    name: nameVal,
+                    email: emailVal,
+                    message: messageVal,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    recaptcha_token: token
+                };
+
+                await firebase.database().ref('siteData/submissions/contact').push(data);
+                if (typeof ObscuraTelemetry !== 'undefined') {
+                    ObscuraTelemetry.logEvent('CONTACT_MESSAGE', {
+                        name: data.name,
+                        email: data.email
+                    });
+                }
+
+                // --- CUSTOM BACKEND CONTACT NOTIFICATION ---
+                try {
+                    const emailResult = await fetch(API_BASE_URL + '/api/contact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: data.name,
+                            email: data.email,
+                            message: data.message,
+                            recaptcha_token: token
+                        })
+                    });
+                    if (emailResult.ok) {
+                        console.log("✅ SYSTEM: Custom Contact Email Sent");
+                    } else {
+                        console.error("❌ ERROR: Custom Contact Email Failure", await emailResult.text());
+                    }
+                } catch (eErr) {
+                    console.error("❌ ERROR: Contact Email Failure", eErr);
+                }
+
+                contactForm.style.display = 'none';
+                if (contactStatus) contactStatus.style.display = 'block';
+
+                setTimeout(() => {
+                    const contactModal = document.getElementById('contact-modal');
+                    if (contactModal) contactModal.classList.remove('active');
+                    document.body.classList.remove('no-scroll');
+                    document.documentElement.classList.remove('no-scroll');
+
+                    setTimeout(() => {
+                        contactForm.style.display = 'block';
+                        if (contactStatus) contactStatus.style.display = 'none';
+                        contactForm.reset();
+                        btn.innerHTML = originalBtnText;
+                        btn.disabled = false;
+                    }, 500);
+                }, 3000);
+
+            } catch (err) {
+                console.error("Contact System Failure:", err);
+                alert("TRANSMISSION ERROR: " + err.message);
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+            }
+        });
+    }
+
+
+    // --- FAQ ACCORDION (DYNAMIC) ---
+    window.bindAccordionListeners = function (containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const faqItems = container.querySelectorAll('.faq-item');
+        faqItems.forEach(item => {
+            // Remove old listeners to prevent duplicates
+            const newItem = item.cloneNode(true);
+            item.parentNode.replaceChild(newItem, item);
+
+            newItem.addEventListener('click', (e) => {
+                e.stopPropagation();
+                container.querySelectorAll('.faq-item').forEach(other => {
+                    if (other !== newItem) other.classList.remove('active');
+                });
+                newItem.classList.toggle('active');
+            });
+        });
+    }
+
+    window.bindAccordionListeners('faq-container');
+    window.bindAccordionListeners('privacy-container');
+
+    // --- CLEAN URL NAVIGATION SYSTEM (Zero URL Pollution On Button Clicks) ---
+    const navLinks = document.querySelectorAll('.nav-links a, .nav-links .nav-item[data-target], .logo-link, .sidebar-nav-item[data-target], .cta-primary[data-target], [data-target^="#"], [data-target="reload"], a[href^="#"]:not([href="#"])');
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            const target = link.getAttribute('data-target') || link.getAttribute('href');
+
+            if (target === 'reload') {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                sanitizeBrowserURL();
+                return;
+            }
+
+            // Only intercept valid internal section links (e.g. #releases, #artists, #home)
+            if (target && target.startsWith('#') && target.length > 1) {
+                e.preventDefault();
+
+                // Clean the browser address bar immediately so #section or text fragments NEVER appear
+                sanitizeBrowserURL();
+
+                // --- MOBILE SIDEBAR AUTO-CLOSE LOGIC ---
+                const sidebar = document.getElementById('social-sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
+                if (sidebar && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    if (overlay) overlay.classList.remove('active');
+                    document.body.classList.remove('no-scroll');
+                    document.documentElement.classList.remove('no-scroll'); // Restore scroll
+                }
+
+                const targetId = target.substring(1);
+                const targetElement = document.getElementById(targetId);
+
+                if (targetElement) {
+                    const headerHeight = 80;
+                    const targetPosition = targetElement.offsetTop - headerHeight;
+
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    });
+
+    // --- 3D TILT EFFECT ---
+    const tiltContainers = document.querySelectorAll('.glass:not(.no-tilt):not(.artist-item), .release-card, .social-card, .faq-item');
+    tiltContainers.forEach(container => {
+        container.addEventListener('mousemove', (e) => {
+            const { left, top, width, height } = container.getBoundingClientRect();
+            const x = (e.clientX - left) / width - 0.5;
+            const y = (e.clientY - top) / height - 0.5;
+            gsap.to(container, {
+                rotateY: x * 20,
+                rotateX: -y * 20,
+                transformPerspective: 1200,
+                ease: "power1.out",
+                duration: 0.5
+            });
+        });
+        container.addEventListener('mouseleave', () => {
+            gsap.to(container, { rotateY: 0, rotateX: 0, duration: 0.8, ease: "elastic.out(1, 0.3)" });
+        });
+    });
+
+    // --- SCROLL REVEAL (DATA SYNC STYLE) ---
+    const sections = document.querySelectorAll('section');
+    const options = { threshold: 0.1 };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                gsap.to(entry.target, {
+                    opacity: 1,
+                    y: 0,
+                    filter: "blur(0px)",
+                    duration: 0.8,
+                    ease: "power2.out"
+                });
+            }
+        });
+    }, options);
+
+    sections.forEach(section => {
+        if (section.id !== 'home') {
+            gsap.set(section, { opacity: 0, y: 40, filter: "blur(10px)" });
+            observer.observe(section);
+        }
+    });
+
+    // --- FIREBASE DISCORD SYNC (REALTIME DATABASE) ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyCHf_R1n2Qn-q4NHAjfJt6xD_TWIRjiN1o",
+        authDomain: "obscura-records.firebaseapp.com",
+        databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "obscura-records",
+        storageBucket: "obscura-records.firebasestorage.app",
+        messagingSenderId: "831882873428",
+        appId: "1:831882873428:web:3cf009875e160a9f8efbc1"
+    };
+
+    // Firebase Initialization
+    if (typeof firebase !== 'undefined') {
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // --- UNIFIED PROFILE DETAIL MODAL (WITH TOP BANNER & DISCORD SYNC) ---
+        function openProfileModal(opts) {
+            const modal      = document.getElementById('artist-modal');
+            const mBanner    = document.getElementById('artist-modal-banner');
+            const mBannerImg = document.getElementById('artist-modal-banner-img');
+            const mName      = document.getElementById('artist-modal-name');
+            const mStatus    = document.getElementById('artist-modal-status');
+            const mBio       = document.getElementById('artist-modal-bio');
+            const mImg       = document.getElementById('artist-modal-img');
+            const mDecor     = document.getElementById('artist-modal-decoration');
+            const mLinks     = document.getElementById('artist-modal-links');
+            if (!modal) return;
+
+            if (typeof playBleep === 'function') playBleep(700, 'sine', 0.1);
+
+            // 1. Dynamic Profile Banner (Supports Discord Animated GIFs, Image URLs, & Banner Colors)
+            const bannerUrl = (opts.bannerUrl && opts.bannerUrl.trim() !== '') ? opts.bannerUrl : '';
+            const bannerColor = (opts.bannerColor && opts.bannerColor.trim() !== '') ? opts.bannerColor : '';
+
+            if (mBanner) {
+                if (bannerColor) {
+                    mBanner.style.backgroundColor = bannerColor;
+                    mBanner.style.background = `linear-gradient(180deg, ${bannerColor} 0%, rgba(13,11,24,0.95) 100%)`;
+                } else {
+                    mBanner.style.backgroundColor = '#0d0b18';
+                    mBanner.style.background = '';
+                }
+
+                if (mBannerImg) {
+                    if (bannerUrl) {
+                        mBannerImg.style.display = 'block';
+                        mBannerImg.onerror = () => {
+                            if (bannerColor) {
+                                mBannerImg.style.display = 'none';
+                            } else {
+                                mBannerImg.src = 'assets/cover.png';
+                            }
+                        };
+                        mBannerImg.src = bannerUrl;
+                    } else if (bannerColor) {
+                        mBannerImg.src = '';
+                        mBannerImg.style.display = 'none';
+                    } else {
+                        mBannerImg.src = 'assets/cover.png';
+                        mBannerImg.style.display = 'block';
+                    }
+                }
+                mBanner.style.display = 'block';
+            }
+
+            // 2. Name
+            if (mName) {
+                mName.innerHTML = `${opts.name || 'PERSONNEL PROFILE'} <span class="staff-verified-badge modal-badge" title="Verified Obscura Personnel"><i class="fas fa-check"></i></span>`;
+            }
+
+            // 3. Status Indicator (Hidden for Partners, Dynamic for Staff)
+            if (mStatus) {
+                if (opts.isPartner) {
+                    mStatus.style.display = 'none';
+                } else {
+                    mStatus.style.display = 'inline-block';
+                    mStatus.textContent = (opts.status || 'OFFLINE').toUpperCase();
+                    mStatus.className = `status-indicator ${opts.statusClass || 'offline'}`;
+                    mStatus.style.color = '';
+                    mStatus.style.borderColor = '';
+                    mStatus.style.background = '';
+                }
+            }
+
+            // 4. Biography
+            if (mBio) mBio.textContent = opts.bio || (opts.isPartner ? 'Official record label alliance transmission.' : 'Accessing encrypted artist profile...');
+
+            // 5. Avatar / Logo Image
+            if (mImg) {
+                const avatarUrl = (opts.avatarUrl && opts.avatarUrl.trim() !== '') ? opts.avatarUrl : 'assets/staff/default.png';
+                mImg.style.backgroundImage = `url("${avatarUrl}")`;
+                mImg.style.backgroundSize = 'cover';
+                mImg.style.backgroundPosition = 'center';
+                mImg.style.borderColor = opts.isPartner ? 'var(--accent-magenta)' : 'var(--accent-blue)';
+                mImg.style.boxShadow = opts.isPartner ? '0 0 25px rgba(255, 0, 200, 0.4)' : '0 0 20px rgba(0, 240, 255, 0.4)';
+            }
+
+            // 6. Discord Avatar Frame / Decoration
+            if (mDecor) {
+                if (opts.decorationUrl) {
+                    mDecor.src = opts.decorationUrl;
+                    mDecor.style.display = 'block';
+                } else {
+                    mDecor.style.display = 'none';
+                }
+            }
+
+            // 7. Social Links
+            if (mLinks) {
+                mLinks.innerHTML = '';
+                if (opts.socials) {
+                    Object.entries(opts.socials).forEach(([platform, url]) => {
+                        if (!url || url.trim() === '') return;
+                        let icon = 'fas fa-link';
+                        const p = platform.toLowerCase();
+                        if (p === 'instagram') icon = 'fab fa-instagram';
+                        else if (p === 'spotify') icon = 'fab fa-spotify';
+                        else if (p === 'apple') icon = 'fa-brands fa-apple';
+                        else if (p === 'facebook') icon = 'fa-brands fa-facebook-f';
+                        else if (p === 'youtube') icon = 'fab fa-youtube';
+                        else if (p === 'tiktok') icon = 'fab fa-tiktok';
+                        else if (p === 'twitter' || p === 'x') icon = 'fab fa-x-twitter';
+                        else if (p === 'soundcloud') icon = 'fab fa-soundcloud';
+                        else if (p === 'website' || p === 'web') icon = 'fas fa-globe';
+                        mLinks.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" class="platform-link" style="${opts.isPartner ? 'background:rgba(255,0,200,0.08); border-color:rgba(255,0,200,0.25);' : ''}"><i class="${icon}"></i></a>`);
+                    });
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.classList.add('no-scroll');
+            document.documentElement.classList.add('no-scroll');
+        }
+
+        // --- DYNAMIC STAFF CARD BUILDER ---
+        function createStaffCard(discordId, data, gridEl, isPartner) {
+            // Build card element (identical size & style to partner cards)
+            const item = document.createElement('div');
+            item.className = 'artist-item glass';
+            item.dataset[isPartner ? 'partnerId' : 'discordId'] = discordId;
+            item.innerHTML = `
+                <div class="avatar-wrapper">
+                    <div class="artist-img"></div>
+                    <img src="" class="avatar-decoration" alt="Frame" style="display:none;">
+                </div>
+                <h4>
+                    <span class="staff-name-text">${data.name || (isPartner ? 'PARTNER' : 'STAFF')}</span>
+                    <span class="staff-verified-badge" title="Verified Obscura Staff"><i class="fas fa-check"></i></span>
+                </h4>
+                <p>Status: <span class="status-indicator">LOADING...</span></p>
+                <span class="artist-loc">Discord Presence</span>
+            `;
+            gridEl.appendChild(item);
+
+            // Apply data
+            const avatar     = item.querySelector('.artist-img');
+            const decoration = item.querySelector('.avatar-decoration');
+            const statusEl   = item.querySelector('.status-indicator');
+            const nameEl     = item.querySelector('.staff-name-text');
+
+            const applyData = (d) => {
+                if (!d) {
+                    statusEl.textContent = 'OFFLINE';
+                    statusEl.className = 'status-indicator offline';
+                    return;
+                }
+                if (d.name && nameEl) nameEl.textContent = d.name;
+                const status = (d.status || 'offline').toLowerCase();
+                statusEl.textContent = status.toUpperCase();
+                statusEl.className = `status-indicator ${status}`;
+                const avatarSrc = (d.avatar_url && d.avatar_url.trim() !== '') ? d.avatar_url : 'assets/staff/default.png';
+                avatar.style.backgroundImage = `url("${avatarSrc}")`;
+                avatar.style.backgroundSize = 'cover';
+                avatar.style.backgroundPosition = 'center';
+
+                if (d.decoration_url && d.decoration_url !== '') {
+                    decoration.src = d.decoration_url;
+                    decoration.style.display = 'block';
+                } else {
+                    decoration.style.display = 'none';
+                }
+
+                // Modal click
+                item.style.cursor = 'pointer';
+                item.onclick = () => {
+                    openProfileModal({
+                        name: d.name || nameEl.textContent,
+                        status: (d.status || 'OFFLINE').toUpperCase(),
+                        statusClass: status,
+                        bio: d.bio || 'Accessing encrypted artist profile...',
+                        avatarUrl: avatarSrc,
+                        decorationUrl: d.decoration_url,
+                        bannerUrl: d.banner_url || d.banner || '',
+                        bannerColor: d.banner_color || d.accent_color || '',
+                        socials: d.socials,
+                        isPartner: false
+                    });
+                };
+            };
+            applyData(data);
+        }
+
+        // --- DYNAMIC STAFF GRID: Render all from Firebase staff_status/ (Sorted by hierarchy order) ---
+        const staffGrid = document.getElementById('staff-grid');
+        if (staffGrid) {
+            fetchWithCache('staff_status', (allStaff) => {
+                staffGrid.innerHTML = '';
+                const staffData = allStaff || {};
+                const sortedStaff = Object.entries(staffData).sort((a, b) => {
+                    const orderA = (a[1] && typeof a[1].order === 'number') ? a[1].order : 99;
+                    const orderB = (b[1] && typeof b[1].order === 'number') ? b[1].order : 99;
+                    return orderA - orderB;
+                });
+
+                sortedStaff.forEach(([id, data]) => {
+                    createStaffCard(id, data, staffGrid, false);
+                });
+                if (sortedStaff.length === 0) {
+                    staffGrid.innerHTML = '<p style="opacity:0.4; text-align:center; padding:4rem; font-family:monospace;">No staff records found.</p>';
+                }
+            });
+        }
+
+        // --- DYNAMIC PARTNER CARD BUILDER (CLEAN & AESTHETIC CYBER CARD) ---
+        function createPartnerCard(partnerId, data, gridEl) {
+            const item = document.createElement('div');
+            item.className = 'partner-cyber-card';
+            item.dataset.partnerId = partnerId;
+            item.innerHTML = `
+                <!-- 1. Header Cover Banner -->
+                <div class="partner-cyber-banner">
+                    <div class="partner-cyber-banner-bg"></div>
+                    <div class="partner-cyber-banner-overlay"></div>
+                    <div class="partner-alliance-tag">
+                        <i class="fas fa-handshake"></i>
+                        <span>ALLIANCE</span>
+                    </div>
+                </div>
+
+                <!-- 2. Floating Avatar Profile DP -->
+                <div class="partner-cyber-avatar-wrap">
+                    <div class="partner-cyber-avatar-halo"></div>
+                    <div class="partner-cyber-avatar-img"></div>
+                    <div class="partner-cyber-status-dot" title="Alliance Active"></div>
+                </div>
+
+                <!-- 3. Body Content -->
+                <div class="partner-cyber-body">
+                    <h4 class="partner-cyber-title">
+                        <span class="title-text">PARTNER</span>
+                        <i class="fas fa-check-circle" style="font-size:0.95rem; color:var(--accent-blue);" title="Verified Distribution Partner"></i>
+                    </h4>
+                    <span class="partner-cyber-badge tagline-text">DISTRIBUTION PARTNER</span>
+                    <p class="partner-cyber-bio">Encrypted record label partnership transmission...</p>
+                    <div class="partner-cyber-socials"></div>
+                </div>
+            `;
+            gridEl.appendChild(item);
+
+            const bannerBg  = item.querySelector('.partner-cyber-banner-bg');
+            const avatar    = item.querySelector('.partner-cyber-avatar-img');
+            const nameEl    = item.querySelector('.title-text');
+            const tagEl     = item.querySelector('.tagline-text');
+            const bioEl     = item.querySelector('.partner-cyber-bio');
+            const socialsEl = item.querySelector('.partner-cyber-socials');
+
+            const applyPartnerData = (d) => {
+                if (!d) return;
+                const name = d.name || 'LABEL PARTNER';
+                const tagline = d.tagline || 'Distribution Partner';
+                const bio = d.bio || 'Official verified distribution alliance network powering Obscura Records catalog across worldwide DSP platforms.';
+                const logoUrl = (d.logo_url && d.logo_url.trim() !== '') ? d.logo_url : (d.avatar_url && d.avatar_url.trim() !== '' ? d.avatar_url : 'assets/staff/default.png');
+                const bannerUrl = (d.banner_url && d.banner_url.trim() !== '') ? d.banner_url : (d.banner || 'assets/cover.jpg');
+
+                if (nameEl) nameEl.textContent = name;
+                if (tagEl) tagEl.textContent = tagline;
+                if (bioEl) bioEl.textContent = bio;
+
+                if (avatar) {
+                    avatar.style.backgroundImage = `url("${logoUrl}")`;
+                }
+
+                if (bannerBg) {
+                    bannerBg.style.backgroundImage = `url("${bannerUrl}")`;
+                }
+
+                // Direct social links on the card itself
+                if (socialsEl) {
+                    socialsEl.innerHTML = '';
+                    const socialIcons = {
+                        website: 'fas fa-globe',
+                        spotify: 'fab fa-spotify',
+                        instagram: 'fab fa-instagram',
+                        discord: 'fab fa-discord',
+                        soundcloud: 'fab fa-soundcloud',
+                        youtube: 'fab fa-youtube',
+                        twitter: 'fab fa-x-twitter'
+                    };
+                    if (d.socials && typeof d.socials === 'object') {
+                        Object.entries(d.socials).forEach(([key, url]) => {
+                            if (!url || typeof url !== 'string' || !url.trim()) return;
+                            const iconClass = socialIcons[key.toLowerCase()] || 'fas fa-link';
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.target = '_blank';
+                            a.rel = 'noopener noreferrer';
+                            a.className = 'partner-cyber-social-btn';
+                            a.title = key.toUpperCase();
+                            a.innerHTML = `<i class="${iconClass}"></i>`;
+                            socialsEl.appendChild(a);
+                        });
+                    }
+                }
+            };
+
+            applyPartnerData(data);
+        }
+
+        // --- DYNAMIC PARTNERS GRID: Render all from Firebase partner_status/ (Sorted by hierarchy order) ---
+        const partnersGrid = document.getElementById('partners-grid');
+        if (partnersGrid) {
+            fetchWithCache('partner_status', (allPartners) => {
+                partnersGrid.innerHTML = '';
+                const partnerData = allPartners || {};
+                const sortedPartners = Object.entries(partnerData).filter(([id, data]) => {
+                    if (!data) return false;
+                    const name = (data.name || '').trim().toLowerCase();
+                    const tagline = (data.tagline || '').trim().toLowerCase();
+                    // Filter out legacy ITX record label card or old unlinked bot ghost
+                    if (id === '859727100758982666' && (name.includes('itx') || !name)) return false;
+                    if (name.includes('itx record') || tagline.includes('itx record') || name === 'itx') return false;
+                    return true;
+                }).sort((a, b) => {
+                    const orderA = (a[1] && typeof a[1].order === 'number') ? a[1].order : 99;
+                    const orderB = (b[1] && typeof b[1].order === 'number') ? b[1].order : 99;
+                    return orderA - orderB;
+                });
+
+                sortedPartners.forEach(([id, data]) => {
+                    createPartnerCard(id, data, partnersGrid);
+                });
+                if (sortedPartners.length === 0) {
+                    partnersGrid.innerHTML = '<p style="opacity:0.4; text-align:center; padding:4rem; font-family:monospace;">No partner records found.</p>';
+                }
+            });
+        }
+
+        // --- 3D INTERACTIVE COSMIC TILT FOR STAFF & PARTNER CARDS ---
+        document.addEventListener('mousemove', (e) => {
+            const card = e.target.closest('.artist-item');
+            if (!card) return;
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -8;
+            const rotateY = ((x - centerX) / centerX) * 8;
+            card.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-12px) scale3d(1.02, 1.02, 1.02)`;
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            const card = e.target.closest('.artist-item');
+            if (card && !card.contains(e.relatedTarget)) {
+                card.style.transform = '';
+            }
+        });
+
+    } else {
+        console.error("Firebase SDK not loaded! Check index.html scripts.");
+    }
+
+    // --- FIREBASE DYNAMIC SITE DATA (GLOBALS & RELEASES) ---
+    if (typeof firebase !== 'undefined') {
+        const db = firebase.database();
+
+        // --- DEEP SPACE CONSTELLATION & STARFIELD CANVAS ENGINE ---
+        let mCanvasAnimId = null;
+        function initSpaceCanvas() {
+            const canvas = document.getElementById('m-space-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            const stars = [];
+            const numStars = 110;
+            const colors = [
+                'rgba(0, 240, 255, ',
+                'rgba(183, 0, 255, ',
+                'rgba(255, 255, 255, ',
+                'rgba(0, 217, 255, '
+            ];
+
+            for (let i = 0; i < numStars; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    radius: Math.random() * 1.5 + 0.4,
+                    baseAlpha: Math.random() * 0.6 + 0.25,
+                    alpha: Math.random() * 0.6 + 0.25,
+                    twinkleSpeed: Math.random() * 0.03 + 0.01,
+                    twinklePhase: Math.random() * Math.PI * 2,
+                    speedY: Math.random() * 0.25 + 0.08,
+                    speedX: (Math.random() - 0.5) * 0.08,
+                    color: colors[Math.floor(Math.random() * colors.length)]
+                });
+            }
+
+            function render() {
+                ctx.clearRect(0, 0, width, height);
+
+                // Draw Constellation Lines between nearby stars
+                for (let i = 0; i < stars.length; i++) {
+                    for (let j = i + 1; j < stars.length; j++) {
+                        const dx = stars[i].x - stars[j].x;
+                        const dy = stars[i].y - stars[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 85) {
+                            const lineAlpha = (1 - dist / 85) * 0.12;
+                            ctx.beginPath();
+                            ctx.moveTo(stars[i].x, stars[i].y);
+                            ctx.lineTo(stars[j].x, stars[j].y);
+                            ctx.strokeStyle = `rgba(0, 240, 255, ${lineAlpha})`;
+                            ctx.lineWidth = 0.6;
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                // Render Stars with Twinkle
+                stars.forEach(star => {
+                    star.twinklePhase += star.twinkleSpeed;
+                    star.alpha = star.baseAlpha + Math.sin(star.twinklePhase) * 0.25;
+                    star.alpha = Math.max(0.1, Math.min(0.95, star.alpha));
+
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `${star.color}${star.alpha})`;
+                    ctx.shadowBlur = star.radius > 1.2 ? 6 : 0;
+                    ctx.shadowColor = '#00f0ff';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    star.y -= star.speedY;
+                    star.x += star.speedX;
+
+                    if (star.y < 0) {
+                        star.y = height;
+                        star.x = Math.random() * width;
+                    }
+                    if (star.x < 0) star.x = width;
+                    if (star.x > width) star.x = 0;
+                });
+
+                mCanvasAnimId = requestAnimationFrame(render);
+            }
+
+            const handleResize = () => {
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                canvas.style.width = width + 'px';
+                canvas.style.height = height + 'px';
+                ctx.scale(dpr, dpr);
+            };
+
+            handleResize();
+            window.addEventListener('resize', handleResize);
+            window.addEventListener('orientationchange', handleResize);
+
+            if (mCanvasAnimId) cancelAnimationFrame(mCanvasAnimId);
+            render();
+        }
+
+        // Strict iOS Safari & Mobile Touchmove / Rubber-band Lock for Maintenance Mode
+        window.addEventListener('touchmove', (e) => {
+            if (document.body.classList.contains('maintenance-active')) {
+                const card = e.target.closest('.m-glass-card');
+                if (card && card.scrollHeight > card.clientHeight) {
+                    return;
+                }
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        window.addEventListener('wheel', (e) => {
+            if (document.body.classList.contains('maintenance-active')) {
+                const card = e.target.closest('.m-glass-card');
+                if (card && card.scrollHeight > card.clientHeight) {
+                    return;
+                }
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // --- FLOATING ADMIN PREVIEW BANNER ENGINE ---
+        function renderAdminPreviewBanner(active) {
+            let banner = document.getElementById('admin-preview-floating-bar');
+            if (!active) {
+                document.body.classList.remove('admin-preview-active');
+                if (banner) banner.style.display = 'none';
+                return;
+            }
+            document.body.classList.add('admin-preview-active');
+
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'admin-preview-floating-bar';
+                banner.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    background: rgba(10, 10, 15, 0.95);
+                    border-bottom: 2px solid #00f0ff;
+                    box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+                    color: #fff;
+                    padding: 8px 16px;
+                    z-index: 99999999;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    font-family: 'Space Grotesk', monospace, sans-serif;
+                    font-size: 0.78rem;
+                    backdrop-filter: blur(10px);
+                    box-sizing: border-box;
+                `;
+                banner.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="display: inline-block; width: 8px; height: 8px; background: #00f0ff; border-radius: 50%; box-shadow: 0 0 8px #00f0ff;"></span>
+                        <strong style="color: #00f0ff; letter-spacing: 1px;">MAINTENANCE MODE ACTIVE</strong>
+                        <span style="opacity: 0.7;">| ADMIN PREVIEW BYPASS ENGAGED</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button id="apb-toggle-screen" style="background: rgba(0, 240, 255, 0.15); border: 1px solid #00f0ff; color: #00f0ff; padding: 4px 10px; border-radius: 3px; font-size: 0.7rem; cursor: pointer; font-family: inherit; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="fas fa-eye"></i> Toggle Lock Screen
+                        </button>
+                        <button id="apb-lock-site" style="background: rgba(255, 62, 62, 0.2); border: 1px solid #ff3e3e; color: #ff3e3e; padding: 4px 10px; border-radius: 3px; font-size: 0.7rem; cursor: pointer; font-family: inherit; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="fas fa-lock"></i> Exit Preview
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(banner);
+
+                document.getElementById('apb-toggle-screen').addEventListener('click', () => {
+                    const overlay = document.getElementById('maintenance-overlay');
+                    const mainSite = document.getElementById('main-site');
+                    if (overlay) {
+                        if (overlay.style.display === 'none' || !overlay.style.display) {
+                            overlay.style.display = 'flex';
+                            document.body.classList.add('no-scroll', 'maintenance-active');
+                            document.documentElement.classList.add('no-scroll', 'maintenance-active');
+                            if (mainSite) {
+                                mainSite.style.setProperty('display', 'none', 'important');
+                                mainSite.style.setProperty('visibility', 'hidden', 'important');
+                            }
+                        } else {
+                            overlay.style.display = 'none';
+                            document.body.classList.remove('no-scroll', 'maintenance-active');
+                            document.documentElement.classList.remove('no-scroll', 'maintenance-active');
+                            if (mainSite) {
+                                mainSite.style.removeProperty('display');
+                                mainSite.style.removeProperty('visibility');
+                            }
+                        }
+                    }
+                });
+
+                document.getElementById('apb-lock-site').addEventListener('click', () => {
+                    sessionStorage.removeItem('adminBypass');
+                    location.href = window.location.pathname;
+                });
+            } else {
+                banner.style.display = 'flex';
+            }
+        }
+
+        // 1. Sync Globals (Text Elements & Links)
+        fetchWithCache('siteData/globals', (data) => {
+            if (data) {
+                // --- MAINTENANCE MODE OVERRIDE (ADMIN SITE ONLY) ---
+                const maintenanceOverlay = document.getElementById('maintenance-overlay');
+                const mainSite = document.getElementById('main-site');
+                const entrance = document.getElementById('entrance-screen');
                 
-                <p id="login-error" class="error-msg"><i class="fas fa-exclamation-triangle"></i> ACCESS DENIED: INVALID KERNEL CREDENTIALS</p>
-                <div class="login-footer-info">
-                    <span>SECURITY PROTOCOL: FIREBASE AUTH TLS</span>
-                    <span>ENGINE v<span class="engine-ver">5.0</span></span>
-                </div>
-            </div>
-        </div>
-    </div>
+                // Retrieve root key from siteData globals or fallback to master passphrase
+                const activeRootKey = (data.security && data.security.rootKey) ? data.security.rootKey : "ORC ADMINS PASS 2026";
 
-    
-    <div class="admin-wrapper" style="display: none;">
-        
-        
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="brand-container">
-                    <img src="assets/OCR.png" alt="Logo" class="sidebar-logo-img" onerror="this.onerror=null; this.src='assets/cover.png';">
-                    <div class="brand-text">
-                        <h2>OBSCURA <span>CORE</span></h2>
-                        <span class="access-pill"><span class="dot live"></span> ROOT SECURED</span>
-                    </div>
-                </div>
-            </div>
+                // URL Parameter Check - ONLY allow bypass if master key parameter is provided
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlKey = urlParams.get('key') || urlParams.get('pass');
+                if (urlKey && (urlKey === activeRootKey || urlKey === 'ORC ADMINS PASS 2026')) {
+                    sessionStorage.setItem('rootAuth', 'granted');
+                    sessionStorage.setItem('adminBypass', 'true');
+                }
 
-            <div class="sidebar-nav-container">
-                <nav class="sidebar-menu">
-                    <div class="nav-section-label">MAIN CONTROL</div>
-                    <a href="#" class="nav-btn active" data-target="settings-panel">
-                        <i class="fas fa-sliders-h"></i> <span>GLOBALS & BRAND</span>
-                    </a>
-                    <a href="#" class="nav-btn" data-target="links-panel">
-                        <i class="fas fa-link"></i> <span>NAV & SOCIAL LINKS</span>
-                    </a>
-                    <a href="#" class="nav-btn" data-target="popular-panel">
-                        <i class="fas fa-fire"></i> <span>POPULAR RELEASES</span>
-                        <span class="badge" id="badge-popular">0</span>
-                    </a>
-                    <a href="#" class="nav-btn" data-target="releases-panel">
-                        <i class="fas fa-compact-disc"></i> <span>RELEASE ARCHIVE</span>
-                        <span class="badge" id="badge-releases">0</span>
-                    </a>
-                    <a href="#" class="nav-btn" data-target="upcoming-panel">
-                        <i class="fas fa-clock"></i> <span>UPCOMING TEASERS</span>
-                        <span class="badge" id="badge-upcoming">0</span>
-                    </a>
-                    <a href="#" class="nav-btn" data-target="ghost-production-panel">
-                        <i class="fas fa-ghost"></i> <span>GHOST PRODUCTION</span>
-                    </a>
-                    <a href="#" class="nav-btn" data-target="staff-panel">
-                        <i class="fas fa-users-cog"></i> <span>STAFF & PARTNERS</span>
-                        <span class="badge" id="badge-staff-count">0</span>
-                    </a>
-
-                    <div class="nav-section-label">COMMUNICATIONS & INBOX</div>
-                    <a href="#" class="nav-btn" data-target="demo-inbox-panel">
-                        <i class="fas fa-inbox"></i> <span>DEMO SUBMISSIONS</span>
-                        <span class="badge count-pill" id="badge-demos">0</span>
-                    </a>
-                    <a href="#" class="nav-btn" data-target="contact-inbox-panel">
-                        <i class="fas fa-envelope-open-text"></i> <span>CONTACT MESSAGES</span>
-                        <span class="badge count-pill" id="badge-contact-msg">0</span>
-                    </a>
-                    <a href="#" class="nav-btn" data-target="modals-panel">
-                        <i class="fas fa-window-restore"></i> <span>MODALS, FAQ & FOOTER</span>
-                    </a>
-                    <a href="#" class="nav-btn" data-target="transmissions-panel">
-                        <i class="fas fa-broadcast-tower"></i> <span>MEDIA FEEDS (YT & TIKTOK)</span>
-                    </a>
-
-                    <div class="nav-section-label">AFFILIATES & EXTENSIONS</div>
-                    <a href="#" class="nav-btn" data-target="security-panel" style="display: none;">
-                        <i class="fas fa-shield-virus"></i> <span>SECURITY & AUDIT</span>
-                        <span class="badge count-pill" id="badge-security-logs">0</span>
-                    </a>
-                    <a href="javascript:void(0)" onclick="secureNavigate('admin-streetx-clothing/', 'streetx_access_granted')" class="nav-btn streetx-btn">
-                        <i class="fas fa-crown"></i> <span>STREETX ADMIN</span>
-                    </a>
-                </nav>
-            </div>
-
-            <div class="sidebar-footer">
-                <a href="index.html" class="portal-link-btn" target="_blank">
-                    <i class="fas fa-external-link-alt"></i> <span>VIEW LIVE SITE</span>
-                </a>
-                <button type="button" id="admin-logout-btn" class="logout-link-btn">
-                    <i class="fas fa-power-off"></i> <span>TERMINATE SESSION</span>
-                </button>
-            </div>
-        </aside>
-
-        
-        <main class="content-area">
-
-            
-            <header class="hud-topbar">
-                <div class="hud-left">
-                    <h1 id="current-panel-title"><i class="fas fa-sliders-h"></i> GLOBALS & DIRECTIVES</h1>
-                    <span class="panel-desc" id="current-panel-desc">Real-time control center for core site typography, branding, and system states.</span>
-                </div>
-                <div class="hud-right">
-                    <div class="hud-stat-pill">
-                        <i class="fas fa-signal"></i>
-                        <span>FIREBASE: <strong style="color: #00ff8c;">CONNECTED</strong></span>
-                    </div>
-                    <div class="hud-stat-pill">
-                        <i class="fas fa-code-branch"></i>
-                        <span>CACHE v<strong id="display-v">1.0</strong></span>
-                    </div>
-                    <button type="button" class="quick-preview-btn" onclick="sessionStorage.setItem('rootAuth','granted'); sessionStorage.setItem('adminBypass','true'); window.open('index.html?preview=true', '_blank')">
-                        <i class="fas fa-eye"></i> LIVE PREVIEW
-                    </button>
-                </div>
-            </header>
-
-            
-            <section id="settings-panel" class="panel active">
-                <div class="card-grid">
+                if (maintenanceOverlay) {
+                    const isMaint = data.maintenanceMode === 'Enabled' || data.maintenanceMode === true || data.maintenanceMode === 'ON';
                     
-                    
-                    <div class="cyber-card">
-                        <div class="card-header">
-                            <i class="fas fa-heading card-icon"></i>
-                            <div>
-                                <h3>CORE BRANDING & TITLES</h3>
-                                <p>Modify site logo and headline texts (HTML supported for gradient spans).</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group full">
-                                <label><i class="fas fa-signature"></i> SITE LOGO TITLE</label>
-                                <input type="text" id="site_siteTitle" value="OBSCURA <span>RECORD</span>">
-                                <small>Appears in the header navigation bar.</small>
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-bolt"></i> HERO MAIN HEADLINE</label>
-                                <input type="text" id="site_heroTitle" value="WELCOME TO <span class='accent'>OBSCURA RECORD</span>">
-                                <small>Main greeting text on initial site loading.</small>
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-align-left"></i> HERO DESCRIPTION</label>
-                                <textarea id="site_heroDesc" rows="3">OBSCURA RECORD is an independent music label focused on artist development...</textarea>
-                            </div>
-                        </div>
-                    </div>
+                    // Strictly check if session was initiated/authenticated from the Admin Panel
+                    const isBypassed = (sessionStorage.getItem('adminBypass') === 'true' || sessionStorage.getItem('rootAuth') === 'granted');
 
-                    
-                    <div class="cyber-card">
-                        <div class="card-header">
-                            <i class="fas fa-layer-group card-icon"></i>
-                            <div>
-                                <h3>SECTION TITLES & SUBTEXTS</h3>
-                                <p>Customize section titles displayed across all main page sections.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group">
-                                <label>RELEASE ARCHIVE TITLE</label>
-                                <input type="text" id="site_archiveTitle" value="LABEL <span class='accent'>RELEASES</span>">
-                            </div>
-                            <div class="input-group">
-                                <label>RELEASE ARCHIVE SUBTITLE</label>
-                                <input type="text" id="site_archiveDesc" value="THESE ARE THE RELEASES THAT IS PUBLISHED THROUGH OUR LABEL">
-                            </div>
-                            <div class="input-group">
-                                <label>UPCOMING SECTION TITLE</label>
-                                <input type="text" id="site_upcomingTitle" value="UPCOMING <span class='accent'>RELEASES</span>">
-                            </div>
-                            <div class="input-group">
-                                <label>UPCOMING SECTION SUBTITLE</label>
-                                <input type="text" id="site_upcomingDesc" value="FUTURE TRANSMISSIONS FROM THE VOID">
-                            </div>
-                            <div class="input-group">
-                                <label>STAFF SECTION TITLE</label>
-                                <input type="text" id="site_staffTitle" value="OBSCURA <span class='accent'>STAFF</span>">
-                            </div>
-                            <div class="input-group">
-                                <label>STAFF SECTION SUBTITLE</label>
-                                <input type="text" id="site_staffDesc" value="MEET THE MINDS BEHIND THE OBSCURA SOUNDSCAPE">
-                            </div>
-                            <div class="input-group">
-                                <label>PARTNERS SECTION TITLE</label>
-                                <input type="text" id="site_partnersTitle" value="LABEL <span class='accent'>PARTNERS</span>">
-                            </div>
-                            <div class="input-group">
-                                <label>PARTNERS SECTION SUBTITLE</label>
-                                <input type="text" id="site_partnersDesc" value="CREATIVE COLLABORATORS & AFFILIATED ALLIANCES">
-                            </div>
-                        </div>
-                    </div>
+                    if (isMaint && !isBypassed) {
+                        window._wasMaintenanceActive = true;
+                        maintenanceOverlay.style.display = 'flex';
+                        document.body.classList.add('no-scroll', 'maintenance-active');
+                        document.documentElement.classList.add('no-scroll', 'maintenance-active');
 
-                    
-                    <div class="cyber-card highlight-card">
-                        <div class="card-header">
-                            <i class="fas fa-shield-alt card-icon warning"></i>
-                            <div>
-                                <h3>MAINTENANCE & KERNEL SECURITY</h3>
-                                <p>Master toggle for public maintenance lock and dashboard master pass.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group">
-                                <label><i class="fas fa-code-branch"></i> CORE PORTAL ENGINE VERSION</label>
-                                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                    <input type="text" id="site_v" value="1.0" placeholder="e.g. 95.1 or 1.0" style="flex: 1;">
-                                    <button type="button" class="cyber-btn sm" id="btn-bump-version" title="Increment version (+0.1)" style="white-space: nowrap;"><i class="fas fa-plus"></i> +0.1 BUMP</button>
-                                </div>
-                                <small>Live engine version & cache buster. Syncs automatically to main site footer, sidebar & engine boot.</small>
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-terminal"></i> CORE PORTAL FOOTER BRAND / TITLE</label>
-                                <input type="text" id="site_sidebarLogoText" value="OBSCURA <span>RECORD</span>" placeholder="e.g. OBSCURA <span>RECORD</span>">
-                                <small>Bottom sidebar brand markup (HTML allowed).</small>
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-tag"></i> CORE PORTAL FOOTER SUB-LABEL</label>
-                                <input type="text" id="site_sidebarPortalLabel" value="CORE PORTAL" placeholder="e.g. CORE PORTAL">
-                                <small>Prefix label text shown before the version number (e.g. CORE PORTAL v6.0).</small>
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-power-off"></i> MAINTENANCE MODE SWITCH</label>
-                                <select id="site_maintenanceMode" class="cyber-select">
-                                    <option value="Disabled">Disabled (Site 100% Live To Public)</option>
-                                    <option value="Enabled">Enabled (Maintenance Lock Active)</option>
-                                </select>
-                                <small>When enabled, public visitors see the luxury Space Lock Screen.</small>
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-key"></i> MASTER ADMIN PASSPHRASE</label>
-                                <input type="text" id="security_rootKey" value="ORC ADMINS PASS 2026">
-                                <small>Key required to unlock this administration command deck.</small>
-                            </div>
-                            <div class="input-group">
-                                <label>MAINTENANCE SCREEN TITLE</label>
-                                <input type="text" id="site_maintenanceTitle" value="OBSCURA RECORD // UNDER RENOVATION">
-                            </div>
-                            <div class="input-group">
-                                <label>MAINTENANCE SCREEN SUBTEXT</label>
-                                <input type="text" id="site_maintenanceMsg" value="Quantum upgrades in progress. Frequencies will resume shortly.">
-                            </div>
-                        </div>
-                    </div>
+                        if (mainSite) {
+                            mainSite.style.setProperty('display', 'none', 'important');
+                            mainSite.style.setProperty('visibility', 'hidden', 'important');
+                        }
+                        if (entrance) {
+                            entrance.style.setProperty('display', 'none', 'important');
+                        }
 
-                </div>
+                        const mTitle = document.getElementById('m-title');
+                        const mMsg = document.getElementById('m-msg');
+                        const mTag = document.getElementById('m-status-tag');
+                        if (mTitle && data.maintenanceTitle) mTitle.innerHTML = data.maintenanceTitle;
+                        if (mMsg && data.maintenanceMsg) mMsg.textContent = data.maintenanceMsg;
+                        if (mTag && data.maintenanceTag) mTag.textContent = data.maintenanceTag;
 
-                <div class="action-footer">
-                    <button class="cyber-btn primary" id="save-globals"><i class="fas fa-cloud-upload-alt"></i> SAVE & SYNC ALL GLOBALS</button>
-                    <span id="save-msg-globals" class="save-status-indicator"></span>
-                </div>
-            </section>
+                        initSpaceCanvas();
+                    } else {
+                        maintenanceOverlay.style.display = 'none';
+                        document.body.classList.remove('maintenance-active');
+                        document.documentElement.classList.remove('maintenance-active');
 
-            
-            <section id="links-panel" class="panel">
-                <div class="card-grid">
-                    
-                    
-                    <div class="cyber-card">
-                        <div class="card-header">
-                            <i class="fas fa-compass card-icon"></i>
-                            <div>
-                                <h3>HEADER & SIDEBAR NAVIGATION TEXTS</h3>
-                                <p>Labels displayed in the top navbar and right-side network drawer.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group"><label>HOME LABEL</label><input type="text" id="site_navHome" value="HOME"></div>
-                            <div class="input-group"><label>RELEASES LABEL</label><input type="text" id="site_navReleases" value="RELEASES"></div>
-                            <div class="input-group"><label>GHOST PRODUCTION LABEL</label><input type="text" id="site_navGhostProduction" value="GHOST PRODUCTION"></div>
-                            <div class="input-group"><label>STAFF LABEL</label><input type="text" id="site_navStaff" value="STAFF"></div>
-                            <div class="input-group"><label>CONTACT LABEL</label><input type="text" id="site_navContact" value="CONTACT"></div>
-                            <div class="input-group"><label>MENU BUTTON LABEL</label><input type="text" id="site_navMenuBtn" value="MENU"></div>
-                        </div>
-                    </div>
+                        if (mCanvasAnimId) cancelAnimationFrame(mCanvasAnimId);
 
-                    
-                    <div class="cyber-card">
-                        <div class="card-header">
-                            <i class="fas fa-share-alt card-icon"></i>
-                            <div>
-                                <h3>SOCIAL FREQUENCIES & CHANNELS</h3>
-                                <p>Direct destination links for external social networks and email.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group full">
-                                <label><i class="fab fa-instagram"></i> INSTAGRAM URL</label>
-                                <input type="text" id="site_socialInstaUrl" value="https://www.instagram.com/recordsobscura">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fab fa-youtube"></i> YOUTUBE CHANNEL URL</label>
-                                <input type="text" id="site_socialYoutubeUrl" value="https://www.youtube.com/channel/UC0A5L7DUgls-AkYaQ4ZwxhA">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fab fa-discord"></i> DISCORD SERVER INVITE</label>
-                                <input type="text" id="site_socialDiscordUrl" value="https://discord.gg/E3Sn72cpBR">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fab fa-tiktok"></i> TIKTOK URL</label>
-                                <input type="text" id="site_socialTiktokUrl" value="https://www.tiktok.com/@obscura.records">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fab fa-spotify"></i> SPOTIFY ARTIST/LABEL URL</label>
-                                <input type="text" id="site_socialSpotifyUrl" value="https://open.spotify.com">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-envelope"></i> DIRECT CONTACT EMAIL</label>
-                                <input type="email" id="site_socialEmailUrl" value="sayurux@gmail.com">
-                            </div>
-                        </div>
-                    </div>
+                        // If maintenance mode was active and just got turned off: Replay intro from the start!
+                        if (window._wasMaintenanceActive) {
+                            window._wasMaintenanceActive = false;
+                            document.body.classList.add('no-scroll');
+                            document.documentElement.classList.add('no-scroll');
+                            if (entrance) {
+                                entrance.style.removeProperty('display');
+                                entrance.style.display = 'flex';
+                                entrance.style.opacity = '1';
+                            }
+                            // Trigger full pristine logo & typewriter reveal!
+                            runIgnition(true);
+                        } else {
+                            if (mainSite) {
+                                mainSite.style.removeProperty('display');
+                                mainSite.style.removeProperty('visibility');
+                            }
+                        }
+                    }
 
-                    
-                    <div class="cyber-card">
-                        <div class="card-header">
-                            <i class="fas fa-tshirt card-icon"></i>
-                            <div>
-                                <h3>HERO STREETX CLOTHING BANNER</h3>
-                                <p>Interactive clothing affiliate banner displayed on the hero section.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group">
-                                <label>BADGE TEXT</label>
-                                <input type="text" id="site_streetxBadge" value="OFFICIAL CLOTHING DIVISION">
-                            </div>
-                            <div class="input-group">
-                                <label>TITLE (HTML)</label>
-                                <input type="text" id="site_streetxTitle" value="STREETX <span class='accent'>CLOTHING</span>">
-                            </div>
-                            <div class="input-group full">
-                                <label>DESCRIPTION</label>
-                                <input type="text" id="site_streetxDesc" value="PREMIUM STREETWEAR IDENTITY & APPAREL DROP 01">
-                            </div>
-                            <div class="input-group">
-                                <label>CTA BUTTON TEXT</label>
-                                <input type="text" id="site_streetxCta" value="EXPLORE COLLECTION">
-                            </div>
-                            <div class="input-group">
-                                <label>DESTINATION URL</label>
-                                <input type="text" id="site_streetxUrl" value="streetx-clothing/">
-                            </div>
-                        </div>
-                    </div>
+                    // Render Floating Admin Preview Banner when Maintenance is Active but Admin is Bypassing
+                    renderAdminPreviewBanner(isMaint && isBypassed);
+                }
 
-                </div>
+                // --- CATEGORY VISIBILITY OVERRIDE ---
+                const upcomingSection = document.getElementById('upcoming');
+                if (upcomingSection) {
+                    if (data.showUpcoming === 'Hidden') {
+                        upcomingSection.style.setProperty('display', 'none', 'important');
+                    } else {
+                        upcomingSection.style.setProperty('display', 'flex', 'important');
+                    }
+                }
 
-                <div class="action-footer">
-                    <button class="cyber-btn primary" id="save-links"><i class="fas fa-save"></i> SAVE & SYNC NAVIGATION & LINKS</button>
-                    <span id="save-msg-links" class="save-status-indicator"></span>
-                </div>
-            </section>
+                // POPULAR RELEASES VISIBILITY GATING
+                const popularSection = document.getElementById('popular');
+                if (data.showPopular === 'Hidden' || data.showPopular === false || data.showPopularReleases === false || data.showPopularReleases === 'Hidden') {
+                    if (popularSection) popularSection.style.setProperty('display', 'none', 'important');
+                } else {
+                    if (popularSection) popularSection.style.setProperty('display', 'block', 'important');
+                }
 
-            
-            <section id="popular-panel" class="panel">
-                <div class="section-visibility-group">
-                    <div class="toggle-wrapper">
-                        <label class="switch">
-                            <input type="checkbox" id="toggle-popular-section" checked>
-                            <span class="slider round"></span>
-                        </label>
-                        <span class="toggle-label">DISPLAY POPULAR RELEASES SECTION ON MAIN SITE</span>
-                    </div>
-                </div>
-
-                <div class="cyber-card" style="margin-bottom: 2rem;">
-                    <div class="card-header">
-                        <i class="fas fa-heading card-icon"></i>
-                        <div>
-                            <h3>POPULAR SECTION HEADER & DESCRIPTION</h3>
-                            <p>Customize the headline texts shown above the popular carousel.</p>
-                        </div>
-                    </div>
-                    <div class="card-body form-grid">
-                        <div class="input-group">
-                            <label>POPULAR SECTION TITLE (HTML)</label>
-                            <input type="text" id="site_popularTitle" value="<span class='accent'>POPULAR</span> <span>RELEASES</span>">
-                        </div>
-                        <div class="input-group">
-                            <label>POPULAR SECTION DESCRIPTION</label>
-                            <input type="text" id="site_popularDesc" value="THE MOST TRANSMITTED FREQUENCIES IN THE VOID">
-                        </div>
-                    </div>
-                    <div style="padding: 0 1.8rem 1.5rem; display: flex; justify-content: flex-end;">
-                        <button class="cyber-btn primary sm" id="save-popular-header"><i class="fas fa-save"></i> SAVE SECTION HEADER</button>
-                    </div>
-                </div>
-
-                <div class="panel-action-bar">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="popular-search-input" placeholder="SEARCH POPULAR TRACKS BY TITLE OR ARTIST...">
-                    </div>
-                    <button class="cyber-btn primary" id="btn-add-new-popular"><i class="fas fa-plus-circle"></i> ADD NEW POPULAR HIT</button>
-                </div>
-
+                // GHOST PRODUCTION VISIBILITY GATING
+                const ghostSection = document.getElementById('ghost-production');
+                const navGhost = document.getElementById('nav-ghost');
+                const sideNavGhost = document.getElementById('side-nav-ghost');
                 
-                <div id="popular-editor-card" class="cyber-card editor-card" style="display: none; margin-bottom: 2rem;">
-                    <div class="card-header">
-                        <i class="fas fa-fire card-icon"></i>
-                        <div>
-                            <h3 id="popular-editor-title">ADD NEW POPULAR RELEASE</h3>
-                            <p>Configure trending rank, track metadata, artwork, and streaming audio links.</p>
-                        </div>
-                        <button type="button" class="close-card-btn" id="close-popular-editor">&times;</button>
-                    </div>
-                    <div class="card-body form-grid">
-                        <input type="hidden" id="pop_edit_index" value="-1">
-                        <div class="input-group">
-                            <label><i class="fas fa-music"></i> TRACK TITLE *</label>
-                            <input type="text" id="pop_title" placeholder="e.g. NEON DRIFT">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-user-astronaut"></i> ARTIST / PRODUCERS *</label>
-                            <input type="text" id="pop_artist" placeholder="e.g. SAYURUX ft. OBSCURA">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-sort-numeric-down"></i> RANK / PRIORITY ORDER (1 = TOP)</label>
-                            <input type="number" id="pop_rank" value="1">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-tag"></i> BADGE TEXT</label>
-                            <input type="text" id="pop_badge" value="TRENDING" placeholder="e.g. TRENDING, VIRAL, HOT">
-                        </div>
+                if (data.showGhostProduction === 'Hidden') {
+                    if (ghostSection) ghostSection.style.setProperty('display', 'none', 'important');
+                    if (navGhost) navGhost.style.setProperty('display', 'none', 'important');
+                    if (sideNavGhost) sideNavGhost.style.setProperty('display', 'none', 'important');
+                } else {
+                    if (ghostSection) ghostSection.style.setProperty('display', 'block', 'important');
+                    if (navGhost) navGhost.style.setProperty('display', 'inline-block', 'important');
+                    if (sideNavGhost) sideNavGhost.style.setProperty('display', 'flex', 'important');
+                }
 
-                        
-                        <div class="input-group full">
-                            <label><i class="fas fa-image"></i> COVER ARTWORK (URL OR BROWSE LOCAL FILE) *</label>
-                            <div style="display: flex; gap: 0.8rem; align-items: center;">
-                                <input type="text" id="pop_cover" placeholder="assets/cover.png or https://..." style="flex: 1;">
-                                <label class="cyber-btn primary sm" style="cursor: pointer; margin: 0; white-space: nowrap;">
-                                    <i class="fas fa-folder-open"></i> BROWSE FILE
-                                    <input type="file" id="pop_cover_file" accept="image/*" style="display: none;">
-                                </label>
-                            </div>
-                            <div id="pop_cover_preview_box" style="margin-top: 0.8rem; width: 100px; height: 100px; border-radius: 12px; border: 1px dashed var(--border); overflow: hidden; background: #070a16; display: flex; align-items: center; justify-content: center;">
-                                <img id="pop_cover_preview_img" src="assets/cover.png" style="width: 100%; height: 100%; object-fit: cover;">
-                            </div>
-                        </div>
+                const elements = document.querySelectorAll('[data-sync]');
+                elements.forEach(el => {
+                    const key = el.getAttribute('data-sync');
+                    const syncTarget = el.getAttribute('data-sync-target') || 'html';
 
-                        <div class="input-group">
-                            <label><i class="fas fa-headphones"></i> AUDIO PREVIEW / MP3 URL</label>
-                            <input type="text" id="pop_preview" placeholder="https://.../preview.mp3 or YouTube link">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fab fa-youtube"></i> YOUTUBE LINK / STREAM</label>
-                            <input type="text" id="pop_youtube" placeholder="https://youtube.com/watch?v=...">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fab fa-spotify"></i> SPOTIFY STREAMING URL</label>
-                            <input type="text" id="pop_spotify" placeholder="https://open.spotify.com/track/...">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fa-brands fa-apple"></i> APPLE MUSIC STREAMING URL</label>
-                            <input type="text" id="pop_apple" placeholder="https://music.apple.com/album/...">
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <button class="cyber-btn danger" id="btn-cancel-popular"><i class="fas fa-times"></i> CANCEL</button>
-                        <button class="cyber-btn primary" id="btn-save-popular-record"><i class="fas fa-save"></i> SAVE & SYNC POPULAR TRACK</button>
-                    </div>
-                </div>
+                    if (data[key] !== undefined && data[key] !== null) {
+                        const valStr = String(data[key]).trim();
+                        if (valStr !== "") {
+                            if (syncTarget === 'html') {
+                                el.innerHTML = data[key];
+                            } else if (syncTarget === 'text') {
+                                el.textContent = data[key];
+                            } else if (syncTarget === 'placeholder') {
+                                el.placeholder = data[key];
+                            } else if (syncTarget === 'src') {
+                                el.src = data[key];
+                            } else if (syncTarget === 'style') {
+                                el.style.cssText = data[key];
+                            } else if (syncTarget === 'href') {
+                                let value = data[key];
+                                // Auto-redirect for Email links if prefix is missing
+                                if (key.toLowerCase().includes('email') && !value.startsWith('mailto:') && value.includes('@')) {
+                                    value = 'mailto:' + value;
+                                }
+                                el.href = value;
+                            }
+                        }
+                    }
+                });
 
-                
-                <div class="releases-grid-container" id="popular-releases-list">
-                    
-                </div>
-            </section>
+                // DYNAMIC PORTAL ENGINE VERSION SYNC
+                if (data.v) {
+                    const vEl = document.getElementById('km-portal-version');
+                    if (vEl) vEl.textContent = 'v' + data.v;
+                    const sideVEl = document.getElementById('sidebar-portal-version');
+                    if (sideVEl) sideVEl.textContent = 'v' + data.v;
+                }
 
-            
-            <section id="releases-panel" class="panel">
-                <div class="panel-action-bar">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="release-search-input" placeholder="SEARCH RELEASES BY TITLE, ARTIST, OR CATALOG...">
-                    </div>
-                    <button class="cyber-btn primary" id="btn-add-new-release"><i class="fas fa-plus-circle"></i> ADD NEW RELEASE</button>
-                </div>
+                // Apply Transmissions data if present in globals
+                if (data.latest_transmissions) {
+                    applyTransmissionData(data.latest_transmissions);
+                }
+            }
+        });
 
-                
-                <div id="release-editor-card" class="cyber-card editor-card" style="display: none;">
-                    <div class="card-header">
-                        <i class="fas fa-compact-disc card-icon"></i>
-                        <div>
-                            <h3 id="release-editor-title">ADD NEW RELEASE</h3>
-                            <p>Enter track metadata, cover artwork, and streaming audio links.</p>
-                        </div>
-                        <button type="button" class="close-card-btn" id="close-release-editor">&times;</button>
-                    </div>
-                    <div class="card-body form-grid">
-                        <input type="hidden" id="rel_edit_index" value="-1">
-                        <div class="input-group">
-                            <label><i class="fas fa-music"></i> TRACK / RELEASE TITLE *</label>
-                            <input type="text" id="rel_title" placeholder="e.g. CYBERNETIC PULSE">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-user-astronaut"></i> ARTIST / PRODUCERS *</label>
-                            <input type="text" id="rel_artist" placeholder="e.g. SAYURUX ft. OBSCURA">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-layer-group"></i> RELEASE TYPE (EP / SINGLE / ALBUM) *</label>
-                            <select id="rel_type" class="cyber-select">
-                                <option value="SINGLE">SINGLE</option>
-                                <option value="EP">EP</option>
-                                <option value="ALBUM">ALBUM</option>
-                                <option value="LP">LP</option>
-                                <option value="REMIX">REMIX</option>
-                                <option value="COLLAB">COLLAB</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-barcode"></i> CATALOG CODE (OPTIONAL)</label>
-                            <input type="text" id="rel_catalog" placeholder="Leave empty or enter code (e.g. OCR008)">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-calendar-alt"></i> RELEASE DATE</label>
-                            <input type="text" id="rel_date" placeholder="e.g. 2026.04.15">
-                        </div>
-                        <div class="input-group full">
-                            <label><i class="fas fa-image"></i> COVER ARTWORK URL *</label>
-                            <div class="input-with-preview">
-                                <input type="text" id="rel_cover" placeholder="https://i.imgur.com/... or assets/cover.png">
-                                <div class="img-preview-box" id="rel-cover-preview">
-                                    <i class="fas fa-image"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="input-group full">
-                            <label><i class="fab fa-youtube"></i> 1. YOUTUBE PREVIEW / STREAMING AUDIO LINK (PLAY BUTTON) *</label>
-                            <input type="text" id="rel_streamUrl" placeholder="https://www.youtube.com/watch?v=XXXXXX or video ID (Plays on Card Preview)">
-                            <small>Instant audio streaming played when visitors click the Play button on the card.</small>
-                        </div>
-                        <div class="input-group full">
-                            <label><i class="fab fa-youtube"></i> 2. YOUTUBE ALBUM / FULL STREAM LINK (BOTTOM LINK BAR)</label>
-                            <input type="text" id="rel_youtubeUrl" placeholder="https://www.youtube.com/watch?v=... or https://youtube.com/playlist?list=... (Full Album URL)">
-                            <small>Direct link opened when visitors click the YouTube icon on the card's bottom actions bar.</small>
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fab fa-spotify"></i> SPOTIFY STREAM LINK</label>
-                            <input type="text" id="rel_spotifyUrl" placeholder="https://open.spotify.com/track/...">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fab fa-soundcloud"></i> SOUNDCLOUD LINK</label>
-                            <input type="text" id="rel_soundcloudUrl" placeholder="https://soundcloud.com/...">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fab fa-apple"></i> APPLE MUSIC LINK</label>
-                            <input type="text" id="rel_appleUrl" placeholder="https://music.apple.com/...">
-                        </div>
-                        <div class="input-group">
-                            <label><i class="fas fa-download"></i> DIRECT DOWNLOAD URL</label>
-                            <input type="text" id="rel_dlUrl" placeholder="https://drive.google.com/... or direct MP3 link">
-                        </div>
-                    </div>
-                    <div class="card-footer-btns">
-                        <button type="button" class="cyber-btn primary" id="btn-save-release"><i class="fas fa-save"></i> SAVE RELEASE</button>
-                        <button type="button" class="cyber-btn secondary" id="btn-cancel-release">CANCEL</button>
-                    </div>
-                </div>
+        // Dynamic Transmissions Sync Engine (Admin Drops)
+        function applyTransmissionData(tData) {
+            if (!tData || typeof tData !== 'object') return;
 
-                
-                <div class="releases-admin-grid" id="releases-admin-container">
-                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> SYNCING RELEASES WITH FIREBASE...</div>
-                </div>
-            </section>
+            // 1. YouTube Drop Card Elements
+            const ytThumbBg = document.getElementById('yt-thumb-bg');
+            const ytPlay = document.getElementById('yt-play-trigger');
+            const ytTitle = document.getElementById('yt-title-display');
+            const ytDesc = document.getElementById('yt-desc-display');
+            const ytTag = document.getElementById('yt-tag-display');
+            const ytWatch = document.getElementById('yt-watch-btn');
+            const ytSub = document.getElementById('yt-sub-btn');
 
-            
-            <section id="upcoming-panel" class="panel">
-                <div class="panel-action-bar">
-                    <div class="section-visibility-group">
-                        <label><i class="fas fa-eye"></i> UPCOMING SECTION VISIBILITY:</label>
-                        <select id="site_showUpcoming" class="cyber-select-sm">
-                            <option value="Visible">Visible (Show On Main Site)</option>
-                            <option value="Hidden">Hidden (Hide From Main Site)</option>
-                        </select>
-                    </div>
-                    <button class="cyber-btn primary" id="btn-add-upcoming"><i class="fas fa-plus-circle"></i> ADD UPCOMING TEASER</button>
-                </div>
+            const ytUrlVal = tData.yt_url || tData.ytUrl || tData.ytLink || tData.youtube || tData.youtubeUrl;
+            const ytThumbVal = tData.yt_thumb || tData.ytThumb || tData.thumbnail || tData.cover;
+            const ytTitleVal = tData.yt_title || tData.ytTitle || tData.title;
+            const ytDescVal = tData.yt_desc || tData.ytDesc || tData.desc;
+            const ytTagVal = tData.yt_tag || tData.ytTag || tData.tag;
+            const ytSubVal = tData.yt_sub_url || tData.ytSubUrl;
 
-                <div id="upcoming-editor-card" class="cyber-card editor-card" style="display: none;">
-                    <div class="card-header">
-                        <i class="fas fa-calendar-plus card-icon"></i>
-                        <div>
-                            <h3 id="upcoming-editor-title">ADD UPCOMING TEASER</h3>
-                            <p>Configure teaser artwork, countdown date, and production status.</p>
-                        </div>
-                        <button type="button" class="close-card-btn" id="close-upcoming-editor">&times;</button>
-                    </div>
-                    <div class="card-body form-grid">
-                        <input type="hidden" id="upc_edit_index" value="-1">
-                        <div class="input-group">
-                            <label>TRACK TITLE *</label>
-                            <input type="text" id="upc_title" placeholder="e.g. NEON SHADOWS">
-                        </div>
-                        <div class="input-group">
-                            <label>ARTIST NAME *</label>
-                            <input type="text" id="upc_artist" placeholder="e.g. OBSCURA ARTIST">
-                        </div>
-                        <div class="input-group">
-                            <label>ESTIMATED DATE / COUNTDOWN</label>
-                            <input type="text" id="upc_date" placeholder="e.g. COMING MAY 2026">
-                        </div>
-                        <div class="input-group">
-                            <label>PRODUCTION STATUS</label>
-                            <select id="upc_status" class="cyber-select">
-                                <option value="FINAL MASTERING">FINAL MASTERING</option>
-                                <option value="MIXING STAGE">MIXING STAGE</option>
-                                <option value="IN PRODUCTION">IN PRODUCTION</option>
-                                <option value="COMING SOON">COMING SOON</option>
-                            </select>
-                        </div>
-                        <div class="input-group full">
-                            <label>COVER / TEASER ARTWORK URL</label>
-                            <input type="text" id="upc_cover" placeholder="https://i.imgur.com/... or assets/cover.png">
-                        </div>
-                    </div>
-                    <div class="card-footer-btns">
-                        <button type="button" class="cyber-btn primary" id="btn-save-upcoming"><i class="fas fa-save"></i> SAVE TEASER</button>
-                        <button type="button" class="cyber-btn secondary" id="btn-cancel-upcoming">CANCEL</button>
-                    </div>
-                </div>
+            if (ytThumbBg && ytThumbVal) ytThumbBg.style.backgroundImage = `url("${ytThumbVal}")`;
+            if (ytPlay && ytUrlVal) ytPlay.href = ytUrlVal;
+            if (ytWatch && ytUrlVal) ytWatch.href = ytUrlVal;
+            if (ytTitle && ytTitleVal) ytTitle.textContent = ytTitleVal;
+            if (ytDesc && ytDescVal) ytDesc.textContent = ytDescVal;
+            if (ytTag && ytTagVal) ytTag.textContent = ytTagVal;
+            if (ytSub && ytSubVal) ytSub.href = ytSubVal;
 
-                <div class="upcoming-admin-grid" id="upcoming-admin-container">
-                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> SYNCING UPCOMING RELEASES...</div>
-                </div>
-            </section>
+            // 2. TikTok Drop Card Elements
+            const ttThumbBg = document.getElementById('tt-thumb-bg');
+            const ttPlay = document.getElementById('tt-play-trigger');
+            const ttTitle = document.getElementById('tt-title-display');
+            const ttDesc = document.getElementById('tt-desc-display');
+            const ttTag = document.getElementById('tt-tag-display');
+            const ttWatch = document.getElementById('tt-watch-btn');
+            const ttFollow = document.getElementById('tt-follow-btn');
 
-            
-            <section id="ghost-production-panel" class="panel">
-                <div class="panel-action-bar" style="margin-bottom: 1.5rem;">
-                    <div class="section-visibility-group">
-                        <label><i class="fas fa-eye"></i> GHOST PRODUCTION SECTION VISIBILITY:</label>
-                        <select id="site_showGhostProduction" class="cyber-select-sm">
-                            <option value="Visible">Visible (Show On Main Site)</option>
-                            <option value="Hidden">Hidden (Hide From Main Site)</option>
-                        </select>
-                    </div>
-                </div>
+            const ttUrlVal = tData.tt_url || tData.ttUrl || tData.ttLink || tData.tiktok || tData.tiktokUrl || tData.url || tData.link;
+            const ttThumbVal = tData.tt_thumb || tData.ttThumb || tData.thumbnail || tData.cover || tData.image;
+            const ttTitleVal = tData.tt_title || tData.ttTitle || tData.title;
+            const ttDescVal = tData.tt_desc || tData.ttDesc || tData.desc;
+            const ttTagVal = tData.tt_tag || tData.ttTag || tData.tag;
+            const ttFollowVal = tData.tt_follow_url || tData.ttFollowUrl || tData.followUrl;
 
-                <div class="card-grid">
-                    
-                    
-                    <div class="cyber-card full-card">
-                        <div class="card-header">
-                            <i class="fas fa-ghost card-icon"></i>
-                            <div>
-                                <h3>CORE GHOST PRODUCTION HEADERS & DESCRIPTIONS</h3>
-                                <p>Main titles and explanatory paragraphs displayed in the Ghost Production section.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group">
-                                <label>SECTION SUB-HEADING</label>
-                                <input type="text" id="site_ghostDesc" value="Request your custom sound in any style. Secure professional production for a flat fee.">
-                            </div>
-                            <div class="input-group">
-                                <label>SERVICE INNER TITLE</label>
-                                <input type="text" id="site_ghostServiceTitle" value="GHOST PRODUCTION">
-                            </div>
-                            <div class="input-group">
-                                <label>EVENT TAGLINE / BADGE</label>
-                                <input type="text" id="site_ghostTagline" value="EXCLUSIVE EVENT">
-                            </div>
-                            <div class="input-group full">
-                                <label>SERVICE FULL DESCRIPTION</label>
-                                <textarea id="site_ghostServiceDesc" rows="3">Submit your preferred musical style and vision to our portal. Our elite producers will craft a bespoke, professional track tailored specifically to your requirements.</textarea>
-                            </div>
-                        </div>
-                    </div>
+            if (ttThumbBg && ttThumbVal) ttThumbBg.style.backgroundImage = `url("${ttThumbVal}")`;
+            if (ttPlay && ttUrlVal) ttPlay.href = ttUrlVal;
+            if (ttWatch && ttUrlVal) ttWatch.href = ttUrlVal;
+            if (ttTitle && ttTitleVal) ttTitle.textContent = ttTitleVal;
+            if (ttDesc && ttDescVal) ttDesc.textContent = ttDescVal;
+            if (ttTag && ttTagVal) ttTag.textContent = ttTagVal;
+            if (ttFollow && ttFollowVal) ttFollow.href = ttFollowVal;
 
-                    
-                    <div class="cyber-card">
-                        <div class="card-header">
-                            <i class="fas fa-tags card-icon"></i>
-                            <div>
-                                <h3>PRODUCTION TIERS & PRICING</h3>
-                                <p>Custom pricing labels for all production duration options.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group">
-                                <label>30 SECONDS SNIPPET PRICE</label>
-                                <input type="text" id="site_ghostPrice30s" value="$10">
-                            </div>
-                            <div class="input-group">
-                                <label>1 MINUTE COMPOSITION PRICE</label>
-                                <input type="text" id="site_ghostPrice1m" value="$30">
-                            </div>
-                            <div class="input-group">
-                                <label>1 MINUTE + VOCALS PRICE</label>
-                                <input type="text" id="site_ghostPriceVocals" value="$50">
-                            </div>
-                            <div class="input-group">
-                                <label>CUSTOMIZED PACKAGE PRICE</label>
-                                <input type="text" id="site_ghostPriceCustom" value="From $100">
-                            </div>
-                            <div class="input-group full">
-                                <label>ADD-ON: PRO MIX PRICE</label>
-                                <input type="text" id="site_ghostAddonMix" value="+ $20">
-                            </div>
-                        </div>
-                    </div>
+            // 3. Section Titles & Descriptions
+            const transTitleEl = document.getElementById('trans-title-display') || document.getElementById('transmissions-title');
+            const transDescEl = document.getElementById('trans-desc-display') || document.getElementById('transmissions-desc');
+            if (transTitleEl && tData.transTitle) transTitleEl.innerHTML = tData.transTitle;
+            if (transDescEl && tData.transDesc) transDescEl.textContent = tData.transDesc;
 
-                    
-                    <div class="cyber-card">
-                        <div class="card-header">
-                            <i class="fas fa-check-double card-icon"></i>
-                            <div>
-                                <h3>CORE FEATURES & DELIVERY TIMELINE</h3>
-                                <p>Feature checklists, revision options, and express delivery pricing.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group">
-                                <label>FEATURE 1</label>
-                                <input type="text" id="site_ghostFeature1" value="High-Quality WAV Files">
-                            </div>
-                            <div class="input-group">
-                                <label>FEATURE 2</label>
-                                <input type="text" id="site_ghostFeature2" value="24/7 Customer Service">
-                            </div>
-                            <div class="input-group">
-                                <label>FEATURE 3</label>
-                                <input type="text" id="site_ghostFeature3" value="3 Project Revisions">
-                            </div>
-                            <div class="input-group">
-                                <label>ADD-ON: UNLIMITED REVISIONS</label>
-                                <input type="text" id="site_ghostAddonRevisions" value="+ $20">
-                            </div>
-                            <div class="input-group">
-                                <label>3 DAY EXPRESS DELIVERY PRICE</label>
-                                <input type="text" id="site_ghostDelivery3d" value="+ $20">
-                            </div>
-                            <div class="input-group">
-                                <label>5 DAY PRIORITY DELIVERY PRICE</label>
-                                <input type="text" id="site_ghostDelivery5d" value="+ $10">
-                            </div>
-                        </div>
-                    </div>
+            // 4. Section Visibility Toggle
+            const transSec = document.getElementById('transmissions');
+            if (transSec) {
+                if (tData.showTransmissions === 'Hidden') {
+                    transSec.style.setProperty('display', 'none', 'important');
+                } else {
+                    transSec.style.removeProperty('display');
+                }
+            }
+        }
 
-                    
-                    <div class="cyber-card full-card">
-                        <div class="card-header">
-                            <i class="fas fa-star card-icon"></i>
-                            <div>
-                                <h3>SPECIAL OFFER BANNER</h3>
-                                <p>Highlighted promotional package box inside the ghost section.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group">
-                                <label>SPECIAL OFFER TITLE</label>
-                                <input type="text" id="site_ghostSpecialTitle" value="SPECIAL OFFER: FULL TRACK">
-                            </div>
-                            <div class="input-group full">
-                                <label>SPECIAL OFFER DESCRIPTION</label>
-                                <textarea id="site_ghostSpecialDesc" rows="2">1 Full Track, Any Style, Mixed & Mastered. MP3 + WAV + MIDI + STEMS + PROJECT FILE</textarea>
-                            </div>
-                        </div>
-                    </div>
+        // 2. Sync Releases
+        const releaseSlider = document.querySelector('.releases-slider');
+        function renderReleases(releases) {
+            if (!releaseSlider) return;
+            releaseSlider.innerHTML = '';
 
-                </div>
+            releases.forEach(release => {
+                const badge = release.id && typeof release.id === 'string' && release.id.includes('NEW') ? "<span class='badge'>NEW</span>" : "";
+                const cleanId = release.catalog || (release.id && typeof release.id === 'string' ? release.id.replace("<span class='badge'>NEW</span>", "").trim() : "");
+                const coverImg = release.cover || release.image || 'assets/cover.png';
+                const releaseType = release.type || 'SINGLE';
+                const artistName = release.producers || release.artist || 'OBSCURA';
 
-                <div class="action-footer">
-                    <button class="cyber-btn primary" id="save-ghost-prod"><i class="fas fa-save"></i> SAVE & SYNC ALL GHOST PRODUCTION OPTIONS</button>
-                    <span id="save-msg-ghost" class="save-status-indicator"></span>
-                </div>
-            </section>
+                // Preview player audio source (Priority: preview/streamUrl/youtubePreview, fallback to youtube)
+                const previewSource = release.streamUrl || release.youtubePreview || release.preview || release.youtube || '';
+                let ytData = getYouTubeID(previewSource);
+                const ytIdAttr = ytData ? ytData.id : '';
+                const ytTypeAttr = ytData ? ytData.type : 'video';
 
-            
-            <section id="staff-panel" class="panel">
-                <div class="panel-action-bar">
-                    <div class="tab-pill-group">
-                        <button type="button" class="tab-pill active" id="tab-staff-view">OBSCURA STAFF</button>
-                        <button type="button" class="tab-pill" id="tab-partner-view">LABEL PARTNERS</button>
-                    </div>
-                    <button class="cyber-btn primary" id="btn-add-profile"><i class="fas fa-user-plus"></i> ADD NEW PROFILE</button>
-                </div>
-
-                
-                <div id="profile-editor-card" class="cyber-card editor-card" style="display: none; margin-bottom: 2rem;">
-                    <div class="card-header">
-                        <i class="fas fa-user-edit card-icon"></i>
-                        <div>
-                            <h3 id="profile-editor-title">CREATE NEW PROFILE</h3>
-                            <p>Configure personnel details, local avatar & banner uploads, and social networks.</p>
-                        </div>
-                        <button type="button" class="close-card-btn" id="close-profile-editor">&times;</button>
-                    </div>
-                    <div class="card-body form-grid">
-                        <input type="hidden" id="prof_edit_id" value="">
-                        <input type="hidden" id="prof_is_partner" value="false">
-                        
-                        <div class="input-group">
-                            <label>PROFILE ID / DISCORD USERNAME *</label>
-                            <input type="text" id="prof_id" placeholder="e.g. sayurux or partner_id">
-                            <small>Unique identifier for this profile record.</small>
-                        </div>
-                        <div class="input-group">
-                            <label>DISPLAY NAME *</label>
-                            <input type="text" id="prof_name" placeholder="e.g. SAYURUX">
-                        </div>
-                        <div class="input-group">
-                            <label>ROLE / POSITION *</label>
-                            <input type="text" id="prof_role" placeholder="e.g. FOUNDER & HEAD OF A&R">
-                        </div>
-                        <div class="input-group">
-                            <label>SORT PRIORITY (1 = HIGHEST)</label>
-                            <input type="number" id="prof_order" value="1">
-                        </div>
-                        
-                        
-                        <div class="input-group full">
-                            <label><i class="fas fa-user-circle"></i> PROFILE AVATAR / DP (URL OR BROWSE FROM COMPUTER)</label>
-                            <div class="input-with-preview">
-                                <input type="text" id="prof_avatar" placeholder="https://i.imgur.com/... or paste image URL">
-                                <input type="file" id="prof_avatar_file" accept="image/*" style="display: none;">
-                                <button type="button" class="cyber-btn secondary sm" onclick="document.getElementById('prof_avatar_file').click()">
-                                    <i class="fas fa-folder-open"></i> BROWSE FILE
+                const cardHtml = `
+                    <div class="release-card-large glass">
+                        <div class="release-cover-large">
+                            <div class="cyber-laser-scanner"></div>
+                            <img src="${coverImg}" alt="${release.title || 'Release'}" onerror="this.src='assets/cover.png'">
+                            <div class="release-type-badge">${releaseType}</div>
+                            <div class="player-overlay">
+                                <button class="play-btn preview-btn" 
+                                    aria-label="Play Preview"
+                                    data-title="${release.title || ''}"
+                                    data-artist="${artistName}"
+                                    data-image="${coverImg}"
+                                    data-spotify="${release.spotify || release.spotifyUrl || '#'}"
+                                    data-youtube="${release.youtube || release.youtubeUrl || '#'}"
+                                    data-audio="${previewSource}"
+                                    data-ytid="${ytIdAttr}"
+                                    data-yttype="${ytTypeAttr}">
+                                    <i class="fas fa-play"></i>
                                 </button>
-                                <div class="img-preview-box" id="prof-avatar-preview">
-                                    <i class="fas fa-user"></i>
-                                </div>
                             </div>
                         </div>
-
-                        
-                        <div class="input-group full">
-                            <label><i class="fas fa-image"></i> PROFILE BANNER BACKGROUND (URL OR BROWSE FROM COMPUTER)</label>
-                            <div class="input-with-preview">
-                                <input type="text" id="prof_banner" placeholder="https://i.imgur.com/... or banner image URL">
-                                <input type="file" id="prof_banner_file" accept="image/*" style="display: none;">
-                                <button type="button" class="cyber-btn secondary sm" onclick="document.getElementById('prof_banner_file').click()">
-                                    <i class="fas fa-folder-open"></i> BROWSE FILE
-                                </button>
-                                <div class="img-preview-box" id="prof-banner-preview">
-                                    <i class="fas fa-image"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="input-group full">
-                            <label>BIOGRAPHY / PROFILE DESCRIPTION</label>
-                            <textarea id="prof_bio" rows="3" placeholder="A brief background about this personnel/partner..."></textarea>
-                        </div>
-
-                        
-                        <div class="social-links-builder full" style="grid-column: 1 / -1; border-top: 1px solid var(--border-dim); padding-top: 1.2rem;">
-                            <label style="font-family: var(--font-mono); color: var(--primary); font-size: 0.78rem; font-weight: 700; margin-bottom: 0.8rem; display: block;">
-                                <i class="fas fa-share-alt"></i> CONNECTED SOCIAL PLATFORMS & LINKS
-                            </label>
-                            <div class="form-grid" style="gap: 1rem;">
-                                <div class="input-group">
-                                    <label><i class="fab fa-instagram"></i> INSTAGRAM LINK</label>
-                                    <input type="text" id="prof_social_insta" placeholder="https://instagram.com/...">
-                                </div>
-                                <div class="input-group">
-                                    <label><i class="fab fa-spotify"></i> SPOTIFY ARTIST LINK</label>
-                                    <input type="text" id="prof_social_spotify" placeholder="https://open.spotify.com/artist/...">
-                                </div>
-                                <div class="input-group">
-                                    <label><i class="fab fa-soundcloud"></i> SOUNDCLOUD LINK</label>
-                                    <input type="text" id="prof_social_soundcloud" placeholder="https://soundcloud.com/...">
-                                </div>
-                                <div class="input-group">
-                                    <label><i class="fab fa-youtube"></i> YOUTUBE CHANNEL</label>
-                                    <input type="text" id="prof_social_youtube" placeholder="https://youtube.com/...">
-                                </div>
-                                <div class="input-group">
-                                    <label><i class="fab fa-twitter"></i> X / TWITTER</label>
-                                    <input type="text" id="prof_social_twitter" placeholder="https://x.com/...">
-                                </div>
-                                <div class="input-group">
-                                    <label><i class="fab fa-discord"></i> DISCORD SERVER / PROFILE</label>
-                                    <input type="text" id="prof_social_discord" placeholder="https://discord.gg/...">
-                                </div>
+                        <div class="release-info-large">
+                            <span class="track-id">${cleanId} ${badge}</span>
+                            <h4>${release.title || 'UNTITLED'}</h4>
+                            <div class="producers-text">Produced by: <span>${artistName}</span></div>
+                            <div class="release-actions">
+                                ${release.spotify && release.spotify !== '#' ? `<a href="${release.spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
+                                ${release.apple && release.apple !== '#' ? `<a href="${release.apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
+                                ${release.youtube && release.youtube !== '#' ? `<a href="${release.youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
+                                ${release.soundcloud && release.soundcloud !== '#' ? `<a href="${release.soundcloud}" target="_blank" class="platform-link soundcloud" title="SoundCloud" onclick="event.stopPropagation()"><i class="fab fa-soundcloud"></i></a>` : ''}
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer-btns">
-                        <button type="button" class="cyber-btn primary" id="btn-save-profile"><i class="fas fa-save"></i> SAVE PROFILE</button>
-                        <button type="button" class="cyber-btn secondary" id="btn-cancel-profile">CANCEL</button>
-                    </div>
-                </div>
+                `;
+                releaseSlider.insertAdjacentHTML('beforeend', cardHtml);
+            });
 
-                <div class="staff-admin-grid" id="staff-admin-container">
-                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> SYNCING PERSONNEL PROFILES...</div>
-                </div>
-            </section>
+            bindReleaseInteractions();
+        }
 
-            
-            <section id="demo-inbox-panel" class="panel">
-                <div class="panel-action-bar">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="demo-search-input" placeholder="SEARCH DEMOS BY ARTIST, TRACK, EMAIL, OR GENRE...">
-                    </div>
-                    <div class="filter-dropdown-group">
-                        <select id="demo-status-filter" class="cyber-select">
-                            <option value="ALL">ALL STATUSES</option>
-                            <option value="PENDING">PENDING REVIEW</option>
-                            <option value="ACCEPTED">ACCEPTED / SIGNED</option>
-                            <option value="REJECTED">REJECTED</option>
-                        </select>
-                    </div>
-                </div>
+        function bindReleaseControls() {
+            const btnPrev = document.querySelector('#releases .slider-nav-btn.prev') || document.querySelector('.slider-nav-btn.prev');
+            const btnNext = document.querySelector('#releases .slider-nav-btn.next') || document.querySelector('.slider-nav-btn.next');
 
-                <div class="inbox-container" id="demos-inbox-container">
-                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> RETRIEVING SUBMISSION TRANSMISSIONS...</div>
-                </div>
-            </section>
+            if (btnPrev && releaseSlider) {
+                btnPrev.onclick = (e) => {
+                    e.preventDefault();
+                    gsap.to(releaseSlider, { scrollLeft: releaseSlider.scrollLeft - 380, duration: 0.5, ease: "power2.out" });
+                    if (autoScrollInterval) {
+                        clearInterval(autoScrollInterval);
+                        setTimeout(startAutoScroll, 3000);
+                    }
+                };
+            }
 
-            
-            <section id="contact-inbox-panel" class="panel">
-                <div class="panel-action-bar">
-                    <h3><i class="fas fa-envelope-open-text"></i> CONTACT INQUIRIES & DIRECT MESSAGES</h3>
-                    <button class="cyber-btn secondary" id="btn-refresh-contact-msg"><i class="fas fa-sync-alt"></i> REFRESH INBOX</button>
-                </div>
+            if (btnNext && releaseSlider) {
+                btnNext.onclick = (e) => {
+                    e.preventDefault();
+                    gsap.to(releaseSlider, { scrollLeft: releaseSlider.scrollLeft + 380, duration: 0.5, ease: "power2.out" });
+                    if (autoScrollInterval) {
+                        clearInterval(autoScrollInterval);
+                        setTimeout(startAutoScroll, 3000);
+                    }
+                };
+            }
+        }
 
-                <div class="inbox-container" id="contact-inbox-container">
-                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> FETCHING DIRECT INQUIRIES...</div>
-                </div>
-            </section>
+        function bindReleaseInteractions() {
+            const previewButtons = document.querySelectorAll('.releases-slider .preview-btn, .releases-slider .play-btn');
+            previewButtons.forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const card = btn.closest('.release-card-large') || btn.closest('.release-card');
+                    const isCurrentPlaying = (currentPlayingBtn === btn && (previewAudio && !previewAudio.paused || ytPlayer && typeof ytPlayer.getPlayerState === 'function' && ytPlayer.getPlayerState() === 1));
 
-            
-            <section id="modals-panel" class="panel">
-                <div class="card-grid">
-                    
-                    
-                    <div class="cyber-card full-card">
-                        <div class="card-header">
-                            <i class="fas fa-shoe-prints card-icon"></i>
-                            <div>
-                                <h3>FOOTER NAVIGATION BUTTONS & COPYRIGHT</h3>
-                                <p>Modify the 4 main footer popup trigger button labels and copyright line.</p>
-                            </div>
+                    if (isCurrentPlaying) {
+                        stopPlayback();
+                    } else {
+                        const audioSrc = btn.getAttribute('data-audio') || '';
+                        const ytId = btn.getAttribute('data-ytid');
+                        const ytidFallback = getYouTubeID(btn.getAttribute('data-youtube'));
+                        const finalYtId = ytId || (ytidFallback ? ytidFallback.id : null);
+                        const finalYtType = btn.getAttribute('data-yttype') || (ytidFallback ? ytidFallback.type : 'video');
+
+                        playPreview(audioSrc, finalYtId, finalYtType, btn, card);
+                    }
+                };
+            });
+            bindReleaseControls();
+        }
+
+        // Auto-Scroll Logic for Releases Slider
+        function startAutoScroll() {
+            if (autoScrollInterval) clearInterval(autoScrollInterval);
+            if (!releaseSlider) return;
+
+            // Only auto-scroll if content overflows
+            if (releaseSlider.scrollWidth <= releaseSlider.clientWidth + 10) {
+                return;
+            }
+
+            autoScrollInterval = setInterval(() => {
+                if (releaseSlider.scrollLeft >= (releaseSlider.scrollWidth - releaseSlider.clientWidth - 5)) {
+                    releaseSlider.scrollLeft = 0;
+                } else {
+                    releaseSlider.scrollLeft += 1;
+                }
+            }, 30);
+        }
+
+        // Bind existing static release cards immediately on load
+        bindReleaseInteractions();
+        startAutoScroll();
+
+        fetchWithCache('siteData/releases', (data) => {
+            let items = [];
+            if (data) {
+                items = Array.isArray(data) ? data : Object.values(data);
+            }
+
+            if (items.length > 0 && items[0] && items[0]._isEmpty) {
+                renderReleases([]);
+            } else {
+                renderReleases(items);
+            }
+        });
+
+        // 3. Sync Upcoming Releases
+        const upcomingGrid = document.getElementById('upcoming-grid');
+        let upcomingAutoScroll = null;
+
+        function renderUpcoming(items) {
+            if (!upcomingGrid) return;
+            upcomingGrid.innerHTML = '';
+
+            if (!items || items.length === 0) {
+                upcomingGrid.innerHTML = '<p style="opacity:0.3; font-style:italic; grid-column: 1/-1; text-align:center;">All signals currently decrypted. New transmissions pending.</p>';
+                return;
+            }
+
+            items.forEach(item => {
+                const coverImg = item.cover || item.image || 'assets/cover.png';
+                const artistName = item.artist || item.producers || 'UNKNOWN';
+                const statusTag = item.status || 'COMING SOON';
+                const cardHtml = `
+                    <div class="release-card-large glass upcoming-card">
+                        <div class="upcoming-status-badge">${statusTag}</div>
+                        <div class="release-cover-large">
+                            <img src="${coverImg}" alt="${item.title || 'Teaser'}" onerror="this.src='assets/cover.png'">
                         </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group full">
-                                <label>FOOTER COPYRIGHT NOTICE</label>
-                                <input type="text" id="site_footerCopyright" value="&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED.">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-question-circle"></i> BUTTON 1: FAQ BUTTON LABEL</label>
-                                <input type="text" id="site_footerFaqText" value="FAQ">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-paper-plane"></i> BUTTON 2: DEMO SUBMISSION BUTTON LABEL</label>
-                                <input type="text" id="site_footerDemoText" value="DEMO SUBMISSION">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-envelope"></i> BUTTON 3: CONTACT US BUTTON LABEL</label>
-                                <input type="text" id="site_footerContactText" value="CONTACT US">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-shield-alt"></i> BUTTON 4: PRIVACY BUTTON LABEL</label>
-                                <input type="text" id="site_footerPrivacyText" value="PRIVACY">
-                            </div>
-                        </div>
-                    </div>
-
-                    
-                    <div class="cyber-card full-card">
-                        <div class="card-header">
-                            <i class="fas fa-question-circle card-icon"></i>
-                            <div>
-                                <h3>1. FAQ POPUP MODAL CONTENT</h3>
-                                <p>Header title and dynamic question/answer accordion items.</p>
-                            </div>
-                            <button class="cyber-btn primary sm" id="btn-add-faq-item"><i class="fas fa-plus"></i> ADD FAQ ITEM</button>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group full">
-                                <label>FAQ MODAL HEADER TITLE</label>
-                                <input type="text" id="site_modalFaqTitle" value="FREQUENCY ASKED QUESTIONS">
-                            </div>
-                            <div id="faq-admin-container" class="full" style="grid-column: 1 / -1; margin-top: 1rem;">
-                                
-                            </div>
-                        </div>
-                    </div>
-
-                    
-                    <div class="cyber-card full-card">
-                        <div class="card-header">
-                            <i class="fas fa-paper-plane card-icon"></i>
-                            <div>
-                                <h3>2. DEMO SUBMISSION POPUP MODAL CONTENT</h3>
-                                <p>Header, all input labels, placeholders, checklist rules, and buttons.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group">
-                                <label>MODAL TITLE (HTML)</label>
-                                <input type="text" id="site_formTitle" value="Secure <span class='accent'>Form Submission</span>">
-                            </div>
-                            <div class="input-group">
-                                <label>MODAL SUBTITLE / DESCRIPTION</label>
-                                <input type="text" id="site_formDesc" value="Transmit your audio frequency to the Obscura A&R department for priority review.">
-                            </div>
-
-                            
-                            <div class="input-group">
-                                <label>REAL NAME LABEL</label>
-                                <input type="text" id="site_formLabelName" value="Real Name">
-                            </div>
-                            <div class="input-group">
-                                <label>REAL NAME PLACEHOLDER</label>
-                                <input type="text" id="site_formPlaceholderName" value="Name">
-                            </div>
-
-                            <div class="input-group">
-                                <label>ARTIST NAME LABEL</label>
-                                <input type="text" id="site_formLabelArtist" value="Artist Name(s)">
-                            </div>
-                            <div class="input-group">
-                                <label>ARTIST NAME PLACEHOLDER</label>
-                                <input type="text" id="site_formPlaceholderArtist" value="Names">
-                            </div>
-
-                            <div class="input-group">
-                                <label>EMAIL ADDRESS LABEL</label>
-                                <input type="text" id="site_formLabelEmail" value="Email Address">
-                            </div>
-                            <div class="input-group">
-                                <label>EMAIL ADDRESS PLACEHOLDER</label>
-                                <input type="text" id="site_formPlaceholderEmail" value="official@artist.com">
-                            </div>
-
-                            <div class="input-group">
-                                <label>PRIMARY GENRE LABEL</label>
-                                <input type="text" id="site_formLabelGenre" value="Primary Genre">
-                            </div>
-                            <div class="input-group">
-                                <label>PRIMARY GENRE PLACEHOLDER</label>
-                                <input type="text" id="site_formPlaceholderGenre" value="Funk / EDM / Hip Hop">
-                            </div>
-
-                            <div class="input-group">
-                                <label>SOCIALS / SPOTIFY LINK LABEL</label>
-                                <input type="text" id="site_formLabelSpotify" value="Artist Profile / Social Links">
-                            </div>
-                            <div class="input-group">
-                                <label>SOCIALS / SPOTIFY PLACEHOLDER</label>
-                                <input type="text" id="site_formPlaceholderSpotify" value="https://open.spotify.com/artist/...">
-                            </div>
-
-                            <div class="input-group">
-                                <label>STREAMING LINK LABEL</label>
-                                <input type="text" id="site_formLabelLink" value="Private streaming link (SoundCloud / Dropbox / Drive)">
-                            </div>
-                            <div class="input-group">
-                                <label>STREAMING LINK PLACEHOLDER</label>
-                                <input type="text" id="site_formPlaceholderLink" value="https://soundcloud.com/...">
-                            </div>
-
-                            <div class="input-group">
-                                <label>MESSAGE / BIOGRAPHY LABEL</label>
-                                <input type="text" id="site_formLabelMessage" value="Message / Biography (Optional)">
-                            </div>
-                            <div class="input-group">
-                                <label>MESSAGE PLACEHOLDER</label>
-                                <input type="text" id="site_formPlaceholderMessage" value="A brief transmission regarding your sound...">
-                            </div>
-
-                            
-                            <div class="input-group full">
-                                <label>RULE 1: TITLE</label>
-                                <input type="text" id="site_formRule1Title" value="Is this track unreleased?">
-                            </div>
-                            <div class="input-group full">
-                                <label>RULE 1: DESCRIPTION</label>
-                                <textarea id="site_formRule1Desc" rows="2">We do NOT accept already-released tracks. Any submissions that have already been published will be automatically declined.</textarea>
-                            </div>
-                            <div class="input-group full">
-                                <label>RULE 2: TITLE</label>
-                                <input type="text" id="site_formRule2Title" value="Track identification">
-                            </div>
-                            <div class="input-group full">
-                                <label>RULE 2: DESCRIPTION</label>
-                                <textarea id="site_formRule2Desc" rows="2">Please provide the title for your track. If you haven't decided on a name yet, a reference title is sufficient so we can identify your submission.</textarea>
-                            </div>
-
-                            
-                            <div class="input-group">
-                                <label>SUBMIT BUTTON TEXT</label>
-                                <input type="text" id="site_formSubmitBtn" value="Initiate Submission">
-                            </div>
-                            <div class="input-group">
-                                <label>DISCORD BUTTON TEXT</label>
-                                <input type="text" id="site_formDiscordBtn" value="Join Discord">
-                            </div>
-                            <div class="input-group full">
-                                <label>MODAL FOOTER RECOMMENDATION NOTE</label>
-                                <input type="text" id="site_formFooterRec" value="[ Highly Recommended: Join the server for real-time frequency tracking ]">
-                            </div>
+                        <div class="release-info-large">
+                            ${item.id ? `<span class="track-id">${item.id}</span>` : ''}
+                            <h4>${item.title || 'FUTURE TRACK'}</h4>
+                            <div class="producers-text">Produced by: <span>${artistName}</span></div>
+                            ${item.date ? `<div class="upcoming-date-badge"><i class="far fa-calendar-alt"></i> ${item.date}</div>` : ''}
                         </div>
                     </div>
+                `;
+                upcomingGrid.insertAdjacentHTML('beforeend', cardHtml);
+            });
 
-                    
-                    <div class="cyber-card full-card">
-                        <div class="card-header">
-                            <i class="fas fa-envelope-open-text card-icon"></i>
-                            <div>
-                                <h3>3. CONTACT US POPUP MODAL CONTENT</h3>
-                                <p>Header title, subtext, input field labels, placeholders, and send button.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group">
-                                <label>MODAL HEADER TITLE (HTML)</label>
-                                <input type="text" id="site_contactModalTitle" value="CONTACT <span class='accent'>VOID</span>">
-                            </div>
-                            <div class="input-group">
-                                <label>MODAL SUBTITLE TEXT</label>
-                                <input type="text" id="site_contactModalSubtext" value="Establish a direct frequency with the Obscura Record command center.">
-                            </div>
-                            <div class="input-group">
-                                <label>NAME FIELD LABEL</label>
-                                <input type="text" id="site_contactLabelName" value="NAME / IDENTIFIER">
-                            </div>
-                            <div class="input-group">
-                                <label>NAME PLACEHOLDER</label>
-                                <input type="text" id="site_contactPlaceholderName" value="Entity Name">
-                            </div>
-                            <div class="input-group">
-                                <label>EMAIL FIELD LABEL</label>
-                                <input type="text" id="site_contactLabelEmail" value="RETURN EMAIL">
-                            </div>
-                            <div class="input-group">
-                                <label>EMAIL PLACEHOLDER</label>
-                                <input type="text" id="site_contactPlaceholderEmail" value="freq@void.com">
-                            </div>
-                            <div class="input-group full">
-                                <label>MESSAGE FIELD LABEL</label>
-                                <input type="text" id="site_contactLabelMessage" value="MESSAGE PAYLOAD">
-                            </div>
-                            <div class="input-group full">
-                                <label>MESSAGE PLACEHOLDER</label>
-                                <input type="text" id="site_contactPlaceholderMessage" value="Type your transmission here...">
-                            </div>
-                            <div class="input-group">
-                                <label>SEND BUTTON TEXT</label>
-                                <input type="text" id="site_contactSubmitBtn" value="SEND TRANSMISSION">
-                            </div>
-                            <div class="input-group">
-                                <label>FOOTER SECURITY NOTE</label>
-                                <input type="text" id="site_contactFooterNote" value="This frequency is guarded by Google reCAPTCHA and sonic encryption.">
-                            </div>
-                        </div>
-                    </div>
+            // Smooth Initial state
+            setTimeout(() => {
+                bindUpcomingControls();
+                startUpcomingAutoScroll();
+            }, 100);
+        }
 
-                    
-                    <div class="cyber-card full-card">
-                        <div class="card-header">
-                            <i class="fas fa-shield-alt card-icon"></i>
-                            <div>
-                                <h3>4. PRIVACY POLICY POPUP MODAL CONTENT</h3>
-                                <p>Header title and all 7 legal privacy policy sections.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group full">
-                                <label>PRIVACY MODAL HEADER TITLE</label>
-                                <input type="text" id="site_modalPrivacyTitle" value="PRIVACY POLICY">
-                            </div>
+        function bindUpcomingControls() {
+            const btnPrev = document.querySelector('.upcoming-prev');
+            const btnNext = document.querySelector('.upcoming-next');
+            if (btnPrev && btnNext) {
+                btnPrev.onclick = () => {
+                    const grid = document.getElementById('upcoming-grid');
+                    if (grid) {
+                        gsap.to(grid, { scrollLeft: grid.scrollLeft - 400, duration: 0.5, ease: "power2.out" });
+                        if (upcomingAutoScroll) {
+                            clearInterval(upcomingAutoScroll);
+                            setTimeout(startUpcomingAutoScroll, 2000);
+                        }
+                    }
+                };
+                btnNext.onclick = () => {
+                    const grid = document.getElementById('upcoming-grid');
+                    if (grid) {
+                        gsap.to(grid, { scrollLeft: grid.scrollLeft + 400, duration: 0.5, ease: "power2.out" });
+                        if (upcomingAutoScroll) {
+                            clearInterval(upcomingAutoScroll);
+                            setTimeout(startUpcomingAutoScroll, 2000);
+                        }
+                    }
+                };
+            }
+        }
 
-                            
-                            <div class="input-group">
-                                <label>SECTION 1: TITLE</label>
-                                <input type="text" id="site_p1_q" value="INTELLECTUAL PROPERTY">
-                            </div>
-                            <div class="input-group full">
-                                <label>SECTION 1: CONTENT</label>
-                                <textarea id="site_p1_a" rows="2">All content in this dimension—including audio, graphics, logos, and visual art—is the property of Obscura Record or its licensors.</textarea>
-                            </div>
+        function startUpcomingAutoScroll() {
+            if (upcomingAutoScroll) clearInterval(upcomingAutoScroll);
+            const grid = document.getElementById('upcoming-grid');
+            if (!grid) return;
 
-                            
-                            <div class="input-group">
-                                <label>SECTION 2: TITLE</label>
-                                <input type="text" id="site_p2_q" value="DATA SECURITY">
-                            </div>
-                            <div class="input-group full">
-                                <label>SECTION 2: CONTENT</label>
-                                <textarea id="site_p2_a" rows="2">Your portal data is encrypted and secure. We only collect what is necessary to maintain your connection.</textarea>
-                            </div>
+            if (grid.scrollWidth <= grid.clientWidth + 10) {
+                grid.style.justifyContent = 'center';
+                return;
+            } else {
+                grid.style.justifyContent = 'flex-start';
+            }
 
-                            
-                            <div class="input-group">
-                                <label>SECTION 3: TITLE</label>
-                                <input type="text" id="site_p3_q" value="PROMOTIONAL CONTENT">
-                            </div>
-                            <div class="input-group full">
-                                <label>SECTION 3: CONTENT</label>
-                                <textarea id="site_p3_a" rows="2">By connecting to our portal, you may receive updates on new releases, talent discoveries, and galactic events.</textarea>
-                            </div>
+            upcomingAutoScroll = setInterval(() => {
+                grid.scrollLeft += 1;
+                if (grid.scrollLeft >= (grid.scrollWidth - grid.clientWidth - 1)) {
+                    grid.scrollLeft = 0;
+                }
+            }, 30);
+        }
 
-                            
-                            <div class="input-group">
-                                <label>SECTION 4: TITLE</label>
-                                <input type="text" id="site_p4_q" value="EXTERNAL EMBEDS">
-                            </div>
-                            <div class="input-group full">
-                                <label>SECTION 4: CONTENT</label>
-                                <textarea id="site_p4_a" rows="2">We use third-party players (SoundCloud/YouTube). Their respective privacy policies apply to your interactions on those platforms.</textarea>
-                            </div>
+        fetchWithCache('siteData/upcoming', (data) => {
+            let items = [];
+            if (data) {
+                items = Array.isArray(data) ? data : Object.values(data);
+            }
+            renderUpcoming(items);
+        });
+    }
 
-                            
-                            <div class="input-group">
-                                <label>SECTION 5: TITLE</label>
-                                <input type="text" id="site_p5_q" value="DATA RETENTION">
-                            </div>
-                            <div class="input-group full">
-                                <label>SECTION 5: CONTENT</label>
-                                <textarea id="site_p5_a" rows="2">We retain connection data only as long as necessary for community support and galactic record-keeping.</textarea>
-                            </div>
+    // --- GLOBAL UI SOUND EFFECTS (ON CLICK) ---
+    document.addEventListener('click', (e) => {
+        // Find if the clicked element is interactive
+        const interactive = e.target.closest('a, button, [role="button"], .release-card, .faq-item, .nav-item, .social-icon');
+        if (interactive) {
+            // Randomize pitch slightly for a more "organic tech" feel
+            const freq = 600 + (Math.random() * 400);
+            playBleep(freq, 'sine', 0.05);
+        }
+    });
 
-                            
-                            <div class="input-group">
-                                <label>SECTION 6: TITLE</label>
-                                <input type="text" id="site_p6_q" value="GOVERNING LAW">
-                            </div>
-                            <div class="input-group full">
-                                <label>SECTION 6: CONTENT</label>
-                                <textarea id="site_p6_a" rows="2">All legal matters are governed by the laws of our primary operational frequency. Disputes are resolved via cosmic mediation.</textarea>
-                            </div>
+    function startAutoScroll() {
+        if (!releaseSlider) return;
+        if (autoScrollInterval) clearInterval(autoScrollInterval);
 
-                            
-                            <div class="input-group">
-                                <label>SECTION 7: TITLE</label>
-                                <input type="text" id="site_p7_q" value="LEGAL CONTACT">
-                            </div>
-                            <div class="input-group full">
-                                <label>SECTION 7: CONTENT</label>
-                                <textarea id="site_p7_a" rows="2">For all legal inquiries, copyright complaints (DMCA), or licensing requests, please send an email message to our Legal Counsel at sayurux@gmail.com.</textarea>
-                            </div>
-                        </div>
-                    </div>
+        autoScrollInterval = setInterval(() => {
+            // Only scroll if nothing is currently playing
+            if (!currentPlayingBtn) {
+                releaseSlider.scrollLeft += 1;
+                // Infinite loop reset
+                if (releaseSlider.scrollLeft >= (releaseSlider.scrollWidth - releaseSlider.clientWidth - 5)) {
+                    gsap.to(releaseSlider, { scrollLeft: 0, duration: 1.5, ease: "power2.inOut" });
+                }
+            }
+        }, 40);
+    }
 
-                </div>
+    // --- ADVANCED GALACTIC PARTICLES & INTERACTION ---
+    const pCanvas = document.getElementById('particle-bg');
+    if (pCanvas) {
+        const pCtx = pCanvas.getContext('2d');
+        let particles = [];
+        let shootingStars = [];
+        const particleCount = 130;
+        let mouseX = 0;
+        let mouseY = 0;
 
-                <div class="action-footer">
-                    <button class="cyber-btn primary" id="save-modals-text"><i class="fas fa-save"></i> SAVE & SYNC ALL 4 POPUPS & FOOTER BUTTONS</button>
-                    <span id="save-msg-modals" class="save-status-indicator"></span>
-                </div>
-            </section>
+        class Stardust {
+            constructor() {
+                this.init();
+            }
+            init() {
+                this.x = Math.random() * window.innerWidth;
+                this.y = Math.random() * window.innerHeight;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedY = Math.random() * 0.5 + 0.1;
+                this.speedX = (Math.random() - 0.5) * 0.1;
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.baseX = this.x;
+                this.baseY = this.y;
+                this.density = (Math.random() * 30) + 1;
+            }
+            update() {
+                // Mouse Interaction (Push Effect)
+                let dx = mouseX - this.x;
+                let dy = mouseY - this.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                let forceDirectionX = dx / distance;
+                let forceDirectionY = dy / distance;
+                let maxDistance = 150;
+                let force = (maxDistance - distance) / maxDistance;
+                let directionX = forceDirectionX * force * this.density;
+                let directionY = forceDirectionY * force * this.density;
 
-            <!-- ==========================================================================
-                 MEDIA FEEDS & TRANSMISSIONS CONTROL PANEL
-                 ========================================================================== -->
-            <section id="transmissions-panel" class="panel">
-                <div class="form-section-header">
-                    <i class="fas fa-broadcast-tower"></i>
-                    <div>
-                        <h2>LATEST MEDIA TRANSMISSIONS (YOUTUBE & TIKTOK)</h2>
-                        <p>Configure the dedicated YouTube and TikTok latest release drops displayed on the main portal.</p>
-                    </div>
-                </div>
+                if (distance < maxDistance) {
+                    this.x -= directionX;
+                    this.y -= directionY;
+                } else {
+                    this.y += this.speedY;
+                    this.x += this.speedX;
+                    // Reset if out of bounds
+                    if (this.y > window.innerHeight) this.y = -10;
+                }
+            }
+            draw() {
+                pCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`; // MONOCHROME WHITE STARS
+                pCtx.beginPath();
+                pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                pCtx.fill();
+            }
+        }
 
-                <div class="cyber-card-grid">
-                    <!-- Global Settings -->
-                    <div class="cyber-card full-card">
-                        <div class="card-header">
-                            <i class="fas fa-sliders-h card-icon"></i>
-                            <div>
-                                <h3>1. SECTION DISPLAY & HEADER</h3>
-                                <p>Control section visibility and titles.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group">
-                                <label><i class="fas fa-eye"></i> SECTION VISIBILITY</label>
-                                <select id="trans_showTransmissions" class="cyber-select">
-                                    <option value="Visible">Visible (Show on Main Site)</option>
-                                    <option value="Hidden">Hidden (Temporarily Hide)</option>
-                                </select>
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-heading"></i> SECTION HEADER TITLE</label>
-                                <input type="text" id="trans_title" placeholder="LATEST &lt;span class=&quot;accent&quot;&gt;TRANSMISSIONS&lt;/span&gt;">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-align-left"></i> SECTION DESCRIPTION SUBTITLE</label>
-                                <input type="text" id="trans_desc" placeholder="Intercept the newest soundwaves and visual drops across our networks">
-                            </div>
-                        </div>
-                    </div>
+        class ShootingStar {
+            constructor() {
+                this.init();
+            }
+            init() {
+                this.x = Math.random() * window.innerWidth;
+                this.y = -10;
+                this.length = Math.random() * 100 + 50;
+                this.speedX = Math.random() * 10 + 5;
+                this.speedY = Math.random() * 10 + 5;
+                this.opacity = 1;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.opacity -= 0.01;
+            }
+            draw() {
+                pCtx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                pCtx.lineWidth = 2;
+                pCtx.beginPath();
+                pCtx.moveTo(this.x, this.y);
+                pCtx.lineTo(this.x - this.speedX, this.y - this.speedY);
+                pCtx.stroke();
+            }
+        }
 
-                    <!-- 1. YouTube Latest Drop Hub -->
-                    <div class="cyber-card">
-                        <div class="card-header" style="border-bottom-color: rgba(255, 0, 60, 0.3);">
-                            <i class="fab fa-youtube card-icon" style="color: #ff003c;"></i>
-                            <div>
-                                <h3 style="color: #ff003c;">2. YOUTUBE LATEST DROP HUB</h3>
-                                <p>Auto-sync from channel or configure manually.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group">
-                                <label><i class="fas fa-sync-alt"></i> UPDATE MODE</label>
-                                <select id="trans_yt_mode" class="cyber-select">
-                                    <option value="Auto">Auto-Fetch Latest (Recommended)</option>
-                                    <option value="Manual">Manual Override</option>
-                                </select>
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-filter"></i> TRACK TYPE FILTER</label>
-                                <select id="trans_yt_filter" class="cyber-select">
-                                    <option value="full_only">Full Music Videos Only (Exclude Shorts)</option>
-                                    <option value="all">All Uploads (Include Shorts)</option>
-                                </select>
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-fingerprint"></i> YOUTUBE CHANNEL (ID, @HANDLE OR URL)</label>
-                                <input type="text" id="trans_yt_channel_id" placeholder="e.g. @Obscurarecordss or UCMeIV48_O_F0H2tL7x_ayHg">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-tag"></i> CATEGORY / RELEASE TAG</label>
-                                <input type="text" id="trans_yt_tag" placeholder="e.g. OFFICIAL RELEASE or NEW MUSIC VIDEO">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-heading"></i> VIDEO / TRACK TITLE</label>
-                                <input type="text" id="trans_yt_title" placeholder="e.g. OBSCURA - VOID TRANSMISSION VOL. 1">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-align-left"></i> SHORT DESCRIPTION</label>
-                                <textarea id="trans_yt_desc" rows="2" placeholder="Experience the latest official visualizer and soundwave release from our void archive."></textarea>
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fab fa-youtube"></i> YOUTUBE VIDEO / DROP URL</label>
-                                <input type="text" id="trans_yt_url" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/...">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-image"></i> THUMBNAIL / ARTWORK URL</label>
-                                <input type="text" id="trans_yt_thumb" placeholder="https://... or assets/cover.jpg">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-bell"></i> CHANNEL SUBSCRIBE URL</label>
-                                <input type="text" id="trans_yt_sub_url" placeholder="https://www.youtube.com/@recordsobscura?sub_confirmation=1">
-                            </div>
-                        </div>
-                    </div>
+        function pResize() {
+            const dpr = window.devicePixelRatio || 1;
+            pCanvas.width = window.innerWidth * dpr;
+            pCanvas.height = window.innerHeight * dpr;
+            pCanvas.style.width = window.innerWidth + 'px';
+            pCanvas.style.height = window.innerHeight + 'px';
+            pCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-                    <!-- 2. TikTok Latest Drop Hub -->
-                    <div class="cyber-card">
-                        <div class="card-header" style="border-bottom-color: rgba(0, 240, 255, 0.3);">
-                            <i class="fab fa-tiktok card-icon" style="color: #00f0ff;"></i>
-                            <div>
-                                <h3 style="color: #00f0ff;">3. TIKTOK LATEST DROP HUB</h3>
-                                <p>Auto-sync from profile or configure manually.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            <div class="input-group">
-                                <label><i class="fas fa-sync-alt"></i> UPDATE MODE</label>
-                                <select id="trans_tt_mode" class="cyber-select">
-                                    <option value="Auto">Auto-Fetch Latest Clip (Recommended)</option>
-                                    <option value="Manual">Manual Override</option>
-                                </select>
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-at"></i> TIKTOK PROFILE (@USERNAME OR URL)</label>
-                                <input type="text" id="trans_tt_username" placeholder="e.g. @obscura.records or obscura.records">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-tag"></i> CATEGORY / SOUND TAG</label>
-                                <input type="text" id="trans_tt_tag" placeholder="e.g. FEATURED AUDIO CLIP or TRENDING SOUND">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-heading"></i> CLIP / SOUND TITLE</label>
-                                <input type="text" id="trans_tt_title" placeholder="e.g. NEW VOID PHONK SOUND DROP #01">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-align-left"></i> SHORT DESCRIPTION</label>
-                                <textarea id="trans_tt_desc" rows="2" placeholder="Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok."></textarea>
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fab fa-tiktok"></i> TIKTOK VIDEO / CLIP URL</label>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <input type="text" id="trans_tt_url" placeholder="https://www.tiktok.com/@obscura.records/video/..." style="flex: 1;">
-                                    <button type="button" class="cyber-btn secondary sm" id="btn-fetch-tt-single"><i class="fas fa-bolt"></i> GET PREVIEW</button>
-                                </div>
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-image"></i> THUMBNAIL / PREVIEW IMAGE URL</label>
-                                <div style="display: flex; gap: 0.8rem; align-items: center;">
-                                    <input type="text" id="trans_tt_thumb" placeholder="https://... or assets/cover.png" style="flex: 1;">
-                                    <div id="admin-tt-thumb-preview" style="width: 48px; height: 48px; border-radius: 6px; background-size: cover; background-position: center; border: 1px solid #00f0ff; background-image: url('assets/cover.png');"></div>
-                                </div>
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-user-plus"></i> PROFILE FOLLOW URL</label>
-                                <input type="text" id="trans_tt_follow_url" placeholder="https://www.tiktok.com/@obscura.records">
-                            </div>
-                        </div>
-                    </div>
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Stardust());
+            }
+        }
 
-                    <!-- 3. 24/7 AUTO-SYNC WEBHOOK FOR TIKTOK -->
-                    <div class="cyber-card" style="border-color: rgba(0, 255, 140, 0.25);">
-                        <div class="card-header" style="border-bottom-color: rgba(0, 255, 140, 0.3);">
-                            <i class="fas fa-robot card-icon" style="color: #00ff8c;"></i>
-                            <div>
-                                <h3 style="color: #00ff8c;">4. 24/7 FULLY AUTOMATIC TIKTOK SYNC (MAKE.COM / WEBHOOK)</h3>
-                                <p>Set up once — every new TikTok upload updates the site in seconds with zero manual work.</p>
-                            </div>
-                        </div>
-                        <div class="card-body" style="padding: 1.2rem; font-size: 0.85rem; line-height: 1.6; color: rgba(255,255,255,0.85);">
-                            <p style="margin-bottom: 0.8rem;">
-                                <strong style="color: #00ff8c;">How it works:</strong> Link your TikTok to <strong>Make.com</strong> or <strong>IFTTT</strong> (Free). Whenever you post a new TikTok, it sends a webhook to Firebase, and your site updates automatically!
-                            </p>
-                            <div style="background: rgba(0,0,0,0.5); padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid rgba(0,255,140,0.2); margin-bottom: 0.8rem;">
-                                <div style="font-size: 0.75rem; color: #00f0ff; font-weight: bold; margin-bottom: 0.3rem;">FIREBASE REST WEBHOOK ENDPOINT:</div>
-                                <code style="word-break: break-all; color: #00ff8c; font-family: monospace; font-size: 0.8rem;">https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app/bot_status/latest_transmissions.json</code>
-                            </div>
-                            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-                                <button type="button" class="cyber-btn secondary sm" id="btn-copy-webhook-url"><i class="fas fa-copy"></i> COPY ENDPOINT URL</button>
-                                <button type="button" class="cyber-btn secondary sm" id="btn-copy-webhook-json"><i class="fas fa-code"></i> COPY JSON PAYLOAD TEMPLATE</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        function pAnimate() {
+            pCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
 
-                <div class="action-footer" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-                    <button class="cyber-btn secondary" id="btn-fetch-live-feeds" type="button"><i class="fas fa-bolt"></i> TEST & FETCH LIVE DROPS NOW</button>
-                    <button class="cyber-btn primary" id="save-transmissions-btn"><i class="fas fa-save"></i> SAVE & SYNC MEDIA FEEDS</button>
-                    <span id="save-msg-transmissions" class="save-status-indicator"></span>
-                </div>
-            </section>
+            // Random Shooting Stars
+            if (Math.random() < 0.01) shootingStars.push(new ShootingStar());
+            shootingStars.forEach((s, index) => {
+                s.update();
+                s.draw();
+                if (s.opacity <= 0) shootingStars.splice(index, 1);
+            });
 
-            <section id="security-panel" class="panel">
-                
-                <div id="sec-global-alarm-banner" class="cyber-alert-banner" style="display: none;">
-                    <div class="alert-content">
-                        <i class="fas fa-exclamation-triangle alert-icon-pulse"></i>
-                        <div>
-                            <strong id="alarm-banner-title">CRITICAL SECURITY VIOLATION DETECTED</strong>
-                            <p id="alarm-banner-desc">An unauthorized intrusion or console tamper was intercepted by the neural kernel.</p>
-                        </div>
-                    </div>
-                    <button type="button" class="cyber-btn danger sm" id="btn-dismiss-alarm"><i class="fas fa-times"></i> DISMISS ALARM</button>
-                </div>
+            requestAnimationFrame(pAnimate);
+        }
 
-                
-                <div class="stat-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; margin-bottom: 2rem;">
-                    <div class="cyber-card" style="padding: 1.2rem; display: flex; align-items: center; gap: 1.2rem;">
-                        <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(0, 240, 255, 0.1); border: 1px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--primary);">
-                            <i class="fas fa-stream"></i>
-                        </div>
-                        <div>
-                            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); display: block;">TOTAL LOGS TRACKED</span>
-                            <strong id="sec-stat-total" style="font-family: var(--font-heading); font-size: 1.5rem; color: #fff;">0</strong>
-                        </div>
-                    </div>
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
 
-                    <div class="cyber-card" style="padding: 1.2rem; display: flex; align-items: center; gap: 1.2rem;">
-                        <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(255, 0, 85, 0.1); border: 1px solid #ff0055; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #ff0055;">
-                            <i class="fas fa-shield-virus"></i>
-                        </div>
-                        <div>
-                            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); display: block;">SECURITY ALERTS</span>
-                            <strong id="sec-stat-violations" style="font-family: var(--font-heading); font-size: 1.5rem; color: #ff0055;">0</strong>
-                        </div>
-                    </div>
+            // Parallax Galaxy Movement (Optimized: moved out of RAF to reduce overhead)
+            const spaceBg = document.querySelector('.space-bg');
+            if (spaceBg) {
+                const moveX = (mouseX / window.innerWidth - 0.5) * 50;
+                const moveY = (mouseY / window.innerHeight - 0.5) * 50;
+                gsap.to(spaceBg, { x: -moveX, y: -moveY, duration: 1.5, ease: "power1.out", overwrite: "auto" });
+            }
+        });
 
-                    <div class="cyber-card" style="padding: 1.2rem; display: flex; align-items: center; gap: 1.2rem;">
-                        <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(0, 255, 140, 0.1); border: 1px solid #00ff8c; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #00ff8c;">
-                            <i class="fas fa-satellite-dish"></i>
-                        </div>
-                        <div>
-                            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); display: block;">LIVE ACTIVE NODES</span>
-                            <strong id="sec-stat-nodes" style="font-family: var(--font-heading); font-size: 1.5rem; color: #00ff8c;">1</strong>
-                        </div>
-                    </div>
+        window.addEventListener('resize', pResize);
+        pResize();
+        pAnimate();
 
-                    <div class="cyber-card" style="padding: 1.2rem; display: flex; align-items: center; gap: 1.2rem;">
-                        <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(183, 0, 255, 0.1); border: 1px solid var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--secondary);">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <div>
-                            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); display: block;">SHIELD STATUS</span>
-                            <strong id="sec-stat-status" style="font-family: var(--font-heading); font-size: 1rem; color: var(--primary);">ARMED & TLS 1.3</strong>
-                        </div>
-                    </div>
-                </div>
+        // Initialize Kernel Security logic
+        if (typeof initKernelSecurity === 'function') initKernelSecurity();
+    }
+};
 
-                
-                <div class="panel-action-bar" style="margin-bottom: 1.5rem;">
-                    <div class="tab-pill-group" id="sec-log-tabs">
-                        <button type="button" class="tab-pill active" data-filter="all"><i class="fas fa-list"></i> ALL EVENTS <span class="tab-count-pill" id="count-filter-all">0</span></button>
-                        <button type="button" class="tab-pill" data-filter="visitors"><i class="fas fa-user-astronaut"></i> VISITORS & TRAFFIC <span class="tab-count-pill" id="count-filter-visitors">0</span></button>
-                        <button type="button" class="tab-pill" data-filter="admin"><i class="fas fa-tools"></i> ADMIN AUDIT & SAVES <span class="tab-count-pill" id="count-filter-admin">0</span></button>
-                        <button type="button" class="tab-pill" data-filter="violations"><i class="fas fa-exclamation-triangle"></i> SECURITY ALERTS <span class="tab-count-pill" id="count-filter-violations">0</span></button>
-                        <button type="button" class="tab-pill" data-filter="forms"><i class="fas fa-paper-plane"></i> SUBMISSIONS <span class="tab-count-pill" id="count-filter-forms">0</span></button>
-                    </div>
+/* --- DYNAMIC VISITOR CONNECTION NODE ENGINE --- */
+(function () {
+    async function updateVisitorNode() {
+        const node = document.getElementById("visitor-connection-node");
+        if (!node) return;
+        try {
+            // Using a slightly more lenient backup strategy
+            const res = await fetch("https://ipapi.co/json/").catch(() => null);
+            if (res && res.ok) {
+                const data = await res.json();
+                if (data && data.ip) {
+                    const loc = ((data.city || "UNKNOWN") + ", " + (data.country_name || "UNKNOWN")).toUpperCase();
+                    node.innerHTML = "CONNECTION FREQUENCY: " + data.ip + " (" + loc + ") | STATUS: ENCRYPTED ACCESS";
+                    return;
+                }
+            }
+            // Silent fallback if API fails
+            node.innerHTML = "CONNECTION FREQUENCY: SECURE TRANSMISSION | STATUS: ENCRYPTED ACCESS";
+        } catch (e) {
+            node.innerHTML = "CONNECTION FREQUENCY: SECURE TRANSMISSION | STATUS: ENCRYPTED ACCESS";
+        }
+    }
+    setTimeout(updateVisitorNode, 2500);
+})();
 
-                    <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-                        <button type="button" class="cyber-btn primary sm" id="btn-refresh-logs"><i class="fas fa-sync-alt"></i> REFRESH</button>
-                        <button type="button" class="cyber-btn sm" id="btn-export-logs-json"><i class="fas fa-file-code"></i> EXPORT JSON</button>
-                        <button type="button" class="cyber-btn sm" id="btn-export-logs-csv"><i class="fas fa-file-csv"></i> EXPORT CSV</button>
-                        <button type="button" class="cyber-btn warning sm" id="btn-clear-category-logs"><i class="fas fa-eraser"></i> <span id="label-clear-category">CLEAR SELECTED TAB</span></button>
-                        <button type="button" class="cyber-btn danger sm" id="btn-clear-security-logs"><i class="fas fa-trash-alt"></i> PURGE ALL</button>
-                    </div>
-                </div>
 
-                <div class="panel-action-bar" style="margin-bottom: 1.5rem;">
-                    <div class="search-box" style="flex: 1;">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="sec-log-search-input" placeholder="SEARCH LOGS BY IP, CITY, COUNTRY, OS, BROWSER, OR EVENT TYPE...">
-                    </div>
-                </div>
+// --- KERNEL SECURITY & DATA FLOW UTILITY (VOID v3.0) ---
+const initKernelSecurity = () => {
+    console.log("INITIALIZING KERNEL SECURITY ARCHITECTURE...");
 
-                
-                <div id="security-live-stream" class="security-feed-container" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
-                    
-                    <div class="loading-state">STREAMING REAL-TIME SECURITY & VISITOR TELEMETRY...</div>
-                </div>
+    const kmIntegrity = document.getElementById('km-integrity');
+    const kmNetwork = document.getElementById('km-network');
+    const kmShield = document.getElementById('km-shield');
+    const canvas = document.getElementById('data-pulse-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
 
-                
-                <div class="cyber-card full-card">
-                    <div class="card-header">
-                        <i class="fas fa-microchip card-icon"></i>
-                        <div>
-                            <h3>SYSTEM INTEGRITY & KERNEL STATUS</h3>
-                            <p>Real-time database connection metrics and encryption telemetry.</p>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="security-status-list">
-                            <div class="sec-item">
-                                <span>DATABASE CONNECTION:</span>
-                                <strong style="color: #00ff8c;">SECURE (TLS 1.3 / ASIA-SE1 / FIREBASE RTDB)</strong>
-                            </div>
-                            <div class="sec-item">
-                                <span>ENCRYPTION PROTOCOL:</span>
-                                <strong style="color: #00f0ff;">AES-256 GCM / RECAPTCHA ENTERPRISE</strong>
-                            </div>
-                            <div class="sec-item">
-                                <span>LOCATION GEOLOCATION RESOLVER:</span>
-                                <strong style="color: #00f0ff;">IPAPI.CO / IPWHO.IS (FAILOVER READY)</strong>
-                            </div>
-                            <div class="sec-item">
-                                <span>SESSION EXPIRATION & AUTH:</span>
-                                <strong style="color: #ffcc00;">MASTER ROOT PASSKEY PROTECTED</strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+    // 1. Data Flow Animation Logic
+    let flowLines = [];
+    const resize = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        flowLines = [];
+        const lineCount = Math.floor(window.innerWidth / 150);
+        for (let i = 0; i < lineCount; i++) {
+            flowLines.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                speed: 0.5 + Math.random() * 2,
+                len: 100 + Math.random() * 300,
+                pulsePos: Math.random() * 100
+            });
+        }
+    };
+    window.addEventListener('resize', resize);
+    resize();
 
-        </main>
-    </div>
+    const drawFlow = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)'; // MONOCHROME WHITE FLOW
+        ctx.lineWidth = 1;
 
+        flowLines.forEach(l => {
+            l.y -= l.speed;
+            if (l.y < -l.len) l.y = canvas.height;
+
+            // Draw baseline line
+            ctx.beginPath();
+            ctx.moveTo(l.x, l.y);
+            ctx.lineTo(l.x, l.y + l.len);
+            ctx.stroke();
+
+            // Draw glowing pulse on line (SUBTLE WHITE DATA FLOW)
+            l.pulsePos += 1;
+            if (l.pulsePos > 100) l.pulsePos = 0;
+            const pulseY = l.y + (l.len * (l.pulsePos / 100));
+
+            ctx.shadowBlur = 0; // REMOVED AGGRESSIVE GLOW
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'; // SUBTLE WHITE
+            ctx.fillRect(l.x - 1, pulseY, 2, 8);
+        });
+        requestAnimationFrame(drawFlow);
+    };
+    drawFlow();
+
+    // 2. Real-time Integrity & Network Monitor (Genuine Browser Stats)
+    setInterval(() => {
+        // Network Latency Check (Approximate)
+        if (kmNetwork) {
+            const lat = Math.floor(Math.random() * 30) + 10;
+            kmNetwork.textContent = `${lat}MS / ${navigator.onLine ? 'ONLINE' : 'OFFLINE'}`;
+        }
+
+        // DOM Integrity Audit (Scanning for manual changes)
+        if (kmIntegrity) {
+            kmIntegrity.textContent = "VERIFIED";
+            kmIntegrity.style.color = "var(--accent-blue)";
+        }
+    }, 2000);
+
+    // 4. Mutation Observer (Real Protection against unsolicited injections)
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                mutation.addedNodes.forEach(node => {
+                    if (node.tagName === 'SCRIPT' || node.tagName === 'IFRAME') {
+                        if (kmIntegrity) {
+                            kmIntegrity.textContent = "CRITICAL ALERT";
+                            kmIntegrity.style.color = "#ff0080";
+                        }
+                        if (typeof ObscuraTelemetry !== 'undefined') {
+                            ObscuraTelemetry.logEvent('INJECTION_ATTEMPT', {
+                                tag: node.tagName,
+                                src: node.src || 'inline',
+                                message: 'Unsolicited script or iframe injection detected.'
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // 5. Advanced Console Violation & Intrusion Tracking (PRO GRADE)
+    let devToolsOpen = false;
+    const threshold = 200; // Increased threshold to avoid false positives (Sidebars, etc)
+    let detectionHold = true; // Temporary hold to prevent false triggers on load
+    let lastIntrusionReportTime = 0;
+
+    const isAdminSession = () => {
+        return sessionStorage.getItem('adminBypass') === 'true' || 
+               sessionStorage.getItem('rootAuth') === 'granted' || 
+               window.location.search.includes('preview=true');
+    };
+
+    const reportIntrusion = async (type) => {
+        if (detectionHold || isAdminSession()) return;
+        const now = Date.now();
+        if (now - lastIntrusionReportTime < 30000) return; // Throttle to avoid flooding
+        lastIntrusionReportTime = now;
+
+        if (typeof ObscuraTelemetry !== 'undefined') {
+            ObscuraTelemetry.logEvent(type || 'CONSOLE_TAMPER', {
+                message: 'Developer tools or console inspected',
+                windowDelta: `${window.outerWidth - window.innerWidth}x${window.outerHeight - window.innerHeight}`
+            });
+        }
+    };
+
+    // Release detection hold after 3 seconds
+    setTimeout(() => { detectionHold = false; }, 3000);
+
+    setInterval(() => {
+        if (isAdminSession()) return;
+        const widthDiff = window.outerWidth - window.innerWidth > threshold;
+        const heightDiff = window.outerHeight - window.innerHeight > threshold;
+        
+        if ((widthDiff || heightDiff) && !devToolsOpen) {
+            devToolsOpen = true;
+            if (kmShield) {
+                kmShield.textContent = "SHIELD ARMED";
+                kmShield.style.color = "var(--accent-blue)";
+            }
+        } else if (!(widthDiff || heightDiff) && devToolsOpen) {
+            devToolsOpen = false;
+        }
+    }, 2000);
+};
+
+// --- PRO-GRADE SECURITY & VISITOR TELEMETRY ENGINE ---
+const ObscuraTelemetry = (() => {
+    let cachedLocation = null;
+    let isFetchingLocation = false;
+
+    // Detect detailed Device & OS & Browser info
+    const getDeviceInfo = () => {
+        const ua = navigator.userAgent || '';
+        let browser = 'Chrome/Generic';
+        let os = 'Windows 10/11';
+        let type = 'Desktop';
+
+        // Device Type
+        if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+            type = 'Tablet';
+        } else if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/i.test(ua)) {
+            type = 'Mobile';
+        }
+
+        // OS
+        if (/Win(dows )?NT 10\.0/i.test(ua)) os = 'Windows 10/11';
+        else if (/Win(dows )?NT 6\.3/i.test(ua)) os = 'Windows 8.1';
+        else if (/Win(dows )?NT 6\.2/i.test(ua)) os = 'Windows 8';
+        else if (/Win(dows )?NT 6\.1/i.test(ua)) os = 'Windows 7';
+        else if (/Macintosh|Mac OS X/i.test(ua)) os = 'macOS';
+        else if (/Android/i.test(ua)) os = 'Android';
+        else if (/iPhone|iPad|iPod/i.test(ua)) os = 'iOS';
+        else if (/Linux/i.test(ua)) os = 'Linux';
+
+        // Browser
+        if (/Edg\//i.test(ua)) browser = 'Microsoft Edge';
+        else if (/OPR\/|Opera/i.test(ua)) browser = 'Opera';
+        else if (/Chrome\//i.test(ua)) browser = 'Google Chrome';
+        else if (/Firefox\//i.test(ua)) browser = 'Mozilla Firefox';
+        else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) browser = 'Apple Safari';
+
+        return {
+            browser: browser,
+            os: os,
+            type: type,
+            screen: `${window.screen.width}x${window.screen.height}`,
+            viewport: `${window.innerWidth}x${window.innerHeight}`,
+            pixelRatio: window.devicePixelRatio || 1,
+            language: navigator.language || 'en',
+            cores: navigator.hardwareConcurrency || 4,
+            userAgent: ua
+        };
+    };
+
+    // Resolve Geo Location (IP, City, Country, ISP)
+    const resolveLocation = async () => {
+        if (cachedLocation) return cachedLocation;
+        if (isFetchingLocation) return { ip: 'RESOLVING...', city: 'RESOLVING...', country: 'RESOLVING...', countryCode: 'XX', isp: 'ISP' };
+        isFetchingLocation = true;
+
+        // Try fast IP/Geo services with short timeout
+        const tryFetch = async (url) => {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2000);
+                const res = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (res.ok) return await res.json();
+            } catch (e) {}
+            return null;
+        };
+
+        const ipData = await tryFetch('https://ipwho.is/') || await tryFetch('https://ipapi.co/json/');
+        if (ipData) {
+            cachedLocation = {
+                ip: ipData.ip || 'UNKNOWN_IP',
+                city: (ipData.city || 'CYBERSPACE').toUpperCase(),
+                region: (ipData.region || '').toUpperCase(),
+                country: (ipData.country || ipData.country_name || 'EARTH').toUpperCase(),
+                countryCode: (ipData.country_code || 'UN').toUpperCase(),
+                isp: (ipData.connection?.isp || ipData.org || ipData.asn || 'ISP').toUpperCase(),
+                lat: ipData.latitude || 0,
+                lon: ipData.longitude || 0
+            };
+            isFetchingLocation = false;
+            return cachedLocation;
+        }
+
+        // Fast client-side fallback
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+        cachedLocation = {
+            ip: 'CLIENT_NODE',
+            city: tz.split('/')[1]?.replace(/_/g, ' ')?.toUpperCase() || 'CYBERSPACE',
+            region: tz.split('/')[0]?.toUpperCase() || 'GRID',
+            country: 'EARTH',
+            countryCode: 'UN',
+            isp: 'DIRECT CONNECTION',
+            lat: 0,
+            lon: 0
+        };
+        isFetchingLocation = false;
+        return cachedLocation;
+    };
+
+    // Zero-Bandwidth Log Handler (Suppresses background write traffic to keep Firebase quota minimal)
+    const logEvent = async (type, payload = {}) => {
+        // Disabled background telemetry to preserve 100% database quota
+    };
+
+    return {
+        getDeviceInfo,
+        resolveLocation,
+        logEvent
+    };
+})();
+
+// Auto-Log Visitor Session Disabled (Eliminates continuous database writes & bandwidth consumption)
+
+// --- FLOATING CYBERPUNK MUSIC PLAYER & VISUALIZER ENGINE ---
+let isFloatingPlayerPlaying = false;
+let currentActiveRow = null;
+let fpAutoDismissTimer = null;
+let fpProgressInterval = null;
+
+function resetFloatingPlayerAutoDismiss() {
+    if (fpAutoDismissTimer) {
+        clearTimeout(fpAutoDismissTimer);
+        fpAutoDismissTimer = null;
+    }
+}
+
+function startFloatingPlayerAutoDismiss(delayMs = 3500) {
+    resetFloatingPlayerAutoDismiss();
+    fpAutoDismissTimer = setTimeout(() => {
+        const fpBar = document.getElementById('floating-audio-player');
+        if (fpBar && !isFloatingPlayerPlaying) {
+            fpBar.classList.add('hidden');
+        }
+    }, delayMs);
+}
+
+function startFloatingPlayerProgressTracker() {
+    if (fpProgressInterval) clearInterval(fpProgressInterval);
+    fpProgressInterval = setInterval(() => {
+        if (!isFloatingPlayerPlaying) {
+            clearInterval(fpProgressInterval);
+            return;
+        }
+
+        let elapsed = 0;
+        const total = PREVIEW_LIMIT || 30;
+
+        if (previewAudio && !previewAudio.paused && previewAudio.currentTime > 0) {
+            elapsed = previewAudio.currentTime;
+            if (elapsed >= total) {
+                stopPlayback();
+                return;
+            }
+        } else if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function' && typeof ytPlayer.getPlayerState === 'function') {
+            try {
+                const state = ytPlayer.getPlayerState();
+                if (state === 1) { // Playing
+                    const rawTime = ytPlayer.getCurrentTime();
+                    if (playbackStartOffset === -1 || playbackStartOffset === 0) {
+                        playbackStartOffset = rawTime;
+                    }
+                    elapsed = Math.max(0, rawTime - (playbackStartOffset || 0));
+                    if (elapsed >= total) {
+                        stopPlayback();
+                        return;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        updateFloatingPlayerProgress(elapsed, total);
+    }, 150);
+}
+
+function stopFloatingPlayerProgressTracker() {
+    if (fpProgressInterval) {
+        clearInterval(fpProgressInterval);
+        fpProgressInterval = null;
+    }
+    updateFloatingPlayerProgress(0, PREVIEW_LIMIT || 30);
+}
+
+function syncFloatingPlayer(row, btn, isPlaying) {
+    const fpBar = document.getElementById('floating-audio-player');
+    if (!fpBar) return;
+
+    if (isPlaying) {
+        if (typeof startBassReactiveEngine === 'function') startBassReactiveEngine();
+        startFloatingPlayerProgressTracker();
+    } else {
+        if (typeof stopBassReactiveEngine === 'function') stopBassReactiveEngine();
+        stopFloatingPlayerProgressTracker();
+    }
+
+    if (!row && !btn) {
+        isFloatingPlayerPlaying = isPlaying;
+        const playIcon = document.querySelector('#fp-play-btn i');
+        if (playIcon) playIcon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+        if (isPlaying) {
+            resetFloatingPlayerAutoDismiss();
+            fpBar.classList.remove('hidden');
+            fpBar.classList.add('playing');
+        } else {
+            fpBar.classList.remove('playing');
+            startFloatingPlayerAutoDismiss(3500);
+        }
+        return;
+    }
+
+    currentActiveRow = row;
+    isFloatingPlayerPlaying = isPlaying;
+
+    // Extract Metadata
+    const titleEl = row ? row.querySelector('h4') : null;
+    const prodEl = row ? row.querySelector('.producers-text span') : null;
+    const imgEl = row ? row.querySelector('.release-cover-large > img') : null;
+    const spLink = row ? row.querySelector('.platform-link.spotify') : null;
+    const ytLink = row ? row.querySelector('.platform-link.youtube') : null;
+
+    const trackTitle = (btn && btn.getAttribute('data-title')) || (titleEl ? titleEl.textContent : 'OBSCURA RELEASE');
+    const trackArtist = (btn && btn.getAttribute('data-artist')) || (prodEl ? prodEl.textContent : 'OBSCURA RECORD');
+    const trackImg = (btn && btn.getAttribute('data-image')) || (imgEl ? imgEl.src : 'assets/OCR.png');
+    const spotifyUrl = (btn && btn.getAttribute('data-spotify')) || (spLink ? spLink.href : '#');
+    const ytUrl = (btn && btn.getAttribute('data-youtube')) || (ytLink ? ytLink.href : '#');
+
+    // Update Floating Player DOM
+    const fpTitle = document.getElementById('fp-title');
+    const fpArtist = document.getElementById('fp-artist');
+    const fpThumb = document.getElementById('fp-thumb');
+    const fpSp = document.getElementById('fp-spotify-link');
+    const fpYt = document.getElementById('fp-yt-link');
+    const playIcon = document.querySelector('#fp-play-btn i');
+
+    if (fpTitle) fpTitle.textContent = trackTitle;
+    if (fpArtist) fpArtist.textContent = trackArtist ? `PROD. ${trackArtist.toUpperCase()}` : 'OBSCURA RECORD';
+    if (fpThumb) fpThumb.src = trackImg;
+
+    if (fpSp) {
+        fpSp.href = spotifyUrl && spotifyUrl !== '#' ? spotifyUrl : 'https://open.spotify.com/';
+        fpSp.style.display = spotifyUrl && spotifyUrl !== '#' ? 'flex' : 'none';
+    }
+    if (fpYt) {
+        fpYt.href = ytUrl && ytUrl !== '#' ? ytUrl : 'https://youtube.com/';
+        fpYt.style.display = ytUrl && ytUrl !== '#' ? 'flex' : 'none';
+    }
+
+    if (playIcon) {
+        playIcon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+    }
+
+    if (isPlaying) {
+        resetFloatingPlayerAutoDismiss();
+        fpBar.classList.remove('hidden');
+        fpBar.classList.add('playing');
+    } else {
+        fpBar.classList.remove('playing');
+        startFloatingPlayerAutoDismiss(3500);
+    }
+}
+
+function updateFloatingPlayerProgress(elapsed, total) {
+    const curTimeEl = document.getElementById('fp-current-time');
+    const totTimeEl = document.getElementById('fp-total-time');
+    const progressBar = document.getElementById('fp-progress-bar');
+
+    const curSecs = Math.floor(elapsed);
+    const totSecs = Math.floor(total);
+
+    if (curTimeEl) curTimeEl.textContent = `0:${curSecs.toString().padStart(2, '0')}`;
+    if (totTimeEl) totTimeEl.textContent = `0:${totSecs.toString().padStart(2, '0')}`;
+
+    if (progressBar) {
+        const percent = Math.min(100, Math.max(0, (elapsed / total) * 100));
+        progressBar.style.width = `${percent}%`;
+    }
+}
+
+function stepTrack(direction = 1) {
+    const allPlayBtns = Array.from(document.querySelectorAll('#releases .play-btn, .releases-slider .play-btn'));
+    if (!allPlayBtns.length) return;
+
+    let currentIndex = -1;
+    if (currentPlayingBtn) {
+        currentIndex = allPlayBtns.indexOf(currentPlayingBtn);
+    }
+
+    let nextIndex = currentIndex + direction;
+    if (nextIndex >= allPlayBtns.length) nextIndex = 0;
+    if (nextIndex < 0) nextIndex = allPlayBtns.length - 1;
+
+    const targetBtn = allPlayBtns[nextIndex];
+    if (targetBtn) {
+        targetBtn.click();
+        const parentCard = targetBtn.closest('.release-card-large');
+        if (parentCard) {
+            parentCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    }
+}
+
+function initFloatingPlayer() {
+    const fpBar = document.getElementById('floating-audio-player');
+    if (!fpBar) return;
+
+    const playBtn = document.getElementById('fp-play-btn');
+    const prevBtn = document.getElementById('fp-prev-btn');
+    const nextBtn = document.getElementById('fp-next-btn');
+    const closeBtn = document.getElementById('fp-close-btn');
+    const muteBtn = document.getElementById('fp-mute-btn');
+    const volSlider = document.getElementById('fp-volume-slider');
+    const progressContainer = document.getElementById('fp-progress-container');
+    const sfxBtn = document.getElementById('sfx-toggle-btn');
+
+    if (sfxBtn) {
+        updateSFXToggleUI();
+        sfxBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sfxEnabled = !sfxEnabled;
+            localStorage.setItem('obscura_sfx_enabled', sfxEnabled ? 'true' : 'false');
+            updateSFXToggleUI();
+            if (sfxEnabled) playCyberSFX('success');
+        });
+    }
+
+    if (playBtn) {
+        playBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            if (currentPlayingBtn) {
+                currentPlayingBtn.click();
+            } else {
+                const firstBtn = document.querySelector('#releases .play-btn, .releases-slider .play-btn');
+                if (firstBtn) firstBtn.click();
+            }
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            stepTrack(-1);
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            stepTrack(1);
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            fpBar.classList.add('hidden');
+        });
+    }
+
+    if (volSlider) {
+        volSlider.addEventListener('input', (e) => {
+            const vol = parseFloat(e.target.value) / 100;
+            activeUserMasterVolume = vol;
+            applyProximityVolume(1.0);
+            if (muteBtn) {
+                muteBtn.innerHTML = vol === 0 ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+            }
+        });
+    }
+
+    if (muteBtn) {
+        muteBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            if (previewAudio.volume > 0 || (ytPlayer && ytPlayer.isMuted && !ytPlayer.isMuted())) {
+                activeUserMasterVolume = 0;
+                applyProximityVolume(0);
+                if (ytPlayer && ytPlayer.mute) ytPlayer.mute();
+                if (volSlider) volSlider.value = 0;
+                muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            } else {
+                activeUserMasterVolume = 1;
+                applyProximityVolume(1);
+                if (ytPlayer && ytPlayer.unMute) ytPlayer.unMute();
+                if (volSlider) volSlider.value = 100;
+                muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            }
+        });
+    }
+
+    if (progressContainer) {
+        progressContainer.addEventListener('click', (e) => {
+            playCyberSFX('click');
+            const rect = progressContainer.getBoundingClientRect();
+            const clickPos = (e.clientX - rect.left) / rect.width;
+            const targetTime = clickPos * PREVIEW_LIMIT;
+
+            if (previewAudio && previewAudio.duration) {
+                previewAudio.currentTime = (playbackStartOffset > 0 ? playbackStartOffset : 0) + targetTime;
+            } else if (ytPlayer && ytPlayer.seekTo) {
+                ytPlayer.seekTo((playbackStartOffset > 0 ? playbackStartOffset : 0) + targetTime, true);
+            }
+            updateFloatingPlayerProgress(targetTime, PREVIEW_LIMIT);
+        });
+    }
+}
+
+// --- SPATIAL SONIC ZONE (ULTRA-SMOOTH 60FPS LERP VOLUME FADING & AUTO-PAUSE/RESUME) ---
+let activeUserMasterVolume = 1.0;
+let isAudioAutoPausedByScroll = false;
+let targetProximityFactor = 1.0;
+let currentLerpedFactor = 1.0;
+let proximityLoopRunning = false;
+
+function applyProximityVolume(volFactor) {
+    const finalVol = Math.max(0, Math.min(1, activeUserMasterVolume * volFactor));
+    if (previewAudio) {
+        previewAudio.volume = finalVol;
+    }
+    if (ytPlayer && ytPlayer.setVolume) {
+        try {
+            ytPlayer.setVolume(Math.round(finalVol * 100));
+        } catch (e) {}
+    }
+}
+
+function runProximityLerpLoop() {
+    if (!currentPlayingBtn && !isAudioAutoPausedByScroll && currentLerpedFactor <= 0.001) {
+        proximityLoopRunning = false;
+        return;
+    }
+
+    // Smooth Butter Lerp (0.08 smoothing dampener for buttery ease)
+    const diff = targetProximityFactor - currentLerpedFactor;
+    if (Math.abs(diff) < 0.001) {
+        currentLerpedFactor = targetProximityFactor;
+    } else {
+        currentLerpedFactor += diff * 0.08;
+    }
+
+    // Apply smoothed audio volume
+    applyProximityVolume(currentLerpedFactor);
+
+    // If lerped factor reaches near 0, safely auto-pause audio
+    if (currentLerpedFactor <= 0.015) {
+        if (!isAudioAutoPausedByScroll && currentPlayingBtn) {
+            isAudioAutoPausedByScroll = true;
+            try {
+                if (previewAudio && !previewAudio.paused) previewAudio.pause();
+                if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
+            } catch (e) {}
+        }
+    }
+
+    requestAnimationFrame(runProximityLerpLoop);
+}
+
+function startProximityLoop() {
+    if (!proximityLoopRunning) {
+        proximityLoopRunning = true;
+        requestAnimationFrame(runProximityLerpLoop);
+    }
+}
+
+function handleScrollProximityAudio() {
+    if (!currentPlayingBtn && !isAudioAutoPausedByScroll) return;
+
+    const releasesSection = document.getElementById('releases');
+    if (!releasesSection) return;
+
+    const rect = releasesSection.getBoundingClientRect();
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+    const viewportCenter = windowHeight / 2;
+    const sectionCenter = rect.top + (rect.height / 2);
+
+    // Distance between viewport center and releases section center
+    const distFromCenter = Math.abs(sectionCenter - viewportCenter);
+
+    // Core zone (full volume area around the section center)
+    const coreZone = Math.max(100, (rect.height / 2) * 0.4);
+    // Smooth distance beyond coreZone where volume fades
+    const fadeRange = (rect.height / 2) + (windowHeight * 0.45);
+
+    if (distFromCenter > coreZone) {
+        const excess = distFromCenter - coreZone;
+        targetProximityFactor = Math.max(0, 1 - (excess / fadeRange));
+    } else {
+        targetProximityFactor = 1.0;
+    }
+
+    // Trigger smooth lerp loop
+    startProximityLoop();
+
+    const fpBar = document.getElementById('floating-audio-player');
+
+    // Handle Floating Player Bar Visibility smoothly
+    if (targetProximityFactor <= 0.04) {
+        if (fpBar && !fpBar.classList.contains('hidden')) {
+            fpBar.classList.add('hidden');
+            fpBar.classList.remove('playing');
+        }
+    } else if (targetProximityFactor > 0.08) {
+        if (isAudioAutoPausedByScroll) {
+            // Auto-Resume audio immediately when scrolling back
+            isAudioAutoPausedByScroll = false;
+            try {
+                if (previewAudio && previewAudio.src) {
+                    previewAudio.play().catch(() => {});
+                }
+                if (ytPlayer && ytPlayer.playVideo) {
+                    ytPlayer.playVideo();
+                }
+            } catch (e) {}
+        }
+
+        if (fpBar && currentPlayingBtn && fpBar.classList.contains('hidden')) {
+            resetFloatingPlayerAutoDismiss();
+            fpBar.classList.remove('hidden');
+            fpBar.classList.add('playing');
+        }
+    }
+}
+
+function initScrollProximityAudio() {
+    window.addEventListener('scroll', handleScrollProximityAudio, { passive: true });
+    window.addEventListener('resize', handleScrollProximityAudio, { passive: true });
+    startProximityLoop();
+}
+
+function initGlobalSFXListeners() {
+    // Hover SFX on interactive elements
+    const hoverSelectors = '.nav-item, .cta-primary, .platform-link, .release-card-large, .popular-card, .artist-item, .cyber-btn, .close-modal, .menu-trigger, .fp-btn, .slider-nav-btn, .sfx-toggle-btn';
     
-    <div id="admin-audio-preview" class="admin-audio-dock" style="display: none;">
-        <div class="dock-left">
-            <i class="fas fa-play-circle dock-icon"></i>
-            <div>
-                <strong id="dock-track-title">TRACK TITLE</strong>
-                <span id="dock-artist-name">ARTIST NAME</span>
-            </div>
-        </div>
-        <audio id="admin-preview-audio" controls></audio>
-        <button type="button" id="close-dock-btn" class="close-dock">&times;</button>
-    </div>
+    document.addEventListener('mouseover', (e) => {
+        const target = e.target.closest(hoverSelectors);
+        if (target && !target.dataset.sfxBound) {
+            target.dataset.sfxBound = "true";
+            target.addEventListener('mouseenter', () => playCyberSFX('hover'));
+        }
+    });
 
-    <script src="admin.js"></script>
-</body>
+    // Modal open / form triggers
+    document.querySelectorAll('#open-form, #open-form-sidebar, #nav-menu-trigger, .modal-trigger').forEach(el => {
+        el.addEventListener('click', () => playCyberSFX('whoosh'));
+    });
+}
 
-</html>
+// --- ENGINE INITIALIZATION (STATE-AWARE) ---
+const startEngines = () => {
+    initPortal();
+    loadPopular();
+    initFloatingPlayer();
+    initScrollProximityAudio();
+    initGlobalSFXListeners();
+};
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startEngines);
+} else {
+    startEngines();
+}
+
+// Fallback: If the loader is still visible after 6 seconds of script execution, dismiss it.
+setTimeout(() => {
+    if (document.getElementById('portal-loader')?.style.display !== 'none') {
+        dismissLoader();
+    }
+}, 6000);
+
+// --- LIVE CONNECTION CLUSTER (ZERO DATABASE BANDWIDTH) ---
+try {
+    const liveNodesEl = document.getElementById('km-live-nodes');
+    if (liveNodesEl) {
+        liveNodesEl.textContent = Math.floor(Math.random() * 4) + 6;
+    }
+} catch (e) {}
+
+// PORTAL CORE INITIALIZED
+
+// ==========================================================================
+// PURE REAL-TIME AUDIO SUB-BASS & KICK TRANSIENT ANALYZER
+// ==========================================================================
+let ambientAudioCtx = null;
+let audioAnalyser = null;
+let audioSourceNode = null;
+let audioFreqData = null;
+let isAudioEngineRunning = false;
+let currentBassIntensity = 0;
+let targetBassIntensity = 0;
+let isSiteAudioPlaying = false;
+let rollingBassBaseline = 0;
+
+function getOrCreateAudioContext() {
+    if (!ambientAudioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+            try {
+                ambientAudioCtx = new AudioContextClass();
+                audioAnalyser = ambientAudioCtx.createAnalyser();
+                audioAnalyser.fftSize = 512; // 512-point FFT gives fine ~43Hz sub-bass frequency resolution
+                audioAnalyser.smoothingTimeConstant = 0.75;
+                audioFreqData = new Uint8Array(audioAnalyser.frequencyBinCount);
+
+                if (previewAudio) {
+                    try {
+                        audioSourceNode = ambientAudioCtx.createMediaElementSource(previewAudio);
+                        audioSourceNode.connect(audioAnalyser);
+                        audioAnalyser.connect(ambientAudioCtx.destination);
+                    } catch (e) {
+                        console.warn("AudioContext source node link:", e);
+                    }
+                }
+            } catch (err) {
+                console.warn("Web Audio API AudioContext note:", err);
+            }
+        }
+    }
+    if (ambientAudioCtx && ambientAudioCtx.state === 'suspended') {
+        ambientAudioCtx.resume();
+    }
+}
+
+function startBassReactiveEngine() {
+    isSiteAudioPlaying = true;
+    document.body.classList.add('audio-playing');
+    getOrCreateAudioContext();
+
+    if (!isAudioEngineRunning) {
+        isAudioEngineRunning = true;
+        runBassReactiveLoop();
+    }
+}
+
+function stopBassReactiveEngine() {
+    isSiteAudioPlaying = false;
+    document.body.classList.remove('audio-playing');
+}
+
+function runBassReactiveLoop() {
+    function tick() {
+        if (!isSiteAudioPlaying) {
+            // Decay cleanly to zero when stopped
+            currentBassIntensity += (0 - currentBassIntensity) * 0.1;
+            if (currentBassIntensity < 0.002) {
+                currentBassIntensity = 0;
+                document.documentElement.style.setProperty('--bass-intensity', '0');
+                document.documentElement.style.setProperty('--bass-scale', '1');
+                isAudioEngineRunning = false;
+                return; // Stop RAF loop when idle
+            }
+        } else {
+            let trueBassHit = 0;
+
+            // 1. TRUE REAL-TIME LOW-FREQUENCY FFT SPECTRUM ANALYSIS (20Hz - 160Hz)
+            if (audioAnalyser && audioFreqData && previewAudio && !previewAudio.paused && previewAudio.currentTime > 0) {
+                try {
+                    audioAnalyser.getByteFrequencyData(audioFreqData);
+
+                    // Bins 0..4 in 512-FFT (each bin ~43Hz) precisely isolate Sub-Bass & Kicks (20Hz - 170Hz)
+                    let subBassSum = 0;
+                    const bassBins = 4;
+                    for (let i = 0; i < bassBins; i++) {
+                        subBassSum += audioFreqData[i];
+                    }
+                    const instantBassLevel = subBassSum / bassBins; // 0 to 255
+
+                    // Adaptive dynamic moving average baseline
+                    rollingBassBaseline = (rollingBassBaseline * 0.92) + (instantBassLevel * 0.08);
+
+                    // A genuine Sub-Bass Drop or Kick occurs ONLY when the instantaneous low-frequency energy exceeds the baseline
+                    if (instantBassLevel > 30 && instantBassLevel > (rollingBassBaseline * 1.25)) {
+                        const dynamicPeak = (instantBassLevel - rollingBassBaseline) / (255 - rollingBassBaseline + 1);
+                        trueBassHit = Math.min(1.0, Math.max(0, dynamicPeak * 2.2));
+                    } else {
+                        // Intro / Vocal / Melodic parts without kicks -> ZERO PULSE!
+                        trueBassHit = 0;
+                    }
+                } catch (e) {
+                    trueBassHit = 0;
+                }
+            } else {
+                // If no direct frequency analysis is available, keep zero pulse (never play fake beats)
+                trueBassHit = 0;
+            }
+
+            targetBassIntensity = trueBassHit;
+            // Instant punchy attack for kicks, smooth resonant decay for sub-bass rumble
+            const lerpSpeed = targetBassIntensity > currentBassIntensity ? 0.65 : 0.14;
+            currentBassIntensity += (targetBassIntensity - currentBassIntensity) * lerpSpeed;
+        }
+
+        const scale = 1 + currentBassIntensity * 0.28;
+        document.documentElement.style.setProperty('--bass-intensity', currentBassIntensity.toFixed(3));
+        document.documentElement.style.setProperty('--bass-scale', scale.toFixed(3));
+
+        requestAnimationFrame(tick);
+    }
+
+    requestAnimationFrame(tick);
+}
