@@ -93,7 +93,7 @@
         firebase.database().ref('siteData/globals/v').once('value').then((snapshot) => {
             const v = snapshot.val() || '1.0';
             const scr = document.createElement('script');
-            scr.src = 'script.js?v=' + v + '_' + Date.now();
+            scr.src = 'script.js?v=' + encodeURIComponent(v);
             document.head.appendChild(scr);
             console.log("ENGINE BOOT: v" + v);
         });
