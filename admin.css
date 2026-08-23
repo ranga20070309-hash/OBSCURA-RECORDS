@@ -198,13 +198,18 @@ html, body {
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
 }
 
-.input-with-icon i.fa-key {
+.input-with-icon > i:first-child,
+.input-with-icon i.fa-key,
+.input-with-icon i.fa-user-astronaut {
     position: absolute;
     left: 1.2rem;
     color: var(--primary);
     font-size: 0.9rem;
+    pointer-events: none;
+    z-index: 2;
 }
 
 .input-with-icon input {
@@ -257,6 +262,10 @@ html, body {
     gap: 0.7rem;
     box-shadow: 0 0 25px rgba(0, 240, 255, 0.25);
     transition: all 0.35s ease;
+}
+
+.cyber-login-btn * {
+    pointer-events: none;
 }
 
 .cyber-login-btn:hover {
