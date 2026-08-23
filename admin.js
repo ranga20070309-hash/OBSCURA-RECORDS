@@ -1227,10 +1227,6 @@ function initDiscordBotAdminEngine() {
         const map = {
             site_showDiscordBot: data.showDiscordBot || "Visible",
             site_botName: data.botName || "OBSCURA SOUND BOT",
-            site_botStatus: data.botStatus || "ONLINE",
-            site_botServerId: data.botServerId || "1229829725447393402",
-            site_botUserId: data.botUserId || "1467768793550946314",
-            site_botAutoTrack: data.botAutoTrack || "Enabled",
             site_botShortDesc: data.botShortDesc || "Official Discord Audio Gateway & Community Nexus. Join for lossless sound streams, live demo submissions, and artist roles.",
             site_botAvatarUrl: data.botAvatarUrl || "assets/OCR.png",
             site_botMemberCount: data.botMemberCount || "1,250",
@@ -1262,10 +1258,6 @@ function initDiscordBotAdminEngine() {
             const updates = {
                 showDiscordBot: document.getElementById('site_showDiscordBot')?.value || "Visible",
                 botName: document.getElementById('site_botName')?.value || "OBSCURA SOUND BOT",
-                botStatus: document.getElementById('site_botStatus')?.value || "ONLINE",
-                botServerId: document.getElementById('site_botServerId')?.value.trim() || "1229829725447393402",
-                botUserId: document.getElementById('site_botUserId')?.value.trim() || "1467768793550946314",
-                botAutoTrack: document.getElementById('site_botAutoTrack')?.value || "Enabled",
                 botShortDesc: document.getElementById('site_botShortDesc')?.value || "",
                 botAvatarUrl: document.getElementById('site_botAvatarUrl')?.value || "assets/OCR.png",
                 botMemberCount: document.getElementById('site_botMemberCount')?.value || "1,250",
