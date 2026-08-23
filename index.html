@@ -1,1367 +1,1635 @@
 <!DOCTYPE html>
-<html lang="en" class="no-scroll">
+<html lang="en">
+
 <head>
-    <script>
-        // INSTANT URL SANITIZER: Purges Chrome scroll-to-text fragments (#:~:text=...), dirty hash fragments and query strings
-        (function() {
-            function cleanCurrentURL() {
-                try {
-                    if (window.location.hash || window.location.href.indexOf('#') !== -1 || window.location.href.indexOf(':~:text=') !== -1) {
-                        var cleanPath = window.location.pathname || '/';
-                        var cleanSearch = (window.location.search && window.location.search.indexOf('preview=') === -1) ? window.location.search : '';
-                        window.history.replaceState(null, document.title, cleanPath + cleanSearch);
-                    }
-                } catch (e) {}
-            }
-            cleanCurrentURL();
-            window.addEventListener('DOMContentLoaded', cleanCurrentURL);
-            window.addEventListener('load', cleanCurrentURL);
-            window.addEventListener('hashchange', cleanCurrentURL);
-            var sweepCount = 0;
-            var sweepInterval = setInterval(function() {
-                cleanCurrentURL();
-                sweepCount++;
-                if (sweepCount > 10) clearInterval(sweepInterval);
-            }, 200);
-        })();
-    </script>
-    <style id="critical-intro-scroll-lock">
-        html, body {
-            overflow: hidden !important;
-            scrollbar-width: none !important;
-            -ms-overflow-style: none !important;
-        }
-        html::-webkit-scrollbar,
-        body::-webkit-scrollbar,
-        ::-webkit-scrollbar {
-            display: none !important;
-            width: 0 !important;
-            height: 0 !important;
-            background: transparent !important;
-        }
-    </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OBSCURA RECORD | Official Label Portal</title>
-    <meta name="google-site-verification" content="EobLbKFk8O5qOMkycnSnUyz0ApzsycuIaspkpVRiwhM" />
-    <link rel="icon" type="image/png" href="assets/OCR.png?v=61.0">
-    <link rel="apple-touch-icon" href="assets/OCR_solid.png?v=61.0">
-        <meta name="description"
-        content="Official portal of Obscura Record. Independent music label specializing in high-energy Phonk, Funk, and futuristic electronics. Discover new releases and join the sonic void.">
-    <meta name="keywords"
-        content="Obscura Record, Music Label, Phonk, Funk, Futuristic Music, Electronic Music, Independent Artist development, Sonic Void, New Releases 2026">
-    <meta name="author" content="Obscura Record">
-    <meta name="developer" content="OBSCURA CORE TEAM">
-    <meta name="designer" content="OBSCURA CORE TEAM">
-    <meta name="copyright" content="Obscura Record">
-    <meta name="robots" content="index, follow">
-        <meta property="og:type" content="website">
-    <meta property="og:url" content="https://obscurarecords.com/">
-    <meta property="og:title" content="OBSCURA RECORD | Into the Sonic Void">
-    <meta property="og:description"
-        content="Discover high-energy Phonk and futuristic vibrations. Official label archive and artist releases.">
-    <meta property="og:image" content="assets/og-preview.png">
-        <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="OBSCURA RECORD | Into the Sonic Void">
-    <meta property="twitter:description"
-        content="Discover high-energy Phonk and futuristic vibrations. Official label archive.">
-    <link rel="stylesheet" href="style.css?v=60.1">
-        <script src="https://www.google.com/recaptcha/api.js?render=6LcFNKgsAAAAAEEdRhYJrwgeWzaRyMmzbgNy3swn"></script>
-        <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Space+Grotesk:wght@300;500;700&family=Syne:wght@800&display=swap"
-        rel="stylesheet">
+    <title>OBSCURA RECORD // Core Directive Command Deck</title>
+    
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    
+    <link rel="stylesheet" href="admin.css">
+
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCHf_R1n2Qn-q4NHAjfJt6xD_TWIRjiN1o",
-            authDomain: "obscura-records.firebaseapp.com",
-            databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "obscura-records",
-            storageBucket: "obscura-records.firebasestorage.app",
-            messagingSenderId: "831882873428",
-            appId: "1:831882873428:web:3cf009875e160a9f8efbc1"
-        };
-        // Bootstrapping the site engine
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        // Single fetch to determine latest version
-        firebase.database().ref('siteData/globals/v').once('value').then((snapshot) => {
-            const v = snapshot.val() || '1.0';
-            const scr = document.createElement('script');
-            scr.src = 'script.js?v=' + v + '_' + Date.now();
-            document.head.appendChild(scr);
-            console.log("ENGINE BOOT: v" + v);
-        });
-    </script>
 </head>
-<body class="no-scroll">
-        <div class="space-bg"></div>
-    <div class="ambient-bass-lighting" id="ambient-bass-lighting">
-        <div class="bass-light-orb orb-cyan"></div>
-        <div class="bass-light-orb orb-purple"></div>
-        <div class="bass-light-orb orb-center-sub"></div>
-        <div class="bass-vignette-flash"></div>
-    </div>
-    <canvas id="particle-bg"></canvas>
-    <div class="noise-overlay"></div>
-    <div class="scanlines"></div>
-    <div class="cursor-glow"></div>
-    <div class="cursor-outer"></div>
 
-    <div id="entrance-screen">
-        <div class="splash-content">
-            <div class="splash-logo-box">
-                <img src="assets/OCR.png" class="splash-logo" alt="OBSCURA RECORD">
-            </div>
-            <div class="splash-type-row">
-                <span id="splash-type-text" class="splash-type-text"></span><span class="splash-cursor">|</span>
-            </div>
+<body>
+
+    
+    <div id="global-security-alarm" style="display: none;">
+        <div class="alarm-box">
+            <i class="fas fa-biohazard danger-icon"></i>
+            <h1>KERNEL ALERT</h1>
+            <p>CRITICAL TRANSMISSION OVERRIDE DETECTED</p>
+            <div id="alarm-type">SCANNING FREQUENCY...</div>
         </div>
     </div>
-    <div id="maintenance-overlay" class="maintenance-screen" style="display: none;">
-        <canvas id="m-space-canvas"></canvas>
-        <div class="m-nebula-glow m-nebula-cyan"></div>
-        <div class="m-nebula-glow m-nebula-purple"></div>
-        <div class="m-grid-scanlines"></div>
-        <div class="m-center-wrapper">
-            <div class="m-glass-card">
-                <div class="m-corner top-left"></div>
-                <div class="m-corner top-right"></div>
-                <div class="m-corner bottom-left"></div>
-                <div class="m-corner bottom-right"></div>
-                <div class="m-emblem-container">
-                    <div class="m-orbit-ring ring-1"></div>
-                    <div class="m-orbit-ring ring-2"></div>
-                    <div class="m-emblem-glow"></div>
-                    <img src="assets/OCR.png" class="m-emblem" alt="OBSCURA RECORD">
+
+    
+    <div id="login-overlay" class="login-screen">
+        <canvas id="vibe-canvas"></canvas>
+        <div class="login-glass">
+            <div class="login-brand">
+                <div class="login-emblem-glow"></div>
+                <img src="assets/OCR.png" alt="Obscura Logo" class="login-emblem" onerror="this.onerror=null; this.src='assets/cover.png';">
+                <h2>OBSCURA <span>RECORD</span></h2>
+                <div class="login-badge"><i class="fas fa-shield-alt"></i> ROOT AUTHENTICATION REQUIRED</div>
+            </div>
+            
+            <div class="login-body">
+                <div class="login-input-group">
+                    <label><i class="fas fa-envelope"></i> ADMIN EMAIL ADDRESS</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user-astronaut"></i>
+                        <input type="email" id="root-email-input" placeholder="ADMIN EMAIL (e.g. sayurux@gmail.com)..." autocomplete="username">
+                    </div>
                 </div>
-                <div class="m-brand-header">
-                    <h2 class="m-brand-name">OBSCURA <span>RECORD</span></h2>
-                    <div class="m-brand-sub">SONIC VOID TRANSMISSION // SYSTEM DIRECTIVE</div>
+                
+                <div class="login-input-group">
+                    <label><i class="fas fa-terminal"></i> ADMINISTRATIVE PASSWORD / KEY</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-key"></i>
+                        <input type="password" id="root-pass-input" placeholder="ENTER PORTAL MASTER PASSWORD..." autocomplete="current-password">
+                        <button type="button" id="toggle-pwd-btn" class="pwd-eye"><i class="fas fa-eye"></i></button>
+                    </div>
                 </div>
-                <div class="m-status-pill">
-                    <span class="m-live-pulse"></span>
-                    <span class="m-status-tag" id="m-status-tag">ORBITAL UPGRADE IN PROGRESS</span>
-                </div>
-                <h1 class="m-main-title" id="m-title">UNDER RENOVATION</h1>
-                <p class="m-sub-text" id="m-msg">We are currently upgrading the portal experience. System transmissions will resume shortly.</p>
-                <div class="m-social-links">
-                    <a href="https://discord.gg/E3Sn72cpBR" target="_blank" class="m-social-btn" title="Discord" data-sync="socialDiscordUrl" data-sync-target="href">
-                        <i class="fab fa-discord"></i>
-                        <span>DISCORD</span>
-                    </a>
-                    <a href="https://www.instagram.com/recordsobscura" target="_blank" class="m-social-btn" title="Instagram" data-sync="socialInstaUrl" data-sync-target="href">
-                        <i class="fab fa-instagram"></i>
-                        <span>INSTAGRAM</span>
-                    </a>
-                    <a href="https://www.youtube.com/channel/UC0A5L7DUgls-AkYaQ4ZwxhA" target="_blank" class="m-social-btn" title="YouTube" data-sync="socialYoutubeUrl" data-sync-target="href">
-                        <i class="fab fa-youtube"></i>
-                        <span>YOUTUBE</span>
-                    </a>
-                    <a href="https://www.tiktok.com/@obscura.records" target="_blank" class="m-social-btn" title="TikTok" data-sync="socialTiktokUrl" data-sync-target="href">
-                        <i class="fab fa-tiktok"></i>
-                        <span>TIKTOK</span>
-                    </a>
-                    <a href="https://open.spotify.com" target="_blank" class="m-social-btn" title="Spotify" data-sync="socialSpotifyUrl" data-sync-target="href">
-                        <i class="fab fa-spotify"></i>
-                        <span>SPOTIFY</span>
-                    </a>
-                    <a href="mailto:sayurux@gmail.com" target="_blank" class="m-social-btn" title="Email" data-sync="socialEmailUrl" data-sync-target="href">
-                        <i class="fas fa-envelope"></i>
-                        <span>EMAIL</span>
-                    </a>
+                
+                <button id="login-btn" class="cyber-login-btn">
+                    <span class="btn-glow"></span>
+                    <i class="fas fa-unlock-alt"></i> INITIATE ROOT ACCESS
+                </button>
+                
+                <p id="login-error" class="error-msg"><i class="fas fa-exclamation-triangle"></i> ACCESS DENIED: INVALID KERNEL CREDENTIALS</p>
+                <div class="login-footer-info">
+                    <span>SECURITY PROTOCOL: FIREBASE AUTH TLS</span>
+                    <span>ENGINE v<span class="engine-ver">5.0</span></span>
                 </div>
             </div>
         </div>
     </div>
-        <main id="main-site" style="opacity: 0; visibility: hidden;">
-                <header>
-            <nav class="glass-nav">
-                <span data-target="reload" class="logo-link">
-                    <div class="logo" data-sync="siteTitle" data-sync-target="html">OBSCURA <span>RECORD</span></div>
-                </span>
-                <div class="nav-links">
-                    <span data-target="#home" class="nav-item" data-sync="navHome" data-sync-target="text">HOME</span>
-                    <span data-target="#releases" class="nav-item" data-sync="navReleases"
-                        data-sync-target="text">RELEASES</span>
-                    <span id="nav-ghost" data-target="#ghost-production" class="nav-item" data-sync="navGhostProduction"
-                        data-sync-target="text">GHOST PRODUCTION</span>
-                    <span data-target="#artists" class="nav-item" data-sync="navStaff"
-                        data-sync-target="text">STAFF</span>
-                    <span data-target="#partners" class="nav-item">PARTNERS</span>
-                    <span data-target="#contact" class="nav-item" data-sync="navContact"
-                        data-sync-target="text">CONTACT</span>
-                </div>
-                <div class="social-menu">
-                    <span id="open-form" class="nav-item">SEND DEMO</span>
-                    <button id="sfx-toggle-btn" class="sfx-toggle-btn" title="Toggle UI Sound Effects">
-                        <i class="fas fa-volume-up"></i>
-                        <span class="sfx-label">SFX ON</span>
-                    </button>
-                    <button id="nav-menu-trigger" class="menu-trigger">
-                        <i class="fas fa-ellipsis-v"></i>
-                        <span data-sync="navMenuBtn" data-sync-target="text">MENU</span>
-                    </button>
-                </div>
-            </nav>
-        </header>
-                <div id="social-sidebar" class="social-sidebar glass no-tilt">
+
+    
+    <div class="admin-wrapper" style="display: none;">
+        
+        
+        <aside class="sidebar">
             <div class="sidebar-header">
-                <h3>NETWORK</h3>
-                <button id="close-sidebar" class="close-sidebar">&times;</button>
+                <div class="brand-container">
+                    <img src="assets/OCR.png" alt="Logo" class="sidebar-logo-img" onerror="this.onerror=null; this.src='assets/cover.png';">
+                    <div class="brand-text">
+                        <h2>OBSCURA <span>CORE</span></h2>
+                        <span class="access-pill"><span class="dot live"></span> ROOT SECURED</span>
+                    </div>
+                </div>
             </div>
-            <div class="sidebar-nav">
-                <span data-target="#home" class="sidebar-nav-item nav-item">
-                    <i class="fas fa-home"></i> <span data-sync="navHome" data-sync-target="text">HOME</span>
-                </span>
-                <span data-target="#releases" class="sidebar-nav-item nav-item">
-                    <i class="fas fa-compact-disc"></i> <span data-sync="navReleases"
-                        data-sync-target="text">RELEASES</span>
-                </span>
-                <span id="side-nav-ghost" data-target="#ghost-production" class="sidebar-nav-item nav-item">
-                    <i class="fas fa-ghost"></i> <span data-sync="navGhostProduction" data-sync-target="text">GHOST
-                        PRODUCTION</span>
-                </span>
-                <span data-target="#artists" class="sidebar-nav-item nav-item">
-                    <i class="fas fa-users-cog"></i> <span data-sync="navStaff" data-sync-target="text">STAFF</span>
-                </span>
-                <span data-target="#partners" class="sidebar-nav-item nav-item">
-                    <i class="fas fa-handshake"></i> <span>PARTNERS</span>
-                </span>
-                <span data-target="#contact" class="sidebar-nav-item nav-item">
-                    <i class="fas fa-satellite-dish"></i> <span data-sync="navContact"
-                        data-sync-target="text">CONTACT</span>
-                </span>
-                <span id="open-form-sidebar" class="sidebar-nav-item nav-item accent-btn">
-                    <i class="fas fa-paper-plane"></i> <span>SEND DEMO</span>
-                </span>
+
+            <div class="sidebar-nav-container">
+                <nav class="sidebar-menu">
+                    <div class="nav-section-label">MAIN CONTROL</div>
+                    <a href="#" class="nav-btn active" data-target="settings-panel">
+                        <i class="fas fa-sliders-h"></i> <span>GLOBALS & BRAND</span>
+                    </a>
+                    <a href="#" class="nav-btn" data-target="links-panel">
+                        <i class="fas fa-link"></i> <span>NAV & SOCIAL LINKS</span>
+                    </a>
+                    <a href="#" class="nav-btn" data-target="popular-panel">
+                        <i class="fas fa-fire"></i> <span>POPULAR RELEASES</span>
+                        <span class="badge" id="badge-popular">0</span>
+                    </a>
+                    <a href="#" class="nav-btn" data-target="releases-panel">
+                        <i class="fas fa-compact-disc"></i> <span>RELEASE ARCHIVE</span>
+                        <span class="badge" id="badge-releases">0</span>
+                    </a>
+                    <a href="#" class="nav-btn" data-target="upcoming-panel">
+                        <i class="fas fa-clock"></i> <span>UPCOMING TEASERS</span>
+                        <span class="badge" id="badge-upcoming">0</span>
+                    </a>
+                    <a href="#" class="nav-btn" data-target="ghost-production-panel">
+                        <i class="fas fa-ghost"></i> <span>GHOST PRODUCTION</span>
+                    </a>
+                    <a href="#" class="nav-btn" data-target="staff-panel">
+                        <i class="fas fa-users-cog"></i> <span>STAFF & PARTNERS</span>
+                        <span class="badge" id="badge-staff-count">0</span>
+                    </a>
+
+                    <div class="nav-section-label">COMMUNICATIONS & INBOX</div>
+                    <a href="#" class="nav-btn" data-target="demo-inbox-panel">
+                        <i class="fas fa-inbox"></i> <span>DEMO SUBMISSIONS</span>
+                        <span class="badge count-pill" id="badge-demos">0</span>
+                    </a>
+                    <a href="#" class="nav-btn" data-target="contact-inbox-panel">
+                        <i class="fas fa-envelope-open-text"></i> <span>CONTACT MESSAGES</span>
+                        <span class="badge count-pill" id="badge-contact-msg">0</span>
+                    </a>
+                    <a href="#" class="nav-btn" data-target="modals-panel">
+                        <i class="fas fa-window-restore"></i> <span>MODALS, FAQ & FOOTER</span>
+                    </a>
+                    <a href="#" class="nav-btn" data-target="transmissions-panel">
+                        <i class="fas fa-broadcast-tower"></i> <span>MEDIA FEEDS (YT & TIKTOK)</span>
+                    </a>
+
+                    <div class="nav-section-label">AFFILIATES & EXTENSIONS</div>
+                    <a href="#" class="nav-btn" data-target="security-panel" style="display: none;">
+                        <i class="fas fa-shield-virus"></i> <span>SECURITY & AUDIT</span>
+                        <span class="badge count-pill" id="badge-security-logs">0</span>
+                    </a>
+                    <a href="javascript:void(0)" onclick="secureNavigate('admin-streetx-clothing/', 'streetx_access_granted')" class="nav-btn streetx-btn">
+                        <i class="fas fa-crown"></i> <span>STREETX ADMIN</span>
+                    </a>
+                </nav>
             </div>
-            <div class="sidebar-header compact">
-                <h3 style="font-size: 0.8rem; letter-spacing: 0.4rem; opacity: 0.6;">NETWORK</h3>
-            </div>
-            <div class="sidebar-links-grid">
-                <a href="https://www.instagram.com/recordsobscura" target="_blank" data-sync="socialInstaUrl"
-                    data-sync-target="href">
-                    <i class="fab fa-instagram"></i> <span class="sidebar-label" data-sync="socialInstaText"
-                        data-sync-target="text">INSTAGRAM</span>
-                </a>
-                <a href="https://www.youtube.com/channel/UC0A5L7DUgls-AkYaQ4ZwxhA" target="_blank"
-                    data-sync="socialYoutubeUrl" data-sync-target="href">
-                    <i class="fab fa-youtube"></i> <span class="sidebar-label" data-sync="socialYoutubeText"
-                        data-sync-target="text">YOUTUBE</span>
-                </a>
-                <a href="https://discord.gg/E3Sn72cpBR" target="_blank" data-sync="socialDiscordUrl"
-                    data-sync-target="href">
-                    <i class="fab fa-discord"></i> <span class="sidebar-label" data-sync="socialDiscordText"
-                        data-sync-target="text">DISCORD</span>
-                </a>
-                <a href="https://www.tiktok.com/@obscura.records" target="_blank" data-sync="socialTiktokUrl"
-                    data-sync-target="href">
-                    <i class="fab fa-tiktok"></i> <span class="sidebar-label" data-sync="socialTiktokText"
-                        data-sync-target="text">TIKTOK</span>
-                </a>
-                <a href="#" target="_blank" data-sync="socialSpotifyUrl" data-sync-target="href">
-                    <i class="fab fa-spotify"></i> <span class="sidebar-label">SPOTIFY</span>
-                </a>
-                <a href="mailto:sayurux@gmail.com" data-sync="socialEmailUrl" data-sync-target="href">
-                    <i class="fas fa-envelope"></i> <span class="sidebar-label" data-sync="socialEmailText"
-                        data-sync-target="text">EMAIL</span>
-                </a>
-            </div>
+
             <div class="sidebar-footer">
-                <div class="logo sidebar-footer-logo" data-sync="sidebarLogoText" data-sync-target="html">OBSCURA <span>RECORD</span></div>
-                <p><span data-sync="sidebarPortalLabel" data-sync-target="text">CORE PORTAL</span> <span id="sidebar-portal-version">v1.0</span></p>
+                <a href="index.html" class="portal-link-btn" target="_blank">
+                    <i class="fas fa-external-link-alt"></i> <span>VIEW LIVE SITE</span>
+                </a>
+                <button type="button" id="admin-logout-btn" class="logout-link-btn">
+                    <i class="fas fa-power-off"></i> <span>TERMINATE SESSION</span>
+                </button>
             </div>
-        </div>
-        <div id="sidebar-overlay" class="sidebar-overlay"></div>
-                <section id="home" class="hero">
-            <div class="hero-container">
-                <div class="hero-content">
-                    <h2 class="reveal-text" data-sync="heroTitle" data-sync-target="html"><span>WELCOME TO</span> <span
-                            class="accent">OBSCURA RECORD</span></h2>
-                    <p data-sync="heroDesc" data-sync-target="text">OBSCURA RECORD is an independent music label focused
-                        on
-                        artist development, music production, and official releases. Our mission is to support talented
-                        artists and create high-quality music through collaboration and innovation.</p>
-                    <div class="hero-actions">
-                        <span data-target="#releases" class="cta-primary nav-item">RELEASES</span>
-                    </div>
-                </div>
-                <div class="streetx-feature-card" data-sync="streetxUrl" data-sync-target="onclick_navigate">
-                    <div class="feature-bg" style="background-image: url('assets/STREETX.PNG');"></div>
-                    <div class="feature-overlay"></div>
-                    <div class="feature-content">
-                        <div class="feature-badge" data-sync="streetxBadge" data-sync-target="text">OFFICIAL CLOTHING
-                            DIVISION</div>
-                        <h3 class="feature-title" data-sync="streetxTitle" data-sync-target="html">STREETX <span
-                                class="accent">CLOTHING</span></h3>
-                        <p class="feature-desc" data-sync="streetxDesc" data-sync-target="text">PREMIUM STREETWEAR IDENTITY
-                            & APPAREL DROP 01</p>
-                        <a href="streetx-clothing/" target="_blank" class="feature-cta" data-sync="streetxUrl"
-                            data-sync-target="href">
-                            <span data-sync="streetxCta" data-sync-target="text">EXPLORE COLLECTION</span>
-                            <i class="fas fa-external-link-alt"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-                <section id="popular" class="popular-releases">
-            <div class="section-header archive-header">
-                <div class="header-content">
-                    <h2 class="section-title" data-sync="popularTitle" data-sync-target="html"><span class="accent">POPULAR</span> <span>RELEASES</span></h2>
-                    <p class="section-desc" data-sync="popularDesc" data-sync-target="text">THE MOST TRANSMITTED FREQUENCIES IN THE VOID</p>
-                </div>
-                <div class="slider-controls popular-controls">
-                    <button class="slider-nav-btn popular-prev"><i class="fas fa-chevron-left"></i></button>
-                    <button class="slider-nav-btn popular-next"><i class="fas fa-chevron-right"></i></button>
-                </div>
-            </div>
-            <div class="slider-wrapper">
-                <div class="popular-grid" id="popular-grid">
-                </div>
-            </div>
-        </section>
-                <section id="upcoming" class="upcoming-archive">
-            <div class="section-header archive-header">
-                <div class="header-content">
-                    <h2 class="section-title"><span class="accent">UPCOMING</span> <span>RELEASES</span></h2>
-                    <p class="section-desc">Intercepting future signals... decryption in progress.</p>
-                </div>
-                <div class="slider-controls">
-                    <button class="slider-nav-btn upcoming-prev"><i class="fas fa-chevron-left"></i></button>
-                    <button class="slider-nav-btn upcoming-next"><i class="fas fa-chevron-right"></i></button>
-                </div>
-            </div>
-            <div class="slider-wrapper">
-                <div class="upcoming-grid" id="upcoming-grid">
-                </div>
-            </div>
-        </section>
-                <section id="releases" class="releases-archive">
-            <div class="section-header archive-header">
-                <div class="header-content">
-                    <h2 class="section-title" data-sync="archiveTitle" data-sync-target="html">LABEL <span
-                            class="accent">RELEASES</span></h2>
-                    <p class="section-desc" data-sync="archiveDesc" data-sync-target="text">THESE ARE THE RELEASES THAT
-                        IS PUBLISHED THROUGH OUR LABEL</p>
-                </div>
-                <div class="slider-controls">
-                    <button class="slider-nav-btn prev"><i class="fas fa-chevron-left"></i></button>
-                    <button class="slider-nav-btn next"><i class="fas fa-chevron-right"></i></button>
-                </div>
-            </div>
-            <div class="slider-wrapper">
-                <div class="releases-slider">
-                    <div class="release-card-large glass">
-                        <div class="release-cover-large">
-                            <div class="cyber-laser-scanner"></div>
-                            <img src="assets/cover.png" alt="Starlight Syndrome">
-                            <div class="release-type-badge">SINGLE</div>
-                            <div class="player-overlay">
-                                <button class="play-btn"><i class="fas fa-play"></i></button>
-                            </div>
-                        </div>
-                        <div class="release-info-large">
-                            <span class="track-id">OS-992 <span class="badge">NEW</span></span>
-                            <h4>STARLIGHT SYNDROME</h4>
-                            <div class="producers-text">Produced by: <span>SVYUXU & OBSCURA</span></div>
-                            <div class="release-actions">
-                                <a href="#" class="platform-link spotify"><i class="fab fa-spotify"></i></a>
-                                <a href="#" class="platform-link apple"><i class="fab fa-apple"></i></a>
-                                <a href="#" class="platform-link youtube"><i class="fab fa-youtube"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="release-card-large glass">
-                        <div class="release-cover-large">
-                            <div class="cyber-laser-scanner"></div>
-                            <img src="assets/releases/cover_1.png" alt="Neutron Pulse"
-                                style="filter: hue-rotate(90deg);">
-                            <div class="release-type-badge">EP</div>
-                            <div class="player-overlay">
-                                <button class="play-btn"><i class="fas fa-play"></i></button>
-                            </div>
-                        </div>
-                        <div class="release-info-large">
-                            <span class="track-id">OS-991</span>
-                            <h4>NEUTRON PULSE</h4>
-                            <div class="producers-text">Produced by: <span>RANGA</span></div>
-                            <div class="release-actions">
-                                <a href="#" class="platform-link spotify"><i class="fab fa-spotify"></i></a>
-                                <a href="#" class="platform-link apple"><i class="fab fa-apple"></i></a>
-                                <a href="https://www.youtube.com/watch?v=jfKfPfyJRdk" class="platform-link youtube"><i
-                                        class="fab fa-youtube"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="release-card-large glass">
-                        <div class="release-cover-large">
-                            <div class="cyber-laser-scanner"></div>
-                            <img src="assets/releases/cover_2.png" alt="Void Walker"
-                                style="filter: hue-rotate(180deg) invert(0.2);">
-                            <div class="release-type-badge">ALBUM</div>
-                            <div class="player-overlay">
-                                <button class="play-btn"><i class="fas fa-play"></i></button>
-                            </div>
-                        </div>
-                        <div class="release-info-large">
-                            <span class="track-id">OS-990</span>
-                            <h4>VOID WALKER</h4>
-                            <div class="producers-text">Produced by: <span>FL4ME</span></div>
-                            <div class="release-actions">
-                                <a href="#" class="platform-link spotify"><i class="fab fa-spotify"></i></a>
-                                <a href="#" class="platform-link apple"><i class="fab fa-apple"></i></a>
-                                <a href="https://www.youtube.com/watch?v=21X5lGlDOfg" class="platform-link youtube"><i
-                                        class="fab fa-youtube"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="release-card-large glass">
-                        <div class="release-cover-large">
-                            <div class="cyber-laser-scanner"></div>
-                            <img src="assets/releases/cover_3.png" alt="Solar Flare"
-                                style="filter: hue-rotate(270deg) contrast(1.2);">
-                            <div class="release-type-badge">SINGLE</div>
-                            <div class="player-overlay">
-                                <button class="play-btn"><i class="fas fa-play"></i></button>
-                            </div>
-                        </div>
-                        <div class="release-info-large">
-                            <span class="track-id">OS-989</span>
-                            <h4>SOLAR FLARE</h4>
-                            <div class="producers-text">Produced by: <span>SVYUXU & RANGA</span></div>
-                            <div class="release-actions">
-                                <a href="#" class="platform-link spotify"><i class="fab fa-spotify"></i></a>
-                                <a href="#" class="platform-link apple"><i class="fab fa-apple"></i></a>
-                                <a href="https://www.youtube.com/watch?v=kJQP7kiw5Fk" class="platform-link youtube"><i
-                                        class="fab fa-youtube"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-                <section id="ghost-production" class="ghost-production">
-            <div class="section-header archive-header">
-                <div class="header-content">
-                    <h2 class="section-title"><span class="accent">GHOST</span> <span>PRODUCTION</span></h2>
-                    <p class="section-desc" data-sync="ghostDesc" data-sync-target="text">Request your custom sound in
-                        any style. Secure professional production for a flat fee.</p>
-                </div>
-            </div>
-            <div class="ghost-card-wrapper glass no-tilt">
-                <div
-                    style="position: absolute; top: -10%; right: -10%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(0, 240, 255, 0.05) 0%, transparent 70%); z-index: 0;">
-                </div>
-                <div
-                    style="position: relative; z-index: 1; display: flex; gap: 4rem; align-items: center; flex-wrap: wrap;">
-                    <div style="flex: 1; min-width: 320px; text-align: left;">
-                        <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem;">
-                            <i class="fas fa-ghost"
-                                style="font-size: 4rem; color: var(--accent-blue); filter: drop-shadow(0 0 10px var(--accent-blue));"></i>
-                            <div>
-                                <h3 style="font-family: var(--font-heading); letter-spacing: 0.3rem; font-size: 2.2rem; margin: 0; text-transform: uppercase;"
-                                    data-sync="ghostServiceTitle" data-sync-target="text">GHOST PRODUCTION</h3>
-                                <div style="display: flex; gap: 0.8rem; align-items: center; margin-top: 0.5rem;">
-                                    <span class="badge"
-                                        style="background: var(--accent-blue); color: #000; font-weight: bold; padding: 0.2rem 0.8rem; border-radius: 5px; font-size: 0.7rem;">EXCLUSIVE</span>
-                                    <span class="event-glow"
-                                        style="font-family: var(--font-heading); font-size: 0.8rem; opacity: 0.6; letter-spacing: 0.1rem;"
-                                        data-sync="ghostTagline" data-sync-target="text">EXCLUSIVE EVENT</span>
-                                </div>
-                            </div>
-                        </div>
-                        <p style="color: var(--text-primary); font-size: 1.1rem; line-height: 1.7; opacity: 0.9; margin-bottom: 2.5rem;"
-                            data-sync="ghostServiceDesc" data-sync-target="text">
-                            Submit your preferred musical style and vision to our portal. Our elite producers will craft
-                            a bespoke, professional track tailored specifically to your requirements. Secure your unique
-                            sound today and own it forever.
-                        </p>
-                        <div
-                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 3rem; margin-bottom: 4rem; text-align: left;">
-                            <div class="pricing-group">
-                                <h4
-                                    style="font-family: var(--font-heading); color: var(--accent-blue); letter-spacing: 0.2rem; margin-bottom: 1.5rem; font-size: 0.9rem; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 0.5rem; text-transform: uppercase;">
-                                    PRODUCTION TIERS</h4>
-                                <ul
-                                    style="list-style: none; display: flex; flex-direction: column; gap: 1rem; padding: 0;">
-                                    <li style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="opacity: 0.8; font-size: 0.9rem;">30 Seconds Snippet</span>
-                                        <span style="font-weight: 700; color: #fff;" data-sync="ghostPrice30s"
-                                            data-sync-target="text">$10</span>
-                                    </li>
-                                    <li style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="opacity: 0.8; font-size: 0.9rem;">1 Minute Composition</span>
-                                        <span style="font-weight: 700; color: #fff;" data-sync="ghostPrice1m"
-                                            data-sync-target="text">$30</span>
-                                    </li>
-                                    <li style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="opacity: 0.8; font-size: 0.9rem;">1 Minute + Vocals</span>
-                                        <span style="font-weight: 700; color: #fff;" data-sync="ghostPriceVocals"
-                                            data-sync-target="text">$50</span>
-                                    </li>
-                                    <li style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="opacity: 0.8; font-size: 0.9rem;">Customized Package</span>
-                                        <span style="font-weight: 700; color: #fff;" data-sync="ghostPriceCustom"
-                                            data-sync-target="text">From $100</span>
-                                    </li>
-                                    <li
-                                        style="margin-top: 0.5rem; padding: 0.8rem; background: rgba(0, 240, 255, 0.05); border-radius: 8px; font-size: 0.75rem; display: flex; justify-content: space-between; border: 1px solid rgba(0, 240, 255, 0.1);">
-                                        <span style="color: var(--accent-blue); font-weight: 700;">ADD-ON: PRO
-                                            MIX</span>
-                                        <span data-sync="ghostAddonMix" data-sync-target="text">+ $20</span>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="pricing-group">
-                                <h4
-                                    style="font-family: var(--font-heading); color: var(--accent-blue); letter-spacing: 0.2rem; margin-bottom: 1.5rem; font-size: 0.9rem; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 0.5rem; text-transform: uppercase;">
-                                    CORE FEATURES</h4>
-                                <ul
-                                    style="list-style: none; display: flex; flex-direction: column; gap: 1rem; padding: 0;">
-                                    <li style="display: flex; align-items: center; gap: 0.8rem;">
-                                        <i class="fas fa-check-circle"
-                                            style="color: var(--accent-blue); font-size: 0.8rem;"></i>
-                                        <span style="opacity: 0.8; font-size: 0.9rem;" data-sync="ghostFeature1"
-                                            data-sync-target="text">High-Quality WAV Files</span>
-                                    </li>
-                                    <li style="display: flex; align-items: center; gap: 0.8rem;">
-                                        <i class="fas fa-check-circle"
-                                            style="color: var(--accent-blue); font-size: 0.8rem;"></i>
-                                        <span style="opacity: 0.8; font-size: 0.9rem;" data-sync="ghostFeature2"
-                                            data-sync-target="text">24/7 Customer Service</span>
-                                    </li>
-                                    <li style="display: flex; align-items: center; gap: 0.8rem;">
-                                        <i class="fas fa-check-circle"
-                                            style="color: var(--accent-blue); font-size: 0.8rem;"></i>
-                                        <span style="opacity: 0.8; font-size: 0.9rem;" data-sync="ghostFeature3"
-                                            data-sync-target="text">3 Project Revisions</span>
-                                    </li>
-                                    <li
-                                        style="margin-top: 0.5rem; padding: 0.8rem; background: rgba(0, 240, 255, 0.05); border-radius: 8px; font-size: 0.75rem; display: flex; justify-content: space-between; border: 1px solid rgba(0, 240, 255, 0.1);">
-                                        <span style="color: var(--accent-blue); font-weight: 700;">ADD-ON: UNLIMITED
-                                            REVISIONS</span>
-                                        <span data-sync="ghostAddonRevisions" data-sync-target="text">+ $20</span>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="pricing-group">
-                                <h4 style="font-family: var(--font-heading); color: var(--accent-blue); letter-spacing: 0.2rem; margin-bottom: 1.5rem; font-size: 0.9rem; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 0.5rem; text-transform: uppercase;"
-                                    data-sync="ghostDeliveryTitle" data-sync-target="text">DELIVERY</h4>
-                                <ul
-                                    style="list-style: none; display: flex; flex-direction: column; gap: 1rem; padding: 0;">
-                                    <li style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="opacity: 0.8; font-size: 0.9rem;">3 Day Express Delivery</span>
-                                        <span style="font-weight: 700; color: #fff;" data-sync="ghostDelivery3d"
-                                            data-sync-target="text">+ $20</span>
-                                    </li>
-                                    <li style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="opacity: 0.8; font-size: 0.9rem;">5 Day Priority Delivery</span>
-                                        <span style="font-weight: 700; color: #fff;" data-sync="ghostDelivery5d"
-                                            data-sync-target="text">+ $10</span>
-                                    </li>
-                                    <li style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="opacity: 0.8; font-size: 0.9rem;">7 Day Standard Delivery</span>
-                                        <span style="font-weight: 700; color: var(--accent-blue);">FREE</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="special-offer glass"
-                            style="background: linear-gradient(90deg, rgba(0, 240, 255, 0.1), rgba(183, 0, 255, 0.1)); border: 1px solid var(--accent-blue); padding: 2.5rem; border-radius: 20px; text-align: left; margin-bottom: 3rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
-                            <div style="flex: 0 0 auto;">
-                                <i class="fas fa-star"
-                                    style="font-size: 3rem; color: var(--accent-blue); filter: drop-shadow(0 0 10px var(--accent-blue));"></i>
-                            </div>
-                            <div style="flex: 1; min-width: 300px;">
-                                <h3 style="font-family: var(--font-heading); letter-spacing: 0.3rem; font-size: 1.4rem; margin-bottom: 0.5rem;"
-                                    data-sync="ghostSpecialTitle" data-sync-target="text">SPECIAL OFFER: FULL TRACK</h3>
-                                <p style="font-size: 0.9rem; opacity: 0.9; line-height: 1.6; margin: 0;"
-                                    data-sync="ghostSpecialDesc" data-sync-target="text">
-                                    1 Full Track, Any Style, Mixed & Mastered. <br>
-                                    <span style="color: var(--accent-blue); font-weight: 700;">MP3 + WAV + MIDI + STEMS
-                                        + PROJECT FILE</span>
-                                </p>
-                                <p
-                                    style="font-size: 0.75rem; opacity: 0.5; margin-top: 0.5rem; letter-spacing: 0.1rem; margin-bottom: 0;">
-                                    KEEP 100% OF YOUR RIGHTS</p>
-                            </div>
-                            <div style="text-align: center;">
-                                <span
-                                    style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 700; color: #fff;"
-                                    data-sync="ghostSpecialPrice" data-sync-target="text">$300</span>
-                            </div>
-                        </div>
-                        <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
-                            <div id="order-ghost" class="cta-primary"
-                                style="width: 100%; max-width: 400px; text-align: center; padding: 1.2rem; cursor: pointer;">
-                                SECURE YOUR SOUND
-                            </div>
-                            <p style="font-size: 0.75rem; opacity: 0.5; letter-spacing: 0.05rem;">All transactions are
-                                encrypted and secured.</p>
-                        </div>
-                    </div> 
-                </div> 
-            </div> 
-        </section>
-                <section id="artists" class="artists">
-            <div class="section-header">
-                <h2 class="section-title" data-sync="staffTitle" data-sync-target="html">OBSCURA <span class="accent">STAFF</span></h2>
-                <p class="section-desc" data-sync="staffDesc" data-sync-target="text">MEET THE MINDS BEHIND THE OBSCURA SOUNDSCAPE</p>
-            </div>
-            <div id="staff-grid" class="artists-grid">
-            </div>
-        </section>
-        <section id="partners" class="partners-section">
-            <div class="section-header">
-                <h2 class="section-title" data-sync="partnersTitle" data-sync-target="html">DISTRIBUTION <span class="accent">PARTNER</span></h2>
-                <p class="section-desc" data-sync="partnersDesc" data-sync-target="text">OBSCURA RECORDS DISTRIBUTION PARTNER</p>
-            </div>
-            <div id="partners-grid">
-            </div>
-        </section>
-        <section id="discord-gateway" class="discord-widget-section">
-            <div class="discord-compact-card glass">
-                <div class="dc-top-row">
-                    <div class="dc-bot-profile">
-                        <div class="dc-avatar-wrap">
-                            <img src="assets/OCR.png" id="bot-avatar-img" class="dc-avatar" alt="Obscura Bot" data-sync="botAvatarUrl" data-sync-target="src" onerror="this.src='assets/OCR.png'">
-                        </div>
-                        <div class="dc-bot-info">
-                            <div class="dc-title-line">
-                                <h3 id="bot-name-display" data-sync="botName" data-sync-target="text">OBSCURA SOUND BOT</h3>
-                                <span class="dc-bot-tag">BOT</span>
-                            </div>
-                            <p class="dc-bot-desc" id="bot-desc-display" data-sync="botShortDesc" data-sync-target="text">Official Discord Audio Gateway & Community Nexus. Join for lossless sound streams, live demo submissions, and artist roles.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="dc-status-bar">
-                    <div class="dc-status-item">
-                        <i class="fas fa-users dc-icon members"></i>
-                        <div class="dc-stat-col">
-                            <span class="dc-stat-num" id="bot-member-count" data-sync="botMemberCount" data-sync-target="text">1,250</span>
-                            <span class="dc-stat-label">MEMBERS</span>
-                        </div>
-                    </div>
-                    <div class="dc-status-item">
-                        <span class="status-indicator online"><i class="fas fa-circle"></i></span>
-                        <div class="dc-stat-col">
-                            <span class="dc-stat-num" id="bot-online-count" data-sync="botOnlineCount" data-sync-target="text">420</span>
-                            <span class="dc-stat-label">ONLINE</span>
-                        </div>
-                    </div>
-                    <div class="dc-status-item">
-                        <span class="status-indicator idle"><i class="fas fa-moon"></i></span>
-                        <div class="dc-stat-col">
-                            <span class="dc-stat-num" id="bot-idle-count" data-sync="botIdleCount" data-sync-target="text">85</span>
-                            <span class="dc-stat-label">IDLE</span>
-                        </div>
-                    </div>
-                    <div class="dc-status-item">
-                        <span class="status-indicator dnd"><i class="fas fa-minus-circle"></i></span>
-                        <div class="dc-stat-col">
-                            <span class="dc-stat-num" id="bot-dnd-count" data-sync="botDndCount" data-sync-target="text">45</span>
-                            <span class="dc-stat-label">DND</span>
-                        </div>
-                    </div>
-                    <div class="dc-status-item">
-                        <i class="fas fa-robot dc-icon bots"></i>
-                        <div class="dc-stat-col">
-                            <span class="dc-stat-num" id="bot-bots-count" data-sync="botActiveBotsCount" data-sync-target="text">3</span>
-                            <span class="dc-stat-label">BOTS</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="dc-features-row">
-                    <div class="dc-feature-pill">
-                        <i class="fas fa-server"></i>
-                        <span data-sync="botF1Short" data-sync-target="text">24/7 Active on our Server</span>
-                    </div>
-                    <div class="dc-feature-pill">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <span data-sync="botF2Short" data-sync-target="text">Direct Song Demo Drop & A&R Review Tracking</span>
-                    </div>
-                    <div class="dc-feature-pill">
-                        <i class="fas fa-bell"></i>
-                        <span data-sync="botF3Short" data-sync-target="text">YT And TIKTOK Instant Notification</span>
-                    </div>
-                    <div class="dc-feature-pill">
-                        <i class="fas fa-ticket-alt"></i>
-                        <span data-sync="botF4Short" data-sync-target="text">Music Submissions And Integrative Help Ticket System</span>
-                    </div>
-                </div>
-                <div class="dc-action-row">
-                    <a href="https://discord.gg/E3Sn72cpBR" id="bot-join-discord-btn" target="_blank" class="dc-join-btn" data-sync="botDiscordInvite" data-sync-target="href">
-                        <i class="fab fa-discord"></i> <span data-sync="botBtnJoinText" data-sync-target="text">JOIN DISCORD SERVER</span>
-                    </a>
-                </div>
-            </div>
-        </section>
-                <section id="contact" class="contact-section">
-            <div class="contact-container glass">
-                <h2 class="section-title" data-sync="contactTitle" data-sync-target="html">CONNECT WITH <span
-                        class="accent">US</span></h2>
-                <p data-sync="contactDesc" data-sync-target="text">Follow our transmissions across the digital
-                    landscape.</p>
-                <div class="social-grid">
-                    <a href="https://www.instagram.com/" target="_blank" class="social-card" data-sync="socialInstaUrl"
-                        data-sync-target="href">
-                        <i class="fab fa-instagram"></i>
-                        <span data-sync="socialInstaText" data-sync-target="text">INSTAGRAM</span>
-                    </a>
-                    <a href="https://www.youtube.com/" target="_blank" class="social-card" data-sync="socialYoutubeUrl"
-                        data-sync-target="href">
-                        <i class="fab fa-youtube"></i>
-                        <span data-sync="socialYoutubeText" data-sync-target="text">YOUTUBE</span>
-                    </a>
-                    <a href="https://discord.gg/" target="_blank" class="social-card" data-sync="socialDiscordUrl"
-                        data-sync-target="href">
-                        <i class="fab fa-discord"></i>
-                        <span data-sync="socialDiscordText" data-sync-target="text">DISCORD</span>
-                    </a>
-                    <a href="https://www.tiktok.com/" target="_blank" class="social-card" data-sync="socialTiktokUrl"
-                        data-sync-target="href">
-                        <i class="fab fa-tiktok"></i>
-                        <span data-sync="socialTiktokText" data-sync-target="text">TIKTOK</span>
-                    </a>
-                    <a href="mailto:sayurux@gmail.com" class="social-card" data-sync="socialEmailUrl" data-sync-target="href">
-                        <i class="fas fa-envelope"></i>
-                        <span data-sync="socialEmailText" data-sync-target="text">DIRECT EMAIL</span>
-                    </a>
-                </div>
-            </div>
-        </section>
+        </aside>
 
-        <section id="transmissions" class="transmissions-section">
-            <div class="section-header">
-                <h2 class="section-title" id="trans-title-display" data-sync="transTitle" data-sync-target="html">LATEST <span class="accent">TRANSMISSIONS</span></h2>
-                <p class="section-desc" id="trans-desc-display" data-sync="transDesc" data-sync-target="text">Intercept the newest soundwaves and visual drops across our networks</p>
-            </div>
-            <div class="transmissions-grid" id="transmissions-grid">
-                <div class="media-hub-card youtube-card">
-                    <div class="media-card-header">
-                        <div class="media-card-badge yt-badge">
-                            <i class="fab fa-youtube"></i>
-                            <span>YOUTUBE DROP</span>
-                        </div>
-                        <div class="media-live-tag">
-                            <span class="pulse-dot red"></span>
-                            <span>NEW SIGNAL</span>
-                        </div>
-                    </div>
-                    <div class="media-preview-container" id="yt-preview-box">
-                        <div class="media-preview-bg" id="yt-thumb-bg" style="background-image: url('https://i4.ytimg.com/vi/kyS1AFiPa9I/hqdefault.jpg');"></div>
-                        <div class="media-preview-overlay"></div>
-                        <a href="https://www.youtube.com/watch?v=kyS1AFiPa9I" id="yt-play-trigger" target="_blank" rel="noopener noreferrer" class="media-play-btn yt-glow" title="Watch on YouTube">
-                            <i class="fas fa-play"></i>
-                        </a>
-                    </div>
-                    <div class="media-card-body">
-                        <span class="media-category-pill yt-pill" id="yt-tag-display">LATEST OFFICIAL DROP</span>
-                        <h3 class="media-card-title" id="yt-title-display">MONTAGEM ALMA GEMEA - NXPXLM</h3>
-                        <p class="media-card-desc" id="yt-desc-display">Experience the newest track and soundwave visualizer drop from Obscura Recordss.</p>
-                        <div class="media-card-actions">
-                            <a href="https://www.youtube.com/watch?v=kyS1AFiPa9I" id="yt-watch-btn" target="_blank" rel="noopener noreferrer" class="cyber-btn primary-yt">
-                                <i class="fab fa-youtube"></i> <span>WATCH ON YOUTUBE</span>
-                            </a>
-                            <a href="https://www.youtube.com/@Obscurarecordss?sub_confirmation=1" id="yt-sub-btn" target="_blank" rel="noopener noreferrer" class="cyber-btn ghost-yt" title="Subscribe to Channel">
-                                <i class="fas fa-bell"></i> <span>SUBSCRIBE</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+        
+        <main class="content-area">
 
-                <div class="media-hub-card tiktok-card">
-                    <div class="media-card-header">
-                        <div class="media-card-badge tt-badge">
-                            <i class="fab fa-tiktok"></i>
-                            <span>TIKTOK DROP</span>
-                        </div>
-                        <div class="media-live-tag">
-                            <span class="pulse-dot cyan"></span>
-                            <span>NEW SIGNAL</span>
-                        </div>
-                    </div>
-                    <div class="media-preview-container" id="tt-preview-box">
-                        <div class="media-preview-bg" id="tt-thumb-bg" style="background-image: url('assets/cover.png');"></div>
-                        <div class="media-preview-overlay"></div>
-                        <div class="tiktok-sound-wave">
-                            <span></span><span></span><span></span><span></span><span></span>
-                        </div>
-                        <a href="https://www.tiktok.com/@obscura.records" id="tt-play-trigger" target="_blank" rel="noopener noreferrer" class="media-play-btn tt-glow" title="Watch on TikTok">
-                            <i class="fab fa-tiktok"></i>
-                        </a>
-                    </div>
-                    <div class="media-card-body">
-                        <span class="media-category-pill tt-pill" id="tt-tag-display">OFFICIAL TIKTOK HUB</span>
-                        <h3 class="media-card-title" id="tt-title-display">OBSCURA RECORDS (@OBSCURA.RECORDS)</h3>
-                        <p class="media-card-desc" id="tt-desc-display">Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.</p>
-                        <div class="media-card-actions">
-                            <a href="https://www.tiktok.com/@obscura.records" id="tt-watch-btn" target="_blank" rel="noopener noreferrer" class="cyber-btn primary-tt">
-                                <i class="fab fa-tiktok"></i> <span>WATCH ON TIKTOK</span>
-                            </a>
-                            <a href="https://www.tiktok.com/@obscura.records" id="tt-follow-btn" target="_blank" rel="noopener noreferrer" class="cyber-btn ghost-tt" title="Follow on TikTok">
-                                <i class="fas fa-plus"></i> <span>FOLLOW</span>
-                            </a>
-                        </div>
-                    </div>
+            
+            <header class="hud-topbar">
+                <div class="hud-left">
+                    <h1 id="current-panel-title"><i class="fas fa-sliders-h"></i> GLOBALS & DIRECTIVES</h1>
+                    <span class="panel-desc" id="current-panel-desc">Real-time control center for core site typography, branding, and system states.</span>
                 </div>
-            </div>
-        </section>
-
-        <div id="contact-modal" class="modal">
-            <div class="modal-overlay"></div>
-            <div class="modal-content glass">
-                <button class="close-modal">&times;</button>
-                <h2 class="section-title">CONNECT WITH <span class="accent">THE VOID</span></h2>
-                <div class="faq-item glass"
-                    style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; margin-top: 1rem;">
-                    <i class="fas fa-paper-plane" style="color: var(--accent-blue); font-size: 1.5rem;"></i>
-                    <div style="text-align: left;">
-                        <a href="mailto:sayurux@gmail.com" data-sync="socialEmailUrl" data-sync-target="href"
-                            style="font-size: 1rem; color: #fff; text-decoration: none; font-family: var(--font-heading); letter-spacing: 0.1rem;"><span
-                                data-sync="socialEmailText" data-sync-target="text">sayurux@gmail.com</span></a>
+                <div class="hud-right">
+                    <div class="hud-stat-pill">
+                        <i class="fas fa-signal"></i>
+                        <span>FIREBASE: <strong style="color: #00ff8c;">CONNECTED</strong></span>
                     </div>
-                </div>
-                <div class="demo-channels"
-                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem;">
-                    <a href="https://www.instagram.com/recordsobscura?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
-                        target="_blank" class="faq-item glass" data-sync="socialInstaUrl" data-sync-target="href"
-                        style="text-decoration: none; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
-                        <i class="fab fa-instagram" style="color: var(--accent-blue);"></i>
-                        <span style="font-size: 0.8rem; letter-spacing: 0.1rem;" data-sync="socialInstaText"
-                            data-sync-target="text">INSTAGRAM</span>
-                    </a>
-                    <a href="https://discord.gg/E3Sn72cpBR" target="_blank" class="faq-item glass"
-                        data-sync="socialDiscordUrl" data-sync-target="href"
-                        style="text-decoration: none; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
-                        <i class="fab fa-discord" style="color: var(--accent-blue);"></i>
-                        <span style="font-size: 0.8rem; letter-spacing: 0.1rem;" data-sync="socialDiscordText"
-                            data-sync-target="text">DISCORD</span>
-                    </a>
-                    <a href="https://www.tiktok.com/@obscura.records" target="_blank" class="faq-item glass"
-                        data-sync="socialTiktokUrl" data-sync-target="href"
-                        style="text-decoration: none; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
-                        <i class="fab fa-tiktok" style="color: var(--accent-blue);"></i>
-                        <span style="font-size: 0.8rem; letter-spacing: 0.1rem;" data-sync="socialTiktokText"
-                            data-sync-target="text">TIKTOK</span>
-                    </a>
-                    <a href="https://www.youtube.com/channel/UC0A5L7DUgls-AkYaQ4ZwxhA" target="_blank"
-                        class="faq-item glass" data-sync="socialYoutubeUrl" data-sync-target="href"
-                        style="text-decoration: none; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
-                        <i class="fab fa-youtube" style="color: var(--accent-blue);"></i>
-                        <span style="font-size: 0.8rem; letter-spacing: 0.1rem;" data-sync="socialYoutubeText"
-                            data-sync-target="text">YOUTUBE</span>
-                    </a>
-                </div>
-                <p style="margin-top: 1.5rem; font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.6;"
-                    data-sync="contactModalSubtext" data-sync-target="text">For partnerships, general questions, or
-                    portal feedback, reach out via the channels above.</p>
-            </div>
-        </div>
-                <div id="demo-modal" class="modal">
-            <div class="modal-overlay"></div>
-            <div class="modal-content glass">
-                <button class="close-modal">&times;</button>
-                <h2 class="section-title">SUBMIT YOUR SOUND</h2>
-                <p class="demo-text" data-sync="demoDesc" data-sync-target="html"
-                    style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">We are looking for the next evolution of
-                    sound. If your music pushes the boundaries of Funk, Phonk, or Futuristic Electronic music, our
-                    portal is open for your transmissions.</p>
-                <div class="demo-channels" style="display: flex; flex-direction: column; gap: 1rem;">
-                    <a href="https://discord.gg/E3Sn72cpBR" target="_blank" data-sync="socialDiscordUrl"
-                        data-sync-target="href" class="faq-item glass"
-                        style="text-decoration: none; display: flex; align-items: center; gap: 1rem;">
-                        <i class="fab fa-discord" style="color: var(--accent-blue); font-size: 1.5rem;"></i>
-                        <div style="text-align: left;">
-                            <div style="font-family: var(--font-heading); font-size: 0.85rem; color: #fff;"
-                                data-sync="socialDiscordText" data-sync-target="text">DISCORD (RECOMMENDED)</div>
-                            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);" data-sync="demoDiscordSub"
-                                data-sync-target="text">Faster review & community vibes.</div>
-                        </div>
-                    </a>
-                    <a href="mailto:sayurux@gmail.com" class="faq-item glass" data-sync="socialEmailUrl" data-sync-target="href"
-                        style="text-decoration: none; display: flex; align-items: center; gap: 1rem;">
-                        <i class="fas fa-envelope" style="color: var(--accent-blue); font-size: 1.5rem;"></i>
-                        <div style="text-align: left;">
-                            <div style="font-family: var(--font-heading); font-size: 0.85rem; color: #fff;"
-                                data-sync="socialEmailText" data-sync-target="text">DIRECT EMAIL</div>
-                            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);" data-sync="socialEmailUrl"
-                                data-sync-target="text">sayurux@gmail.com</div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-                <div id="faq-modal" class="modal">
-            <div class="modal-overlay"></div>
-            <div class="modal-content glass">
-                <button class="close-modal">&times;</button>
-                <h2 class="section-title" data-sync="modalFaqTitle" data-sync-target="text">FREQUENCY ASKED QUESTIONS
-                </h2>
-                <div class="faq-grid" id="faq-container">
-                    <div class="faq-item glass">
-                        <div class="faq-question">
-                            <span data-sync="faq1_q" data-sync-target="text">HOW DO I SUBMIT A DEMO?</span><i
-                                class="fas fa-plus"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p data-sync="faq1_a" data-sync-target="html">We highly recommend sending demos through our
-                                <strong>Discord Server</strong> for faster review. Alternatively, you can send an email
-                                message to sayurux@gmail.com.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="faq-item glass">
-                        <div class="faq-question">
-                            <span data-sync="faq2_q" data-sync-target="text">WHAT GENRES ARE YOU LOOKING FOR?</span><i
-                                class="fas fa-plus"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p data-sync="faq2_a" data-sync-target="html">Our dimension primarily focuses on
-                                <strong>Phonk, Funk, and Futuristic Electronic</strong> music. We are looking for
-                                high-energy vibrations that push the boundaries of sound.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="faq-item glass">
-                        <div class="faq-question">
-                            <span data-sync="faq3_q" data-sync-target="text">WHERE CAN I JOIN THE COMMUNITY?</span><i
-                                class="fas fa-plus"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p data-sync="faq3_a" data-sync-target="html">Join our galactic community on Discord to
-                                connect with other artists, share ideas, and participate in exclusive portal events.</p>
-                        </div>
-                    </div>
-                    <div class="faq-item glass">
-                        <div class="faq-question">
-                            <span data-sync="faq4_q" data-sync-target="text">HOW LONG DOES A RESPONSE TAKE?</span><i
-                                class="fas fa-plus"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p data-sync="faq4_a" data-sync-target="html">Our sonic reviewers aim to respond within a
-                                few galactic cycles. If your sound resonates with our frequency, we will reach out via
-                                Discord or email.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-                <div id="privacy-modal" class="modal">
-            <div class="modal-overlay"></div>
-            <div class="modal-content glass">
-                <button class="close-modal">&times;</button>
-                <h2 class="section-title" data-sync="modalPrivacyTitle" data-sync-target="text">PRIVACY POLICY</h2>
-                <div class="legal-content text-left" id="privacy-container">
-                    <div class="faq-item glass">
-                        <div class="faq-question">
-                            <span data-sync="p1_q" data-sync-target="text">INTELLECTUAL PROPERTY</span><i
-                                class="fas fa-plus"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p data-sync="p1_a" data-sync-target="text">All content in this dimension—including audio,
-                                graphics, logos, and visual art—is the property of Obscura Record or its licensors.</p>
-                        </div>
-                    </div>
-                    <div class="faq-item glass">
-                        <div class="faq-question">
-                            <span data-sync="p2_q" data-sync-target="text">DATA SECURITY</span><i
-                                class="fas fa-plus"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p data-sync="p2_a" data-sync-target="text">Your portal data is encrypted and secure. We
-                                only collect what is necessary to maintain your connection.</p>
-                        </div>
-                    </div>
-                    <div class="faq-item glass">
-                        <div class="faq-question">
-                            <span data-sync="p3_q" data-sync-target="text">PROMOTIONAL CONTENT</span><i
-                                class="fas fa-plus"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p data-sync="p3_a" data-sync-target="text">By connecting to our portal, you may receive
-                                updates on new releases, talent discoveries, and galactic events.</p>
-                        </div>
-                    </div>
-                    <div class="faq-item glass">
-                        <div class="faq-question">
-                            <span data-sync="p4_q" data-sync-target="text">EXTERNAL EMBEDS</span><i
-                                class="fas fa-plus"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p data-sync="p4_a" data-sync-target="text">We use third-party players (SoundCloud/YouTube).
-                                Their respective privacy policies apply to your interactions on those platforms.</p>
-                        </div>
-                    </div>
-                    <div class="faq-item glass">
-                        <div class="faq-question">
-                            <span data-sync="p5_q" data-sync-target="text">DATA RETENTION</span><i
-                                class="fas fa-plus"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p data-sync="p5_a" data-sync-target="text">We retain connection data only as long as
-                                necessary for community support and galactic record-keeping.</p>
-                        </div>
-                    </div>
-                    <div class="faq-item glass">
-                        <div class="faq-question">
-                            <span data-sync="p6_q" data-sync-target="text">GOVERNING LAW</span><i
-                                class="fas fa-plus"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p data-sync="p6_a" data-sync-target="text">All legal matters are governed by the laws of
-                                our primary operational frequency. Disputes are resolved via cosmic mediation.</p>
-                        </div>
-                    </div>
-                    <div class="faq-item glass">
-                        <div class="faq-question">
-                            <span data-sync="p7_q" data-sync-target="text">LEGAL CONTACT</span><i
-                                class="fas fa-plus"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p data-sync="p7_a" data-sync-target="text">For all legal inquiries, copyright complaints
-                                (DMCA), or licensing requests, please send an email message to our Legal Counsel at
-                                sayurux@gmail.com. Our team is available at this address for any direct
-                                communications.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-                <div id="submission-modal" class="modal">
-            <div class="modal-overlay"></div>
-            <div class="modal-content glass demo-grid-wide no-tilt">
-                <button class="close-modal">&times;</button>
-                <div class="modal-header">
-                    <h2 class="section-title" data-sync="formTitle" data-sync-target="html">Secure <span
-                            class="accent">Form Submission</span></h2>
-                    <p data-sync="formDesc" data-sync-target="text"
-                        style="margin-top:-1rem; margin-bottom: 1.5rem; color: var(--text-secondary); opacity: 0.8; font-size: 0.8rem;">
-                        Transmit your audio frequency to the Obscura A&R department for priority review.</p>
-                </div>
-                <form id="submission-form" class="cyber-form">
-                    <div class="form-row mobile-stack-row">
-                        <div class="form-group">
-                            <label data-sync="formLabelName" data-sync-target="text">Real Name</label>
-                            <div class="mirror-container">
-                                <input type="text" name="name" class="real-input" placeholder="Name"
-                                    data-sync="formPlaceholderName" data-sync-target="placeholder" required>
-                                <div class="mirror-display"></div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label data-sync="formLabelArtist" data-sync-target="text">Artist Name(s)</label>
-                            <div class="mirror-container">
-                                <input type="text" name="artist" class="real-input" placeholder="Names"
-                                    data-sync="formPlaceholderArtist" data-sync-target="placeholder" required>
-                                <div class="mirror-display"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label data-sync="formLabelEmail" data-sync-target="text">Email Address</label>
-                            <div class="mirror-container">
-                                <input type="email" name="email" class="real-input" placeholder="official@artist.com"
-                                    data-sync="formPlaceholderEmail" data-sync-target="placeholder" required>
-                                <div class="mirror-display"></div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label data-sync="formLabelGenre" data-sync-target="text">Primary Genre</label>
-                            <div class="mirror-container">
-                                <input type="text" name="genre" class="real-input" placeholder="Funk / EDM / Hip Hop"
-                                    data-sync="formPlaceholderGenre" data-sync-target="placeholder" required>
-                                <div class="mirror-display"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <label data-sync="formLabelSpotify" data-sync-target="text">Artist Profile / Social
-                                Links</label>
-                            <button type="button" id="add-link-btn" class="cyber-mini-btn" title="Add Link"><i
-                                    class="fas fa-plus"></i></button>
-                        </div>
-                        <div id="dynamic-links-container" class="dynamic-inputs">
-                            <div class="dynamic-row">
-                                <div class="mirror-container">
-                                    <input type="url" name="spotify[]" class="real-input"
-                                        placeholder="https://open.spotify.com/artist/..."
-                                        data-sync="formPlaceholderSpotify" data-sync-target="placeholder">
-                                    <div class="mirror-display"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label data-sync="formLabelLink" data-sync-target="text">Private streaming link (SoundCloud /
-                            Dropbox / Drive)</label>
-                        <div class="mirror-container">
-                            <input type="url" name="link" class="real-input" placeholder="https://soundcloud.com/..."
-                                data-sync="formPlaceholderLink" data-sync-target="placeholder" required>
-                            <div class="mirror-display"></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label data-sync="formLabelMessage" data-sync-target="text">Message / Biography
-                            (Optional)</label>
-                        <textarea name="message" class="real-input"
-                            placeholder="A brief transmission regarding your sound..."
-                            data-sync="formPlaceholderMessage" data-sync-target="placeholder"></textarea>
-                    </div>
-                                        <div class="demo-guidelines"
-                        style="margin-top: 1rem; margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.8rem;">
-                        <label class="cyber-check-item glass">
-                            <input type="checkbox" class="cyber-check-input" required>
-                            <span class="cyber-tick"></span>
-                            <div class="check-text">
-                                <strong data-sync="formRule1Title" data-sync-target="text">Is this track
-                                    unreleased?</strong>
-                                <p data-sync="formRule1Desc" data-sync-target="text">We do NOT accept already-released
-                                    tracks. Any submissions that have already been published will be automatically
-                                    declined.</p>
-                            </div>
-                        </label>
-                        <label class="cyber-check-item glass">
-                            <input type="checkbox" class="cyber-check-input" required>
-                            <span class="cyber-tick"></span>
-                            <div class="check-text">
-                                <strong data-sync="formRule2Title" data-sync-target="text">Track identification</strong>
-                                <p data-sync="formRule2Desc" data-sync-target="text">Please provide the title for your
-                                    track. If you haven't decided on a name yet, a reference title is sufficient so we
-                                    can identify your submission.</p>
-                            </div>
-                        </label>
-                    </div>
-                    <div class="form-actions"
-                        style="margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <button type="submit" class="cta-primary-small" data-sync="formSubmitBtn"
-                            data-sync-target="text">Initiate Submission</button>
-                        <a href="https://discord.gg/x7Tr99zdWU" target="_blank" class="discord-btn"
-                            data-sync="formDiscordLink" data-sync-target="href">
-                            <i class="fab fa-discord"></i> <span data-sync="formDiscordBtn" data-sync-target="text">Join
-                                Discord</span>
-                        </a>
-                    </div>
-                    <p data-sync="formFooterRec" data-sync-target="text"
-                        style="font-size: 0.65rem; color: var(--accent-blue); opacity: 0.8; margin-top: 1.2rem; text-align: center; letter-spacing: 0.1rem; text-transform: uppercase; font-family: var(--font-heading); font-weight: 700;">
-                        [ Highly Recommended: Join the server for real-time frequency tracking ]
-                    </p>
-                    <p
-                        style="font-size: 0.55rem; color: var(--text-secondary); opacity: 0.4; margin-top: 0.5rem; text-align: center;">
-                        This portal is protected by reCAPTCHA and Subject to Google Privacy Policy and Terms of Service.
-                    </p>
-                </form>
-                <div id="submission-status" class="form-status">TRANSMISSION DEPLOYED SUCCESSFULLY.</div>
-            </div>
-        </div>
-                <div id="contact-modal" class="modal">
-            <div class="modal-overlay"></div>
-            <div class="modal-content glass no-tilt" style="max-width: 500px;">
-                <button class="close-modal">&times;</button>
-                <div class="modal-header">
-                    <h2 class="section-title" data-sync="contactModalTitle" data-sync-target="html">CONTACT <span class="accent">VOID</span></h2>
-                    <p data-sync="contactModalSubtext" data-sync-target="text"
-                        style="margin-top:-1rem; margin-bottom: 1.5rem; color: var(--text-secondary); opacity: 0.8; font-size: 0.8rem;">
-                        Establish a direct frequency with the Obscura Record command center.</p>
-                </div>
-                <form id="contact-form" class="cyber-form">
-                    <div class="form-group">
-                        <label data-sync="contactLabelName" data-sync-target="text">NAME / IDENTIFIER</label>
-                        <input type="text" name="name" placeholder="Entity Name" data-sync="contactPlaceholderName" data-sync-target="placeholder" required>
-                    </div>
-                    <div class="form-group">
-                        <label data-sync="contactLabelEmail" data-sync-target="text">RETURN EMAIL</label>
-                        <input type="email" name="email" placeholder="freq@void.com" data-sync="contactPlaceholderEmail" data-sync-target="placeholder" required>
-                    </div>
-                    <div class="form-group">
-                        <label data-sync="contactLabelMessage" data-sync-target="text">MESSAGE PAYLOAD</label>
-                        <textarea name="message" placeholder="Type your transmission here..." data-sync="contactPlaceholderMessage" data-sync-target="placeholder" required></textarea>
-                    </div>
-                    <button type="submit" class="cta-primary-small" style="width: 100%;" data-sync="contactSubmitBtn" data-sync-target="text">SEND TRANSMISSION</button>
-                    <p data-sync="contactFooterNote" data-sync-target="text"
-                        style="font-size: 0.6rem; color: var(--text-secondary); opacity: 0.5; margin-top: 1rem; text-align: center;">
-                        This frequency is guarded by Google reCAPTCHA and sonic encryption.</p>
-                </form>
-                <div id="contact-status" class="form-status">MESSAGE LOGGED SUCCESSFULLY.</div>
-            </div>
-        </div>
-                <div id="artist-modal" class="modal">
-            <div class="modal-overlay"></div>
-            <div class="modal-content glass artist-modal-content no-tilt">
-                <button class="close-modal">&times;</button>
-                <div class="artist-modal-banner" id="artist-modal-banner">
-                    <img id="artist-modal-banner-img" class="artist-modal-banner-img" src="" alt="" style="display:none;" onerror="this.src='assets/cover.png';">
-                    <div class="artist-modal-banner-overlay"></div>
-                </div>
-                <div class="artist-modal-inner">
-                    <div class="artist-modal-header">
-                        <div class="artist-modal-img-wrapper" style="width: 120px; height: 120px; position: relative;">
-                            <div id="artist-modal-img" class="artist-img"
-                                style="width: 100%; height: 100%; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 2px solid var(--accent-blue); box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);">
-                            </div>
-                            <img src="" id="artist-modal-decoration" class="avatar-decoration"
-                                style="display: none; position: absolute; top: 50%; left: 50%; width: 145px; height: 145px; transform: translate(-50%, -50%); z-index: 2; pointer-events: none;">
-                        </div>
-                        <div class="artist-modal-title" style="text-align: left;">
-                            <h2 id="artist-modal-name" class="section-title"
-                                style="margin: 0; font-size: 2.2rem; letter-spacing: 0.1rem;">ARTIST NAME</h2>
-                            <p id="artist-modal-status" class="status-indicator"
-                                style="display: inline-block; margin-top: 0.5rem;">OFFLINE</p>
-                        </div>
-                    </div>
-                    <div class="artist-modal-body" style="margin-top: 2rem;">
-                        <p id="artist-modal-bio" class="artist-bio"
-                            style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary);">Accessing
-                            encrypted artist profile... no secondary transmission found.</p>
-                        <div id="artist-modal-links" class="artist-modal-links"
-                            style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <footer>
-            <div class="footer-content">
-                <div class="kernel-monitor" id="kernel-monitor">
-                    <div class="kernel-node">
+                    <div class="hud-stat-pill">
                         <i class="fas fa-code-branch"></i>
-                        <span class="kernel-label">PORTAL CORE:</span>
-                        <span class="kernel-status" id="km-portal-version" style="color:var(--primary);">v1.0</span>
+                        <span>CACHE v<strong id="display-v">1.0</strong></span>
                     </div>
-                    <div class="kernel-node">
-                        <i class="fas fa-microchip"></i>
-                        <span class="kernel-label">SYSTEM INTEGRITY:</span>
-                        <span class="kernel-status scanning" id="km-integrity">SCANNING...</span>
+                    <button type="button" class="quick-preview-btn" onclick="sessionStorage.setItem('rootAuth','granted'); sessionStorage.setItem('adminBypass','true'); window.open('index.html?preview=true', '_blank')">
+                        <i class="fas fa-eye"></i> LIVE PREVIEW
+                    </button>
+                </div>
+            </header>
+
+            
+            <section id="settings-panel" class="panel active">
+                <div class="card-grid">
+                    
+                    
+                    <div class="cyber-card">
+                        <div class="card-header">
+                            <i class="fas fa-heading card-icon"></i>
+                            <div>
+                                <h3>CORE BRANDING & TITLES</h3>
+                                <p>Modify site logo and headline texts (HTML supported for gradient spans).</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group full">
+                                <label><i class="fas fa-signature"></i> SITE LOGO TITLE</label>
+                                <input type="text" id="site_siteTitle" value="OBSCURA <span>RECORD</span>">
+                                <small>Appears in the header navigation bar.</small>
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-bolt"></i> HERO MAIN HEADLINE</label>
+                                <input type="text" id="site_heroTitle" value="WELCOME TO <span class='accent'>OBSCURA RECORD</span>">
+                                <small>Main greeting text on initial site loading.</small>
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-align-left"></i> HERO DESCRIPTION</label>
+                                <textarea id="site_heroDesc" rows="3">OBSCURA RECORD is an independent music label focused on artist development...</textarea>
+                            </div>
+                        </div>
                     </div>
-                    <div class="kernel-node">
-                        <i class="fas fa-network-wired"></i>
-                        <span class="kernel-label">NETWORK FREQ:</span>
-                        <span class="kernel-status" id="km-network">CALIBRATING...</span>
+
+                    
+                    <div class="cyber-card">
+                        <div class="card-header">
+                            <i class="fas fa-layer-group card-icon"></i>
+                            <div>
+                                <h3>SECTION TITLES & SUBTEXTS</h3>
+                                <p>Customize section titles displayed across all main page sections.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>RELEASE ARCHIVE TITLE</label>
+                                <input type="text" id="site_archiveTitle" value="LABEL <span class='accent'>RELEASES</span>">
+                            </div>
+                            <div class="input-group">
+                                <label>RELEASE ARCHIVE SUBTITLE</label>
+                                <input type="text" id="site_archiveDesc" value="THESE ARE THE RELEASES THAT IS PUBLISHED THROUGH OUR LABEL">
+                            </div>
+                            <div class="input-group">
+                                <label>UPCOMING SECTION TITLE</label>
+                                <input type="text" id="site_upcomingTitle" value="UPCOMING <span class='accent'>RELEASES</span>">
+                            </div>
+                            <div class="input-group">
+                                <label>UPCOMING SECTION SUBTITLE</label>
+                                <input type="text" id="site_upcomingDesc" value="FUTURE TRANSMISSIONS FROM THE VOID">
+                            </div>
+                            <div class="input-group">
+                                <label>STAFF SECTION TITLE</label>
+                                <input type="text" id="site_staffTitle" value="OBSCURA <span class='accent'>STAFF</span>">
+                            </div>
+                            <div class="input-group">
+                                <label>STAFF SECTION SUBTITLE</label>
+                                <input type="text" id="site_staffDesc" value="MEET THE MINDS BEHIND THE OBSCURA SOUNDSCAPE">
+                            </div>
+                            <div class="input-group">
+                                <label>PARTNERS SECTION TITLE</label>
+                                <input type="text" id="site_partnersTitle" value="LABEL <span class='accent'>PARTNERS</span>">
+                            </div>
+                            <div class="input-group">
+                                <label>PARTNERS SECTION SUBTITLE</label>
+                                <input type="text" id="site_partnersDesc" value="CREATIVE COLLABORATORS & AFFILIATED ALLIANCES">
+                            </div>
+                        </div>
                     </div>
-                    <div class="kernel-node">
-                        <i class="fas fa-fingerprint"></i>
-                        <span class="kernel-label">AUTH PROTOCOL:</span>
-                        <span class="kernel-status">BIO-METRIC L3</span>
+
+                    
+                    <div class="cyber-card highlight-card">
+                        <div class="card-header">
+                            <i class="fas fa-shield-alt card-icon warning"></i>
+                            <div>
+                                <h3>MAINTENANCE & KERNEL SECURITY</h3>
+                                <p>Master toggle for public maintenance lock and dashboard master pass.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label><i class="fas fa-code-branch"></i> CORE PORTAL ENGINE VERSION</label>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="text" id="site_v" value="1.0" placeholder="e.g. 95.1 or 1.0" style="flex: 1;">
+                                    <button type="button" class="cyber-btn sm" id="btn-bump-version" title="Increment version (+0.1)" style="white-space: nowrap;"><i class="fas fa-plus"></i> +0.1 BUMP</button>
+                                </div>
+                                <small>Live engine version & cache buster. Syncs automatically to main site footer, sidebar & engine boot.</small>
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-terminal"></i> CORE PORTAL FOOTER BRAND / TITLE</label>
+                                <input type="text" id="site_sidebarLogoText" value="OBSCURA <span>RECORD</span>" placeholder="e.g. OBSCURA <span>RECORD</span>">
+                                <small>Bottom sidebar brand markup (HTML allowed).</small>
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-tag"></i> CORE PORTAL FOOTER SUB-LABEL</label>
+                                <input type="text" id="site_sidebarPortalLabel" value="CORE PORTAL" placeholder="e.g. CORE PORTAL">
+                                <small>Prefix label text shown before the version number (e.g. CORE PORTAL v6.0).</small>
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-power-off"></i> MAINTENANCE MODE SWITCH</label>
+                                <select id="site_maintenanceMode" class="cyber-select">
+                                    <option value="Disabled">Disabled (Site 100% Live To Public)</option>
+                                    <option value="Enabled">Enabled (Maintenance Lock Active)</option>
+                                </select>
+                                <small>When enabled, public visitors see the luxury Space Lock Screen.</small>
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-key"></i> MASTER ADMIN PASSPHRASE</label>
+                                <input type="text" id="security_rootKey" value="ORC ADMINS PASS 2026">
+                                <small>Key required to unlock this administration command deck.</small>
+                            </div>
+                            <div class="input-group">
+                                <label>MAINTENANCE SCREEN TITLE</label>
+                                <input type="text" id="site_maintenanceTitle" value="OBSCURA RECORD // UNDER RENOVATION">
+                            </div>
+                            <div class="input-group">
+                                <label>MAINTENANCE SCREEN SUBTEXT</label>
+                                <input type="text" id="site_maintenanceMsg" value="Quantum upgrades in progress. Frequencies will resume shortly.">
+                            </div>
+                        </div>
                     </div>
-                    <div class="kernel-node">
-                        <i class="fas fa-user-secret"></i>
-                        <span class="kernel-label">TAMPER SHIELD:</span>
-                        <span class="kernel-status" id="km-shield">SHIELD ARMED</span>
+
+                </div>
+
+                <div class="action-footer">
+                    <button class="cyber-btn primary" id="save-globals"><i class="fas fa-cloud-upload-alt"></i> SAVE & SYNC ALL GLOBALS</button>
+                    <span id="save-msg-globals" class="save-status-indicator"></span>
+                </div>
+            </section>
+
+            
+            <section id="links-panel" class="panel">
+                <div class="card-grid">
+                    
+                    
+                    <div class="cyber-card">
+                        <div class="card-header">
+                            <i class="fas fa-compass card-icon"></i>
+                            <div>
+                                <h3>HEADER & SIDEBAR NAVIGATION TEXTS</h3>
+                                <p>Labels displayed in the top navbar and right-side network drawer.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group"><label>HOME LABEL</label><input type="text" id="site_navHome" value="HOME"></div>
+                            <div class="input-group"><label>RELEASES LABEL</label><input type="text" id="site_navReleases" value="RELEASES"></div>
+                            <div class="input-group"><label>GHOST PRODUCTION LABEL</label><input type="text" id="site_navGhostProduction" value="GHOST PRODUCTION"></div>
+                            <div class="input-group"><label>STAFF LABEL</label><input type="text" id="site_navStaff" value="STAFF"></div>
+                            <div class="input-group"><label>CONTACT LABEL</label><input type="text" id="site_navContact" value="CONTACT"></div>
+                            <div class="input-group"><label>MENU BUTTON LABEL</label><input type="text" id="site_navMenuBtn" value="MENU"></div>
+                        </div>
                     </div>
-                    <div class="kernel-node">
-                        <i class="fas fa-satellite-dish"></i>
-                        <span class="kernel-label">LIVE NODES ONLINE:</span>
-                        <span class="kernel-status" id="km-live-nodes"
-                            style="color:var(--accent-blue);">ACCESSING...</span>
+
+                    
+                    <div class="cyber-card">
+                        <div class="card-header">
+                            <i class="fas fa-share-alt card-icon"></i>
+                            <div>
+                                <h3>SOCIAL FREQUENCIES & CHANNELS</h3>
+                                <p>Direct destination links for external social networks and email.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group full">
+                                <label><i class="fab fa-instagram"></i> INSTAGRAM URL</label>
+                                <input type="text" id="site_socialInstaUrl" value="https://www.instagram.com/recordsobscura">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fab fa-youtube"></i> YOUTUBE CHANNEL URL</label>
+                                <input type="text" id="site_socialYoutubeUrl" value="https://www.youtube.com/channel/UC0A5L7DUgls-AkYaQ4ZwxhA">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fab fa-discord"></i> DISCORD SERVER INVITE</label>
+                                <input type="text" id="site_socialDiscordUrl" value="https://discord.gg/E3Sn72cpBR">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fab fa-tiktok"></i> TIKTOK URL</label>
+                                <input type="text" id="site_socialTiktokUrl" value="https://www.tiktok.com/@obscura.records">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fab fa-spotify"></i> SPOTIFY ARTIST/LABEL URL</label>
+                                <input type="text" id="site_socialSpotifyUrl" value="https://open.spotify.com">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-envelope"></i> DIRECT CONTACT EMAIL</label>
+                                <input type="email" id="site_socialEmailUrl" value="sayurux@gmail.com">
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="cyber-card">
+                        <div class="card-header">
+                            <i class="fas fa-tshirt card-icon"></i>
+                            <div>
+                                <h3>HERO STREETX CLOTHING BANNER</h3>
+                                <p>Interactive clothing affiliate banner displayed on the hero section.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>BADGE TEXT</label>
+                                <input type="text" id="site_streetxBadge" value="OFFICIAL CLOTHING DIVISION">
+                            </div>
+                            <div class="input-group">
+                                <label>TITLE (HTML)</label>
+                                <input type="text" id="site_streetxTitle" value="STREETX <span class='accent'>CLOTHING</span>">
+                            </div>
+                            <div class="input-group full">
+                                <label>DESCRIPTION</label>
+                                <input type="text" id="site_streetxDesc" value="PREMIUM STREETWEAR IDENTITY & APPAREL DROP 01">
+                            </div>
+                            <div class="input-group">
+                                <label>CTA BUTTON TEXT</label>
+                                <input type="text" id="site_streetxCta" value="EXPLORE COLLECTION">
+                            </div>
+                            <div class="input-group">
+                                <label>DESTINATION URL</label>
+                                <input type="text" id="site_streetxUrl" value="streetx-clothing/">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="action-footer">
+                    <button class="cyber-btn primary" id="save-links"><i class="fas fa-save"></i> SAVE & SYNC NAVIGATION & LINKS</button>
+                    <span id="save-msg-links" class="save-status-indicator"></span>
+                </div>
+            </section>
+
+            
+            <section id="popular-panel" class="panel">
+                <div class="section-visibility-group">
+                    <div class="toggle-wrapper">
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-popular-section" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="toggle-label">DISPLAY POPULAR RELEASES SECTION ON MAIN SITE</span>
                     </div>
                 </div>
-                <div class="footer-divider"></div>
-                <p data-sync="footerCopyright" data-sync-target="text">&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED.
-                </p>
-                <div class="footer-links">
-                    <a href="javascript:void(0)" id="open-faq" data-sync="footerFaqText" data-sync-target="text">FAQ</a>
-                    <a href="javascript:void(0)" id="open-demo" data-sync="footerDemoText" data-sync-target="text">DEMO
-                        SUBMISSION</a>
-                    <a href="javascript:void(0)" id="open-contact" data-sync="footerContactText"
-                        data-sync-target="text">CONTACT US</a>
-                    <a href="javascript:void(0)" id="open-privacy" data-sync="footerPrivacyText"
-                        data-sync-target="text">PRIVACY</a>
-                </div>
-                <div class="security-stamp">
-                    <i class="fas fa-shield-alt"></i> FREQUENCY GUARDED BY RECAPTCHA V3 | <a
-                        href="https://policies.google.com/privacy">PRIVACY</a> | <a
-                        href="https://policies.google.com/terms">TERMS</a>
-                </div>
-                <div class="footer-tech-stack">
-                    <span class="tech-node"><i class="fas fa-lock tech-pulse"></i> SSL SECURE</span>
-                    <span class="tech-node"><i class="fas fa-database"></i> CLOUD PROTECT</span>
-                    <span class="tech-node"><i class="fas fa-shield-alt"></i> RECAPTCHA V3</span>
-                    <span class="tech-node"><i class="fas fa-signal"></i> NODES ONLINE</span>
-                </div>
-                <div id="visitor-connection-node" class="visitor-node">
-                    [ ACCESSING CONNECTION FREQUENCY... ]
-                </div>
-                <div class="dev-status-tag">
-                    SYSTEM OPTIMIZATION IN PROGRESS // ENHANCING USER INTERFACE
-                </div>
-            </div>
-        </footer>
-        <div id="floating-audio-player" class="floating-player-bar hidden">
-            <div class="fp-glow-stream"></div>
-            <div class="floating-player-track-info">
-                <div class="fp-thumb-wrapper">
-                    <img id="fp-thumb" src="assets/OCR.png" alt="Cover" class="fp-cover-img">
-                    <div class="fp-mini-vinyl">
-                        <div class="fp-vinyl-core"></div>
+
+                <div class="cyber-card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <i class="fas fa-heading card-icon"></i>
+                        <div>
+                            <h3>POPULAR SECTION HEADER & DESCRIPTION</h3>
+                            <p>Customize the headline texts shown above the popular carousel.</p>
+                        </div>
+                    </div>
+                    <div class="card-body form-grid">
+                        <div class="input-group">
+                            <label>POPULAR SECTION TITLE (HTML)</label>
+                            <input type="text" id="site_popularTitle" value="<span class='accent'>POPULAR</span> <span>RELEASES</span>">
+                        </div>
+                        <div class="input-group">
+                            <label>POPULAR SECTION DESCRIPTION</label>
+                            <input type="text" id="site_popularDesc" value="THE MOST TRANSMITTED FREQUENCIES IN THE VOID">
+                        </div>
+                    </div>
+                    <div style="padding: 0 1.8rem 1.5rem; display: flex; justify-content: flex-end;">
+                        <button class="cyber-btn primary sm" id="save-popular-header"><i class="fas fa-save"></i> SAVE SECTION HEADER</button>
                     </div>
                 </div>
-                <div class="fp-text-meta">
-                    <div id="fp-title" class="fp-track-title">SELECT A TRANSMISSION</div>
-                    <div id="fp-artist" class="fp-track-artist">OBSCURA RECORD</div>
-                </div>
-            </div>
-            <div class="floating-player-center">
-                <div class="floating-player-controls">
-                    <button id="fp-prev-btn" class="fp-btn" title="Previous Track"><i class="fas fa-step-backward"></i></button>
-                    <button id="fp-play-btn" class="fp-btn fp-play-btn" title="Play / Pause"><i class="fas fa-play"></i></button>
-                    <button id="fp-next-btn" class="fp-btn" title="Next Track"><i class="fas fa-step-forward"></i></button>
-                </div>
-                <div class="floating-player-progress-row">
-                    <span id="fp-current-time" class="fp-time">0:00</span>
-                    <div class="fp-progress-container" id="fp-progress-container">
-                        <div id="fp-progress-bar" class="fp-progress-bar"></div>
+
+                <div class="panel-action-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="popular-search-input" placeholder="SEARCH POPULAR TRACKS BY TITLE OR ARTIST...">
                     </div>
-                    <span id="fp-total-time" class="fp-time">0:30</span>
+                    <button class="cyber-btn primary" id="btn-add-new-popular"><i class="fas fa-plus-circle"></i> ADD NEW POPULAR HIT</button>
                 </div>
-            </div>
-            <div class="floating-player-actions">
-                <div class="fp-volume-wrapper">
-                    <button id="fp-mute-btn" class="fp-icon-btn" title="Mute/Unmute"><i class="fas fa-volume-up"></i></button>
-                    <input type="range" id="fp-volume-slider" min="0" max="100" value="100" class="fp-vol-slider">
+
+                
+                <div id="popular-editor-card" class="cyber-card editor-card" style="display: none; margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <i class="fas fa-fire card-icon"></i>
+                        <div>
+                            <h3 id="popular-editor-title">ADD NEW POPULAR RELEASE</h3>
+                            <p>Configure trending rank, track metadata, artwork, and streaming audio links.</p>
+                        </div>
+                        <button type="button" class="close-card-btn" id="close-popular-editor">&times;</button>
+                    </div>
+                    <div class="card-body form-grid">
+                        <input type="hidden" id="pop_edit_index" value="-1">
+                        <div class="input-group">
+                            <label><i class="fas fa-music"></i> TRACK TITLE *</label>
+                            <input type="text" id="pop_title" placeholder="e.g. NEON DRIFT">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-user-astronaut"></i> ARTIST / PRODUCERS *</label>
+                            <input type="text" id="pop_artist" placeholder="e.g. SAYURUX ft. OBSCURA">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-sort-numeric-down"></i> RANK / PRIORITY ORDER (1 = TOP)</label>
+                            <input type="number" id="pop_rank" value="1">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-tag"></i> BADGE TEXT</label>
+                            <input type="text" id="pop_badge" value="TRENDING" placeholder="e.g. TRENDING, VIRAL, HOT">
+                        </div>
+
+                        
+                        <div class="input-group full">
+                            <label><i class="fas fa-image"></i> COVER ARTWORK (URL OR BROWSE LOCAL FILE) *</label>
+                            <div style="display: flex; gap: 0.8rem; align-items: center;">
+                                <input type="text" id="pop_cover" placeholder="assets/cover.png or https://..." style="flex: 1;">
+                                <label class="cyber-btn primary sm" style="cursor: pointer; margin: 0; white-space: nowrap;">
+                                    <i class="fas fa-folder-open"></i> BROWSE FILE
+                                    <input type="file" id="pop_cover_file" accept="image/*" style="display: none;">
+                                </label>
+                            </div>
+                            <div id="pop_cover_preview_box" style="margin-top: 0.8rem; width: 100px; height: 100px; border-radius: 12px; border: 1px dashed var(--border); overflow: hidden; background: #070a16; display: flex; align-items: center; justify-content: center;">
+                                <img id="pop_cover_preview_img" src="assets/cover.png" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label><i class="fas fa-headphones"></i> AUDIO PREVIEW / MP3 URL</label>
+                            <input type="text" id="pop_preview" placeholder="https://.../preview.mp3 or YouTube link">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fab fa-youtube"></i> YOUTUBE LINK / STREAM</label>
+                            <input type="text" id="pop_youtube" placeholder="https://youtube.com/watch?v=...">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fab fa-spotify"></i> SPOTIFY STREAMING URL</label>
+                            <input type="text" id="pop_spotify" placeholder="https://open.spotify.com/track/...">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fa-brands fa-apple"></i> APPLE MUSIC STREAMING URL</label>
+                            <input type="text" id="pop_apple" placeholder="https://music.apple.com/album/...">
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="cyber-btn danger" id="btn-cancel-popular"><i class="fas fa-times"></i> CANCEL</button>
+                        <button class="cyber-btn primary" id="btn-save-popular-record"><i class="fas fa-save"></i> SAVE & SYNC POPULAR TRACK</button>
+                    </div>
                 </div>
-                <div class="fp-external-links" id="fp-external-links">
-                    <a id="fp-spotify-link" href="#" target="_blank" class="fp-link-icon spotify" title="Listen on Spotify"><i class="fab fa-spotify"></i></a>
-                    <a id="fp-yt-link" href="#" target="_blank" class="fp-link-icon youtube" title="Watch on YouTube"><i class="fab fa-youtube"></i></a>
+
+                
+                <div class="releases-grid-container" id="popular-releases-list">
+                    
                 </div>
-                <button id="fp-close-btn" class="fp-icon-btn close-fp" title="Minimize Player"><i class="fas fa-times"></i></button>
+            </section>
+
+            
+            <section id="releases-panel" class="panel">
+                <div class="panel-action-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="release-search-input" placeholder="SEARCH RELEASES BY TITLE, ARTIST, OR CATALOG...">
+                    </div>
+                    <button class="cyber-btn primary" id="btn-add-new-release"><i class="fas fa-plus-circle"></i> ADD NEW RELEASE</button>
+                </div>
+
+                
+                <div id="release-editor-card" class="cyber-card editor-card" style="display: none;">
+                    <div class="card-header">
+                        <i class="fas fa-compact-disc card-icon"></i>
+                        <div>
+                            <h3 id="release-editor-title">ADD NEW RELEASE</h3>
+                            <p>Enter track metadata, cover artwork, and streaming audio links.</p>
+                        </div>
+                        <button type="button" class="close-card-btn" id="close-release-editor">&times;</button>
+                    </div>
+                    <div class="card-body form-grid">
+                        <input type="hidden" id="rel_edit_index" value="-1">
+                        <div class="input-group">
+                            <label><i class="fas fa-music"></i> TRACK / RELEASE TITLE *</label>
+                            <input type="text" id="rel_title" placeholder="e.g. CYBERNETIC PULSE">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-user-astronaut"></i> ARTIST / PRODUCERS *</label>
+                            <input type="text" id="rel_artist" placeholder="e.g. SAYURUX ft. OBSCURA">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-layer-group"></i> RELEASE TYPE (EP / SINGLE / ALBUM) *</label>
+                            <select id="rel_type" class="cyber-select">
+                                <option value="SINGLE">SINGLE</option>
+                                <option value="EP">EP</option>
+                                <option value="ALBUM">ALBUM</option>
+                                <option value="LP">LP</option>
+                                <option value="REMIX">REMIX</option>
+                                <option value="COLLAB">COLLAB</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-barcode"></i> CATALOG CODE (OPTIONAL)</label>
+                            <input type="text" id="rel_catalog" placeholder="Leave empty or enter code (e.g. OCR008)">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-calendar-alt"></i> RELEASE DATE</label>
+                            <input type="text" id="rel_date" placeholder="e.g. 2026.04.15">
+                        </div>
+                        <div class="input-group full">
+                            <label><i class="fas fa-image"></i> COVER ARTWORK URL *</label>
+                            <div class="input-with-preview">
+                                <input type="text" id="rel_cover" placeholder="https://i.imgur.com/... or assets/cover.png">
+                                <div class="img-preview-box" id="rel-cover-preview">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-group full">
+                            <label><i class="fab fa-youtube"></i> 1. YOUTUBE PREVIEW / STREAMING AUDIO LINK (PLAY BUTTON) *</label>
+                            <input type="text" id="rel_streamUrl" placeholder="https://www.youtube.com/watch?v=XXXXXX or video ID (Plays on Card Preview)">
+                            <small>Instant audio streaming played when visitors click the Play button on the card.</small>
+                        </div>
+                        <div class="input-group full">
+                            <label><i class="fab fa-youtube"></i> 2. YOUTUBE ALBUM / FULL STREAM LINK (BOTTOM LINK BAR)</label>
+                            <input type="text" id="rel_youtubeUrl" placeholder="https://www.youtube.com/watch?v=... or https://youtube.com/playlist?list=... (Full Album URL)">
+                            <small>Direct link opened when visitors click the YouTube icon on the card's bottom actions bar.</small>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fab fa-spotify"></i> SPOTIFY STREAM LINK</label>
+                            <input type="text" id="rel_spotifyUrl" placeholder="https://open.spotify.com/track/...">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fab fa-soundcloud"></i> SOUNDCLOUD LINK</label>
+                            <input type="text" id="rel_soundcloudUrl" placeholder="https://soundcloud.com/...">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fab fa-apple"></i> APPLE MUSIC LINK</label>
+                            <input type="text" id="rel_appleUrl" placeholder="https://music.apple.com/...">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-download"></i> DIRECT DOWNLOAD URL</label>
+                            <input type="text" id="rel_dlUrl" placeholder="https://drive.google.com/... or direct MP3 link">
+                        </div>
+                    </div>
+                    <div class="card-footer-btns">
+                        <button type="button" class="cyber-btn primary" id="btn-save-release"><i class="fas fa-save"></i> SAVE RELEASE</button>
+                        <button type="button" class="cyber-btn secondary" id="btn-cancel-release">CANCEL</button>
+                    </div>
+                </div>
+
+                
+                <div class="releases-admin-grid" id="releases-admin-container">
+                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> SYNCING RELEASES WITH FIREBASE...</div>
+                </div>
+            </section>
+
+            
+            <section id="upcoming-panel" class="panel">
+                <div class="panel-action-bar">
+                    <div class="section-visibility-group">
+                        <label><i class="fas fa-eye"></i> UPCOMING SECTION VISIBILITY:</label>
+                        <select id="site_showUpcoming" class="cyber-select-sm">
+                            <option value="Visible">Visible (Show On Main Site)</option>
+                            <option value="Hidden">Hidden (Hide From Main Site)</option>
+                        </select>
+                    </div>
+                    <button class="cyber-btn primary" id="btn-add-upcoming"><i class="fas fa-plus-circle"></i> ADD UPCOMING TEASER</button>
+                </div>
+
+                <div id="upcoming-editor-card" class="cyber-card editor-card" style="display: none;">
+                    <div class="card-header">
+                        <i class="fas fa-calendar-plus card-icon"></i>
+                        <div>
+                            <h3 id="upcoming-editor-title">ADD UPCOMING TEASER</h3>
+                            <p>Configure teaser artwork, countdown date, and production status.</p>
+                        </div>
+                        <button type="button" class="close-card-btn" id="close-upcoming-editor">&times;</button>
+                    </div>
+                    <div class="card-body form-grid">
+                        <input type="hidden" id="upc_edit_index" value="-1">
+                        <div class="input-group">
+                            <label>TRACK TITLE *</label>
+                            <input type="text" id="upc_title" placeholder="e.g. NEON SHADOWS">
+                        </div>
+                        <div class="input-group">
+                            <label>ARTIST NAME *</label>
+                            <input type="text" id="upc_artist" placeholder="e.g. OBSCURA ARTIST">
+                        </div>
+                        <div class="input-group">
+                            <label>ESTIMATED DATE / COUNTDOWN</label>
+                            <input type="text" id="upc_date" placeholder="e.g. COMING MAY 2026">
+                        </div>
+                        <div class="input-group">
+                            <label>PRODUCTION STATUS</label>
+                            <select id="upc_status" class="cyber-select">
+                                <option value="FINAL MASTERING">FINAL MASTERING</option>
+                                <option value="MIXING STAGE">MIXING STAGE</option>
+                                <option value="IN PRODUCTION">IN PRODUCTION</option>
+                                <option value="COMING SOON">COMING SOON</option>
+                            </select>
+                        </div>
+                        <div class="input-group full">
+                            <label>COVER / TEASER ARTWORK URL</label>
+                            <input type="text" id="upc_cover" placeholder="https://i.imgur.com/... or assets/cover.png">
+                        </div>
+                    </div>
+                    <div class="card-footer-btns">
+                        <button type="button" class="cyber-btn primary" id="btn-save-upcoming"><i class="fas fa-save"></i> SAVE TEASER</button>
+                        <button type="button" class="cyber-btn secondary" id="btn-cancel-upcoming">CANCEL</button>
+                    </div>
+                </div>
+
+                <div class="upcoming-admin-grid" id="upcoming-admin-container">
+                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> SYNCING UPCOMING RELEASES...</div>
+                </div>
+            </section>
+
+            
+            <section id="ghost-production-panel" class="panel">
+                <div class="panel-action-bar" style="margin-bottom: 1.5rem;">
+                    <div class="section-visibility-group">
+                        <label><i class="fas fa-eye"></i> GHOST PRODUCTION SECTION VISIBILITY:</label>
+                        <select id="site_showGhostProduction" class="cyber-select-sm">
+                            <option value="Visible">Visible (Show On Main Site)</option>
+                            <option value="Hidden">Hidden (Hide From Main Site)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card-grid">
+                    
+                    
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-ghost card-icon"></i>
+                            <div>
+                                <h3>CORE GHOST PRODUCTION HEADERS & DESCRIPTIONS</h3>
+                                <p>Main titles and explanatory paragraphs displayed in the Ghost Production section.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>SECTION SUB-HEADING</label>
+                                <input type="text" id="site_ghostDesc" value="Request your custom sound in any style. Secure professional production for a flat fee.">
+                            </div>
+                            <div class="input-group">
+                                <label>SERVICE INNER TITLE</label>
+                                <input type="text" id="site_ghostServiceTitle" value="GHOST PRODUCTION">
+                            </div>
+                            <div class="input-group">
+                                <label>EVENT TAGLINE / BADGE</label>
+                                <input type="text" id="site_ghostTagline" value="EXCLUSIVE EVENT">
+                            </div>
+                            <div class="input-group full">
+                                <label>SERVICE FULL DESCRIPTION</label>
+                                <textarea id="site_ghostServiceDesc" rows="3">Submit your preferred musical style and vision to our portal. Our elite producers will craft a bespoke, professional track tailored specifically to your requirements.</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="cyber-card">
+                        <div class="card-header">
+                            <i class="fas fa-tags card-icon"></i>
+                            <div>
+                                <h3>PRODUCTION TIERS & PRICING</h3>
+                                <p>Custom pricing labels for all production duration options.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>30 SECONDS SNIPPET PRICE</label>
+                                <input type="text" id="site_ghostPrice30s" value="$10">
+                            </div>
+                            <div class="input-group">
+                                <label>1 MINUTE COMPOSITION PRICE</label>
+                                <input type="text" id="site_ghostPrice1m" value="$30">
+                            </div>
+                            <div class="input-group">
+                                <label>1 MINUTE + VOCALS PRICE</label>
+                                <input type="text" id="site_ghostPriceVocals" value="$50">
+                            </div>
+                            <div class="input-group">
+                                <label>CUSTOMIZED PACKAGE PRICE</label>
+                                <input type="text" id="site_ghostPriceCustom" value="From $100">
+                            </div>
+                            <div class="input-group full">
+                                <label>ADD-ON: PRO MIX PRICE</label>
+                                <input type="text" id="site_ghostAddonMix" value="+ $20">
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="cyber-card">
+                        <div class="card-header">
+                            <i class="fas fa-check-double card-icon"></i>
+                            <div>
+                                <h3>CORE FEATURES & DELIVERY TIMELINE</h3>
+                                <p>Feature checklists, revision options, and express delivery pricing.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>FEATURE 1</label>
+                                <input type="text" id="site_ghostFeature1" value="High-Quality WAV Files">
+                            </div>
+                            <div class="input-group">
+                                <label>FEATURE 2</label>
+                                <input type="text" id="site_ghostFeature2" value="24/7 Customer Service">
+                            </div>
+                            <div class="input-group">
+                                <label>FEATURE 3</label>
+                                <input type="text" id="site_ghostFeature3" value="3 Project Revisions">
+                            </div>
+                            <div class="input-group">
+                                <label>ADD-ON: UNLIMITED REVISIONS</label>
+                                <input type="text" id="site_ghostAddonRevisions" value="+ $20">
+                            </div>
+                            <div class="input-group">
+                                <label>3 DAY EXPRESS DELIVERY PRICE</label>
+                                <input type="text" id="site_ghostDelivery3d" value="+ $20">
+                            </div>
+                            <div class="input-group">
+                                <label>5 DAY PRIORITY DELIVERY PRICE</label>
+                                <input type="text" id="site_ghostDelivery5d" value="+ $10">
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-star card-icon"></i>
+                            <div>
+                                <h3>SPECIAL OFFER BANNER</h3>
+                                <p>Highlighted promotional package box inside the ghost section.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>SPECIAL OFFER TITLE</label>
+                                <input type="text" id="site_ghostSpecialTitle" value="SPECIAL OFFER: FULL TRACK">
+                            </div>
+                            <div class="input-group full">
+                                <label>SPECIAL OFFER DESCRIPTION</label>
+                                <textarea id="site_ghostSpecialDesc" rows="2">1 Full Track, Any Style, Mixed & Mastered. MP3 + WAV + MIDI + STEMS + PROJECT FILE</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="action-footer">
+                    <button class="cyber-btn primary" id="save-ghost-prod"><i class="fas fa-save"></i> SAVE & SYNC ALL GHOST PRODUCTION OPTIONS</button>
+                    <span id="save-msg-ghost" class="save-status-indicator"></span>
+                </div>
+            </section>
+
+            
+            <section id="staff-panel" class="panel">
+                <div class="panel-action-bar">
+                    <div class="tab-pill-group">
+                        <button type="button" class="tab-pill active" id="tab-staff-view">OBSCURA STAFF</button>
+                        <button type="button" class="tab-pill" id="tab-partner-view">LABEL PARTNERS</button>
+                    </div>
+                    <button class="cyber-btn primary" id="btn-add-profile"><i class="fas fa-user-plus"></i> ADD NEW PROFILE</button>
+                </div>
+
+                
+                <div id="profile-editor-card" class="cyber-card editor-card" style="display: none; margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <i class="fas fa-user-edit card-icon"></i>
+                        <div>
+                            <h3 id="profile-editor-title">CREATE NEW PROFILE</h3>
+                            <p>Configure personnel details, local avatar & banner uploads, and social networks.</p>
+                        </div>
+                        <button type="button" class="close-card-btn" id="close-profile-editor">&times;</button>
+                    </div>
+                    <div class="card-body form-grid">
+                        <input type="hidden" id="prof_edit_id" value="">
+                        <input type="hidden" id="prof_is_partner" value="false">
+                        
+                        <div class="input-group">
+                            <label>PROFILE ID / DISCORD USERNAME *</label>
+                            <input type="text" id="prof_id" placeholder="e.g. sayurux or partner_id">
+                            <small>Unique identifier for this profile record.</small>
+                        </div>
+                        <div class="input-group">
+                            <label>DISPLAY NAME *</label>
+                            <input type="text" id="prof_name" placeholder="e.g. SAYURUX">
+                        </div>
+                        <div class="input-group">
+                            <label>ROLE / POSITION *</label>
+                            <input type="text" id="prof_role" placeholder="e.g. FOUNDER & HEAD OF A&R">
+                        </div>
+                        <div class="input-group">
+                            <label>SORT PRIORITY (1 = HIGHEST)</label>
+                            <input type="number" id="prof_order" value="1">
+                        </div>
+                        
+                        
+                        <div class="input-group full">
+                            <label><i class="fas fa-user-circle"></i> PROFILE AVATAR / DP (URL OR BROWSE FROM COMPUTER)</label>
+                            <div class="input-with-preview">
+                                <input type="text" id="prof_avatar" placeholder="https://i.imgur.com/... or paste image URL">
+                                <input type="file" id="prof_avatar_file" accept="image/*" style="display: none;">
+                                <button type="button" class="cyber-btn secondary sm" onclick="document.getElementById('prof_avatar_file').click()">
+                                    <i class="fas fa-folder-open"></i> BROWSE FILE
+                                </button>
+                                <div class="img-preview-box" id="prof-avatar-preview">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="input-group full">
+                            <label><i class="fas fa-image"></i> PROFILE BANNER BACKGROUND (URL OR BROWSE FROM COMPUTER)</label>
+                            <div class="input-with-preview">
+                                <input type="text" id="prof_banner" placeholder="https://i.imgur.com/... or banner image URL">
+                                <input type="file" id="prof_banner_file" accept="image/*" style="display: none;">
+                                <button type="button" class="cyber-btn secondary sm" onclick="document.getElementById('prof_banner_file').click()">
+                                    <i class="fas fa-folder-open"></i> BROWSE FILE
+                                </button>
+                                <div class="img-preview-box" id="prof-banner-preview">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="input-group full">
+                            <label>BIOGRAPHY / PROFILE DESCRIPTION</label>
+                            <textarea id="prof_bio" rows="3" placeholder="A brief background about this personnel/partner..."></textarea>
+                        </div>
+
+                        
+                        <div class="social-links-builder full" style="grid-column: 1 / -1; border-top: 1px solid var(--border-dim); padding-top: 1.2rem;">
+                            <label style="font-family: var(--font-mono); color: var(--primary); font-size: 0.78rem; font-weight: 700; margin-bottom: 0.8rem; display: block;">
+                                <i class="fas fa-share-alt"></i> CONNECTED SOCIAL PLATFORMS & LINKS
+                            </label>
+                            <div class="form-grid" style="gap: 1rem;">
+                                <div class="input-group">
+                                    <label><i class="fab fa-instagram"></i> INSTAGRAM LINK</label>
+                                    <input type="text" id="prof_social_insta" placeholder="https://instagram.com/...">
+                                </div>
+                                <div class="input-group">
+                                    <label><i class="fab fa-spotify"></i> SPOTIFY ARTIST LINK</label>
+                                    <input type="text" id="prof_social_spotify" placeholder="https://open.spotify.com/artist/...">
+                                </div>
+                                <div class="input-group">
+                                    <label><i class="fab fa-soundcloud"></i> SOUNDCLOUD LINK</label>
+                                    <input type="text" id="prof_social_soundcloud" placeholder="https://soundcloud.com/...">
+                                </div>
+                                <div class="input-group">
+                                    <label><i class="fab fa-youtube"></i> YOUTUBE CHANNEL</label>
+                                    <input type="text" id="prof_social_youtube" placeholder="https://youtube.com/...">
+                                </div>
+                                <div class="input-group">
+                                    <label><i class="fab fa-twitter"></i> X / TWITTER</label>
+                                    <input type="text" id="prof_social_twitter" placeholder="https://x.com/...">
+                                </div>
+                                <div class="input-group">
+                                    <label><i class="fab fa-discord"></i> DISCORD SERVER / PROFILE</label>
+                                    <input type="text" id="prof_social_discord" placeholder="https://discord.gg/...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer-btns">
+                        <button type="button" class="cyber-btn primary" id="btn-save-profile"><i class="fas fa-save"></i> SAVE PROFILE</button>
+                        <button type="button" class="cyber-btn secondary" id="btn-cancel-profile">CANCEL</button>
+                    </div>
+                </div>
+
+                <div class="staff-admin-grid" id="staff-admin-container">
+                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> SYNCING PERSONNEL PROFILES...</div>
+                </div>
+            </section>
+
+            
+            <section id="demo-inbox-panel" class="panel">
+                <div class="panel-action-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="demo-search-input" placeholder="SEARCH DEMOS BY ARTIST, TRACK, EMAIL, OR GENRE...">
+                    </div>
+                    <div class="filter-dropdown-group">
+                        <select id="demo-status-filter" class="cyber-select">
+                            <option value="ALL">ALL STATUSES</option>
+                            <option value="PENDING">PENDING REVIEW</option>
+                            <option value="ACCEPTED">ACCEPTED / SIGNED</option>
+                            <option value="REJECTED">REJECTED</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="inbox-container" id="demos-inbox-container">
+                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> RETRIEVING SUBMISSION TRANSMISSIONS...</div>
+                </div>
+            </section>
+
+            
+            <section id="contact-inbox-panel" class="panel">
+                <div class="panel-action-bar">
+                    <h3><i class="fas fa-envelope-open-text"></i> CONTACT INQUIRIES & DIRECT MESSAGES</h3>
+                    <button class="cyber-btn secondary" id="btn-refresh-contact-msg"><i class="fas fa-sync-alt"></i> REFRESH INBOX</button>
+                </div>
+
+                <div class="inbox-container" id="contact-inbox-container">
+                    <div class="loading-state"><i class="fas fa-spinner fa-spin"></i> FETCHING DIRECT INQUIRIES...</div>
+                </div>
+            </section>
+
+            
+            <section id="modals-panel" class="panel">
+                <div class="card-grid">
+                    
+                    
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-shoe-prints card-icon"></i>
+                            <div>
+                                <h3>FOOTER NAVIGATION BUTTONS & COPYRIGHT</h3>
+                                <p>Modify the 4 main footer popup trigger button labels and copyright line.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group full">
+                                <label>FOOTER COPYRIGHT NOTICE</label>
+                                <input type="text" id="site_footerCopyright" value="&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED.">
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-question-circle"></i> BUTTON 1: FAQ BUTTON LABEL</label>
+                                <input type="text" id="site_footerFaqText" value="FAQ">
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-paper-plane"></i> BUTTON 2: DEMO SUBMISSION BUTTON LABEL</label>
+                                <input type="text" id="site_footerDemoText" value="DEMO SUBMISSION">
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-envelope"></i> BUTTON 3: CONTACT US BUTTON LABEL</label>
+                                <input type="text" id="site_footerContactText" value="CONTACT US">
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-shield-alt"></i> BUTTON 4: PRIVACY BUTTON LABEL</label>
+                                <input type="text" id="site_footerPrivacyText" value="PRIVACY">
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-question-circle card-icon"></i>
+                            <div>
+                                <h3>1. FAQ POPUP MODAL CONTENT</h3>
+                                <p>Header title and dynamic question/answer accordion items.</p>
+                            </div>
+                            <button class="cyber-btn primary sm" id="btn-add-faq-item"><i class="fas fa-plus"></i> ADD FAQ ITEM</button>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group full">
+                                <label>FAQ MODAL HEADER TITLE</label>
+                                <input type="text" id="site_modalFaqTitle" value="FREQUENCY ASKED QUESTIONS">
+                            </div>
+                            <div id="faq-admin-container" class="full" style="grid-column: 1 / -1; margin-top: 1rem;">
+                                
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-paper-plane card-icon"></i>
+                            <div>
+                                <h3>2. DEMO SUBMISSION POPUP MODAL CONTENT</h3>
+                                <p>Header, all input labels, placeholders, checklist rules, and buttons.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>MODAL TITLE (HTML)</label>
+                                <input type="text" id="site_formTitle" value="Secure <span class='accent'>Form Submission</span>">
+                            </div>
+                            <div class="input-group">
+                                <label>MODAL SUBTITLE / DESCRIPTION</label>
+                                <input type="text" id="site_formDesc" value="Transmit your audio frequency to the Obscura A&R department for priority review.">
+                            </div>
+
+                            
+                            <div class="input-group">
+                                <label>REAL NAME LABEL</label>
+                                <input type="text" id="site_formLabelName" value="Real Name">
+                            </div>
+                            <div class="input-group">
+                                <label>REAL NAME PLACEHOLDER</label>
+                                <input type="text" id="site_formPlaceholderName" value="Name">
+                            </div>
+
+                            <div class="input-group">
+                                <label>ARTIST NAME LABEL</label>
+                                <input type="text" id="site_formLabelArtist" value="Artist Name(s)">
+                            </div>
+                            <div class="input-group">
+                                <label>ARTIST NAME PLACEHOLDER</label>
+                                <input type="text" id="site_formPlaceholderArtist" value="Names">
+                            </div>
+
+                            <div class="input-group">
+                                <label>EMAIL ADDRESS LABEL</label>
+                                <input type="text" id="site_formLabelEmail" value="Email Address">
+                            </div>
+                            <div class="input-group">
+                                <label>EMAIL ADDRESS PLACEHOLDER</label>
+                                <input type="text" id="site_formPlaceholderEmail" value="official@artist.com">
+                            </div>
+
+                            <div class="input-group">
+                                <label>PRIMARY GENRE LABEL</label>
+                                <input type="text" id="site_formLabelGenre" value="Primary Genre">
+                            </div>
+                            <div class="input-group">
+                                <label>PRIMARY GENRE PLACEHOLDER</label>
+                                <input type="text" id="site_formPlaceholderGenre" value="Funk / EDM / Hip Hop">
+                            </div>
+
+                            <div class="input-group">
+                                <label>SOCIALS / SPOTIFY LINK LABEL</label>
+                                <input type="text" id="site_formLabelSpotify" value="Artist Profile / Social Links">
+                            </div>
+                            <div class="input-group">
+                                <label>SOCIALS / SPOTIFY PLACEHOLDER</label>
+                                <input type="text" id="site_formPlaceholderSpotify" value="https://open.spotify.com/artist/...">
+                            </div>
+
+                            <div class="input-group">
+                                <label>STREAMING LINK LABEL</label>
+                                <input type="text" id="site_formLabelLink" value="Private streaming link (SoundCloud / Dropbox / Drive)">
+                            </div>
+                            <div class="input-group">
+                                <label>STREAMING LINK PLACEHOLDER</label>
+                                <input type="text" id="site_formPlaceholderLink" value="https://soundcloud.com/...">
+                            </div>
+
+                            <div class="input-group">
+                                <label>MESSAGE / BIOGRAPHY LABEL</label>
+                                <input type="text" id="site_formLabelMessage" value="Message / Biography (Optional)">
+                            </div>
+                            <div class="input-group">
+                                <label>MESSAGE PLACEHOLDER</label>
+                                <input type="text" id="site_formPlaceholderMessage" value="A brief transmission regarding your sound...">
+                            </div>
+
+                            
+                            <div class="input-group full">
+                                <label>RULE 1: TITLE</label>
+                                <input type="text" id="site_formRule1Title" value="Is this track unreleased?">
+                            </div>
+                            <div class="input-group full">
+                                <label>RULE 1: DESCRIPTION</label>
+                                <textarea id="site_formRule1Desc" rows="2">We do NOT accept already-released tracks. Any submissions that have already been published will be automatically declined.</textarea>
+                            </div>
+                            <div class="input-group full">
+                                <label>RULE 2: TITLE</label>
+                                <input type="text" id="site_formRule2Title" value="Track identification">
+                            </div>
+                            <div class="input-group full">
+                                <label>RULE 2: DESCRIPTION</label>
+                                <textarea id="site_formRule2Desc" rows="2">Please provide the title for your track. If you haven't decided on a name yet, a reference title is sufficient so we can identify your submission.</textarea>
+                            </div>
+
+                            
+                            <div class="input-group">
+                                <label>SUBMIT BUTTON TEXT</label>
+                                <input type="text" id="site_formSubmitBtn" value="Initiate Submission">
+                            </div>
+                            <div class="input-group">
+                                <label>DISCORD BUTTON TEXT</label>
+                                <input type="text" id="site_formDiscordBtn" value="Join Discord">
+                            </div>
+                            <div class="input-group full">
+                                <label>MODAL FOOTER RECOMMENDATION NOTE</label>
+                                <input type="text" id="site_formFooterRec" value="[ Highly Recommended: Join the server for real-time frequency tracking ]">
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-envelope-open-text card-icon"></i>
+                            <div>
+                                <h3>3. CONTACT US POPUP MODAL CONTENT</h3>
+                                <p>Header title, subtext, input field labels, placeholders, and send button.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label>MODAL HEADER TITLE (HTML)</label>
+                                <input type="text" id="site_contactModalTitle" value="CONTACT <span class='accent'>VOID</span>">
+                            </div>
+                            <div class="input-group">
+                                <label>MODAL SUBTITLE TEXT</label>
+                                <input type="text" id="site_contactModalSubtext" value="Establish a direct frequency with the Obscura Record command center.">
+                            </div>
+                            <div class="input-group">
+                                <label>NAME FIELD LABEL</label>
+                                <input type="text" id="site_contactLabelName" value="NAME / IDENTIFIER">
+                            </div>
+                            <div class="input-group">
+                                <label>NAME PLACEHOLDER</label>
+                                <input type="text" id="site_contactPlaceholderName" value="Entity Name">
+                            </div>
+                            <div class="input-group">
+                                <label>EMAIL FIELD LABEL</label>
+                                <input type="text" id="site_contactLabelEmail" value="RETURN EMAIL">
+                            </div>
+                            <div class="input-group">
+                                <label>EMAIL PLACEHOLDER</label>
+                                <input type="text" id="site_contactPlaceholderEmail" value="freq@void.com">
+                            </div>
+                            <div class="input-group full">
+                                <label>MESSAGE FIELD LABEL</label>
+                                <input type="text" id="site_contactLabelMessage" value="MESSAGE PAYLOAD">
+                            </div>
+                            <div class="input-group full">
+                                <label>MESSAGE PLACEHOLDER</label>
+                                <input type="text" id="site_contactPlaceholderMessage" value="Type your transmission here...">
+                            </div>
+                            <div class="input-group">
+                                <label>SEND BUTTON TEXT</label>
+                                <input type="text" id="site_contactSubmitBtn" value="SEND TRANSMISSION">
+                            </div>
+                            <div class="input-group">
+                                <label>FOOTER SECURITY NOTE</label>
+                                <input type="text" id="site_contactFooterNote" value="This frequency is guarded by Google reCAPTCHA and sonic encryption.">
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-shield-alt card-icon"></i>
+                            <div>
+                                <h3>4. PRIVACY POLICY POPUP MODAL CONTENT</h3>
+                                <p>Header title and all 7 legal privacy policy sections.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group full">
+                                <label>PRIVACY MODAL HEADER TITLE</label>
+                                <input type="text" id="site_modalPrivacyTitle" value="PRIVACY POLICY">
+                            </div>
+
+                            
+                            <div class="input-group">
+                                <label>SECTION 1: TITLE</label>
+                                <input type="text" id="site_p1_q" value="INTELLECTUAL PROPERTY">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 1: CONTENT</label>
+                                <textarea id="site_p1_a" rows="2">All content in this dimension—including audio, graphics, logos, and visual art—is the property of Obscura Record or its licensors.</textarea>
+                            </div>
+
+                            
+                            <div class="input-group">
+                                <label>SECTION 2: TITLE</label>
+                                <input type="text" id="site_p2_q" value="DATA SECURITY">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 2: CONTENT</label>
+                                <textarea id="site_p2_a" rows="2">Your portal data is encrypted and secure. We only collect what is necessary to maintain your connection.</textarea>
+                            </div>
+
+                            
+                            <div class="input-group">
+                                <label>SECTION 3: TITLE</label>
+                                <input type="text" id="site_p3_q" value="PROMOTIONAL CONTENT">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 3: CONTENT</label>
+                                <textarea id="site_p3_a" rows="2">By connecting to our portal, you may receive updates on new releases, talent discoveries, and galactic events.</textarea>
+                            </div>
+
+                            
+                            <div class="input-group">
+                                <label>SECTION 4: TITLE</label>
+                                <input type="text" id="site_p4_q" value="EXTERNAL EMBEDS">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 4: CONTENT</label>
+                                <textarea id="site_p4_a" rows="2">We use third-party players (SoundCloud/YouTube). Their respective privacy policies apply to your interactions on those platforms.</textarea>
+                            </div>
+
+                            
+                            <div class="input-group">
+                                <label>SECTION 5: TITLE</label>
+                                <input type="text" id="site_p5_q" value="DATA RETENTION">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 5: CONTENT</label>
+                                <textarea id="site_p5_a" rows="2">We retain connection data only as long as necessary for community support and galactic record-keeping.</textarea>
+                            </div>
+
+                            
+                            <div class="input-group">
+                                <label>SECTION 6: TITLE</label>
+                                <input type="text" id="site_p6_q" value="GOVERNING LAW">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 6: CONTENT</label>
+                                <textarea id="site_p6_a" rows="2">All legal matters are governed by the laws of our primary operational frequency. Disputes are resolved via cosmic mediation.</textarea>
+                            </div>
+
+                            
+                            <div class="input-group">
+                                <label>SECTION 7: TITLE</label>
+                                <input type="text" id="site_p7_q" value="LEGAL CONTACT">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 7: CONTENT</label>
+                                <textarea id="site_p7_a" rows="2">For all legal inquiries, copyright complaints (DMCA), or licensing requests, please send an email message to our Legal Counsel at sayurux@gmail.com.</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="action-footer">
+                    <button class="cyber-btn primary" id="save-modals-text"><i class="fas fa-save"></i> SAVE & SYNC ALL 4 POPUPS & FOOTER BUTTONS</button>
+                    <span id="save-msg-modals" class="save-status-indicator"></span>
+                </div>
+            </section>
+
+            <!-- ==========================================================================
+                 MEDIA FEEDS & TRANSMISSIONS CONTROL PANEL
+                 ========================================================================== -->
+            <section id="transmissions-panel" class="panel">
+                <div class="form-section-header">
+                    <i class="fas fa-broadcast-tower"></i>
+                    <div>
+                        <h2>LATEST MEDIA TRANSMISSIONS (YOUTUBE & TIKTOK)</h2>
+                        <p>Configure the dedicated YouTube and TikTok latest release drops displayed on the main portal.</p>
+                    </div>
+                </div>
+
+                <div class="cyber-card-grid">
+                    <!-- Global Settings -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-sliders-h card-icon"></i>
+                            <div>
+                                <h3>1. SECTION DISPLAY & HEADER</h3>
+                                <p>Control section visibility and titles.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label><i class="fas fa-eye"></i> SECTION VISIBILITY</label>
+                                <select id="trans_showTransmissions" class="cyber-select">
+                                    <option value="Visible">Visible (Show on Main Site)</option>
+                                    <option value="Hidden">Hidden (Temporarily Hide)</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-heading"></i> SECTION HEADER TITLE</label>
+                                <input type="text" id="trans_title" placeholder="LATEST &lt;span class=&quot;accent&quot;&gt;TRANSMISSIONS&lt;/span&gt;">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-align-left"></i> SECTION DESCRIPTION SUBTITLE</label>
+                                <input type="text" id="trans_desc" placeholder="Intercept the newest soundwaves and visual drops across our networks">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1. YouTube Latest Drop Hub -->
+                    <div class="cyber-card">
+                        <div class="card-header" style="border-bottom-color: rgba(255, 0, 60, 0.3);">
+                            <i class="fab fa-youtube card-icon" style="color: #ff003c;"></i>
+                            <div>
+                                <h3 style="color: #ff003c;">2. YOUTUBE LATEST DROP HUB</h3>
+                                <p>Auto-sync from channel or configure manually.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label><i class="fas fa-sync-alt"></i> UPDATE MODE</label>
+                                <select id="trans_yt_mode" class="cyber-select">
+                                    <option value="Auto">Auto-Fetch Latest (Recommended)</option>
+                                    <option value="Manual">Manual Override</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-filter"></i> TRACK TYPE FILTER</label>
+                                <select id="trans_yt_filter" class="cyber-select">
+                                    <option value="full_only">Full Music Videos Only (Exclude Shorts)</option>
+                                    <option value="all">All Uploads (Include Shorts)</option>
+                                </select>
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-fingerprint"></i> YOUTUBE CHANNEL (ID, @HANDLE OR URL)</label>
+                                <input type="text" id="trans_yt_channel_id" placeholder="e.g. @Obscurarecordss or UCMeIV48_O_F0H2tL7x_ayHg">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-tag"></i> CATEGORY / RELEASE TAG</label>
+                                <input type="text" id="trans_yt_tag" placeholder="e.g. OFFICIAL RELEASE or NEW MUSIC VIDEO">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-heading"></i> VIDEO / TRACK TITLE</label>
+                                <input type="text" id="trans_yt_title" placeholder="e.g. OBSCURA - VOID TRANSMISSION VOL. 1">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-align-left"></i> SHORT DESCRIPTION</label>
+                                <textarea id="trans_yt_desc" rows="2" placeholder="Experience the latest official visualizer and soundwave release from our void archive."></textarea>
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fab fa-youtube"></i> YOUTUBE VIDEO / DROP URL</label>
+                                <input type="text" id="trans_yt_url" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/...">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-image"></i> THUMBNAIL / ARTWORK URL</label>
+                                <input type="text" id="trans_yt_thumb" placeholder="https://... or assets/cover.jpg">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-bell"></i> CHANNEL SUBSCRIBE URL</label>
+                                <input type="text" id="trans_yt_sub_url" placeholder="https://www.youtube.com/@recordsobscura?sub_confirmation=1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. TikTok Latest Drop Hub -->
+                    <div class="cyber-card">
+                        <div class="card-header" style="border-bottom-color: rgba(0, 240, 255, 0.3);">
+                            <i class="fab fa-tiktok card-icon" style="color: #00f0ff;"></i>
+                            <div>
+                                <h3 style="color: #00f0ff;">3. TIKTOK LATEST DROP HUB</h3>
+                                <p>Auto-sync from profile or configure manually.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label><i class="fas fa-sync-alt"></i> UPDATE MODE</label>
+                                <select id="trans_tt_mode" class="cyber-select">
+                                    <option value="Auto">Auto-Fetch Latest Clip (Recommended)</option>
+                                    <option value="Manual">Manual Override</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-at"></i> TIKTOK PROFILE (@USERNAME OR URL)</label>
+                                <input type="text" id="trans_tt_username" placeholder="e.g. @obscura.records or obscura.records">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-tag"></i> CATEGORY / SOUND TAG</label>
+                                <input type="text" id="trans_tt_tag" placeholder="e.g. FEATURED AUDIO CLIP or TRENDING SOUND">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-heading"></i> CLIP / SOUND TITLE</label>
+                                <input type="text" id="trans_tt_title" placeholder="e.g. NEW VOID PHONK SOUND DROP #01">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-align-left"></i> SHORT DESCRIPTION</label>
+                                <textarea id="trans_tt_desc" rows="2" placeholder="Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok."></textarea>
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fab fa-tiktok"></i> TIKTOK VIDEO / CLIP URL</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" id="trans_tt_url" placeholder="https://www.tiktok.com/@obscura.records/video/..." style="flex: 1;">
+                                    <button type="button" class="cyber-btn secondary sm" id="btn-fetch-tt-single"><i class="fas fa-bolt"></i> GET PREVIEW</button>
+                                </div>
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-image"></i> THUMBNAIL / PREVIEW IMAGE URL</label>
+                                <div style="display: flex; gap: 0.8rem; align-items: center;">
+                                    <input type="text" id="trans_tt_thumb" placeholder="https://... or assets/cover.png" style="flex: 1;">
+                                    <div id="admin-tt-thumb-preview" style="width: 48px; height: 48px; border-radius: 6px; background-size: cover; background-position: center; border: 1px solid #00f0ff; background-image: url('assets/cover.png');"></div>
+                                </div>
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-user-plus"></i> PROFILE FOLLOW URL</label>
+                                <input type="text" id="trans_tt_follow_url" placeholder="https://www.tiktok.com/@obscura.records">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. 24/7 AUTO-SYNC WEBHOOK FOR TIKTOK -->
+                    <div class="cyber-card" style="border-color: rgba(0, 255, 140, 0.25);">
+                        <div class="card-header" style="border-bottom-color: rgba(0, 255, 140, 0.3);">
+                            <i class="fas fa-robot card-icon" style="color: #00ff8c;"></i>
+                            <div>
+                                <h3 style="color: #00ff8c;">4. 24/7 FULLY AUTOMATIC TIKTOK SYNC (MAKE.COM / WEBHOOK)</h3>
+                                <p>Set up once — every new TikTok upload updates the site in seconds with zero manual work.</p>
+                            </div>
+                        </div>
+                        <div class="card-body" style="padding: 1.2rem; font-size: 0.85rem; line-height: 1.6; color: rgba(255,255,255,0.85);">
+                            <p style="margin-bottom: 0.8rem;">
+                                <strong style="color: #00ff8c;">How it works:</strong> Link your TikTok to <strong>Make.com</strong> or <strong>IFTTT</strong> (Free). Whenever you post a new TikTok, it sends a webhook to Firebase, and your site updates automatically!
+                            </p>
+                            <div style="background: rgba(0,0,0,0.5); padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid rgba(0,255,140,0.2); margin-bottom: 0.8rem;">
+                                <div style="font-size: 0.75rem; color: #00f0ff; font-weight: bold; margin-bottom: 0.3rem;">FIREBASE REST WEBHOOK ENDPOINT:</div>
+                                <code style="word-break: break-all; color: #00ff8c; font-family: monospace; font-size: 0.8rem;">https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app/bot_status/latest_transmissions.json</code>
+                            </div>
+                            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                                <button type="button" class="cyber-btn secondary sm" id="btn-copy-webhook-url"><i class="fas fa-copy"></i> COPY ENDPOINT URL</button>
+                                <button type="button" class="cyber-btn secondary sm" id="btn-copy-webhook-json"><i class="fas fa-code"></i> COPY JSON PAYLOAD TEMPLATE</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-footer" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                    <button class="cyber-btn secondary" id="btn-fetch-live-feeds" type="button"><i class="fas fa-bolt"></i> TEST & FETCH LIVE DROPS NOW</button>
+                    <button class="cyber-btn primary" id="save-transmissions-btn"><i class="fas fa-save"></i> SAVE & SYNC MEDIA FEEDS</button>
+                    <span id="save-msg-transmissions" class="save-status-indicator"></span>
+                </div>
+            </section>
+
+            <section id="security-panel" class="panel">
+                
+                <div id="sec-global-alarm-banner" class="cyber-alert-banner" style="display: none;">
+                    <div class="alert-content">
+                        <i class="fas fa-exclamation-triangle alert-icon-pulse"></i>
+                        <div>
+                            <strong id="alarm-banner-title">CRITICAL SECURITY VIOLATION DETECTED</strong>
+                            <p id="alarm-banner-desc">An unauthorized intrusion or console tamper was intercepted by the neural kernel.</p>
+                        </div>
+                    </div>
+                    <button type="button" class="cyber-btn danger sm" id="btn-dismiss-alarm"><i class="fas fa-times"></i> DISMISS ALARM</button>
+                </div>
+
+                
+                <div class="stat-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; margin-bottom: 2rem;">
+                    <div class="cyber-card" style="padding: 1.2rem; display: flex; align-items: center; gap: 1.2rem;">
+                        <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(0, 240, 255, 0.1); border: 1px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--primary);">
+                            <i class="fas fa-stream"></i>
+                        </div>
+                        <div>
+                            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); display: block;">TOTAL LOGS TRACKED</span>
+                            <strong id="sec-stat-total" style="font-family: var(--font-heading); font-size: 1.5rem; color: #fff;">0</strong>
+                        </div>
+                    </div>
+
+                    <div class="cyber-card" style="padding: 1.2rem; display: flex; align-items: center; gap: 1.2rem;">
+                        <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(255, 0, 85, 0.1); border: 1px solid #ff0055; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #ff0055;">
+                            <i class="fas fa-shield-virus"></i>
+                        </div>
+                        <div>
+                            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); display: block;">SECURITY ALERTS</span>
+                            <strong id="sec-stat-violations" style="font-family: var(--font-heading); font-size: 1.5rem; color: #ff0055;">0</strong>
+                        </div>
+                    </div>
+
+                    <div class="cyber-card" style="padding: 1.2rem; display: flex; align-items: center; gap: 1.2rem;">
+                        <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(0, 255, 140, 0.1); border: 1px solid #00ff8c; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #00ff8c;">
+                            <i class="fas fa-satellite-dish"></i>
+                        </div>
+                        <div>
+                            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); display: block;">LIVE ACTIVE NODES</span>
+                            <strong id="sec-stat-nodes" style="font-family: var(--font-heading); font-size: 1.5rem; color: #00ff8c;">1</strong>
+                        </div>
+                    </div>
+
+                    <div class="cyber-card" style="padding: 1.2rem; display: flex; align-items: center; gap: 1.2rem;">
+                        <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(183, 0, 255, 0.1); border: 1px solid var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--secondary);">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div>
+                            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); display: block;">SHIELD STATUS</span>
+                            <strong id="sec-stat-status" style="font-family: var(--font-heading); font-size: 1rem; color: var(--primary);">ARMED & TLS 1.3</strong>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="panel-action-bar" style="margin-bottom: 1.5rem;">
+                    <div class="tab-pill-group" id="sec-log-tabs">
+                        <button type="button" class="tab-pill active" data-filter="all"><i class="fas fa-list"></i> ALL EVENTS <span class="tab-count-pill" id="count-filter-all">0</span></button>
+                        <button type="button" class="tab-pill" data-filter="visitors"><i class="fas fa-user-astronaut"></i> VISITORS & TRAFFIC <span class="tab-count-pill" id="count-filter-visitors">0</span></button>
+                        <button type="button" class="tab-pill" data-filter="admin"><i class="fas fa-tools"></i> ADMIN AUDIT & SAVES <span class="tab-count-pill" id="count-filter-admin">0</span></button>
+                        <button type="button" class="tab-pill" data-filter="violations"><i class="fas fa-exclamation-triangle"></i> SECURITY ALERTS <span class="tab-count-pill" id="count-filter-violations">0</span></button>
+                        <button type="button" class="tab-pill" data-filter="forms"><i class="fas fa-paper-plane"></i> SUBMISSIONS <span class="tab-count-pill" id="count-filter-forms">0</span></button>
+                    </div>
+
+                    <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                        <button type="button" class="cyber-btn primary sm" id="btn-refresh-logs"><i class="fas fa-sync-alt"></i> REFRESH</button>
+                        <button type="button" class="cyber-btn sm" id="btn-export-logs-json"><i class="fas fa-file-code"></i> EXPORT JSON</button>
+                        <button type="button" class="cyber-btn sm" id="btn-export-logs-csv"><i class="fas fa-file-csv"></i> EXPORT CSV</button>
+                        <button type="button" class="cyber-btn warning sm" id="btn-clear-category-logs"><i class="fas fa-eraser"></i> <span id="label-clear-category">CLEAR SELECTED TAB</span></button>
+                        <button type="button" class="cyber-btn danger sm" id="btn-clear-security-logs"><i class="fas fa-trash-alt"></i> PURGE ALL</button>
+                    </div>
+                </div>
+
+                <div class="panel-action-bar" style="margin-bottom: 1.5rem;">
+                    <div class="search-box" style="flex: 1;">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="sec-log-search-input" placeholder="SEARCH LOGS BY IP, CITY, COUNTRY, OS, BROWSER, OR EVENT TYPE...">
+                    </div>
+                </div>
+
+                
+                <div id="security-live-stream" class="security-feed-container" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+                    
+                    <div class="loading-state">STREAMING REAL-TIME SECURITY & VISITOR TELEMETRY...</div>
+                </div>
+
+                
+                <div class="cyber-card full-card">
+                    <div class="card-header">
+                        <i class="fas fa-microchip card-icon"></i>
+                        <div>
+                            <h3>SYSTEM INTEGRITY & KERNEL STATUS</h3>
+                            <p>Real-time database connection metrics and encryption telemetry.</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="security-status-list">
+                            <div class="sec-item">
+                                <span>DATABASE CONNECTION:</span>
+                                <strong style="color: #00ff8c;">SECURE (TLS 1.3 / ASIA-SE1 / FIREBASE RTDB)</strong>
+                            </div>
+                            <div class="sec-item">
+                                <span>ENCRYPTION PROTOCOL:</span>
+                                <strong style="color: #00f0ff;">AES-256 GCM / RECAPTCHA ENTERPRISE</strong>
+                            </div>
+                            <div class="sec-item">
+                                <span>LOCATION GEOLOCATION RESOLVER:</span>
+                                <strong style="color: #00f0ff;">IPAPI.CO / IPWHO.IS (FAILOVER READY)</strong>
+                            </div>
+                            <div class="sec-item">
+                                <span>SESSION EXPIRATION & AUTH:</span>
+                                <strong style="color: #ffcc00;">MASTER ROOT PASSKEY PROTECTED</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    
+    <div id="admin-audio-preview" class="admin-audio-dock" style="display: none;">
+        <div class="dock-left">
+            <i class="fas fa-play-circle dock-icon"></i>
+            <div>
+                <strong id="dock-track-title">TRACK TITLE</strong>
+                <span id="dock-artist-name">ARTIST NAME</span>
             </div>
         </div>
-    </main>
-    <canvas id="data-pulse-canvas" class="data-flow-canvas"></canvas>
-        <svg style="position: absolute; width: 0; height: 0;" xmlns="http://www.w3.org/2000/svg" version="1.1">
-        <defs>
-            <filter id="glitch-filter">
-                <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
-                    result="red" />
-                <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
-                    result="green" />
-                <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
-                    result="blue" />
-                <feOffset id="red-offset" in="red" dx="0" dy="0" result="red-shifted" />
-                <feOffset id="blue-offset" in="blue" dx="0" dy="0" result="blue-shifted" />
-                <feBlend in="red-shifted" in2="green" mode="screen" result="temp" />
-                <feBlend in="temp" in2="blue-shifted" mode="screen" result="all-channels" />
-                <feTurbulence id="glitch-turbulence" type="fractalNoise" baseFrequency="0.000001" numOctaves="1"
-                    result="noise" />
-                <feDisplacementMap id="glitch-disp" in="all-channels" in2="noise" scale="0" xChannelSelector="R"
-                    yChannelSelector="G" />
-            </filter>
-        </defs>
-    </svg>
-        <div id="yt-player-container"
-        style="position: fixed; left: -9999px; top: -9999px; width: 320px; height: 180px; pointer-events: none; opacity: 0;">
+        <audio id="admin-preview-audio" controls></audio>
+        <button type="button" id="close-dock-btn" class="close-dock">&times;</button>
     </div>
-    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script src="admin.js"></script>
 </body>
+
 </html>
