@@ -2033,41 +2033,6 @@ const initPortal = () => {
                     }
                 }
 
-                // Bot Status & Live Indicator Helper
-                function updateBotStatusUI(status, liveStats) {
-                    const botStatusText = document.getElementById('bot-status-text');
-                    const botStatusBadge = document.getElementById('bot-status-badge');
-                    const botStatusDot = document.getElementById('bot-status-dot');
-                    const botLivePulse = document.getElementById('bot-live-pulse');
-                    const rawStatus = (status || 'ONLINE').toUpperCase();
-                    if (botStatusText) botStatusText.textContent = rawStatus;
-
-                    if (rawStatus.includes('OFFLINE')) {
-                        if (botStatusBadge) botStatusBadge.className = 'dc-live-badge offline';
-                        if (botStatusDot) { botStatusDot.className = 'dc-status-dot offline'; botStatusDot.title = 'Bot Status: Offline'; }
-                        if (botLivePulse) botLivePulse.className = 'dc-pulse-dot offline';
-                    } else if (rawStatus.includes('IDLE') || rawStatus.includes('MAINTENANCE') || rawStatus.includes('STANDBY')) {
-                        if (botStatusBadge) botStatusBadge.className = 'dc-live-badge idle';
-                        if (botStatusDot) { botStatusDot.className = 'dc-status-dot idle'; botStatusDot.title = 'Bot Status: Idle'; }
-                        if (botLivePulse) botLivePulse.className = 'dc-pulse-dot idle';
-                    } else {
-                        if (botStatusBadge) botStatusBadge.className = 'dc-live-badge online';
-                        if (botStatusDot) { botStatusDot.className = 'dc-status-dot online'; botStatusDot.title = 'Bot Status: Online'; }
-                        if (botLivePulse) botLivePulse.className = 'dc-pulse-dot online';
-                    }
-
-                    if (liveStats) {
-                        const onEl = document.getElementById('bot-online-count');
-                        const idleEl = document.getElementById('bot-idle-count');
-                        const dndEl = document.getElementById('bot-dnd-count');
-                        if (liveStats.online !== undefined && onEl) onEl.textContent = liveStats.online;
-                        if (liveStats.idle !== undefined && idleEl) idleEl.textContent = liveStats.idle;
-                        if (liveStats.dnd !== undefined && dndEl) dndEl.textContent = liveStats.dnd;
-                    }
-                }
-                // Initial Firebase static status apply
-                updateBotStatusUI(data.botStatus || 'ONLINE');
-                
                 // DYNAMIC PORTAL ENGINE VERSION SYNC
                 if (data.v) {
                     const vEl = document.getElementById('km-portal-version');
