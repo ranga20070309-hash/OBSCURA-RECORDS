@@ -2065,8 +2065,7 @@ const initPortal = () => {
                         if (liveStats.dnd !== undefined && dndEl) dndEl.textContent = liveStats.dnd;
                     }
                 }
-
-                // Initial Firebase fallback status apply
+                // Initial Firebase static status apply
                 updateBotStatusUI(data.botStatus || 'ONLINE');
                 
                 // DYNAMIC PORTAL ENGINE VERSION SYNC
@@ -2077,180 +2076,80 @@ const initPortal = () => {
                     if (sideVEl) sideVEl.textContent = 'v' + data.v;
                 }
 
-                // --- REAL-TIME DISCORD SERVER WIDGET & BOT LIVE PRESENCE TRACKER ---
-                if (data.botAutoTrack !== 'Disabled') {
-                    const targetServerId = data.botServerId || "1229829725447393402";
-                    const targetBotId = data.botUserId || "1467768793550946314";
-                    const targetBotName = (data.botName || "OBSCURA").toLowerCase().trim();
-
-                    const pollDiscordLivePresence = () => {
-                        const parseWidget = (wData) => {
-                            if (!wData || !wData.members) return;
-                            const botMember = wData.members.find(m => {
-                                const username = (m.username || '').toLowerCase();
-                                return username.includes('obscura') || 
-                                       username.includes('bot') || 
-                                       (m.id && m.id === targetBotId);
-                            });
-
-                            let liveStatus = 'OFFLINE';
-                            if (botMember) {
-                                const rawSt = (botMember.status || 'online').toLowerCase();
-                                if (rawSt === 'idle') liveStatus = 'IDLE';
-                                else if (rawSt === 'dnd') liveStatus = 'ONLINE';
-                                else liveStatus = 'ONLINE';
-                            }
-
-                            const onlineTotal = wData.presence_count !== undefined ? wData.presence_count : wData.members.length;
-                            const idleCount = wData.members.filter(m => m.status === 'idle').length;
-                            const dndCount = wData.members.filter(m => m.status === 'dnd').length;
-
-                            updateBotStatusUI(liveStatus, {
-                                online: onlineTotal,
-                                idle: idleCount,
-                                dnd: dndCount
-                            });
-                        };
-
-                        const targetUrl = `https://discord.com/api/guilds/${targetServerId}/widget.json?_t=${Date.now()}`;
-                        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-
-                        fetch(proxyUrl, { cache: 'no-cache' })
-                            .then(res => {
-                                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                                return res.json();
-                            })
-                            .then(parseWidget)
-                            .catch(() => {
-                                fetch(targetUrl, { cache: 'no-cache' })
-                                    .then(r => r.ok ? r.json() : null)
-                                    .then(d => d && parseWidget(d))
-                                    .catch(() => {});
-                            });
-                    };
-
-                    pollDiscordLivePresence();
-                    if (window._discordLiveInterval) clearInterval(window._discordLiveInterval);
-                    window._discordLiveInterval = setInterval(pollDiscordLivePresence, 60000); // Efficient 60s check
+                // Apply Transmissions data if present in globals
+                if (data.latest_transmissions) {
+                    applyTransmissionData(data.latest_transmissions);
                 }
             }
         });
 
-        // Real-Time Discord Bot Presence & Server Telemetry Sync from Firebase
-        try {
-            const syncDiscordStats = (stats) => {
-                if (!stats) return;
-                const mEl = document.getElementById('bot-member-count');
-                const onEl = document.getElementById('bot-online-count');
-                const idleEl = document.getElementById('bot-idle-count');
-                const dndEl = document.getElementById('bot-dnd-count');
-                const botEl = document.getElementById('bot-bots-count');
-                const statusText = document.getElementById('bot-status-text');
-                const statusBadge = document.getElementById('bot-status-badge');
-                const statusDot = document.getElementById('bot-status-dot');
+        // Dynamic Transmissions Sync Engine (Admin Drops)
+        function applyTransmissionData(tData) {
+            if (!tData || typeof tData !== 'object') return;
 
-                if (stats.members !== undefined && mEl) mEl.textContent = stats.members;
-                if (stats.online !== undefined && onEl) onEl.textContent = stats.online;
-                if (stats.idle !== undefined && idleEl) idleEl.textContent = stats.idle;
-                if (stats.dnd !== undefined && dndEl) dndEl.textContent = stats.dnd;
-                if (stats.bots !== undefined && botEl) botEl.textContent = stats.bots;
-                if (stats.status) {
-                    const st = String(stats.status).toUpperCase();
-                    if (statusText) statusText.textContent = st;
-                    const cls = st.includes('OFF') ? 'offline' : (st.includes('IDLE') ? 'idle' : 'online');
-                    if (statusBadge) statusBadge.className = 'dc-live-badge ' + cls;
-                    if (statusDot) statusDot.className = 'dc-status-dot ' + cls;
-                }
-            };
+            // 1. YouTube Drop Card Elements
+            const ytThumbBg = document.getElementById('yt-thumb-bg');
+            const ytPlay = document.getElementById('yt-play-trigger');
+            const ytTitle = document.getElementById('yt-title-display');
+            const ytDesc = document.getElementById('yt-desc-display');
+            const ytTag = document.getElementById('yt-tag-display');
+            const ytWatch = document.getElementById('yt-watch-btn');
+            const ytSub = document.getElementById('yt-sub-btn');
 
-            fetchWithCache('discord_stats', syncDiscordStats);
-            fetchWithCache('bot_status', syncDiscordStats);
-        } catch (e) {}
+            const ytUrlVal = tData.yt_url || tData.ytUrl || tData.ytLink || tData.youtube || tData.youtubeUrl;
+            const ytThumbVal = tData.yt_thumb || tData.ytThumb || tData.thumbnail || tData.cover;
+            const ytTitleVal = tData.yt_title || tData.ytTitle || tData.title;
+            const ytDescVal = tData.yt_desc || tData.ytDesc || tData.desc;
+            const ytTagVal = tData.yt_tag || tData.ytTag || tData.tag;
+            const ytSubVal = tData.yt_sub_url || tData.ytSubUrl;
 
-        // Dynamic Transmissions Sync Engine
-        // Dynamic Transmissions Sync Engine (YouTube & TikTok Drops)
-        try {
-            function applyTransmissionData(tData) {
-                if (!tData || typeof tData !== 'object') return;
+            if (ytThumbBg && ytThumbVal) ytThumbBg.style.backgroundImage = `url("${ytThumbVal}")`;
+            if (ytPlay && ytUrlVal) ytPlay.href = ytUrlVal;
+            if (ytWatch && ytUrlVal) ytWatch.href = ytUrlVal;
+            if (ytTitle && ytTitleVal) ytTitle.textContent = ytTitleVal;
+            if (ytDesc && ytDescVal) ytDesc.textContent = ytDescVal;
+            if (ytTag && ytTagVal) ytTag.textContent = ytTagVal;
+            if (ytSub && ytSubVal) ytSub.href = ytSubVal;
 
-                // 1. YouTube Drop Card Elements
-                const ytThumbBg = document.getElementById('yt-thumb-bg');
-                const ytPlay = document.getElementById('yt-play-trigger');
-                const ytTitle = document.getElementById('yt-title-display');
-                const ytDesc = document.getElementById('yt-desc-display');
-                const ytTag = document.getElementById('yt-tag-display');
-                const ytWatch = document.getElementById('yt-watch-btn');
-                const ytSub = document.getElementById('yt-sub-btn');
+            // 2. TikTok Drop Card Elements
+            const ttThumbBg = document.getElementById('tt-thumb-bg');
+            const ttPlay = document.getElementById('tt-play-trigger');
+            const ttTitle = document.getElementById('tt-title-display');
+            const ttDesc = document.getElementById('tt-desc-display');
+            const ttTag = document.getElementById('tt-tag-display');
+            const ttWatch = document.getElementById('tt-watch-btn');
+            const ttFollow = document.getElementById('tt-follow-btn');
 
-                const ytUrlVal = tData.yt_url || tData.ytUrl || tData.ytLink || tData.youtube || tData.youtubeUrl;
-                const ytThumbVal = tData.yt_thumb || tData.ytThumb || tData.thumbnail || tData.cover;
-                const ytTitleVal = tData.yt_title || tData.ytTitle || tData.title;
-                const ytDescVal = tData.yt_desc || tData.ytDesc || tData.desc;
-                const ytTagVal = tData.yt_tag || tData.ytTag || tData.tag;
-                const ytSubVal = tData.yt_sub_url || tData.ytSubUrl;
+            const ttUrlVal = tData.tt_url || tData.ttUrl || tData.ttLink || tData.tiktok || tData.tiktokUrl || tData.url || tData.link;
+            const ttThumbVal = tData.tt_thumb || tData.ttThumb || tData.thumbnail || tData.cover || tData.image;
+            const ttTitleVal = tData.tt_title || tData.ttTitle || tData.title;
+            const ttDescVal = tData.tt_desc || tData.ttDesc || tData.desc;
+            const ttTagVal = tData.tt_tag || tData.ttTag || tData.tag;
+            const ttFollowVal = tData.tt_follow_url || tData.ttFollowUrl || tData.followUrl;
 
-                if (ytThumbBg && ytThumbVal) ytThumbBg.style.backgroundImage = `url("${ytThumbVal}")`;
-                if (ytPlay && ytUrlVal) ytPlay.href = ytUrlVal;
-                if (ytWatch && ytUrlVal) ytWatch.href = ytUrlVal;
-                if (ytTitle && ytTitleVal) ytTitle.textContent = ytTitleVal;
-                if (ytDesc && ytDescVal) ytDesc.textContent = ytDescVal;
-                if (ytTag && ytTagVal) ytTag.textContent = ytTagVal;
-                if (ytSub && ytSubVal) ytSub.href = ytSubVal;
+            if (ttThumbBg && ttThumbVal) ttThumbBg.style.backgroundImage = `url("${ttThumbVal}")`;
+            if (ttPlay && ttUrlVal) ttPlay.href = ttUrlVal;
+            if (ttWatch && ttUrlVal) ttWatch.href = ttUrlVal;
+            if (ttTitle && ttTitleVal) ttTitle.textContent = ttTitleVal;
+            if (ttDesc && ttDescVal) ttDesc.textContent = ttDescVal;
+            if (ttTag && ttTagVal) ttTag.textContent = ttTagVal;
+            if (ttFollow && ttFollowVal) ttFollow.href = ttFollowVal;
 
-                // 2. TikTok Drop Card Elements
-                const ttThumbBg = document.getElementById('tt-thumb-bg');
-                const ttPlay = document.getElementById('tt-play-trigger');
-                const ttTitle = document.getElementById('tt-title-display');
-                const ttDesc = document.getElementById('tt-desc-display');
-                const ttTag = document.getElementById('tt-tag-display');
-                const ttWatch = document.getElementById('tt-watch-btn');
-                const ttFollow = document.getElementById('tt-follow-btn');
+            // 3. Section Titles & Descriptions
+            const transTitleEl = document.getElementById('trans-title-display') || document.getElementById('transmissions-title');
+            const transDescEl = document.getElementById('trans-desc-display') || document.getElementById('transmissions-desc');
+            if (transTitleEl && tData.transTitle) transTitleEl.innerHTML = tData.transTitle;
+            if (transDescEl && tData.transDesc) transDescEl.textContent = tData.transDesc;
 
-                const ttUrlVal = tData.tt_url || tData.ttUrl || tData.ttLink || tData.tiktok || tData.tiktokUrl || tData.url || tData.link;
-                const ttThumbVal = tData.tt_thumb || tData.ttThumb || tData.thumbnail || tData.cover || tData.image;
-                const ttTitleVal = tData.tt_title || tData.ttTitle || tData.title;
-                const ttDescVal = tData.tt_desc || tData.ttDesc || tData.desc;
-                const ttTagVal = tData.tt_tag || tData.ttTag || tData.tag;
-                const ttFollowVal = tData.tt_follow_url || tData.ttFollowUrl || tData.followUrl;
-
-                if (ttThumbBg && ttThumbVal) ttThumbBg.style.backgroundImage = `url("${ttThumbVal}")`;
-                if (ttPlay && ttUrlVal) ttPlay.href = ttUrlVal;
-                if (ttWatch && ttUrlVal) ttWatch.href = ttUrlVal;
-                if (ttTitle && ttTitleVal) ttTitle.textContent = ttTitleVal;
-                if (ttDesc && ttDescVal) ttDesc.textContent = ttDescVal;
-                if (ttTag && ttTagVal) ttTag.textContent = ttTagVal;
-                if (ttFollow && ttFollowVal) ttFollow.href = ttFollowVal;
-
-                // 3. Section Titles & Descriptions
-                const transTitleEl = document.getElementById('trans-title-display') || document.getElementById('transmissions-title');
-                const transDescEl = document.getElementById('trans-desc-display') || document.getElementById('transmissions-desc');
-                if (transTitleEl && tData.transTitle) transTitleEl.innerHTML = tData.transTitle;
-                if (transDescEl && tData.transDesc) transDescEl.textContent = tData.transDesc;
-
-                // 4. Section Visibility Toggle
-                const transSec = document.getElementById('transmissions');
-                if (transSec) {
-                    if (tData.showTransmissions === 'Hidden') {
-                        transSec.style.setProperty('display', 'none', 'important');
-                    } else {
-                        transSec.style.removeProperty('display');
-                    }
+            // 4. Section Visibility Toggle
+            const transSec = document.getElementById('transmissions');
+            if (transSec) {
+                if (tData.showTransmissions === 'Hidden') {
+                    transSec.style.setProperty('display', 'none', 'important');
+                } else {
+                    transSec.style.removeProperty('display');
                 }
             }
-
-            // Sync live in real-time from all valid database paths (Admin saves & Discord Bot webhooks)
-            if (typeof firebase !== 'undefined') {
-                firebase.database().ref('siteData/globals/latest_transmissions').on('value', (snap) => {
-                    const val = snap.val();
-                    if (val) applyTransmissionData(val);
-                });
-                firebase.database().ref('bot_status/latest_transmissions').on('value', (snap) => {
-                    const val = snap.val();
-                    if (val) applyTransmissionData(val);
-                });
-            }
-        } catch (e) {
-            console.error("Transmissions Sync Error:", e);
         }
 
         // 2. Sync Releases
