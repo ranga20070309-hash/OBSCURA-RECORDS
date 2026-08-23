@@ -3030,6 +3030,8 @@ function initTransmissionsEngine() {
                 showToast("CONTACTING YOUTUBE & TIKTOK FEEDS...");
 
                 // 1. YouTube Fetch
+                const ytChannelInput = document.getElementById('trans_yt_channel_id')?.value?.trim() || 'UCMeIV48_O_F0H2tL7x_ayHg';
+                const ytFilterMode = document.getElementById('trans_yt_filter')?.value || 'full_only';
                 const ytData = await fetchLatestYouTubeDropLive(ytChannelInput, ytFilterMode);
                 if (ytData) {
                     if (ytData.cid && document.getElementById('trans_yt_channel_id')) {
@@ -3037,12 +3039,17 @@ function initTransmissionsEngine() {
                     }
                     if (document.getElementById('trans_yt_title')) document.getElementById('trans_yt_title').value = ytData.title;
                     if (document.getElementById('trans_yt_url')) document.getElementById('trans_yt_url').value = ytData.link;
-                    if (document.getElementById('trans_yt_thumb') && ytData.thumb) document.getElementById('trans_yt_thumb').value = ytData.thumb;
+                    if (document.getElementById('trans_yt_thumb') && ytData.thumb) {
+                        document.getElementById('trans_yt_thumb').value = ytData.thumb;
+                        const prev = document.getElementById('admin-yt-thumb-preview');
+                        if (prev) prev.style.backgroundImage = `url('${ytData.thumb}')`;
+                    }
                     if (document.getElementById('trans_yt_desc') && ytData.desc) document.getElementById('trans_yt_desc').value = ytData.desc;
                     if (document.getElementById('trans_yt_tag')) document.getElementById('trans_yt_tag').value = ytData.tag;
                 }
 
                 // 2. TikTok Fetch
+                const ttTarget = document.getElementById('trans_tt_url')?.value?.trim() || document.getElementById('trans_tt_username')?.value?.trim() || 'obscura.records';
                 const ttData = await fetchLatestTikTokDropLive(ttTarget);
                 if (ttData) {
                     if (document.getElementById('trans_tt_title')) document.getElementById('trans_tt_title').value = ttData.title;
