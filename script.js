@@ -2045,7 +2045,7 @@ const initPortal = () => {
                     applyTransmissionData(data.latest_transmissions);
                 }
             }
-        });
+        }, null, true);
 
         // Dynamic Transmissions Sync Engine (Admin Drops)
         function applyTransmissionData(tData) {
