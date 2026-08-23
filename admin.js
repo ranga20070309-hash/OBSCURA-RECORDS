@@ -2983,13 +2983,9 @@ function initTransmissionsEngine() {
         }
     }
 
-    // Load data from Firebase (Admin & Discord Bot sources)
+    // Load data from Firebase
     db.ref('siteData/globals/latest_transmissions').on('value', snap => {
         populateTransmissionsAdmin(snap.val() || {});
-    });
-
-    db.ref('bot_status/latest_transmissions').on('value', snap => {
-        handleIncomingBotTransmission(snap.val());
     });
 
     // Auto-resolve TikTok metadata on URL paste / input / click
