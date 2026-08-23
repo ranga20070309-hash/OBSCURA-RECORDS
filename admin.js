@@ -483,7 +483,11 @@ function initGlobalsSync() {
     const saveGlobalsBtn = document.getElementById('save-globals');
     if (saveGlobalsBtn) {
         saveGlobalsBtn.addEventListener('click', () => {
-            const customV = document.getElementById('site_v')?.value.trim() || '1.0';
+            const vInput = document.getElementById('site_v');
+            const curV = parseFloat(vInput?.value || cachedGlobals.v || 1.0);
+            const customV = (isNaN(curV) ? 1.1 : (curV + 0.1)).toFixed(1);
+            if (vInput) vInput.value = customV;
+
             const updates = {
                 v: customV,
                 siteTitle: document.getElementById('site_siteTitle').value,
@@ -509,7 +513,7 @@ function initGlobalsSync() {
                 const vDisplay = document.getElementById('display-v');
                 if (vDisplay) vDisplay.textContent = customV;
                 logSecurityEvent("Updated Global Settings, Brand Titles & Version v" + customV, { version: customV, maintenance: updates.maintenanceMode });
-                showToast("GLOBALS & ENGINE VERSION SAVED SUCCESSFULLY!");
+                showToast("GLOBALS & ENGINE VERSION SAVED SUCCESSFULLY (v" + customV + ")!");
             }).catch(err => showToast("ERROR: " + err.message, 'error'));
         });
     }
