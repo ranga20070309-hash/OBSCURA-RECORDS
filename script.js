@@ -52,7 +52,7 @@ gsap.config({ nullTargetWarn: false });
 // --- ULTRA-EFFICIENT REAL-TIME SYNC & CACHE ENGINE (100% LIVE SYNC + ZERO BANDWIDTH) ---
 let currentLiveSiteVersion = localStorage.getItem('obscura_site_v') || null;
 
-function fetchWithCache(path, callback, fallbackData = null) {
+function fetchWithCache(path, callback, fallbackData = null, revalidate = false) {
     const cacheKey = `obscura_data_${path}`;
     const cached = localStorage.getItem(cacheKey);
 
@@ -61,17 +61,17 @@ function fetchWithCache(path, callback, fallbackData = null) {
             const parsed = JSON.parse(cached);
             if (parsed !== null && parsed !== undefined) {
                 callback(parsed);
-                return; // Return immediately to avoid redundant Firebase network fetch
+                if (!revalidate) return; // Keep cached version for static data
             }
         } catch (e) {}
     }
 
     if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
-        if (fallbackData) callback(fallbackData);
+        if (!cached && fallbackData) callback(fallbackData);
         return;
     }
 
-    // Single on-demand fetch only when cache is not present
+    // Single on-demand fetch (runs in background if revalidating)
     firebase.database().ref(path).once('value').then((snap) => {
         const val = snap.val();
         if (val !== null && val !== undefined) {
@@ -79,11 +79,11 @@ function fetchWithCache(path, callback, fallbackData = null) {
                 localStorage.setItem(cacheKey, JSON.stringify(val));
             } catch (e) {}
             callback(val);
-        } else if (fallbackData) {
+        } else if (!cached && fallbackData) {
             callback(fallbackData);
         }
     }).catch(() => {
-        if (fallbackData) callback(fallbackData);
+        if (!cached && fallbackData) callback(fallbackData);
     });
 }
 
@@ -1529,7 +1529,7 @@ const initPortal = () => {
                 if (sortedStaff.length === 0) {
                     staffGrid.innerHTML = '<p style="opacity:0.4; text-align:center; padding:4rem; font-family:monospace;">No staff records found.</p>';
                 }
-            });
+            }, null, true);
         }
 
         // --- DYNAMIC PARTNER CARD BUILDER (CLEAN & AESTHETIC CYBER CARD) ---
