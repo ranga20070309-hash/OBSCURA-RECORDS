@@ -50,35 +50,40 @@ const API_BASE_URL = (window.location.hostname === "localhost" || window.locatio
 gsap.config({ nullTargetWarn: false });
 
 // --- ULTRA-EFFICIENT REAL-TIME SYNC & CACHE ENGINE (100% LIVE SYNC + ZERO BANDWIDTH) ---
-let currentLiveSiteVersion = sessionStorage.getItem('obscura_site_v') || null;
+let currentLiveSiteVersion = localStorage.getItem('obscura_site_v') || null;
 
 function fetchWithCache(path, callback, fallbackData = null) {
     const cacheKey = `obscura_data_${path}`;
-    const cached = sessionStorage.getItem(cacheKey);
+    const cached = localStorage.getItem(cacheKey);
 
     if (cached) {
         try {
             const parsed = JSON.parse(cached);
-            callback(parsed);
+            if (parsed !== null && parsed !== undefined) {
+                callback(parsed);
+                return; // Return immediately to avoid redundant Firebase network fetch
+            }
         } catch (e) {}
     }
 
-    if (typeof firebase === 'undefined') {
-        if (!cached && fallbackData) callback(fallbackData);
+    if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
+        if (fallbackData) callback(fallbackData);
         return;
     }
 
-    // Single on-demand fetch
+    // Single on-demand fetch only when cache is not present
     firebase.database().ref(path).once('value').then((snap) => {
         const val = snap.val();
         if (val !== null && val !== undefined) {
-            sessionStorage.setItem(cacheKey, JSON.stringify(val));
+            try {
+                localStorage.setItem(cacheKey, JSON.stringify(val));
+            } catch (e) {}
             callback(val);
-        } else if (!cached && fallbackData) {
+        } else if (fallbackData) {
             callback(fallbackData);
         }
     }).catch(() => {
-        if (!cached && fallbackData) callback(fallbackData);
+        if (fallbackData) callback(fallbackData);
     });
 }
 
@@ -87,19 +92,23 @@ if (typeof firebase !== 'undefined') {
     try {
         firebase.database().ref('siteData/globals/v').on('value', (snap) => {
             const latestV = String(snap.val() || '1.0');
-            if (currentLiveSiteVersion && currentLiveSiteVersion !== latestV) {
+            const storedV = localStorage.getItem('obscura_site_v');
+            if (storedV && storedV !== latestV) {
                 // Admin updated data: invalidate local cache and re-sync live
-                for (let i = sessionStorage.length - 1; i >= 0; i--) {
-                    const k = sessionStorage.key(i);
+                for (let i = localStorage.length - 1; i >= 0; i--) {
+                    const k = localStorage.key(i);
                     if (k && k.startsWith('obscura_data_')) {
-                        sessionStorage.removeItem(k);
+                        localStorage.removeItem(k);
                     }
                 }
+                localStorage.setItem('obscura_site_v', latestV);
+                currentLiveSiteVersion = latestV;
                 if (typeof initPortal === 'function') initPortal();
                 if (typeof loadPopular === 'function') loadPopular();
+            } else {
+                currentLiveSiteVersion = latestV;
+                localStorage.setItem('obscura_site_v', latestV);
             }
-            currentLiveSiteVersion = latestV;
-            sessionStorage.setItem('obscura_site_v', latestV);
         });
     } catch (e) {}
 }
