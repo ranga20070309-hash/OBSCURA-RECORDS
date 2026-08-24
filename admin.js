@@ -3527,7 +3527,7 @@ function initSmartLinksEngine() {
         };
     }
 
-    // 1. Magic Auto-Fetcher Engine
+    // 1. Magic Auto-Fetcher Engine (Auto-fills Title, Artwork Image, Audio Preview, & Slug)
     if (magicBtn && magicInput) {
         magicBtn.addEventListener('click', async () => {
             const rawUrl = magicInput.value.trim();
@@ -3536,24 +3536,13 @@ function initSmartLinksEngine() {
                 return;
             }
 
-            magicBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> FETCHING DATA & LINKS...';
+            magicBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> FETCHING ESSENTIALS...';
             magicBtn.disabled = true;
 
             try {
                 let trackTitle = '';
-                let trackArtist = '';
                 let trackImage = '';
-                let prodTagFound = '';
                 let ytUrl = '';
-                let spotifyUrl = '';
-                let appleUrl = '';
-                let deezerUrl = '';
-                let tidalUrl = '';
-                let amazonUrl = '';
-                let soundcloudUrl = '';
-                let boomplayUrl = '';
-                let itunesUrl = '';
-                let pandoraUrl = '';
                 let audioPreviewDirect = '';
 
                 // Check YouTube
@@ -3563,130 +3552,95 @@ function initSmartLinksEngine() {
                     ytUrl = `https://www.youtube.com/watch?v=${ytId}`;
                     trackImage = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
                     
-                    // Fetch YouTube oEmbed for Title & Author
+                    // Fetch YouTube oEmbed for Title
                     try {
                         const oEmbedRes = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(ytUrl)}`);
                         if (oEmbedRes.ok) {
                             const oData = await oEmbedRes.json();
                             if (oData && oData.title) {
-                                const parsed = parseMusicVideoTitle(oData.title, oData.author_name || '');
-                                trackTitle = parsed.title;
-                                if (parsed.artist) trackArtist = parsed.artist;
-                                if (parsed.prodTag) prodTagFound = parsed.prodTag;
+                                // Clean noise brackets
+                                let cleanTitle = oData.title
+                                    .replace(/[\(\[\{](?:official\s*)?(?:music\s*)?(?:audio|video|visualizer|lyric\s*video|hd|4k|hq|remix|slowed|reverb|free\s*dl|free\s*download|out\s*now|phonk)[\)\]\}]/gi, '')
+                                    .replace(/\|\s*obscura\s*records?/gi, '')
+                                    .replace(/\|\s*official\s*audio/gi, '')
+                                    .replace(/\|\s*visualizer/gi, '')
+                                    .replace(/\|\s*phonk/gi, '')
+                                    .trim();
+                                
+                                // If formatted as "Artist - Title", extract Title
+                                const splitMatch = cleanTitle.match(/^.+?\s*[-–—|/•:]\s*(.+)$/);
+                                if (splitMatch && splitMatch[1]) {
+                                    cleanTitle = splitMatch[1].trim();
+                                }
+                                trackTitle = cleanTitle.toUpperCase();
                             }
                         }
                     } catch (e) {
-                        console.log("oEmbed fallback:", e);
+                        console.log("oEmbed note:", e);
                     }
                 }
 
                 // Check Spotify URL oEmbed
                 if (rawUrl.includes('spotify.com')) {
-                    spotifyUrl = rawUrl;
                     try {
                         const spRes = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(rawUrl)}`);
                         if (spRes.ok) {
                             const spData = await spRes.json();
                             if (spData.title) trackTitle = spData.title.toUpperCase();
                             if (spData.thumbnail_url) trackImage = spData.thumbnail_url;
+                            const spField = document.getElementById('smartlink-link-spotify');
+                            if (spField) spField.value = rawUrl;
                         }
                     } catch (e) {
                         console.log("Spotify oEmbed note:", e);
                     }
                 }
 
-                // iTunes Search API Resolver for real artist & Apple Music link if generic
+                // Try fetching direct iTunes 30s MP3 preview audio
                 if (trackTitle) {
                     try {
-                        const itunesSearchTerm = trackArtist ? `${trackArtist} ${trackTitle}` : trackTitle;
-                        const itunesRes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(itunesSearchTerm)}&entity=song&limit=5`);
+                        const itunesRes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(trackTitle)}&entity=song&limit=3`);
                         if (itunesRes.ok) {
                             const itunesData = await itunesRes.json();
                             if (itunesData.results && itunesData.results.length > 0) {
                                 const match = itunesData.results[0];
-                                if ((!trackArtist || isGenericAuthor(trackArtist)) && match.artistName) {
-                                    if (prodTagFound && !match.artistName.toLowerCase().includes(prodTagFound.toLowerCase())) {
-                                        trackArtist = `${match.artistName.toUpperCase()} / ${prodTagFound.toUpperCase()}`;
-                                    } else {
-                                        trackArtist = match.artistName.toUpperCase();
-                                    }
-                                }
-                                if (match.trackViewUrl && !appleUrl) {
-                                    appleUrl = match.trackViewUrl;
-                                    itunesUrl = match.trackViewUrl;
-                                }
-                                if (match.previewUrl && !audioPreviewDirect) {
-                                    audioPreviewDirect = match.previewUrl;
-                                }
+                                if (match.previewUrl) audioPreviewDirect = match.previewUrl;
                             }
                         }
                     } catch (e) {
-                        console.log("iTunes search note:", e);
+                        console.log("iTunes audio check note:", e);
                     }
                 }
 
-                if (!trackArtist) {
-                    trackArtist = 'OBSCURA RECORD';
+                // Populate 3 Core Essentials: Title, Artwork Image, Audio Preview (+ Slug)
+                if (trackTitle) {
+                    titleInput.value = trackTitle;
+                    const autoSlug = trackTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                    slugInput.value = autoSlug;
+                    if (slugPreviewText) slugPreviewText.textContent = autoSlug || 'release-slug';
                 }
 
-                // Populate Form Fields
-                if (trackTitle) titleInput.value = trackTitle;
-                if (trackArtist) artistInput.value = trackArtist;
-                if (trackImage) imageInput.value = trackImage;
+                if (trackImage) {
+                    imageInput.value = trackImage;
+                }
+
+                if (audioPreviewDirect) {
+                    previewInput.value = audioPreviewDirect;
+                } else if (ytUrl) {
+                    previewInput.value = ytUrl;
+                }
+
                 if (ytUrl) {
                     const ytField = document.getElementById('smartlink-link-youtube');
                     if (ytField) ytField.value = ytUrl;
-                    if (audioPreviewDirect) {
-                        previewInput.value = audioPreviewDirect;
-                    } else if (previewInput && !previewInput.value) {
-                        previewInput.value = ytUrl;
-                    }
-                }
-                if (spotifyUrl) {
-                    const spField = document.getElementById('smartlink-link-spotify');
-                    if (spField) spField.value = spotifyUrl;
-                }
-                if (appleUrl) {
-                    const apField = document.getElementById('smartlink-link-apple');
-                    if (apField) apField.value = appleUrl;
-                }
-                if (itunesUrl) {
-                    const itField = document.getElementById('smartlink-link-itunes');
-                    if (itField) itField.value = itunesUrl;
-                }
-                if (deezerUrl) {
-                    const dzField = document.getElementById('smartlink-link-deezer');
-                    if (dzField) dzField.value = deezerUrl;
-                }
-                if (amazonUrl) {
-                    const amField = document.getElementById('smartlink-link-amazon');
-                    if (amField) amField.value = amazonUrl;
-                }
-                if (tidalUrl) {
-                    const tdField = document.getElementById('smartlink-link-tidal');
-                    if (tdField) tdField.value = tidalUrl;
-                }
-                if (pandoraUrl) {
-                    const pdField = document.getElementById('smartlink-link-pandora');
-                    if (pdField) pdField.value = pandoraUrl;
-                }
-                if (soundcloudUrl) {
-                    const scField = document.getElementById('smartlink-link-soundcloud');
-                    if (scField) scField.value = soundcloudUrl;
-                }
-                if (boomplayUrl) {
-                    const bpField = document.getElementById('smartlink-link-boomplay');
-                    if (bpField) bpField.value = boomplayUrl;
                 }
 
-                // Auto-generate Slug
-                const generatedSlug = (trackTitle || 'new-release').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-                slugInput.value = generatedSlug;
-                if (slugPreviewText) slugPreviewText.textContent = generatedSlug;
+                showToast("TITLE, ARTWORK & AUDIO FETCHED! PLEASE ENTER PRODUCER NAME.");
+                artistInput.focus();
 
-                showToast("METADATA & PLATFORM LINKS AUTO-FETCHED!");
             } catch (err) {
-                showToast("AUTO-FETCH ERROR: " + err.message, 'error');
+                console.error("Magic Fetch Error:", err);
+                showToast("FETCH ERROR: " + err.message, 'error');
             } finally {
                 magicBtn.innerHTML = '<i class="fas fa-bolt"></i> <span>AUTO-FETCH INFO & LINKS</span>';
                 magicBtn.disabled = false;
