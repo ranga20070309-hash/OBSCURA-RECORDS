@@ -83,7 +83,7 @@ function logSecurityEvent(action, details = {}) {
 }
 
 // Safe navigation helper
-window.secureNavigate = function(url, key) {
+window.secureNavigate = function (url, key) {
     sessionStorage.setItem(key, 'true');
     window.location.href = url;
 };
@@ -676,8 +676,8 @@ function initPopularEngine() {
         const filtered = cachedPopular.map((item, idx) => ({ ...item, _origIdx: idx })).filter(item => {
             if (!query) return true;
             return (item.title && item.title.toLowerCase().includes(query)) ||
-                   (item.artist && item.artist.toLowerCase().includes(query)) ||
-                   (item.producers && item.producers.toLowerCase().includes(query));
+                (item.artist && item.artist.toLowerCase().includes(query)) ||
+                (item.producers && item.producers.toLowerCase().includes(query));
         });
 
         if (filtered.length === 0) {
@@ -834,7 +834,7 @@ function initPopularEngine() {
     }
 
     // Global Functions for Edit, Delete, Move
-    window.openPopularEditor = function(index) {
+    window.openPopularEditor = function (index) {
         const item = cachedPopular[index];
         if (!item) return;
 
@@ -857,7 +857,7 @@ function initPopularEngine() {
         }
     };
 
-    window.deletePopularRecord = function(index) {
+    window.deletePopularRecord = function (index) {
         const item = cachedPopular[index];
         if (!item) return;
         if (!confirm(`Are you sure you want to remove "${item.title || 'this track'}" from Popular Releases?`)) return;
@@ -869,7 +869,7 @@ function initPopularEngine() {
         }).catch(err => showToast("ERROR: " + err.message, 'error'));
     };
 
-    window.movePopularItem = function(index, direction) {
+    window.movePopularItem = function (index, direction) {
         const targetIdx = index + direction;
         if (targetIdx < 0 || targetIdx >= cachedPopular.length) return;
 
@@ -950,9 +950,9 @@ function initReleasesEngine() {
             const type = r.type || '';
             if (!query) return true;
             return title.toLowerCase().includes(query) ||
-                   artist.toLowerCase().includes(query) ||
-                   catalog.toLowerCase().includes(query) ||
-                   type.toLowerCase().includes(query);
+                artist.toLowerCase().includes(query) ||
+                catalog.toLowerCase().includes(query) ||
+                type.toLowerCase().includes(query);
         });
 
         if (filtered.length === 0) {
@@ -992,6 +992,227 @@ function initReleasesEngine() {
 
     if (searchInput) {
         searchInput.addEventListener('input', renderReleasesList);
+    }
+
+    // --- SPOTIFY & YOUTUBE METADATA AUTO-DETECTION ENGINE ---
+    async function autoDetectReleaseMetadata(spotifyUrl = '', youtubeUrl = '', currentTitle = '', currentArtist = '') {
+        let result = {
+            cover: '',
+            date: '',
+            title: '',
+            artist: ''
+        };
+
+        // 1. Spotify oEmbed Extraction (CORS friendly, high-res artwork)
+        if (spotifyUrl && spotifyUrl.includes('spotify.com')) {
+            try {
+                // Ensure proper track/album URL format
+                const cleanSpotUrl = spotifyUrl.trim().split('?')[0];
+                const spotifyOEmbedUrl = `https://open.spotify.com/oembed?url=${encodeURIComponent(cleanSpotUrl)}`;
+                const res = await fetch(spotifyOEmbedUrl);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.thumbnail_url) {
+                        result.cover = data.thumbnail_url;
+                    }
+                    if (data.title) {
+                        const parts = data.title.split(' - ');
+                        if (parts.length > 1) {
+                            result.title = parts[0].trim();
+                            result.artist = parts.slice(1).join(' - ').trim();
+                        } else {
+                            result.title = data.title.trim();
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('Spotify oEmbed fetch warning:', e);
+            }
+        }
+
+        // 2. iTunes Search API (Returns precise releaseDate, 4K artwork & artist/track name)
+        const searchTerms = (result.title && result.artist) ? `${result.title} ${result.artist}` : (currentTitle || currentArtist ? `${currentTitle} ${currentArtist}` : (result.title || ''));
+        if (searchTerms) {
+            try {
+                const itunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerms)}&entity=song&limit=1`;
+                const itunesRes = await fetch(itunesUrl);
+                if (itunesRes.ok) {
+                    const itunesData = await itunesRes.json();
+                    if (itunesData.resultCount > 0) {
+                        const item = itunesData.results[0];
+                        if (item.releaseDate) {
+                            const d = new Date(item.releaseDate);
+                            if (!isNaN(d.getTime())) {
+                                const y = d.getFullYear();
+                                const m = String(d.getMonth() + 1).padStart(2, '0');
+                                const day = String(d.getDate()).padStart(2, '0');
+                                result.date = `${y}.${m}.${day}`;
+                            }
+                        }
+                        if (!result.cover && item.artworkUrl100) {
+                            result.cover = item.artworkUrl100.replace('100x100bb', '600x600bb');
+                        }
+                        if (!result.title && item.trackName) result.title = item.trackName;
+                        if (!result.artist && item.artistName) result.artist = item.artistName;
+                    }
+                }
+            } catch (e) {
+                console.warn('iTunes metadata search warning:', e);
+            }
+        }
+
+        // 3. YouTube oEmbed Fallback (for cover / title)
+        if ((!result.cover || !result.title) && youtubeUrl && (youtubeUrl.includes('youtube.com') || youtubeUrl.includes('youtu.be'))) {
+            try {
+                const ytOEmbed = `https://www.youtube.com/oembed?url=${encodeURIComponent(youtubeUrl.trim())}&format=json`;
+                const ytRes = await fetch(ytOEmbed);
+                if (ytRes.ok) {
+                    const ytData = await ytRes.json();
+                    if (!result.cover && ytData.thumbnail_url) {
+                        result.cover = ytData.thumbnail_url;
+                    }
+                    if (!result.title && ytData.title) {
+                        result.title = ytData.title;
+                    }
+                }
+            } catch (e) {
+                console.warn('YouTube oEmbed fallback warning:', e);
+            }
+        }
+
+        // If no date found yet, fallback to today's date
+        if (!result.date) {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            result.date = `${y}.${m}.${day}`;
+        }
+
+        return result;
+    }
+
+    // Auto-detect button in Release Editor
+    const btnAutoDetect = document.getElementById('btn-auto-detect-release-meta');
+    const spotifyInput = document.getElementById('rel_spotifyUrl');
+
+    async function triggerAutoDetection(isSilent = false) {
+        const spotUrl = spotifyInput ? spotifyInput.value.trim() : '';
+        const streamUrl = document.getElementById('rel_streamUrl')?.value.trim() || '';
+        const ytUrl = document.getElementById('rel_youtubeUrl')?.value.trim() || streamUrl;
+        const curTitle = document.getElementById('rel_title')?.value.trim() || '';
+        const curArtist = document.getElementById('rel_artist')?.value.trim() || '';
+
+        if (!spotUrl && !ytUrl && !curTitle) {
+            if (!isSilent) showToast("PLEASE ENTER A SPOTIFY OR YOUTUBE URL FIRST!", 'error');
+            return;
+        }
+
+        if (!isSilent) showToast("FETCHING SPOTIFY ARTWORK & RELEASE DATE...", 'info');
+
+        const meta = await autoDetectReleaseMetadata(spotUrl, ytUrl, curTitle, curArtist);
+
+        if (meta.cover) {
+            const coverEl = document.getElementById('rel_cover');
+            if (coverEl) {
+                coverEl.value = meta.cover;
+                if (coverPreview) {
+                    coverPreview.innerHTML = `<img src="${meta.cover}" onerror="this.onerror=null; this.src='assets/cover.png';">`;
+                }
+            }
+        }
+
+        if (meta.date) {
+            const dateEl = document.getElementById('rel_date');
+            if (dateEl) dateEl.value = meta.date;
+        }
+
+        if (meta.title && !document.getElementById('rel_title').value.trim()) {
+            document.getElementById('rel_title').value = meta.title;
+        }
+
+        if (meta.artist && !document.getElementById('rel_artist').value.trim()) {
+            document.getElementById('rel_artist').value = meta.artist;
+        }
+
+        if (!isSilent) {
+            showToast("METADATA & ARTWORK AUTO-DETECTED SUCCESSFULLY!");
+        }
+    }
+
+    if (btnAutoDetect) {
+        btnAutoDetect.addEventListener('click', () => triggerAutoDetection(false));
+    }
+
+    if (spotifyInput) {
+        spotifyInput.addEventListener('paste', () => {
+            setTimeout(() => triggerAutoDetection(false), 200);
+        });
+        spotifyInput.addEventListener('change', () => {
+            if (spotifyInput.value.trim().includes('spotify.com')) {
+                triggerAutoDetection(true);
+            }
+        });
+    }
+
+    // Batch Auto-Sync All Existing Releases
+    const btnBatchSyncReleases = document.getElementById('btn-batch-sync-releases');
+    if (btnBatchSyncReleases) {
+        btnBatchSyncReleases.addEventListener('click', async () => {
+            if (!cachedReleases || cachedReleases.length === 0) {
+                showToast("NO RELEASES FOUND TO SYNC!", 'error');
+                return;
+            }
+
+            if (!confirm(`Auto-detect Spotify Artworks & Release Dates for all ${cachedReleases.length} releases?`)) {
+                return;
+            }
+
+            showToast(`SYNCING ${cachedReleases.length} RELEASES WITH SPOTIFY & ITUNES...`, 'info');
+            btnBatchSyncReleases.disabled = true;
+            btnBatchSyncReleases.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SYNCING...';
+
+            let updatedCount = 0;
+            const updatedList = [...cachedReleases];
+
+            for (let i = 0; i < updatedList.length; i++) {
+                const rel = updatedList[i];
+                const spotUrl = rel.spotifyUrl || rel.spotify || '';
+                const ytUrl = rel.youtubeUrl || rel.youtube || rel.streamUrl || '';
+                const title = rel.title || '';
+                const artist = rel.artist || rel.producers || '';
+
+                try {
+                    const meta = await autoDetectReleaseMetadata(spotUrl, ytUrl, title, artist);
+                    let changed = false;
+
+                    if (meta.cover && (!rel.cover || rel.cover === 'assets/cover.png' || rel.cover.includes('placeholder'))) {
+                        rel.cover = meta.cover;
+                        rel.image = meta.cover;
+                        changed = true;
+                    }
+                    if (meta.date && (!rel.date || rel.date === '2026' || rel.date === 'TBA')) {
+                        rel.date = meta.date;
+                        changed = true;
+                    }
+
+                    if (changed) updatedCount++;
+                } catch (e) {
+                    console.warn(`Sync failed for ${rel.title}:`, e);
+                }
+            }
+
+            db.ref('siteData/releases').set(updatedList).then(() => {
+                bumpSiteVersion(`Auto-synced ${updatedCount} Releases`);
+                showToast(`SUCCESSFULLY SYNCED ${updatedCount} RELEASES!`);
+                btnBatchSyncReleases.disabled = false;
+                btnBatchSyncReleases.innerHTML = '<i class="fab fa-spotify"></i> AUTO-SYNC DATES & ARTWORK';
+            }).catch(err => {
+                showToast("SYNC ERROR: " + err.message, 'error');
+                btnBatchSyncReleases.disabled = false;
+                btnBatchSyncReleases.innerHTML = '<i class="fab fa-spotify"></i> AUTO-SYNC DATES & ARTWORK';
+            });
+        });
     }
 
     // Save release handler
@@ -1058,7 +1279,7 @@ function initReleasesEngine() {
         });
     }
 
-    window.editRelease = function(index) {
+    window.editRelease = function (index) {
         const rel = cachedReleases[index];
         if (!rel || !editorCard) return;
 
@@ -1087,7 +1308,7 @@ function initReleasesEngine() {
         editorCard.scrollIntoView({ behavior: 'smooth' });
     };
 
-    window.deleteRelease = function(index) {
+    window.deleteRelease = function (index) {
         const rel = cachedReleases[index];
         if (!rel) return;
         if (!confirm(`Are you sure you want to delete "${rel.title}"?`)) return;
@@ -1201,7 +1422,7 @@ function initUpcomingEngine() {
         });
     }
 
-    window.editUpcoming = function(index) {
+    window.editUpcoming = function (index) {
         const item = cachedUpcoming[index];
         if (!item || !editorCard) return;
         document.getElementById('upc_edit_index').value = index;
@@ -1215,7 +1436,7 @@ function initUpcomingEngine() {
         editorCard.scrollIntoView({ behavior: 'smooth' });
     };
 
-    window.deleteUpcoming = function(index) {
+    window.deleteUpcoming = function (index) {
         if (!confirm("Delete this upcoming teaser?")) return;
         const updatedList = cachedUpcoming.filter((_, i) => i !== index);
         db.ref('siteData/upcoming').set(updatedList).then(() => {
@@ -1297,7 +1518,7 @@ function initStaffEngine() {
     const btnCloseProf = document.getElementById('close-profile-editor');
     const btnCancelProf = document.getElementById('btn-cancel-profile');
     const btnSaveProf = document.getElementById('btn-save-profile');
-    
+
     const avatarInput = document.getElementById('prof_avatar');
     const avatarFile = document.getElementById('prof_avatar_file');
     const avatarPreview = document.getElementById('prof-avatar-preview');
@@ -1372,7 +1593,7 @@ function initStaffEngine() {
             document.getElementById('prof_edit_id').value = '';
             document.getElementById('prof_is_partner').value = isPartner ? 'true' : 'false';
             document.getElementById('profile-editor-title').textContent = `CREATE NEW ${isPartner ? 'PARTNER' : 'STAFF'} PROFILE`;
-            
+
             const profIdInput = document.getElementById('prof_id');
             if (profIdInput) {
                 profIdInput.disabled = false; // UNLOCKED SO USER CAN TYPE NEW ID
@@ -1388,7 +1609,7 @@ function initStaffEngine() {
             if (avatarPreview) avatarPreview.innerHTML = '<i class="fas fa-user"></i>';
             if (bannerPreview) bannerPreview.innerHTML = '<i class="fas fa-image"></i>';
             document.getElementById('prof_order').value = '1';
-            
+
             profEditor.style.display = 'block';
             profEditor.scrollIntoView({ behavior: 'smooth' });
         });
@@ -1432,10 +1653,10 @@ function initStaffEngine() {
                 // If it was renamed to GOOST MUSIC or similar, migrate cleanly to 'goost_music'
                 db.ref('partner_status/goost_music').set(legacyData).then(() => {
                     db.ref('partner_status/859727100758982666').remove();
-                }).catch(() => {});
+                }).catch(() => { });
             } else {
                 // Permanently remove legacy ITX ID from Firebase
-                db.ref('partner_status/859727100758982666').remove().catch(() => {});
+                db.ref('partner_status/859727100758982666').remove().catch(() => { });
             }
         }
 
@@ -1573,7 +1794,7 @@ function initStaffEngine() {
         });
     }
 
-    window.openProfileEditor = function(id, isPartner) {
+    window.openProfileEditor = function (id, isPartner) {
         const dataObj = isPartner ? cachedPartners : cachedStaff;
         const p = dataObj[id];
         if (!p || !profEditor) return;
@@ -1581,7 +1802,7 @@ function initStaffEngine() {
         document.getElementById('prof_edit_id').value = id;
         document.getElementById('prof_is_partner').value = isPartner ? 'true' : 'false';
         document.getElementById('profile-editor-title').textContent = `EDIT PROFILE: ${p.name || id}`;
-        
+
         const profIdInput = document.getElementById('prof_id');
         if (profIdInput) {
             profIdInput.value = id;
@@ -1591,7 +1812,7 @@ function initStaffEngine() {
         document.getElementById('prof_name').value = p.name || '';
         document.getElementById('prof_role').value = p.role || '';
         document.getElementById('prof_order').value = p.order || 99;
-        
+
         const avUrl = p.avatar_url || p.logoUrl || '';
         document.getElementById('prof_avatar').value = avUrl;
         if (avatarPreview) avatarPreview.innerHTML = avUrl ? `<img src="${avUrl}">` : '<i class="fas fa-user"></i>';
@@ -1614,7 +1835,7 @@ function initStaffEngine() {
         profEditor.scrollIntoView({ behavior: 'smooth' });
     };
 
-    window.deleteProfile = function(id, isPartner) {
+    window.deleteProfile = function (id, isPartner) {
         if (!confirm(`Delete profile "${id}"?`)) return;
         const path = isPartner ? 'partner_status/' : 'staff_status/';
         db.ref(path + id).remove().then(() => {
@@ -1675,9 +1896,9 @@ function initDemosEngine() {
             if (filter !== 'ALL' && status !== filter) return false;
             if (!query) return true;
             return (d.artist || d.name || '').toLowerCase().includes(query) ||
-                   (d.trackTitle || d.track || '').toLowerCase().includes(query) ||
-                   (d.email || '').toLowerCase().includes(query) ||
-                   (d.genre || '').toLowerCase().includes(query);
+                (d.trackTitle || d.track || '').toLowerCase().includes(query) ||
+                (d.email || '').toLowerCase().includes(query) ||
+                (d.genre || '').toLowerCase().includes(query);
         });
 
         if (filtered.length === 0) {
@@ -1743,7 +1964,7 @@ function initDemosEngine() {
     if (searchInput) searchInput.addEventListener('input', renderDemosList);
     if (filterSelect) filterSelect.addEventListener('change', renderDemosList);
 
-    window.playAudioPreview = function(url, title, artist) {
+    window.playAudioPreview = function (url, title, artist) {
         if (!audioDock || !previewAudio) return;
         dockTitle.textContent = title;
         dockArtist.textContent = artist;
@@ -1752,7 +1973,7 @@ function initDemosEngine() {
         previewAudio.play().catch(e => console.log("Preview play blocked", e));
     };
 
-    window.updateDemoStatus = function(id, status) {
+    window.updateDemoStatus = function (id, status) {
         // Update both paths
         db.ref('siteData/submissions/demo/' + id).update({ status: status });
         db.ref('demo_submissions/' + id).update({ status: status }).then(() => {
@@ -1761,7 +1982,7 @@ function initDemosEngine() {
         }).catch(err => showToast("ERROR: " + err.message, 'error'));
     };
 
-    window.deleteDemoSubmission = function(id) {
+    window.deleteDemoSubmission = function (id) {
         if (!confirm("Permanently delete this demo submission record?")) return;
         db.ref('siteData/submissions/demo/' + id).remove();
         db.ref('demo_submissions/' + id).remove().then(() => {
@@ -1836,7 +2057,7 @@ function initContactEngine() {
         `).join('');
     }
 
-    window.deleteContactMsg = function(id) {
+    window.deleteContactMsg = function (id) {
         if (!confirm("Delete this contact message?")) return;
         db.ref('siteData/submissions/contact/' + id).remove();
         db.ref('contact_messages/' + id).remove().then(() => {
@@ -1854,7 +2075,7 @@ function initModalsEngine() {
 
     db.ref('siteData/globals').on('value', (snap) => {
         const data = snap.val() || {};
-        
+
         const map = {
             site_footerCopyright: data.footerCopyright || "&copy; 2026 OBSCURA RECORD. ALL RIGHTS RESERVED.",
             site_footerFaqText: data.footerFaqText || "FAQ",
@@ -1959,7 +2180,7 @@ function initModalsEngine() {
         });
     }
 
-    window.removeFaqItem = function(index) {
+    window.removeFaqItem = function (index) {
         cachedFAQs.splice(index, 1);
         renderFaqItems();
     };
@@ -2099,8 +2320,8 @@ function initSecurityLogsEngine() {
         db.ref('siteData/activeConnections').once('value').then((snapshot) => {
             const count = snapshot.numChildren();
             if (statNodes) statNodes.textContent = Math.max(1, count);
-        }).catch(() => {});
-    } catch (e) {}
+        }).catch(() => { });
+    } catch (e) { }
 
     // Helper: Re-merge and sort all log collections
     function syncAndRenderLogs() {
@@ -2216,9 +2437,9 @@ function initSecurityLogsEngine() {
                 const browserStr = (log.device?.browser || '').toLowerCase();
                 const adminStr = (log.user || log.details?.admin || '').toLowerCase();
                 const detailsStr = typeof log.details === 'object' ? JSON.stringify(log.details).toLowerCase() : (log.details || '').toLowerCase();
-                return ipStr.includes(query) || cityStr.includes(query) || countryStr.includes(query) || 
-                       typeStr.includes(query) || osStr.includes(query) || browserStr.includes(query) || 
-                       adminStr.includes(query) || detailsStr.includes(query);
+                return ipStr.includes(query) || cityStr.includes(query) || countryStr.includes(query) ||
+                    typeStr.includes(query) || osStr.includes(query) || browserStr.includes(query) ||
+                    adminStr.includes(query) || detailsStr.includes(query);
             }
             return true;
         });
@@ -2549,17 +2770,17 @@ function initSecurityLogsEngine() {
     }
 
     // Raw JSON Viewer Global Helper
-    window.viewRawLogData = function(index) {
+    window.viewRawLogData = function (index) {
         const item = cachedSecurityLogs[index];
         if (!item) return;
         alert(JSON.stringify(item, null, 2));
     };
 
     // Delete Single Log / Submission Record Helper
-    window.deleteSingleLogEntry = function(index) {
+    window.deleteSingleLogEntry = function (index) {
         const item = cachedSecurityLogs[index];
         if (!item) return;
-        
+
         let confirmMsg = "Are you sure you want to permanently delete this record from the database?";
         if (item.type === 'DEMO_SUBMISSION') {
             confirmMsg = `Delete Demo Submission by "${item.details?.artist || 'Unknown'}"?`;
@@ -2766,14 +2987,14 @@ async function fetchLatestYouTubeDropLive(inputChannel, filterMode = 'full_only'
 
 async function fetchLatestTikTokDropLive(usernameOrUrl) {
     const raw = (usernameOrUrl || 'obscura.records').trim();
-    
+
     // Helper to fetch JSON from URL with proxies
     async function fetchWithProxies(targetUrl) {
         // Direct attempt
         try {
             const res = await fetch(targetUrl);
             if (res.ok) return await res.json();
-        } catch (e) {}
+        } catch (e) { }
 
         // AllOrigins proxy
         try {
@@ -2782,13 +3003,13 @@ async function fetchLatestTikTokDropLive(usernameOrUrl) {
                 const aoData = await aoRes.json();
                 if (aoData.contents) return JSON.parse(aoData.contents);
             }
-        } catch (e) {}
+        } catch (e) { }
 
         // CorsProxy.io
         try {
             const cpRes = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`);
             if (cpRes.ok) return await cpRes.json();
-        } catch (e) {}
+        } catch (e) { }
 
         return null;
     }
@@ -2976,7 +3197,7 @@ function initTransmissionsEngine() {
                 tt_follow_url: normalized.tt_follow_url,
                 updatedAt: Date.now()
             };
-            db.ref('siteData/globals/latest_transmissions').update(updatePayload).catch(() => {});
+            db.ref('siteData/globals/latest_transmissions').update(updatePayload).catch(() => { });
         }
     }
 
@@ -3085,14 +3306,14 @@ function initTransmissionsEngine() {
                         if (document.getElementById('trans_tt_thumb')) document.getElementById('trans_tt_thumb').value = ttThumbVal;
                         if (document.getElementById('trans_tt_title') && fetchedTt.title) document.getElementById('trans_tt_title').value = fetchedTt.title;
                     }
-                } catch(e) {}
+                } catch (e) { }
             }
 
             const payload = {
                 showTransmissions: String(document.getElementById('trans_showTransmissions')?.value || 'Visible'),
                 transTitle: String(document.getElementById('trans_title')?.value || 'LATEST <span class="accent">TRANSMISSIONS</span>'),
                 transDesc: String(document.getElementById('trans_desc')?.value || 'Intercept the newest soundwaves and visual drops across our networks'),
-                
+
                 yt_mode: String(document.getElementById('trans_yt_mode')?.value || 'Auto'),
                 yt_filter: String(document.getElementById('trans_yt_filter')?.value || 'full_only'),
                 yt_channel_id: String(document.getElementById('trans_yt_channel_id')?.value || '@Obscurarecordss').trim(),
