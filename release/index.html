@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="page-title">OBSCURA RECORD | Release Smart Link</title>
+    <link rel="icon" type="image/png" href="../assets/OCR.png?v=61.0">
+    <link rel="apple-touch-icon" href="../assets/OCR_solid.png?v=61.0">
+    
+    <!-- Meta tags for social sharing preview -->
+    <meta name="description" id="meta-desc" content="Stream and download official releases on Obscura Record across all music platforms.">
+    <meta property="og:title" id="og-title" content="OBSCURA RECORD | Official Release">
+    <meta property="og:description" id="og-desc" content="Choose your preferred music streaming service.">
+    <meta property="og:image" id="og-image" content="../assets/OCR.png">
+    <meta property="og:type" content="music.song">
+    <meta property="twitter:card" content="summary_large_image">
+
+    <!-- Google Fonts & Font Awesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-dark: #07080d;
+            --card-bg: rgba(13, 15, 24, 0.88);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --accent-cyan: #00f0ff;
+            --accent-purple: #7000ff;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.65);
+            --font-main: 'Outfit', sans-serif;
+            --font-heading: 'Space Grotesk', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2.5rem 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Dynamic Background Art */
+        .ambient-backdrop {
+            position: fixed;
+            inset: -40px;
+            background-size: cover;
+            background-position: center;
+            filter: blur(55px) brightness(0.28) saturate(1.4);
+            transform: scale(1.1);
+            z-index: 1;
+            pointer-events: none;
+            transition: background-image 0.8s ease;
+        }
+
+        .cyber-grid-overlay {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-size: 36px 36px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Center Smart Link Hub Card */
+        .smart-link-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 410px;
+            background: var(--card-bg);
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 60px rgba(0, 0, 0, 0.9),
+                0 0 35px rgba(0, 240, 255, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            margin: 0 auto;
+            animation: cardFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardFadeUp {
+            from { opacity: 0; transform: translateY(25px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Top Release Artwork & Snippet Player */
+        .artwork-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .artwork-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .artwork-container:hover .artwork-img {
+            transform: scale(1.03);
+        }
+
+        .artwork-overlay-gradient {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 40%, rgba(13, 15, 24, 0.95) 100%);
+            pointer-events: none;
+        }
+
+        /* Snippet Play Button Overlay on Artwork */
+        .artwork-play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(0, 240, 255, 0.92);
+            color: #000;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            box-shadow: 
+                0 0 30px rgba(0, 240, 255, 0.7),
+                0 8px 25px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 5;
+        }
+
+        .artwork-play-btn:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            background: #fff;
+            box-shadow: 0 0 40px #00f0ff;
+        }
+
+        .artwork-play-btn.playing {
+            background: #fff;
+            animation: pulseGlow 1.8s infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 25px rgba(0, 240, 255, 0.8); }
+            50% { box-shadow: 0 0 45px rgba(0, 240, 255, 1); }
+        }
+
+        .audio-preview-badge {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 0.65rem;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            letter-spacing: 0.08rem;
+            padding: 0.3rem 0.65rem;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            z-index: 4;
+        }
+
+        .audio-preview-badge i {
+            color: var(--accent-cyan);
+        }
+
+        /* Label Banner Header */
+        .label-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1.1rem 1rem 0.4rem 1rem;
+            text-align: center;
+        }
+
+        .label-logo-img {
+            height: 22px;
+            width: auto;
+            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.5));
+        }
+
+        .label-name {
+            font-family: var(--font-heading);
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 0.18rem;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .label-name span {
+            color: var(--accent-cyan);
+        }
+
+        /* Track Info Header */
+        .track-meta-header {
+            text-align: center;
+            padding: 0.4rem 1.4rem 1.2rem 1.4rem;
+        }
+
+        .track-title {
+            font-family: var(--font-heading);
+            font-size: 1.45rem;
+            font-weight: 900;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            line-height: 1.2;
+            margin-bottom: 0.3rem;
+            word-break: break-word;
+        }
+
+        .track-artist {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin-bottom: 0.7rem;
+            letter-spacing: 0.03rem;
+        }
+
+        .instruction-text {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08rem;
+            font-weight: 500;
+        }
+
+        /* Platform Service Rows */
+        .platform-list {
+            background: #ffffff;
+            border-radius: 18px;
+            margin: 0 0.85rem 1rem 0.85rem;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .platform-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.95rem 1.2rem;
+            border-bottom: 1px solid #f0f0f0;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .platform-row:last-child {
+            border-bottom: none;
+        }
+
+        .platform-row:hover {
+            background-color: #f9fafb;
+        }
+
+        .platform-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .platform-logo-svg {
+            height: 26px;
+            width: auto;
+            max-width: 135px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .platform-action-btn {
+            background: #ffffff;
+            color: #111111;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            padding: 0.42rem 1.15rem;
+            font-family: var(--font-main);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02rem;
+            min-width: 82px;
+            text-align: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .platform-row:hover .platform-action-btn {
+            border-color: #111111;
+            background: #111111;
+            color: #ffffff;
+            transform: scale(1.03);
+        }
+
+        /* Footer & Share Bar */
+        .card-footer {
+            padding: 0.8rem 1.4rem 1.4rem 1.4rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .share-hub-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            padding: 0.55rem 1.2rem;
+            border-radius: 30px;
+            font-family: var(--font-heading);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.06rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .share-hub-btn:hover {
+            background: rgba(0, 240, 255, 0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .footer-credits {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 0.05rem;
+        }
+
+        .footer-credits a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        /* Loading / Error States */
+        .loading-view {
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .cyber-spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(0, 240, 255, 0.2);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1.2rem auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Cyber Toast Notification */
+        .cyber-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(30px);
+            background: rgba(6, 8, 16, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--accent-cyan);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
+            border-radius: 30px;
+            padding: 0.65rem 1.4rem;
+            color: #fff;
+            font-family: var(--font-heading);
+            font-size: 0.78rem;
+            font-weight: 700;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cyber-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+
+        .cyber-toast i {
+            color: var(--accent-cyan);
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 480px) {
+            body {
+                padding: 1rem 0.6rem;
+            }
+            .smart-link-card {
+                border-radius: 20px;
+            }
+            .track-title {
+                font-size: 1.25rem;
+            }
+            .platform-row {
+                padding: 0.85rem 1rem;
+            }
+            .platform-logo-svg {
+                max-width: 110px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Dynamic Blurred Artwork Backdrop -->
+    <div class="ambient-backdrop" id="ambient-bg"></div>
+    <div class="cyber-grid-overlay"></div>
+
+    <!-- Hidden Audio Preview Element -->
+    <audio id="snippet-audio" preload="none"></audio>
+    <div id="yt-player-slot" style="position:fixed; left:-9999px; top:-9999px; pointer-events:none; opacity:0; width:1px; height:1px;"></div>
+
+    <!-- Smart Link Card Hub -->
+    <main class="smart-link-card" id="smart-link-card">
+        
+        <!-- Loading Skeleton -->
+        <div id="loading-state" class="loading-view">
+            <div class="cyber-spinner"></div>
+            <p style="font-size:0.8rem; letter-spacing:0.1rem; color:var(--accent-cyan); font-family:var(--font-heading);">
+                DECRYPTING TRANSMISSION...
+            </p>
+        </div>
+
+        <!-- Loaded Content (Populated by JS) -->
+        <div id="content-state" style="display: none;">
+            
+            <!-- Top HD Artwork with Play Button -->
+            <div class="artwork-container">
+                <span class="audio-preview-badge">
+                    <i class="fas fa-wave-square"></i> AUDIO PREVIEW
+                </span>
+                <img id="track-cover" src="../assets/OCR.png" alt="Artwork" class="artwork-img">
+                <div class="artwork-overlay-gradient"></div>
+                <button id="play-snippet-btn" class="artwork-play-btn" title="Play 30s Snippet">
+                    <i class="fas fa-play" id="snippet-play-icon" style="margin-left: 3px;"></i>
+                </button>
+            </div>
+
+            <!-- Obscura Label Banner -->
+            <div class="label-banner">
+                <img src="../assets/OCR.png" alt="Obscura Record" class="label-logo-img">
+                <div class="label-name">OBSCURA <span>RECORD</span></div>
+            </div>
+
+            <!-- Track Metadata Header -->
+            <div class="track-meta-header">
+                <h1 class="track-title" id="track-title">RELEASE TITLE</h1>
+                <div class="track-artist" id="track-artist">PROD. ARTIST</div>
+                <div class="instruction-text">Choose your preferred music service</div>
+            </div>
+
+            <!-- Streaming Services Grid -->
+            <div class="platform-list" id="platform-list">
+                <!-- Dynamically rendered platform rows -->
+            </div>
+
+            <!-- Card Footer & Share -->
+            <div class="card-footer">
+                <button id="share-btn" class="share-hub-btn">
+                    <i class="fas fa-share-alt"></i> SHARE TRANSMISSION
+                </button>
+                <div class="footer-credits">
+                    &copy; 2026 <a href="../index.html">OBSCURA RECORD</a>. ALL RIGHTS RESERVED.
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Global Toast Notification -->
+    <div id="cyber-toast" class="cyber-toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toast-text">SMART LINK COPIED</span>
+    </div>
+
+    <!-- YouTube iframe API for preview audio if source is YT -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        // --- 1. NEW DEDICATED FIREBASE CONFIGURATION (OBSCURA SMART LINKS) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBARRt8caSaWBTjtxzNzr670lTYfqBRIj0",
+            authDomain: "obscura-records-smart-links.firebaseapp.com",
+            databaseURL: "https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "obscura-records-smart-links",
+            storageBucket: "obscura-records-smart-links.firebasestorage.app",
+            messagingSenderId: "22595717651",
+            appId: "1:22595717651:web:b39895741f4aebe8268de6"
+        };
+
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // --- 2. PLATFORM DEFINITIONS & LOGO ASSETS ---
+        const PLATFORM_CONFIG = {
+            spotify: {
+                name: "Spotify",
+                action: "Play",
+                logoSvg: `https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png`,
+                logoFallbackText: "Spotify",
+                logoColor: "#1DB954",
+                iconClass: "fab fa-spotify"
+            },
+            apple: {
+                name: "Apple Music",
+                action: "Play",
+                logoSvg: `https://music.apple.com/assets/favicon/favicon-180.png`,
+                logoFallbackText: "Apple Music",
+                logoColor: "#FA233B",
+                iconClass: "fab fa-apple"
+            },
+            itunes: {
+                name: "iTunes Store",
+                action: "Download",
+                logoSvg: ``,
+                logoFallbackText: "iTunes Store",
+                logoColor: "#EA4CC0",
+                iconClass: "fas fa-star"
+            },
+            deezer: {
+                name: "Deezer",
+                action: "Play",
+                logoSvg: ``,
+                logoFallbackText: "Deezer",
+                logoColor: "#A238FF",
+                iconClass: "fas fa-heart"
+            },
+            amazon: {
+                name: "Amazon Music",
+                action: "Play",
+                logoSvg: ``,
+                logoFallbackText: "Amazon Music",
+                logoColor: "#00A8E1",
+                iconClass: "fab fa-amazon"
+            },
+            youtube: {
+                name: "YouTube",
+                action: "Watch",
+                logoSvg: ``,
+                logoFallbackText: "YouTube",
+                logoColor: "#FF0000",
+                iconClass: "fab fa-youtube"
+            },
+            youtubemusic: {
+                name: "YouTube Music",
+                action: "Play",
+                logoSvg: ``,
+                logoFallbackText: "YouTube Music",
+                logoColor: "#FF0000",
+                iconClass: "fas fa-play-circle"
+            },
+            tidal: {
+                name: "TIDAL",
+                action: "Play",
+                logoSvg: ``,
+                logoFallbackText: "TIDAL",
+                logoColor: "#000000",
+                iconClass: "fas fa-gem"
+            },
+            pandora: {
+                name: "Pandora",
+                action: "Play",
+                logoSvg: ``,
+                logoFallbackText: "Pandora",
+                logoColor: "#005483",
+                iconClass: "fas fa-broadcast-tower"
+            },
+            boomplay: {
+                name: "Boomplay",
+                action: "Stream",
+                logoSvg: ``,
+                logoFallbackText: "Boomplay",
+                logoColor: "#00D664",
+                iconClass: "fas fa-play"
+            },
+            soundcloud: {
+                name: "SoundCloud",
+                action: "Play",
+                logoSvg: ``,
+                logoFallbackText: "SoundCloud",
+                logoColor: "#FF5500",
+                iconClass: "fab fa-soundcloud"
+            },
+            beatport: {
+                name: "Beatport",
+                action: "Buy",
+                logoSvg: ``,
+                logoFallbackText: "Beatport",
+                logoColor: "#00FF95",
+                iconClass: "fas fa-compact-disc"
+            },
+            tiktok: {
+                name: "TikTok",
+                action: "Use Sound",
+                logoSvg: ``,
+                logoFallbackText: "TikTok Sound",
+                logoColor: "#000000",
+                iconClass: "fab fa-tiktok"
+            }
+        };
+
+        // --- 3. TOAST NOTIFICATION ---
+        function showToast(text, icon = "fas fa-check-circle") {
+            const toast = document.getElementById('cyber-toast');
+            const toastText = document.getElementById('toast-text');
+            if (!toast || !toastText) return;
+            toastText.textContent = text;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2800);
+        }
+
+        // --- 4. EXTRACT SLUG/ID FROM URL ---
+        function getReleaseId() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('id')) return params.get('id').trim();
+            if (params.get('track')) return params.get('track').trim();
+            if (params.get('release')) return params.get('release').trim();
+            
+            // Or from path: /release/nuts-funk
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            if (pathParts.length > 1 && pathParts[0] === 'release') {
+                return pathParts[1].replace('.html', '').trim();
+            }
+            return null;
+        }
+
+        // --- 5. AUDIO PREVIEW PLAYER ENGINE ---
+        let isAudioPlaying = false;
+        let ytSnippetPlayer = null;
+        let previewAudioEl = document.getElementById('snippet-audio');
+        let currentAudioSrc = '';
+        let currentYtId = '';
+
+        function toggleAudioPlayback() {
+            const playBtn = document.getElementById('play-snippet-btn');
+            const playIcon = document.getElementById('snippet-play-icon');
+
+            if (isAudioPlaying) {
+                // Pause
+                if (previewAudioEl) previewAudioEl.pause();
+                if (ytSnippetPlayer && ytSnippetPlayer.pauseVideo) ytSnippetPlayer.pauseVideo();
+                isAudioPlaying = false;
+                if (playBtn) playBtn.classList.remove('playing');
+                if (playIcon) playIcon.className = 'fas fa-play';
+            } else {
+                // Play
+                if (currentAudioSrc && currentAudioSrc.startsWith('http') && (currentAudioSrc.includes('.mp3') || currentAudioSrc.includes('audio') || !currentAudioSrc.includes('youtube.com'))) {
+                    previewAudioEl.src = currentAudioSrc;
+                    previewAudioEl.play().then(() => {
+                        isAudioPlaying = true;
+                        if (playBtn) playBtn.classList.add('playing');
+                        if (playIcon) playIcon.className = 'fas fa-pause';
+                    }).catch(e => console.log(e));
+                } else if (currentYtId) {
+                    if (ytSnippetPlayer && ytSnippetPlayer.playVideo) {
+                        ytSnippetPlayer.seekTo(0, true);
+                        ytSnippetPlayer.playVideo();
+                        isAudioPlaying = true;
+                        if (playBtn) playBtn.classList.add('playing');
+                        if (playIcon) playIcon.className = 'fas fa-pause';
+                    }
+                } else {
+                    showToast("No Audio Preview Configured", "fas fa-info-circle");
+                }
+            }
+        }
+
+        if (previewAudioEl) {
+            previewAudioEl.addEventListener('ended', () => {
+                isAudioPlaying = false;
+                const playBtn = document.getElementById('play-snippet-btn');
+                const playIcon = document.getElementById('snippet-play-icon');
+                if (playBtn) playBtn.classList.remove('playing');
+                if (playIcon) playIcon.className = 'fas fa-play';
+            });
+        }
+
+        // YouTube iFrame Setup for Preview
+        window.onYouTubeIframeAPIReady = function() {
+            if (currentYtId) initYtSnippet(currentYtId);
+        };
+
+        function initYtSnippet(vidId) {
+            if (!vidId) return;
+            try {
+                ytSnippetPlayer = new YT.Player('yt-player-slot', {
+                    height: '1',
+                    width: '1',
+                    videoId: vidId,
+                    playerVars: { autoplay: 0, controls: 0, disablekb: 1, fs: 0, rel: 0 },
+                    events: {
+                        'onStateChange': function(event) {
+                            if (event.data === YT.PlayerState.ENDED) {
+                                isAudioPlaying = false;
+                                const playBtn = document.getElementById('play-snippet-btn');
+                                const playIcon = document.getElementById('snippet-play-icon');
+                                if (playBtn) playBtn.classList.remove('playing');
+                                if (playIcon) playIcon.className = 'fas fa-play';
+                            }
+                        }
+                    }
+                });
+            } catch(e) {}
+        }
+
+        // --- 6. RENDER SMART LINK DATA ---
+        function renderSmartLink(data) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('content-state').style.display = 'block';
+
+            const title = data.title || data.name || "OBSCURA RELEASE";
+            const artist = data.artist || data.producers || "OBSCURA RECORD";
+            const cover = data.image || data.artwork || data.cover || "../assets/OCR.png";
+            const audioSrc = data.audioPreview || data.previewAudio || data.mp3 || "";
+            const ytUrl = data.youtube || data.youtubeUrl || "";
+
+            // Set Page Titles & Metadata
+            document.title = `${title} - ${artist} | OBSCURA RECORD`;
+            document.getElementById('track-title').textContent = title;
+            document.getElementById('track-artist').textContent = artist ? `PROD. ${artist.toUpperCase()}` : "OBSCURA RECORD";
+            
+            // Set Cover & Ambient Background
+            document.getElementById('track-cover').src = cover;
+            document.getElementById('ambient-bg').style.backgroundImage = `url('${cover}')`;
+
+            // Prepare Audio
+            currentAudioSrc = audioSrc;
+            if (ytUrl) {
+                const match = ytUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+                if (match && match[1]) {
+                    currentYtId = match[1];
+                    if (window.YT && window.YT.Player) initYtSnippet(currentYtId);
+                }
+            }
+
+            // Build Platform Links List
+            const platformListEl = document.getElementById('platform-list');
+            platformListEl.innerHTML = '';
+
+            const links = data.links || data;
+            const availablePlatforms = [
+                'spotify', 'apple', 'itunes', 'deezer', 'amazon', 
+                'youtube', 'youtubemusic', 'tidal', 'pandora', 
+                'boomplay', 'soundcloud', 'beatport', 'tiktok'
+            ];
+
+            let renderedCount = 0;
+            availablePlatforms.forEach(key => {
+                const url = links[key] || links[`${key}Url`] || (data[key] && typeof data[key] === 'string' ? data[key] : null);
+                if (url && url !== '#' && url.trim().length > 3) {
+                    const cfg = PLATFORM_CONFIG[key] || {
+                        name: key.toUpperCase(),
+                        action: "Play",
+                        logoColor: "#111",
+                        iconClass: "fas fa-play"
+                    };
+
+                    const row = document.createElement('a');
+                    row.href = url;
+                    row.target = '_blank';
+                    row.rel = 'noopener noreferrer';
+                    row.className = 'platform-row';
+                    row.innerHTML = `
+                        <div class="platform-brand">
+                            <i class="${cfg.iconClass}" style="font-size: 1.45rem; color: ${cfg.logoColor}; min-width: 24px; text-align: center;"></i>
+                            <span style="font-weight: 800; font-size: 0.95rem; color: #111;">${cfg.name}</span>
+                        </div>
+                        <span class="platform-action-btn">${cfg.action}</span>
+                    `;
+                    platformListEl.appendChild(row);
+                    renderedCount++;
+                }
+            });
+
+            // If no individual links were provided, provide default Spotify and YouTube search/portal links
+            if (renderedCount === 0) {
+                const fallbackPlatforms = [
+                    { name: "Spotify", url: "https://open.spotify.com/", icon: "fab fa-spotify", color: "#1DB954", action: "Play" },
+                    { name: "Apple Music", url: "https://music.apple.com/", icon: "fab fa-apple", color: "#FA233B", action: "Play" },
+                    { name: "YouTube", url: "https://youtube.com/", icon: "fab fa-youtube", color: "#FF0000", action: "Watch" },
+                    { name: "SoundCloud", url: "https://soundcloud.com/", icon: "fab fa-soundcloud", color: "#FF5500", action: "Stream" }
+                ];
+                fallbackPlatforms.forEach(p => {
+                    const row = document.createElement('a');
+                    row.href = p.url;
+                    row.target = '_blank';
+                    row.className = 'platform-row';
+                    row.innerHTML = `
+                        <div class="platform-brand">
+                            <i class="${p.icon}" style="font-size: 1.4rem; color: ${p.color};"></i>
+                            <span style="font-weight: 800; font-size: 0.95rem; color: #111;">${p.name}</span>
+                        </div>
+                        <span class="platform-action-btn">${p.action}</span>
+                    `;
+                    platformListEl.appendChild(row);
+                });
+            }
+
+            // Play Button Event Listener
+            const playBtn = document.getElementById('play-snippet-btn');
+            if (playBtn) {
+                playBtn.addEventListener('click', toggleAudioPlayback);
+            }
+
+            // Share Button Event Listener
+            const shareBtn = document.getElementById('share-btn');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', () => {
+                    const shareUrl = window.location.href;
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(shareUrl).then(() => {
+                            showToast("LINK COPIED TO CLIPBOARD!");
+                        }).catch(() => {
+                            showToast("TRANSMISSION LINK READY");
+                        });
+                    } else {
+                        showToast("LINK COPIED!");
+                    }
+                });
+            }
+        }
+
+        // --- 7. FETCH RELEASE DATA FROM FIREBASE ---
+        const releaseId = getReleaseId();
+
+        if (!releaseId) {
+            // No ID -> Show default portal release
+            db.ref('siteData/releases').once('value').then(snap => {
+                const list = snap.val();
+                if (Array.isArray(list) && list.length > 0) {
+                    renderSmartLink(list[0]);
+                } else {
+                    renderSmartLink({
+                        title: "OBSCURA RECORD TRANSMISSION",
+                        artist: "OFFICIAL ROSTER",
+                        image: "../assets/OCR.png"
+                    });
+                }
+            }).catch(() => {
+                renderSmartLink({
+                    title: "OBSCURA RECORD",
+                    artist: "INTO THE VOID",
+                    image: "../assets/OCR.png"
+                });
+            });
+        } else {
+            // First check dedicated 'smartLinks/{id}'
+            db.ref(`smartLinks/${releaseId}`).once('value').then(snap => {
+                const val = snap.val();
+                if (val) {
+                    renderSmartLink(val);
+                } else {
+                    // Fallback to siteData/releases searching by slug/id/title
+                    db.ref('siteData/releases').once('value').then(rSnap => {
+                        const releases = rSnap.val() || [];
+                        const found = Array.isArray(releases) ? releases.find(r => 
+                            (r.id && r.id === releaseId) || 
+                            (r.slug && r.slug === releaseId) ||
+                            (r.title && r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === releaseId.toLowerCase())
+                        ) : null;
+
+                        if (found) {
+                            renderSmartLink(found);
+                        } else {
+                            renderSmartLink({
+                                title: releaseId.replace(/-/g, ' ').toUpperCase(),
+                                artist: "OBSCURA RECORD",
+                                image: "../assets/OCR.png"
+                            });
+                        }
+                    });
+                }
+            }).catch(err => {
+                console.error("Firebase fetch error:", err);
+                renderSmartLink({
+                    title: releaseId.replace(/-/g, ' ').toUpperCase(),
+                    artist: "OBSCURA RECORD",
+                    image: "../assets/OCR.png"
+                });
+            });
+        }
+    </script>
+</body>
+</html>
