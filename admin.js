@@ -3461,6 +3461,56 @@ function initSmartLinksEngine() {
         });
     }
 
+    // Helper: Smart Music Title & Producer Parser
+    function parseMusicVideoTitle(rawTitle, channelAuthor = '') {
+        let clean = (rawTitle || '').trim();
+        
+        // Extract Producer tag like (prod. by X) or [prod. X] or (beat by X)
+        let prodTag = '';
+        const prodMatch = clean.match(/[\(\[\{](?:prod(?:uced)?\.?\s*(?:by)?|beat\s*by)\s*:?\s*([^\]\)\\}]+)[\)\]\}]/i);
+        if (prodMatch && prodMatch[1]) {
+            prodTag = prodMatch[1].trim();
+        }
+
+        // Clean out noise brackets & tags
+        let stripped = clean
+            .replace(/[\(\[\{](?:official\s*)?(?:music\s*)?(?:audio|video|visualizer|lyric\s*video|hd|4k|hq|remix|slowed|reverb|free\s*dl|free\s*download|out\s*now|phonk)[\)\]\}]/gi, '')
+            .replace(/[\(\[\{](?:prod(?:uced)?\.?\s*(?:by)?|beat\s*by)\s*:?\s*[^\]\)\\}]+[\)\]\}]/gi, '')
+            .replace(/\|\s*obscura\s*records?/gi, '')
+            .replace(/\|\s*official\s*audio/gi, '')
+            .replace(/\|\s*visualizer/gi, '')
+            .replace(/\|\s*phonk/gi, '')
+            .trim();
+
+        let artist = '';
+        let title = '';
+
+        // Split by standard track title delimiters: "Artist - Title"
+        const splitMatch = stripped.match(/^(.+?)\s*[-–—|/•:]\s*(.+)$/);
+        if (splitMatch) {
+            artist = splitMatch[1].trim();
+            title = splitMatch[2].trim();
+        } else {
+            title = stripped;
+            artist = channelAuthor ? channelAuthor.replace(/\s*-\s*Topic$/i, '').replace(/VEVO$/i, '').trim() : '';
+        }
+
+        // Merge Producer into artist name if detected
+        if (prodTag && !artist.toLowerCase().includes(prodTag.toLowerCase())) {
+            artist = artist ? `${artist} / ${prodTag}` : prodTag;
+        }
+
+        if ((!artist || artist.toLowerCase() === 'official') && channelAuthor) {
+            artist = channelAuthor.replace(/\s*-\s*Topic$/i, '').replace(/VEVO$/i, '').trim();
+        }
+
+        return {
+            artist: artist ? artist.toUpperCase() : 'OBSCURA RECORD',
+            title: title ? title.toUpperCase() : clean.toUpperCase(),
+            prodTag: prodTag
+        };
+    }
+
     // 1. Magic Auto-Fetcher Engine
     if (magicBtn && magicInput) {
         magicBtn.addEventListener('click', async () => {
@@ -3477,6 +3527,7 @@ function initSmartLinksEngine() {
                 let trackTitle = '';
                 let trackArtist = '';
                 let trackImage = '';
+                let prodTagFound = '';
                 let ytUrl = '';
                 let spotifyUrl = '';
                 let appleUrl = '';
@@ -3495,21 +3546,16 @@ function initSmartLinksEngine() {
                     ytUrl = `https://www.youtube.com/watch?v=${ytId}`;
                     trackImage = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
                     
-                    // Fetch YouTube oEmbed for Title
+                    // Fetch YouTube oEmbed for Title & Author
                     try {
                         const oEmbedRes = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(ytUrl)}`);
                         if (oEmbedRes.ok) {
                             const oData = await oEmbedRes.json();
                             if (oData && oData.title) {
-                                const cleanTitle = oData.title.replace(/\(Official.*?\)/gi, '').replace(/\[Official.*?\]/gi, '').replace(/\(Audio\)/gi, '').replace(/\[Audio\]/gi, '').replace(/\(Video\)/gi, '').replace(/\[Video\]/gi, '').trim();
-                                if (cleanTitle.includes('-')) {
-                                    const parts = cleanTitle.split('-');
-                                    trackArtist = parts[0].trim();
-                                    trackTitle = parts.slice(1).join('-').trim();
-                                } else {
-                                    trackTitle = cleanTitle;
-                                    trackArtist = oData.author_name ? oData.author_name.replace(' - Topic', '').trim() : 'OBSCURA RECORD';
-                                }
+                                const parsed = parseMusicVideoTitle(oData.title, oData.author_name || '');
+                                trackTitle = parsed.title;
+                                trackArtist = parsed.artist;
+                                if (parsed.prodTag) prodTagFound = parsed.prodTag;
                             }
                         }
                     } catch (e) {
@@ -3526,8 +3572,14 @@ function initSmartLinksEngine() {
                             const entityKeys = Object.keys(sData.entitiesByUniqueId);
                             if (entityKeys.length > 0) {
                                 const ent = sData.entitiesByUniqueId[entityKeys[0]];
-                                if (ent.title && !trackTitle) trackTitle = ent.title;
-                                if (ent.artistName && !trackArtist) trackArtist = ent.artistName;
+                                if (ent.title) trackTitle = ent.title.toUpperCase();
+                                if (ent.artistName) {
+                                    if (prodTagFound && !ent.artistName.toLowerCase().includes(prodTagFound.toLowerCase())) {
+                                        trackArtist = `${ent.artistName.toUpperCase()} / ${prodTagFound.toUpperCase()}`;
+                                    } else {
+                                        trackArtist = ent.artistName.toUpperCase();
+                                    }
+                                }
                                 if (ent.thumbnailUrl && !trackImage) trackImage = ent.thumbnailUrl;
                             }
                         }
