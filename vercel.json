@@ -1,17 +1,13 @@
 {
   "version": 2,
-  "rewrites": [
+  "routes": [
     {
-      "source": "/release",
-      "destination": "/api/release"
+      "src": "^/release(/.*)?$",
+      "dest": "/api/release.js"
     },
     {
-      "source": "/release/",
-      "destination": "/api/release"
-    },
-    {
-      "source": "/release/index.html",
-      "destination": "/api/release"
+      "src": "^/api/release$",
+      "dest": "/api/release.js"
     }
   ]
 }
