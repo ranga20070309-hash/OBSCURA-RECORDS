@@ -3366,8 +3366,10 @@ function initTransmissionsEngine() {
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SAVING FEEDS...';
             saveBtn.disabled = true;
 
-            // Save under siteData/globals which has full authorized write permissions in Firebase Rules
-            db.ref('siteData/globals').update({ latest_transmissions: payload }).then(() => {
+            // Direct save to latest_transmissions child node with dual-sync fallback
+            db.ref('siteData/globals/latest_transmissions').set(payload).then(() => {
+                // Mirror to bot_status for webhooks / bots
+                db.ref('bot_status/latest_transmissions').set(payload).catch(() => { });
                 bumpSiteVersion("Updated Latest Media Feeds (YouTube & TikTok)");
                 showToast("MEDIA FEEDS SAVED & SYNCED!");
                 if (msgEl) {
@@ -3376,11 +3378,22 @@ function initTransmissionsEngine() {
                     setTimeout(() => { msgEl.textContent = ''; }, 3000);
                 }
             }).catch(err => {
-                showToast("SAVE FAILED: " + err.message, 'error');
-                if (msgEl) {
-                    msgEl.textContent = 'ERROR: ' + err.message;
-                    msgEl.style.color = '#ff0055';
-                }
+                // Fallback attempt to bot_status in case siteData is rule-locked
+                db.ref('bot_status/latest_transmissions').set(payload).then(() => {
+                    bumpSiteVersion("Updated Latest Media Feeds (via Bot Status)");
+                    showToast("MEDIA FEEDS SAVED (VIA BACKUP PATH)!");
+                    if (msgEl) {
+                        msgEl.textContent = 'SAVED TO BACKUP!';
+                        msgEl.style.color = '#00f0ff';
+                        setTimeout(() => { msgEl.textContent = ''; }, 3000);
+                    }
+                }).catch(err2 => {
+                    showToast("SAVE FAILED: " + err.message, 'error');
+                    if (msgEl) {
+                        msgEl.textContent = 'PERMISSION ERROR: ' + err.message;
+                        msgEl.style.color = '#ff0055';
+                    }
+                });
             }).finally(() => {
                 saveBtn.innerHTML = '<i class="fas fa-save"></i> SAVE & SYNC MEDIA FEEDS';
                 saveBtn.disabled = false;
