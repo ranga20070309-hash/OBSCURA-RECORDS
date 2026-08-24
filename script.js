@@ -2118,62 +2118,39 @@ const initPortal = () => {
 
         // 2. Sync Releases
         const releaseSlider = document.querySelector('.releases-slider');
-        function renderReleases(releases) {
-            if (!releaseSlider) return;
-            releaseSlider.innerHTML = '';
+        const releasesControls = document.querySelector('#releases .slider-controls') || document.querySelector('.slider-controls');
+        let releasesAutoScroll = null;
 
-            releases.forEach(release => {
-                const badge = release.id && typeof release.id === 'string' && release.id.includes('NEW') ? "<span class='badge'>NEW</span>" : "";
-                const cleanId = release.catalog || (release.id && typeof release.id === 'string' ? release.id.replace("<span class='badge'>NEW</span>", "").trim() : "");
-                const coverImg = release.cover || release.image || 'assets/cover.png';
-                const releaseType = release.type || 'SINGLE';
-                const artistName = release.producers || release.artist || 'OBSCURA';
+        const checkReleasesOverflow = () => {
+            if (!releaseSlider || !releasesControls) return;
+            if (releaseSlider.scrollWidth > releaseSlider.clientWidth) {
+                releasesControls.style.display = 'flex';
+            } else {
+                releasesControls.style.display = 'none';
+            }
+        };
 
-                // Preview player audio source (Priority: preview/streamUrl/youtubePreview, fallback to youtube)
-                const previewSource = release.streamUrl || release.youtubePreview || release.preview || release.youtube || '';
-                let ytData = getYouTubeID(previewSource);
-                const ytIdAttr = ytData ? ytData.id : '';
-                const ytTypeAttr = ytData ? ytData.type : 'video';
+        const startReleasesAutoScroll = () => {
+            if (releasesAutoScroll) clearInterval(releasesAutoScroll);
+            releasesAutoScroll = setInterval(() => {
+                if (!releaseSlider) return;
+                // Pause if user is currently previewing audio
+                if (currentPlayingBtn && (previewAudio && !previewAudio.paused || ytPlayer && typeof ytPlayer.getPlayerState === 'function' && ytPlayer.getPlayerState() === 1)) {
+                    return;
+                }
+                let maxScroll = releaseSlider.scrollWidth - releaseSlider.clientWidth;
+                if (releaseSlider.scrollLeft >= maxScroll - 10) {
+                    releaseSlider.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    releaseSlider.scrollBy({ left: 400, behavior: 'smooth' });
+                }
+            }, 5000);
+        };
 
-                const cardHtml = `
-                    <div class="release-card-large glass">
-                        <div class="release-cover-large">
-                            <div class="cyber-laser-scanner"></div>
-                            <img src="${coverImg}" alt="${release.title || 'Release'}" onerror="this.src='assets/cover.png'">
-                            <div class="release-type-badge">${releaseType}</div>
-                            <div class="player-overlay">
-                                <button class="play-btn preview-btn" 
-                                    aria-label="Play Preview"
-                                    data-title="${release.title || ''}"
-                                    data-artist="${artistName}"
-                                    data-image="${coverImg}"
-                                    data-spotify="${release.spotify || release.spotifyUrl || '#'}"
-                                    data-youtube="${release.youtube || release.youtubeUrl || '#'}"
-                                    data-audio="${previewSource}"
-                                    data-ytid="${ytIdAttr}"
-                                    data-yttype="${ytTypeAttr}">
-                                    <i class="fas fa-play"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="release-info-large">
-                            <span class="track-id">${cleanId} ${badge}</span>
-                            <h4>${release.title || 'UNTITLED'}</h4>
-                            <div class="producers-text">Produced by: <span>${artistName}</span></div>
-                            <div class="release-actions">
-                                ${release.spotify && release.spotify !== '#' ? `<a href="${release.spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
-                                ${release.apple && release.apple !== '#' ? `<a href="${release.apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
-                                ${release.youtube && release.youtube !== '#' ? `<a href="${release.youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
-                                ${release.soundcloud && release.soundcloud !== '#' ? `<a href="${release.soundcloud}" target="_blank" class="platform-link soundcloud" title="SoundCloud" onclick="event.stopPropagation()"><i class="fab fa-soundcloud"></i></a>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-                releaseSlider.insertAdjacentHTML('beforeend', cardHtml);
-            });
-
-            bindReleaseInteractions();
-        }
+        const resetReleasesAutoScroll = () => {
+            clearInterval(releasesAutoScroll);
+            setTimeout(startReleasesAutoScroll, 10000); // Resume after 10s of inactivity
+        };
 
         function bindReleaseControls() {
             const btnPrev = document.querySelector('#releases .slider-nav-btn.prev') || document.querySelector('.slider-nav-btn.prev');
@@ -2182,22 +2159,18 @@ const initPortal = () => {
             if (btnPrev && releaseSlider) {
                 btnPrev.onclick = (e) => {
                     e.preventDefault();
-                    gsap.to(releaseSlider, { scrollLeft: releaseSlider.scrollLeft - 380, duration: 0.5, ease: "power2.out" });
-                    if (autoScrollInterval) {
-                        clearInterval(autoScrollInterval);
-                        setTimeout(startAutoScroll, 3000);
-                    }
+                    e.stopPropagation();
+                    releaseSlider.scrollBy({ left: -400, behavior: 'smooth' });
+                    resetReleasesAutoScroll();
                 };
             }
 
             if (btnNext && releaseSlider) {
                 btnNext.onclick = (e) => {
                     e.preventDefault();
-                    gsap.to(releaseSlider, { scrollLeft: releaseSlider.scrollLeft + 380, duration: 0.5, ease: "power2.out" });
-                    if (autoScrollInterval) {
-                        clearInterval(autoScrollInterval);
-                        setTimeout(startAutoScroll, 3000);
-                    }
+                    e.stopPropagation();
+                    releaseSlider.scrollBy({ left: 400, behavior: 'smooth' });
+                    resetReleasesAutoScroll();
                 };
             }
         }
@@ -2226,28 +2199,136 @@ const initPortal = () => {
             bindReleaseControls();
         }
 
-        // Auto-Scroll Logic for Releases Slider
-        function startAutoScroll() {
-            if (autoScrollInterval) clearInterval(autoScrollInterval);
+        function renderReleases(releases) {
             if (!releaseSlider) return;
+            releaseSlider.innerHTML = '';
 
-            // Only auto-scroll if content overflows
-            if (releaseSlider.scrollWidth <= releaseSlider.clientWidth + 10) {
+            if (!releases || releases.length === 0) {
+                releaseSlider.innerHTML = '<p style="opacity: 0.3; grid-column: 1/-1; text-align: center; padding: 3rem;">NO RELEASES FOUND IN THIS ARCHIVE.</p>';
                 return;
             }
 
-            autoScrollInterval = setInterval(() => {
-                if (releaseSlider.scrollLeft >= (releaseSlider.scrollWidth - releaseSlider.clientWidth - 5)) {
-                    releaseSlider.scrollLeft = 0;
-                } else {
-                    releaseSlider.scrollLeft += 1;
+            releases.forEach((release, i) => {
+                const badge = release.id && typeof release.id === 'string' && release.id.includes('NEW') ? "<span class='badge'>NEW</span>" : "";
+                const cleanId = release.catalog || (release.id && typeof release.id === 'string' ? release.id.replace("<span class='badge'>NEW</span>", "").trim() : "");
+                const coverImg = release.cover || release.image || 'assets/cover.png';
+                const releaseType = release.type || 'SINGLE';
+                const artistName = release.producers || release.artist || 'OBSCURA';
+
+                // Preview player audio source (Priority: preview/streamUrl/youtubePreview, fallback to youtube)
+                const previewSource = release.streamUrl || release.youtubePreview || release.preview || release.youtube || '';
+                let ytData = getYouTubeID(previewSource);
+                const ytIdAttr = ytData ? ytData.id : '';
+                const ytTypeAttr = ytData ? ytData.type : 'video';
+
+                const card = document.createElement('div');
+                card.className = 'release-card-large glass';
+                card.innerHTML = `
+                    <div class="release-cover-large">
+                        <div class="cyber-laser-scanner"></div>
+                        <img src="${coverImg}" alt="${release.title || 'Release'}" onerror="this.src='assets/cover.png'">
+                        <div class="release-type-badge">${releaseType}</div>
+                        <div class="player-overlay">
+                            <button class="play-btn preview-btn" 
+                                aria-label="Play Preview"
+                                data-title="${release.title || ''}"
+                                data-artist="${artistName}"
+                                data-image="${coverImg}"
+                                data-spotify="${release.spotify || release.spotifyUrl || '#'}"
+                                data-youtube="${release.youtube || release.youtubeUrl || '#'}"
+                                data-audio="${previewSource}"
+                                data-ytid="${ytIdAttr}"
+                                data-yttype="${ytTypeAttr}">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="release-info-large">
+                        <span class="track-id">${cleanId} ${badge}</span>
+                        <h4>${release.title || 'UNTITLED'}</h4>
+                        <div class="producers-text">Produced by: <span>${artistName}</span></div>
+                        <div class="release-actions">
+                            ${release.spotify && release.spotify !== '#' ? `<a href="${release.spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
+                            ${release.apple && release.apple !== '#' ? `<a href="${release.apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
+                            ${release.youtube && release.youtube !== '#' ? `<a href="${release.youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
+                            ${release.soundcloud && release.soundcloud !== '#' ? `<a href="${release.soundcloud}" target="_blank" class="platform-link soundcloud" title="SoundCloud" onclick="event.stopPropagation()"><i class="fab fa-soundcloud"></i></a>` : ''}
+                        </div>
+                    </div>
+                `;
+                releaseSlider.appendChild(card);
+
+                // Entry Animation
+                if (typeof gsap !== 'undefined') {
+                    gsap.from(card, {
+                        y: 50,
+                        opacity: 0,
+                        scale: 0.9,
+                        duration: 1,
+                        delay: i * 0.1,
+                        ease: "expo.out",
+                        scrollTrigger: {
+                            trigger: card,
+                            start: "top 90%",
+                        }
+                    });
                 }
-            }, 30);
+            });
+
+            bindReleaseInteractions();
+
+            setTimeout(() => {
+                checkReleasesOverflow();
+                if (releaseSlider && releaseSlider.scrollWidth > releaseSlider.clientWidth) {
+                    startReleasesAutoScroll();
+                }
+            }, 800);
+        }
+
+        // Pause/Resume on hover or touch
+        if (releaseSlider) {
+            releaseSlider.addEventListener('mouseenter', () => {
+                if (releasesAutoScroll) clearInterval(releasesAutoScroll);
+            });
+            releaseSlider.addEventListener('mouseleave', () => {
+                resetReleasesAutoScroll();
+            });
+            releaseSlider.addEventListener('touchstart', () => {
+                if (releasesAutoScroll) clearInterval(releasesAutoScroll);
+            }, { passive: true });
+            releaseSlider.addEventListener('touchend', () => {
+                resetReleasesAutoScroll();
+            }, { passive: true });
         }
 
         // Bind existing static release cards immediately on load
+        const staticCards = document.querySelectorAll('.releases-slider .release-card-large');
+        staticCards.forEach((card, i) => {
+            if (typeof gsap !== 'undefined') {
+                gsap.from(card, {
+                    y: 50,
+                    opacity: 0,
+                    scale: 0.9,
+                    duration: 1,
+                    delay: i * 0.1,
+                    ease: "expo.out",
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 90%",
+                    }
+                });
+            }
+        });
+
         bindReleaseInteractions();
-        startAutoScroll();
+
+        setTimeout(() => {
+            checkReleasesOverflow();
+            if (releaseSlider && releaseSlider.scrollWidth > releaseSlider.clientWidth) {
+                startReleasesAutoScroll();
+            }
+        }, 800);
+
+        window.addEventListener('resize', checkReleasesOverflow);
 
         fetchWithCache('siteData/releases', (data) => {
             let items = [];
@@ -2370,21 +2451,7 @@ const initPortal = () => {
         }
     });
 
-    function startAutoScroll() {
-        if (!releaseSlider) return;
-        if (autoScrollInterval) clearInterval(autoScrollInterval);
 
-        autoScrollInterval = setInterval(() => {
-            // Only scroll if nothing is currently playing
-            if (!currentPlayingBtn) {
-                releaseSlider.scrollLeft += 1;
-                // Infinite loop reset
-                if (releaseSlider.scrollLeft >= (releaseSlider.scrollWidth - releaseSlider.clientWidth - 5)) {
-                    gsap.to(releaseSlider, { scrollLeft: 0, duration: 1.5, ease: "power2.inOut" });
-                }
-            }
-        }, 40);
-    }
 
     // --- ADVANCED GALACTIC PARTICLES & INTERACTION ---
     const pCanvas = document.getElementById('particle-bg');
