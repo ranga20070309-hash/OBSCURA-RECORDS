@@ -766,7 +766,7 @@
             // Set Page Titles & Metadata
             document.title = `${title} - ${artist} | OBSCURA RECORD`;
             document.getElementById('track-title').textContent = title;
-            document.getElementById('track-artist').textContent = artist ? `PROD. ${artist.toUpperCase()}` : "OBSCURA RECORD";
+            document.getElementById('track-artist').textContent = artist || "OBSCURA RECORD";
             
             // Set Cover & Ambient Background
             document.getElementById('track-cover').src = cover;
