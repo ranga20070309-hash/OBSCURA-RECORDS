@@ -1200,6 +1200,35 @@
             document.getElementById('track-cover').src = cover;
             document.getElementById('ambient-bg').style.backgroundImage = `url('${cover}')`;
 
+            // Apply 100% UI Customizations if present
+            if (data.ui) {
+                const ui = data.ui;
+                if (ui.accent) {
+                    document.documentElement.style.setProperty('--accent-cyan', ui.accent);
+                }
+                if (ui.cardBg) {
+                    document.documentElement.style.setProperty('--card-bg', ui.cardBg);
+                }
+                if (ui.darkness !== undefined) {
+                    const ambientEl = document.getElementById('ambient-bg');
+                    if (ambientEl) ambientEl.style.filter = `blur(65px) brightness(${ui.darkness}) saturate(1.1)`;
+                }
+                if (ui.borderGlow !== undefined) {
+                    const cardEl = document.getElementById('smart-link-card');
+                    if (cardEl) {
+                        cardEl.style.borderColor = `rgba(255, 255, 255, ${ui.borderGlow * 0.3})`;
+                    }
+                }
+                if (ui.showQrDock === false) {
+                    const sideQr = document.getElementById('side-qr-dock');
+                    if (sideQr) sideQr.style.setProperty('display', 'none', 'important');
+                }
+                if (ui.showGrid === false) {
+                    const gridEl = document.querySelector('.cyber-grid-overlay');
+                    if (gridEl) gridEl.style.display = 'none';
+                }
+            }
+
             // Prepare Audio
             currentAudioSrc = audioSrc;
             if (ytUrl) {
