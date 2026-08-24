@@ -110,6 +110,7 @@
             z-index: 10;
             width: 100%;
             max-width: 418px;
+            min-height: 620px;
             background: var(--card-bg);
             backdrop-filter: blur(35px);
             -webkit-backdrop-filter: blur(35px);
@@ -120,10 +121,9 @@
                 0 0 35px rgba(0, 240, 255, 0.08),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
             overflow: hidden;
-            animation: cardFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* Side Docked Cyber Neon QR Box (Vertically Centered with the Release Card) */
+        /* Side Docked Cyber Neon QR Box (Vertically Centered with the Release Card - Frozen in place) */
         .side-qr-dock {
             display: none;
         }
@@ -151,7 +151,6 @@
                     0 25px 55px rgba(0, 0, 0, 0.88),
                     0 0 35px rgba(0, 240, 255, 0.14),
                     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-                animation: cardFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
             }
         }
 
