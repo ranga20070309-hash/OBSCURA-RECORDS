@@ -994,11 +994,10 @@ function initReleasesEngine() {
         searchInput.addEventListener('input', renderReleasesList);
     }
 
-    // --- SPOTIFY & YOUTUBE METADATA AUTO-DETECTION ENGINE ---
+    // --- SPOTIFY & YOUTUBE ARTWORK AUTO-DETECTION ENGINE ---
     async function autoDetectReleaseMetadata(spotifyUrl = '', youtubeUrl = '', currentTitle = '', currentArtist = '') {
         let result = {
             cover: '',
-            date: '',
             title: '',
             artist: ''
         };
@@ -1030,9 +1029,9 @@ function initReleasesEngine() {
             }
         }
 
-        // 2. iTunes Search API (Returns precise releaseDate, 4K artwork & artist/track name)
+        // 2. iTunes Search API (Returns 4K artwork & artist/track name fallback)
         const searchTerms = (result.title && result.artist) ? `${result.title} ${result.artist}` : (currentTitle || currentArtist ? `${currentTitle} ${currentArtist}` : (result.title || ''));
-        if (searchTerms) {
+        if (searchTerms && !result.cover) {
             try {
                 const itunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerms)}&entity=song&limit=1`;
                 const itunesRes = await fetch(itunesUrl);
@@ -1040,16 +1039,7 @@ function initReleasesEngine() {
                     const itunesData = await itunesRes.json();
                     if (itunesData.resultCount > 0) {
                         const item = itunesData.results[0];
-                        if (item.releaseDate) {
-                            const d = new Date(item.releaseDate);
-                            if (!isNaN(d.getTime())) {
-                                const y = d.getFullYear();
-                                const m = String(d.getMonth() + 1).padStart(2, '0');
-                                const day = String(d.getDate()).padStart(2, '0');
-                                result.date = `${y}.${m}.${day}`;
-                            }
-                        }
-                        if (!result.cover && item.artworkUrl100) {
+                        if (item.artworkUrl100) {
                             result.cover = item.artworkUrl100.replace('100x100bb', '600x600bb');
                         }
                         if (!result.title && item.trackName) result.title = item.trackName;
@@ -1080,15 +1070,6 @@ function initReleasesEngine() {
             }
         }
 
-        // If no date found yet, fallback to today's date
-        if (!result.date) {
-            const now = new Date();
-            const y = now.getFullYear();
-            const m = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            result.date = `${y}.${m}.${day}`;
-        }
-
         return result;
     }
 
@@ -1108,7 +1089,7 @@ function initReleasesEngine() {
             return;
         }
 
-        if (!isSilent) showToast("FETCHING SPOTIFY ARTWORK & RELEASE DATE...", 'info');
+        if (!isSilent) showToast("FETCHING SPOTIFY ARTWORK...", 'info');
 
         const meta = await autoDetectReleaseMetadata(spotUrl, ytUrl, curTitle, curArtist);
 
@@ -1122,11 +1103,6 @@ function initReleasesEngine() {
             }
         }
 
-        if (meta.date) {
-            const dateEl = document.getElementById('rel_date');
-            if (dateEl) dateEl.value = meta.date;
-        }
-
         if (meta.title && !document.getElementById('rel_title').value.trim()) {
             document.getElementById('rel_title').value = meta.title;
         }
@@ -1136,7 +1112,7 @@ function initReleasesEngine() {
         }
 
         if (!isSilent) {
-            showToast("METADATA & ARTWORK AUTO-DETECTED SUCCESSFULLY!");
+            showToast("ARTWORK AUTO-ASSIGNED SUCCESSFULLY!");
         }
     }
 
@@ -1164,11 +1140,11 @@ function initReleasesEngine() {
                 return;
             }
 
-            if (!confirm(`Auto-detect Spotify Artworks & Release Dates for all ${cachedReleases.length} releases?`)) {
+            if (!confirm(`Auto-detect Spotify Artworks for all ${cachedReleases.length} releases?`)) {
                 return;
             }
 
-            showToast(`SYNCING ${cachedReleases.length} RELEASES WITH SPOTIFY & ITUNES...`, 'info');
+            showToast(`SYNCING ${cachedReleases.length} RELEASES WITH SPOTIFY ARTWORKS...`, 'info');
             btnBatchSyncReleases.disabled = true;
             btnBatchSyncReleases.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SYNCING...';
 
@@ -1191,10 +1167,6 @@ function initReleasesEngine() {
                         rel.image = meta.cover;
                         changed = true;
                     }
-                    if (meta.date && (!rel.date || rel.date === '2026' || rel.date === 'TBA')) {
-                        rel.date = meta.date;
-                        changed = true;
-                    }
 
                     if (changed) updatedCount++;
                 } catch (e) {
@@ -1203,14 +1175,14 @@ function initReleasesEngine() {
             }
 
             db.ref('siteData/releases').set(updatedList).then(() => {
-                bumpSiteVersion(`Auto-synced ${updatedCount} Releases`);
+                bumpSiteVersion(`Auto-synced ${updatedCount} Releases Artwork`);
                 showToast(`SUCCESSFULLY SYNCED ${updatedCount} RELEASES!`);
                 btnBatchSyncReleases.disabled = false;
-                btnBatchSyncReleases.innerHTML = '<i class="fab fa-spotify"></i> AUTO-SYNC DATES & ARTWORK';
+                btnBatchSyncReleases.innerHTML = '<i class="fab fa-spotify"></i> AUTO-SYNC ARTWORK';
             }).catch(err => {
                 showToast("SYNC ERROR: " + err.message, 'error');
                 btnBatchSyncReleases.disabled = false;
-                btnBatchSyncReleases.innerHTML = '<i class="fab fa-spotify"></i> AUTO-SYNC DATES & ARTWORK';
+                btnBatchSyncReleases.innerHTML = '<i class="fab fa-spotify"></i> AUTO-SYNC ARTWORK';
             });
         });
     }
