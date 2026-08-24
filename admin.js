@@ -3697,6 +3697,9 @@ function initSmartLinksEngine() {
                 </div>
 
                 <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                    <button type="button" class="cyber-btn sm" onclick="openSmartLinkQr('${slugId}', '${(item.title || slugId).replace(/'/g, "\\'")}', '${liveUrl}')" title="Generate & Download QR Code">
+                        <i class="fas fa-qrcode"></i> QR CODE
+                    </button>
                     <button type="button" class="cyber-btn sm" onclick="copySmartLinkToClipboard('${liveUrl}')" title="Copy Live Smart Link URL">
                         <i class="fas fa-copy"></i> COPY LINK
                     </button>
@@ -3892,4 +3895,39 @@ window.deleteSmartLink = function(slugId) {
     }).catch(err => {
         showToast("DELETE FAILED: " + err.message, 'error');
     });
+};
+
+let currentQrModalUrl = '';
+window.openSmartLinkQr = function(slugId, title, url) {
+    currentQrModalUrl = url;
+    const modal = document.getElementById('smartlink-qr-modal');
+    const titleEl = document.getElementById('qr-modal-title');
+    const imgEl = document.getElementById('qr-modal-img');
+    const urlEl = document.getElementById('qr-modal-url-display');
+    const downloadBtn = document.getElementById('qr-modal-download-btn');
+
+    if (titleEl) titleEl.textContent = `${title || slugId} // QR TRANSMISSION`;
+    if (urlEl) urlEl.textContent = url;
+
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(url)}&color=0-0-0&bgcolor=255-255-255`;
+    if (imgEl) imgEl.src = qrApiUrl;
+    if (downloadBtn) {
+        downloadBtn.href = qrApiUrl;
+        downloadBtn.download = `${slugId}-qr.png`;
+    }
+
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+};
+
+window.closeSmartLinkQrModal = function() {
+    const modal = document.getElementById('smartlink-qr-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.copyQrModalUrl = function() {
+    if (currentQrModalUrl) {
+        copySmartLinkToClipboard(currentQrModalUrl);
+    }
 };
