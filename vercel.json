@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/release",
+      "destination": "/api/release"
+    },
+    {
+      "source": "/release/",
+      "destination": "/api/release"
+    },
+    {
+      "source": "/release/index.html",
+      "destination": "/api/release"
+    }
+  ]
+}
