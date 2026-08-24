@@ -2955,6 +2955,98 @@ function stopFloatingPlayerProgressTracker() {
     updateFloatingPlayerProgress(0, PREVIEW_LIMIT || 30);
 }
 
+// Global Cyber Notification Toast
+function showCyberNotification(msg, icon = 'fas fa-check-circle') {
+    let existing = document.querySelector('.cyber-toast-notif');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'cyber-toast-notif';
+    toast.innerHTML = `<i class="${icon}"></i> <span>${msg}</span>`;
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 2800);
+}
+
+// Playback Speed & Phonk Audio Modes (1.0x Normal, 0.85x Slowed, 1.25x Speed Up)
+const speedModes = [
+    { speed: 1.0, label: '1.0x', modeClass: '' },
+    { speed: 0.85, label: 'SLOWED', modeClass: 'slowed' },
+    { speed: 1.25, label: '1.25x', modeClass: 'fast' }
+];
+let currentSpeedIndex = 0;
+
+function applyPlaybackSpeed(speed) {
+    if (previewAudio) {
+        previewAudio.playbackRate = speed;
+    }
+    if (ytPlayer && typeof ytPlayer.setPlaybackRate === 'function') {
+        try {
+            ytPlayer.setPlaybackRate(speed);
+        } catch (e) {}
+    }
+}
+
+function updateSpeedButtonUI() {
+    const speedBtn = document.getElementById('fp-speed-btn');
+    const speedLabel = document.getElementById('fp-speed-label');
+    if (!speedBtn || !speedLabel) return;
+
+    const currentMode = speedModes[currentSpeedIndex];
+    speedLabel.textContent = currentMode.label;
+    speedBtn.className = `fp-btn fp-speed-btn ${currentMode.modeClass}`;
+    speedBtn.title = `Mode: ${currentMode.label} (${currentMode.speed}x speed)`;
+}
+
+// Queue Drawer Generator
+function populateQueueDrawer() {
+    const queueList = document.getElementById('fp-queue-list');
+    if (!queueList) return;
+
+    const allPlayBtns = Array.from(document.querySelectorAll('#releases .play-btn, .releases-slider .play-btn, .popular-card .play-btn'));
+    if (!allPlayBtns.length) {
+        queueList.innerHTML = '<div style="padding:2rem; text-align:center; color:rgba(255,255,255,0.4); font-size:0.75rem; letter-spacing:0.06rem;">NO TRANSMISSIONS LOADED</div>';
+        return;
+    }
+
+    queueList.innerHTML = '';
+    allPlayBtns.forEach((btn, index) => {
+        const row = btn.closest('.release-card-large, .popular-card');
+        const title = (btn.getAttribute('data-title')) || (row ? (row.querySelector('h4, .release-title')?.textContent.trim() || '') : `TRANSMISSION ${index + 1}`);
+        const artist = (btn.getAttribute('data-artist')) || (row ? (row.querySelector('.producers-text span, .popular-artist')?.textContent.trim() || '') : 'OBSCURA RECORD');
+        const img = (btn.getAttribute('data-image')) || (row ? (row.querySelector('img')?.src || 'assets/OCR.png') : 'assets/OCR.png');
+
+        const isCurrent = (currentPlayingBtn === btn);
+
+        const item = document.createElement('div');
+        item.className = `fp-queue-item ${isCurrent ? 'playing' : ''}`;
+        item.innerHTML = `
+            <img src="${img}" class="fp-queue-thumb" alt="Cover">
+            <div class="fp-queue-info">
+                <div class="fp-queue-name">${title}</div>
+                <div class="fp-queue-artist">${artist ? `PROD. ${artist.toUpperCase()}` : 'OBSCURA RECORD'}</div>
+            </div>
+            ${isCurrent ? '<i class="fas fa-volume-up fp-queue-playing-icon"></i>' : '<i class="fas fa-play" style="font-size:0.75rem; color:rgba(255,255,255,0.3);"></i>'}
+        `;
+
+        item.addEventListener('click', () => {
+            playCyberSFX('click');
+            btn.click();
+            if (row) row.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            setTimeout(populateQueueDrawer, 100);
+        });
+
+        queueList.appendChild(item);
+    });
+}
+
 function updateLikeButtonUI(title) {
     const likeBtn = document.getElementById('fp-like-btn');
     if (!likeBtn) return;
@@ -2971,6 +3063,7 @@ function syncFloatingPlayer(row, btn, isPlaying) {
     if (isPlaying) {
         if (typeof startBassReactiveEngine === 'function') startBassReactiveEngine();
         startFloatingPlayerProgressTracker();
+        applyPlaybackSpeed(speedModes[currentSpeedIndex].speed);
     } else {
         if (typeof stopBassReactiveEngine === 'function') stopBassReactiveEngine();
         stopFloatingPlayerProgressTracker();
@@ -3046,6 +3139,7 @@ function syncFloatingPlayer(row, btn, isPlaying) {
     }
 
     updateLikeButtonUI(trackTitle);
+    updateSpeedButtonUI();
 
     if (playIcon) {
         playIcon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
@@ -3055,9 +3149,15 @@ function syncFloatingPlayer(row, btn, isPlaying) {
         resetFloatingPlayerAutoDismiss();
         fpBar.classList.remove('hidden');
         fpBar.classList.add('playing');
+        applyPlaybackSpeed(speedModes[currentSpeedIndex].speed);
     } else {
         fpBar.classList.remove('playing');
         startFloatingPlayerAutoDismiss(4000);
+    }
+
+    const queueDrawer = document.getElementById('fp-queue-drawer');
+    if (queueDrawer && queueDrawer.classList.contains('active')) {
+        populateQueueDrawer();
     }
 }
 
@@ -3117,7 +3217,12 @@ function initFloatingPlayer() {
     const nextBtn = document.getElementById('fp-next-btn');
     const shuffleBtn = document.getElementById('fp-shuffle-btn');
     const loopBtn = document.getElementById('fp-loop-btn');
+    const speedBtn = document.getElementById('fp-speed-btn');
     const likeBtn = document.getElementById('fp-like-btn');
+    const queueBtn = document.getElementById('fp-queue-btn');
+    const queueDrawer = document.getElementById('fp-queue-drawer');
+    const queueCloseBtn = document.getElementById('fp-queue-close');
+    const shareBtn = document.getElementById('fp-share-btn');
     const expandBtn = document.getElementById('fp-expand-btn');
     const closeBtn = document.getElementById('fp-close-btn');
     const muteBtn = document.getElementById('fp-mute-btn');
@@ -3168,6 +3273,7 @@ function initFloatingPlayer() {
             isFpShuffle = !isFpShuffle;
             shuffleBtn.classList.toggle('active', isFpShuffle);
             shuffleBtn.title = isFpShuffle ? 'Shuffle: ON' : 'Shuffle: OFF';
+            showCyberNotification(isFpShuffle ? 'SHUFFLE MODE: ACTIVATED' : 'SHUFFLE MODE: DEACTIVATED', 'fas fa-random');
         });
     }
 
@@ -3177,6 +3283,70 @@ function initFloatingPlayer() {
             isFpLoop = !isFpLoop;
             loopBtn.classList.toggle('active', isFpLoop);
             loopBtn.title = isFpLoop ? 'Repeat: ON' : 'Repeat: OFF';
+            showCyberNotification(isFpLoop ? 'REPEAT TRACK: ACTIVATED' : 'REPEAT TRACK: DEACTIVATED', 'fas fa-redo-alt');
+        });
+    }
+
+    // Speed & Phonk Mode Switcher
+    if (speedBtn) {
+        updateSpeedButtonUI();
+        speedBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            currentSpeedIndex = (currentSpeedIndex + 1) % speedModes.length;
+            const mode = speedModes[currentSpeedIndex];
+            updateSpeedButtonUI();
+            applyPlaybackSpeed(mode.speed);
+            showCyberNotification(`PLAYBACK MODE: ${mode.label} (${mode.speed}x)`, 'fas fa-tachometer-alt');
+        });
+    }
+
+    // Queue / Playlist Drawer Toggle
+    if (queueBtn && queueDrawer) {
+        queueBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            playCyberSFX('click');
+            const isActive = queueDrawer.classList.toggle('active');
+            queueBtn.classList.toggle('active', isActive);
+            if (isActive) {
+                populateQueueDrawer();
+            }
+        });
+
+        if (queueCloseBtn) {
+            queueCloseBtn.addEventListener('click', () => {
+                playCyberSFX('click');
+                queueDrawer.classList.remove('active');
+                queueBtn.classList.remove('active');
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (queueDrawer.classList.contains('active') && !queueDrawer.contains(e.target) && !queueBtn.contains(e.target)) {
+                queueDrawer.classList.remove('active');
+                queueBtn.classList.remove('active');
+            }
+        });
+    }
+
+    // Share Track Link
+    if (shareBtn) {
+        shareBtn.addEventListener('click', () => {
+            playCyberSFX('success');
+            const title = currentTrackTitle || 'Obscura Track';
+            const slug = title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+            const smartLinkUrl = `${baseUrl}release/?id=${slug}`;
+            const textToCopy = `Listen to "${title}" on Obscura Record: ${smartLinkUrl}`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(smartLinkUrl).then(() => {
+                    showCyberNotification('SMART LINK COPIED TO CLIPBOARD', 'fas fa-share-alt');
+                }).catch(() => {
+                    showCyberNotification('TRANSMISSION READY', 'fas fa-share-alt');
+                });
+            } else {
+                showCyberNotification('SMART LINK COPIED', 'fas fa-share-alt');
+            }
         });
     }
 
@@ -3184,10 +3354,13 @@ function initFloatingPlayer() {
         likeBtn.addEventListener('click', () => {
             playCyberSFX('success');
             if (!currentTrackTitle) return;
-            if (likedTracksSet.has(currentTrackTitle)) {
-                likedTracksSet.delete(currentTrackTitle);
-            } else {
+            const willLike = !likedTracksSet.has(currentTrackTitle);
+            if (willLike) {
                 likedTracksSet.add(currentTrackTitle);
+                showCyberNotification('SAVED TO FAVORITE TRANSMISSIONS', 'fas fa-heart');
+            } else {
+                likedTracksSet.delete(currentTrackTitle);
+                showCyberNotification('REMOVED FROM FAVORITES', 'far fa-heart');
             }
             localStorage.setItem('obscura_liked_tracks', JSON.stringify(Array.from(likedTracksSet)));
             updateLikeButtonUI(currentTrackTitle);
@@ -3205,6 +3378,7 @@ function initFloatingPlayer() {
                 const releasesSection = document.getElementById('releases');
                 if (releasesSection) releasesSection.scrollIntoView({ behavior: 'smooth' });
             }
+            showCyberNotification('TARGET TRACK LOCKED IN VIEW', 'fas fa-crosshairs');
         });
     }
 
@@ -3212,6 +3386,10 @@ function initFloatingPlayer() {
         closeBtn.addEventListener('click', () => {
             playCyberSFX('click');
             fpBar.classList.add('hidden');
+            if (queueDrawer) {
+                queueDrawer.classList.remove('active');
+                if (queueBtn) queueBtn.classList.remove('active');
+            }
         });
     }
 
