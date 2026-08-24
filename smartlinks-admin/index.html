@@ -995,10 +995,10 @@ input:checked + .slider:before {
 }
 
 .mock-platforms-list {
-    background: #fff;
     border-radius: 14px;
     margin: 0 0.75rem 0.85rem 0.75rem;
     overflow: hidden;
+    transition: all 0.3s ease;
 }
 
 .mock-platform-row {
@@ -1006,13 +1006,12 @@ input:checked + .slider:before {
     align-items: center;
     justify-content: space-between;
     padding: 0.7rem 0.9rem;
-    border-bottom: 1px solid #f0f0f0;
     font-size: 0.78rem;
-    color: #111;
     font-weight: 700;
+    transition: all 0.2s ease;
 }
 
-.mock-platform-row:last-child { border-bottom: none; }
+.mock-platform-row:last-child { border-bottom: none !important; }
 
 .mock-p-left {
     display: flex;
@@ -1021,12 +1020,71 @@ input:checked + .slider:before {
 }
 
 .mock-p-btn {
-    background: #fff;
-    border: 1px solid #d1d5db;
     border-radius: 6px;
     padding: 0.25rem 0.7rem;
     font-size: 0.72rem;
     font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+/* 1. Light Minimalist Mockup */
+.mock-platforms-list.style-clean-light {
+    background: #ffffff;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+.mock-platforms-list.style-clean-light .mock-platform-row {
+    border-bottom: 1px solid #f0f0f0;
+    color: #111;
+}
+.mock-platforms-list.style-clean-light .mock-platform-row:hover {
+    background: #f4f6f8;
+}
+.mock-platforms-list.style-clean-light .mock-p-btn {
+    background: #ffffff;
+    color: #111;
+    border: 1.5px solid #d1d5db;
+}
+
+/* 2. Dark Cyber Glassmorphism Mockup */
+.mock-platforms-list.style-cyber-glass {
+    background: rgba(12, 16, 28, 0.72);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+.mock-platforms-list.style-cyber-glass .mock-platform-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+.mock-platforms-list.style-cyber-glass .mock-platform-row:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+.mock-platforms-list.style-cyber-glass .mock-p-btn {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* 3. Solid Neon Mockup */
+.mock-platforms-list.style-solid-neon {
+    background: #080b14;
+    border: 1px solid var(--accent-cyan, #00f0ff);
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.25), 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+.mock-platforms-list.style-solid-neon .mock-platform-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+.mock-platforms-list.style-solid-neon .mock-platform-row:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+.mock-platforms-list.style-solid-neon .mock-p-btn {
+    background: var(--accent-cyan, #00f0ff);
+    color: #000000;
+    font-weight: 800;
+    border: none;
+    box-shadow: 0 0 10px var(--accent-cyan, #00f0ff);
 }
 
 .mock-footer {
