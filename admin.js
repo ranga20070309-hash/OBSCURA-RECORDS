@@ -17,6 +17,25 @@ if (!firebase.apps.length) {
 }
 const db = firebase.database();
 
+// Dedicated Firebase Project for Smart Links: obscura-records-smart-links
+const smartLinksFirebaseConfig = {
+    apiKey: "AIzaSyBARRt8caSaWBTjtxzNzr670lTYfqBRIj0",
+    authDomain: "obscura-records-smart-links.firebaseapp.com",
+    databaseURL: "https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "obscura-records-smart-links",
+    storageBucket: "obscura-records-smart-links.firebasestorage.app",
+    messagingSenderId: "22595717651",
+    appId: "1:22595717651:web:b39895741f4aebe8268de6"
+};
+
+let smartLinksApp;
+try {
+    smartLinksApp = firebase.initializeApp(smartLinksFirebaseConfig, "smartLinksApp");
+} catch (e) {
+    smartLinksApp = firebase.app("smartLinksApp");
+}
+const smartLinksDb = smartLinksApp.database();
+
 // State stores
 let cachedGlobals = {};
 let cachedPopular = [];
@@ -3401,26 +3420,7 @@ function initTransmissionsEngine() {
 
 // ==========================================================================
 // --- SMART LINKS HUB ENGINE (1-CLICK AUTO-FETCHER & DIRECTORY) ---
-// Dedicated Firebase Project: obscura-records-smart-links
 // ==========================================================================
-const smartLinksFirebaseConfig = {
-    apiKey: "AIzaSyBARRt8caSaWBTjtxzNzr670lTYfqBRIj0",
-    authDomain: "obscura-records-smart-links.firebaseapp.com",
-    databaseURL: "https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "obscura-records-smart-links",
-    storageBucket: "obscura-records-smart-links.firebasestorage.app",
-    messagingSenderId: "22595717651",
-    appId: "1:22595717651:web:b39895741f4aebe8268de6"
-};
-
-let smartLinksApp;
-try {
-    smartLinksApp = firebase.initializeApp(smartLinksFirebaseConfig, "smartLinksApp");
-} catch (e) {
-    smartLinksApp = firebase.app("smartLinksApp");
-}
-const smartLinksDb = smartLinksApp.database();
-
 let cachedSmartLinks = {};
 let currentEditingSmartLinkId = null;
 
