@@ -3596,22 +3596,6 @@ function initSmartLinksEngine() {
                     }
                 }
 
-                // Try fetching direct iTunes 30s MP3 preview audio
-                if (trackTitle) {
-                    try {
-                        const itunesRes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(trackTitle)}&entity=song&limit=3`);
-                        if (itunesRes.ok) {
-                            const itunesData = await itunesRes.json();
-                            if (itunesData.results && itunesData.results.length > 0) {
-                                const match = itunesData.results[0];
-                                if (match.previewUrl) audioPreviewDirect = match.previewUrl;
-                            }
-                        }
-                    } catch (e) {
-                        console.log("iTunes audio check note:", e);
-                    }
-                }
-
                 // Populate 3 Core Essentials: Title, Artwork Image, Audio Preview (+ Slug)
                 if (trackTitle) {
                     titleInput.value = trackTitle;
@@ -3624,15 +3608,13 @@ function initSmartLinksEngine() {
                     imageInput.value = trackImage;
                 }
 
-                if (audioPreviewDirect) {
-                    previewInput.value = audioPreviewDirect;
-                } else if (ytUrl) {
-                    previewInput.value = ytUrl;
-                }
-
+                // Directly assign the YouTube URL as the preview audio
                 if (ytUrl) {
+                    previewInput.value = ytUrl;
                     const ytField = document.getElementById('smartlink-link-youtube');
                     if (ytField) ytField.value = ytUrl;
+                } else if (rawUrl) {
+                    previewInput.value = rawUrl;
                 }
 
                 showToast("TITLE, ARTWORK & AUDIO FETCHED! PLEASE ENTER PRODUCER NAME.");
