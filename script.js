@@ -2875,8 +2875,13 @@ const ObscuraTelemetry = (() => {
 // --- FLOATING CYBERPUNK MUSIC PLAYER & VISUALIZER ENGINE ---
 let isFloatingPlayerPlaying = false;
 let currentActiveRow = null;
+let currentActiveBtn = null;
+let currentTrackTitle = '';
 let fpAutoDismissTimer = null;
 let fpProgressInterval = null;
+let isFpShuffle = false;
+let isFpLoop = false;
+let likedTracksSet = new Set(JSON.parse(localStorage.getItem('obscura_liked_tracks') || '[]'));
 
 function resetFloatingPlayerAutoDismiss() {
     if (fpAutoDismissTimer) {
@@ -2885,7 +2890,7 @@ function resetFloatingPlayerAutoDismiss() {
     }
 }
 
-function startFloatingPlayerAutoDismiss(delayMs = 3500) {
+function startFloatingPlayerAutoDismiss(delayMs = 4000) {
     resetFloatingPlayerAutoDismiss();
     fpAutoDismissTimer = setTimeout(() => {
         const fpBar = document.getElementById('floating-audio-player');
@@ -2909,7 +2914,12 @@ function startFloatingPlayerProgressTracker() {
         if (previewAudio && !previewAudio.paused && previewAudio.currentTime > 0) {
             elapsed = previewAudio.currentTime;
             if (elapsed >= total) {
-                stopPlayback();
+                if (isFpLoop) {
+                    previewAudio.currentTime = (playbackStartOffset > 0 ? playbackStartOffset : 0);
+                    previewAudio.play();
+                } else {
+                    stopPlayback();
+                }
                 return;
             }
         } else if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function' && typeof ytPlayer.getPlayerState === 'function') {
@@ -2922,7 +2932,11 @@ function startFloatingPlayerProgressTracker() {
                     }
                     elapsed = Math.max(0, rawTime - (playbackStartOffset || 0));
                     if (elapsed >= total) {
-                        stopPlayback();
+                        if (isFpLoop) {
+                            ytPlayer.seekTo(playbackStartOffset > 0 ? playbackStartOffset : 0, true);
+                        } else {
+                            stopPlayback();
+                        }
                         return;
                     }
                 }
@@ -2939,6 +2953,15 @@ function stopFloatingPlayerProgressTracker() {
         fpProgressInterval = null;
     }
     updateFloatingPlayerProgress(0, PREVIEW_LIMIT || 30);
+}
+
+function updateLikeButtonUI(title) {
+    const likeBtn = document.getElementById('fp-like-btn');
+    if (!likeBtn) return;
+    const isLiked = likedTracksSet.has(title);
+    likeBtn.classList.toggle('liked', isLiked);
+    likeBtn.innerHTML = isLiked ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>';
+    likeBtn.title = isLiked ? 'Remove from Favorites' : 'Save to Favorites';
 }
 
 function syncFloatingPlayer(row, btn, isPlaying) {
@@ -2963,33 +2986,42 @@ function syncFloatingPlayer(row, btn, isPlaying) {
             fpBar.classList.add('playing');
         } else {
             fpBar.classList.remove('playing');
-            startFloatingPlayerAutoDismiss(3500);
+            startFloatingPlayerAutoDismiss(4000);
         }
         return;
     }
 
     currentActiveRow = row;
+    currentActiveBtn = btn;
     isFloatingPlayerPlaying = isPlaying;
 
     // Extract Metadata
-    const titleEl = row ? row.querySelector('h4') : null;
-    const prodEl = row ? row.querySelector('.producers-text span') : null;
-    const imgEl = row ? row.querySelector('.release-cover-large > img') : null;
+    const titleEl = row ? row.querySelector('h4, .release-title') : null;
+    const prodEl = row ? row.querySelector('.producers-text span, .popular-artist') : null;
+    const imgEl = row ? row.querySelector('.release-cover-large > img, .popular-thumb img, img') : null;
     const spLink = row ? row.querySelector('.platform-link.spotify') : null;
+    const appleLink = row ? row.querySelector('.platform-link.apple') : null;
     const ytLink = row ? row.querySelector('.platform-link.youtube') : null;
+    const soundcloudLink = row ? row.querySelector('.platform-link.soundcloud') : null;
 
-    const trackTitle = (btn && btn.getAttribute('data-title')) || (titleEl ? titleEl.textContent : 'OBSCURA RELEASE');
-    const trackArtist = (btn && btn.getAttribute('data-artist')) || (prodEl ? prodEl.textContent : 'OBSCURA RECORD');
+    const trackTitle = (btn && btn.getAttribute('data-title')) || (titleEl ? titleEl.textContent.trim() : 'OBSCURA RELEASE');
+    const trackArtist = (btn && btn.getAttribute('data-artist')) || (prodEl ? prodEl.textContent.trim() : 'OBSCURA RECORD');
     const trackImg = (btn && btn.getAttribute('data-image')) || (imgEl ? imgEl.src : 'assets/OCR.png');
     const spotifyUrl = (btn && btn.getAttribute('data-spotify')) || (spLink ? spLink.href : '#');
+    const appleUrl = (btn && btn.getAttribute('data-apple')) || (appleLink ? appleLink.href : '#');
     const ytUrl = (btn && btn.getAttribute('data-youtube')) || (ytLink ? ytLink.href : '#');
+    const soundcloudUrl = (btn && btn.getAttribute('data-soundcloud')) || (soundcloudLink ? soundcloudLink.href : '#');
+
+    currentTrackTitle = trackTitle;
 
     // Update Floating Player DOM
     const fpTitle = document.getElementById('fp-title');
     const fpArtist = document.getElementById('fp-artist');
     const fpThumb = document.getElementById('fp-thumb');
     const fpSp = document.getElementById('fp-spotify-link');
+    const fpApple = document.getElementById('fp-apple-link');
     const fpYt = document.getElementById('fp-yt-link');
+    const fpSoundcloud = document.getElementById('fp-soundcloud-link');
     const playIcon = document.querySelector('#fp-play-btn i');
 
     if (fpTitle) fpTitle.textContent = trackTitle;
@@ -3000,10 +3032,20 @@ function syncFloatingPlayer(row, btn, isPlaying) {
         fpSp.href = spotifyUrl && spotifyUrl !== '#' ? spotifyUrl : 'https://open.spotify.com/';
         fpSp.style.display = spotifyUrl && spotifyUrl !== '#' ? 'flex' : 'none';
     }
+    if (fpApple) {
+        fpApple.href = appleUrl && appleUrl !== '#' ? appleUrl : 'https://music.apple.com/';
+        fpApple.style.display = appleUrl && appleUrl !== '#' ? 'flex' : 'none';
+    }
     if (fpYt) {
         fpYt.href = ytUrl && ytUrl !== '#' ? ytUrl : 'https://youtube.com/';
         fpYt.style.display = ytUrl && ytUrl !== '#' ? 'flex' : 'none';
     }
+    if (fpSoundcloud) {
+        fpSoundcloud.href = soundcloudUrl && soundcloudUrl !== '#' ? soundcloudUrl : 'https://soundcloud.com/';
+        fpSoundcloud.style.display = soundcloudUrl && soundcloudUrl !== '#' ? 'flex' : 'none';
+    }
+
+    updateLikeButtonUI(trackTitle);
 
     if (playIcon) {
         playIcon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
@@ -3015,7 +3057,7 @@ function syncFloatingPlayer(row, btn, isPlaying) {
         fpBar.classList.add('playing');
     } else {
         fpBar.classList.remove('playing');
-        startFloatingPlayerAutoDismiss(3500);
+        startFloatingPlayerAutoDismiss(4000);
     }
 }
 
@@ -3037,7 +3079,7 @@ function updateFloatingPlayerProgress(elapsed, total) {
 }
 
 function stepTrack(direction = 1) {
-    const allPlayBtns = Array.from(document.querySelectorAll('#releases .play-btn, .releases-slider .play-btn'));
+    const allPlayBtns = Array.from(document.querySelectorAll('#releases .play-btn, .releases-slider .play-btn, .popular-card .play-btn'));
     if (!allPlayBtns.length) return;
 
     let currentIndex = -1;
@@ -3045,14 +3087,21 @@ function stepTrack(direction = 1) {
         currentIndex = allPlayBtns.indexOf(currentPlayingBtn);
     }
 
-    let nextIndex = currentIndex + direction;
-    if (nextIndex >= allPlayBtns.length) nextIndex = 0;
-    if (nextIndex < 0) nextIndex = allPlayBtns.length - 1;
+    let nextIndex = 0;
+    if (isFpShuffle && allPlayBtns.length > 1) {
+        do {
+            nextIndex = Math.floor(Math.random() * allPlayBtns.length);
+        } while (nextIndex === currentIndex && allPlayBtns.length > 1);
+    } else {
+        nextIndex = currentIndex + direction;
+        if (nextIndex >= allPlayBtns.length) nextIndex = 0;
+        if (nextIndex < 0) nextIndex = allPlayBtns.length - 1;
+    }
 
     const targetBtn = allPlayBtns[nextIndex];
     if (targetBtn) {
         targetBtn.click();
-        const parentCard = targetBtn.closest('.release-card-large');
+        const parentCard = targetBtn.closest('.release-card-large, .popular-card');
         if (parentCard) {
             parentCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
@@ -3066,6 +3115,10 @@ function initFloatingPlayer() {
     const playBtn = document.getElementById('fp-play-btn');
     const prevBtn = document.getElementById('fp-prev-btn');
     const nextBtn = document.getElementById('fp-next-btn');
+    const shuffleBtn = document.getElementById('fp-shuffle-btn');
+    const loopBtn = document.getElementById('fp-loop-btn');
+    const likeBtn = document.getElementById('fp-like-btn');
+    const expandBtn = document.getElementById('fp-expand-btn');
     const closeBtn = document.getElementById('fp-close-btn');
     const muteBtn = document.getElementById('fp-mute-btn');
     const volSlider = document.getElementById('fp-volume-slider');
@@ -3089,7 +3142,7 @@ function initFloatingPlayer() {
             if (currentPlayingBtn) {
                 currentPlayingBtn.click();
             } else {
-                const firstBtn = document.querySelector('#releases .play-btn, .releases-slider .play-btn');
+                const firstBtn = document.querySelector('#releases .play-btn, .releases-slider .play-btn, .popular-card .play-btn');
                 if (firstBtn) firstBtn.click();
             }
         });
@@ -3106,6 +3159,52 @@ function initFloatingPlayer() {
         nextBtn.addEventListener('click', () => {
             playCyberSFX('click');
             stepTrack(1);
+        });
+    }
+
+    if (shuffleBtn) {
+        shuffleBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            isFpShuffle = !isFpShuffle;
+            shuffleBtn.classList.toggle('active', isFpShuffle);
+            shuffleBtn.title = isFpShuffle ? 'Shuffle: ON' : 'Shuffle: OFF';
+        });
+    }
+
+    if (loopBtn) {
+        loopBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            isFpLoop = !isFpLoop;
+            loopBtn.classList.toggle('active', isFpLoop);
+            loopBtn.title = isFpLoop ? 'Repeat: ON' : 'Repeat: OFF';
+        });
+    }
+
+    if (likeBtn) {
+        likeBtn.addEventListener('click', () => {
+            playCyberSFX('success');
+            if (!currentTrackTitle) return;
+            if (likedTracksSet.has(currentTrackTitle)) {
+                likedTracksSet.delete(currentTrackTitle);
+            } else {
+                likedTracksSet.add(currentTrackTitle);
+            }
+            localStorage.setItem('obscura_liked_tracks', JSON.stringify(Array.from(likedTracksSet)));
+            updateLikeButtonUI(currentTrackTitle);
+        });
+    }
+
+    if (expandBtn) {
+        expandBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            if (currentActiveRow) {
+                currentActiveRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else if (currentActiveBtn) {
+                currentActiveBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                const releasesSection = document.getElementById('releases');
+                if (releasesSection) releasesSection.scrollIntoView({ behavior: 'smooth' });
+            }
         });
     }
 
