@@ -91,25 +91,12 @@
             pointer-events: none;
         }
 
-        /* Layout Wrapper */
-        .release-outer-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 2.2rem;
-            width: 100%;
-            max-width: 820px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 10;
-        }
-
         /* Center Smart Link Hub Card */
         .smart-link-card {
             position: relative;
             z-index: 10;
             width: 100%;
-            max-width: 410px;
+            max-width: 418px;
             background: var(--card-bg);
             backdrop-filter: blur(35px);
             -webkit-backdrop-filter: blur(35px);
@@ -124,54 +111,9 @@
             animation: cardFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* Desktop Side QR Companion Box */
-        .qr-companion-box {
-            display: none;
-            width: 220px;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 22px;
-            padding: 1.4rem 1.1rem;
-            text-align: center;
-            backdrop-filter: blur(35px);
-            -webkit-backdrop-filter: blur(35px);
-            box-shadow: 0 20px 45px rgba(0,0,0,0.8), 0 0 25px rgba(0,240,255,0.06);
-            animation: cardFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @media (min-width: 860px) {
-            .qr-companion-box {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 0.85rem;
-            }
-        }
-
-        .qr-white-box {
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 0.75rem 0.75rem 0.5rem 0.75rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-        }
-
-        .qr-white-box img {
-            width: 155px;
-            height: 155px;
-            display: block;
-            object-fit: contain;
-        }
-
-        .qr-brand-tag {
-            font-family: var(--font-heading);
-            font-size: 0.64rem;
-            font-weight: 900;
-            color: #000;
-            letter-spacing: 0.12rem;
-            margin-top: 0.4rem;
+        @keyframes cardFadeUp {
+            from { opacity: 0; transform: translateY(25px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .qr-companion-title {
@@ -695,97 +637,70 @@
 
     <!-- Smart Link Card Hub -->
     <main class="smart-link-card" id="smart-link-card">
-        
-        <!-- Loading Skeleton -->
+
+        <!-- Initial Loading View -->
         <div id="loading-state" class="loading-view">
             <div class="cyber-spinner"></div>
-            <p style="font-size:0.8rem; letter-spacing:0.1rem; color:var(--accent-cyan); font-family:var(--font-heading);">
-                DECRYPTING TRANSMISSION...
-            </p>
+            <div style="font-family: var(--font-heading); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.15rem; color: #00f0ff;">
+                FETCHING TRANSMISSION...
+            </div>
         </div>
 
-    <div class="release-outer-container">
-
-        <!-- Main Smart Link Card -->
-        <main class="smart-link-card" id="smart-link-card">
-
-            <!-- Initial Loading View -->
-            <div id="loading-state" class="loading-view">
-                <div class="cyber-spinner"></div>
-                <div style="font-family: var(--font-heading); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.15rem; color: #00f0ff;">
-                    FETCHING TRANSMISSION...
-                </div>
+        <!-- Loaded Content (Populated by JS) -->
+        <div id="content-state" style="display: none;">
+            
+            <!-- Top HD Artwork with Play Button -->
+            <div class="artwork-container">
+                <span class="audio-preview-badge">
+                    <i class="fas fa-wave-square"></i> AUDIO PREVIEW
+                </span>
+                <img id="track-cover" src="../assets/OCR.png" alt="Artwork" class="artwork-img">
+                <div class="artwork-overlay-gradient"></div>
+                <button id="play-snippet-btn" class="artwork-play-btn" title="Play 30s Snippet">
+                    <i class="fas fa-play" id="snippet-play-icon" style="margin-left: 3px;"></i>
+                </button>
             </div>
 
-            <!-- Loaded Content (Populated by JS) -->
-            <div id="content-state" style="display: none;">
-                
-                <!-- Top HD Artwork with Play Button -->
-                <div class="artwork-container">
-                    <span class="audio-preview-badge">
-                        <i class="fas fa-wave-square"></i> AUDIO PREVIEW
-                    </span>
-                    <img id="track-cover" src="../assets/OCR.png" alt="Artwork" class="artwork-img">
-                    <div class="artwork-overlay-gradient"></div>
-                    <button id="play-snippet-btn" class="artwork-play-btn" title="Play 30s Snippet">
-                        <i class="fas fa-play" id="snippet-play-icon" style="margin-left: 3px;"></i>
+            <!-- Obscura Label Banner -->
+            <div class="label-banner">
+                <img src="../assets/OCR.png" alt="Obscura Records LLC" class="label-logo-img">
+                <div class="label-name">OBSCURA <span>RECORDS LLC</span></div>
+            </div>
+
+            <!-- Track Metadata Header -->
+            <div class="track-meta-header">
+                <h1 class="track-title" id="track-title">RELEASE TITLE</h1>
+                <div class="track-artist" id="track-artist">PROD By ARTIST</div>
+                <div class="instruction-text">Choose your preferred music service</div>
+            </div>
+
+            <!-- Streaming Services Grid -->
+            <div class="platform-list" id="platform-list">
+                <!-- Dynamically rendered platform rows -->
+            </div>
+
+            <!-- Card Footer & Share -->
+            <div class="card-footer">
+                <div style="display: flex; gap: 0.6rem; width: 100%; justify-content: center; flex-wrap: wrap;">
+                    <button id="share-btn" class="share-hub-btn">
+                        <i class="fas fa-share-alt"></i> SHARE
+                    </button>
+                    <button id="qr-modal-btn" class="share-hub-btn secondary" onclick="openQrModal()">
+                        <i class="fas fa-qrcode"></i> QR CODE
                     </button>
                 </div>
-
-                <!-- Obscura Label Banner -->
-                <div class="label-banner">
-                    <img src="../assets/OCR.png" alt="Obscura Records LLC" class="label-logo-img">
-                    <div class="label-name">OBSCURA <span>RECORDS LLC</span></div>
+                <div class="footer-credits">
+                    &copy; 2026 <a href="../">OBSCURA RECORDS LLC</a>. ALL RIGHTS RESERVED.<br>
+                    <span style="opacity: 0.75; font-size: 0.62rem; margin-top: 0.35rem; display: inline-block;">
+                        <a href="javascript:void(0)" onclick="openPrivacyModal()">PRIVACY POLICY</a> &bull; 
+                        <a href="javascript:void(0)" onclick="openTermsModal()">TERMS OF SERVICE</a>
+                    </span>
                 </div>
-
-                <!-- Track Metadata Header -->
-                <div class="track-meta-header">
-                    <h1 class="track-title" id="track-title">RELEASE TITLE</h1>
-                    <div class="track-artist" id="track-artist">PROD By ARTIST</div>
-                    <div class="instruction-text">Choose your preferred music service</div>
-                </div>
-
-                <!-- Streaming Services Grid -->
-                <div class="platform-list" id="platform-list">
-                    <!-- Dynamically rendered platform rows -->
-                </div>
-
-                <!-- Card Footer & Share -->
-                <div class="card-footer">
-                    <div style="display: flex; gap: 0.6rem; width: 100%; justify-content: center; flex-wrap: wrap;">
-                        <button id="share-btn" class="share-hub-btn">
-                            <i class="fas fa-share-alt"></i> SHARE
-                        </button>
-                        <button id="mobile-qr-btn" class="share-hub-btn secondary">
-                            <i class="fas fa-qrcode"></i> QR CODE
-                        </button>
-                    </div>
-                    <div class="footer-credits">
-                        &copy; 2026 <a href="../">OBSCURA RECORDS LLC</a>. ALL RIGHTS RESERVED.<br>
-                        <span style="opacity: 0.75; font-size: 0.62rem; margin-top: 0.35rem; display: inline-block;">
-                            <a href="javascript:void(0)" onclick="openPrivacyModal()">PRIVACY POLICY</a> &bull; 
-                            <a href="javascript:void(0)" onclick="openTermsModal()">TERMS OF SERVICE</a>
-                        </span>
-                    </div>
-                </div>
-
             </div>
 
-        </main>
+        </div>
 
-        <!-- Desktop Companion QR Card -->
-        <aside class="qr-companion-box" id="desktop-qr-card">
-            <div class="qr-companion-title">
-                <i class="fas fa-mobile-alt"></i> SCAN TO STREAM
-            </div>
-            <div class="qr-white-box">
-                <img id="desktop-qr-img" src="" alt="Scan to Stream on Mobile">
-                <div class="qr-brand-tag">OBSCURA RECORDS LLC</div>
-            </div>
-            <p class="qr-companion-desc">Point your phone camera to stream directly on your mobile device.</p>
-        </aside>
-
-    </div>
+    </main>
 
     <!-- Mobile QR Modal -->
     <div id="mobile-qr-modal" class="cyber-modal-overlay">
@@ -1232,21 +1147,11 @@
                 });
             }
 
-            // Render QR Codes for Desktop and Mobile
+            // Render QR Code for Modal
             const currentReleaseUrl = window.location.href;
-            const liveQrApi = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(currentReleaseUrl)}&color=0-0-0&bgcolor=255-255-255`;
-            const desktopQrImg = document.getElementById('desktop-qr-img');
-            const mobileQrImg = document.getElementById('mobile-qr-img');
-            if (desktopQrImg) desktopQrImg.src = liveQrApi;
-            if (mobileQrImg) mobileQrImg.src = liveQrApi;
-
-            // Mobile QR Toggle Button
-            const mobileQrBtn = document.getElementById('mobile-qr-btn');
-            if (mobileQrBtn) {
-                mobileQrBtn.addEventListener('click', () => {
-                    document.getElementById('mobile-qr-modal').style.display = 'flex';
-                });
-            }
+            const liveQrApi = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(currentReleaseUrl)}&color=0-0-0&bgcolor=255-255-255`;
+            const qrImg = document.getElementById('mobile-qr-img');
+            if (qrImg) qrImg.src = liveQrApi;
 
             // Play Button Event Listener
             const playBtn = document.getElementById('play-snippet-btn');
@@ -1273,6 +1178,12 @@
         }
 
         // --- 7. MODAL CONTROLS & PRIVACY CONSENT ---
+        window.openQrModal = function() {
+            closeModals();
+            const modal = document.getElementById('mobile-qr-modal');
+            if (modal) modal.style.display = 'flex';
+        };
+
         window.openPrivacyModal = function() {
             closeModals();
             const modal = document.getElementById('privacy-modal');
