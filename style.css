@@ -4024,6 +4024,33 @@ footer {
     color: var(--accent-blue);
 }
 
+.release-date-badge {
+    margin-top: 0.65rem;
+    margin-bottom: 0.35rem;
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    background: rgba(0, 240, 255, 0.06);
+    padding: 0.35rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 240, 255, 0.22);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    letter-spacing: 0.08rem;
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.06);
+    backdrop-filter: blur(8px);
+    width: fit-content;
+    text-transform: uppercase;
+}
+
+.release-date-badge i {
+    font-size: 0.78rem;
+    color: var(--accent-blue);
+    opacity: 0.9;
+}
+
 /* Discord CTA in Form */
 .discord-btn {
     display: flex;
