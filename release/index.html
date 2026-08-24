@@ -1200,33 +1200,62 @@
             document.getElementById('track-cover').src = cover;
             document.getElementById('ambient-bg').style.backgroundImage = `url('${cover}')`;
 
+            // Helper for RGB extraction
+            function parseRgbStr(hex) {
+                let c = (hex || '#00f0ff').replace('#', '');
+                if (c.length === 3) c = c.split('').map(x => x + x).join('');
+                const num = parseInt(c, 16);
+                return `${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}`;
+            }
+
             // Apply 100% UI Customizations if present
-            if (data.ui) {
-                const ui = data.ui;
-                if (ui.accent) {
-                    document.documentElement.style.setProperty('--accent-cyan', ui.accent);
-                }
-                if (ui.cardBg) {
-                    document.documentElement.style.setProperty('--card-bg', ui.cardBg);
-                }
-                if (ui.darkness !== undefined) {
-                    const ambientEl = document.getElementById('ambient-bg');
-                    if (ambientEl) ambientEl.style.filter = `blur(65px) brightness(${ui.darkness}) saturate(1.1)`;
-                }
-                if (ui.borderGlow !== undefined) {
-                    const cardEl = document.getElementById('smart-link-card');
-                    if (cardEl) {
-                        cardEl.style.borderColor = `rgba(255, 255, 255, ${ui.borderGlow * 0.3})`;
-                    }
-                }
+            const ui = data.ui || {};
+            const accent = ui.accent || '#00f0ff';
+            const rgb = parseRgbStr(accent);
+            const glow = (ui.borderGlow !== undefined) ? parseFloat(ui.borderGlow) : 0.35;
+            const dark = (ui.darkness !== undefined) ? parseFloat(ui.darkness) : 0.12;
+            const btnStyle = ui.buttonStyle || 'clean-light';
+
+            document.documentElement.style.setProperty('--accent-cyan', accent);
+            if (ui.cardBg) {
+                document.documentElement.style.setProperty('--card-bg', ui.cardBg);
+            }
+
+            // Ambient Backdrop Darkness & Filter
+            const ambientEl = document.getElementById('ambient-bg');
+            if (ambientEl) {
+                ambientEl.style.filter = `blur(65px) brightness(${dark}) saturate(1.2)`;
+            }
+
+            // Card Intense Reactive Border & Glow Shadow
+            const cardEl = document.getElementById('smart-link-card');
+            if (cardEl) {
+                cardEl.style.borderColor = `rgba(${rgb}, ${Math.max(0.18, glow)})`;
+                cardEl.style.boxShadow = `0 25px 60px rgba(0, 0, 0, 0.9), 0 0 ${Math.round(glow * 55)}px rgba(${rgb}, ${glow * 0.85}), inset 0 0 ${Math.round(glow * 18)}px rgba(${rgb}, ${glow * 0.25})`;
+            }
+
+            // Side QR Dock Reactive Style
+            const sideQr = document.getElementById('side-qr-dock');
+            if (sideQr) {
                 if (ui.showQrDock === false) {
-                    const sideQr = document.getElementById('side-qr-dock');
-                    if (sideQr) sideQr.style.setProperty('display', 'none', 'important');
+                    sideQr.style.setProperty('display', 'none', 'important');
+                } else {
+                    sideQr.style.borderColor = accent;
+                    sideQr.style.boxShadow = `0 10px 30px rgba(0,0,0,0.8), 0 0 ${Math.round(glow * 35)}px rgba(${rgb}, ${glow * 0.6})`;
                 }
-                if (ui.showGrid === false) {
-                    const gridEl = document.querySelector('.cyber-grid-overlay');
-                    if (gridEl) gridEl.style.display = 'none';
-                }
+            }
+
+            // Grid Overlay Toggle
+            if (ui.showGrid === false) {
+                const gridEl = document.querySelector('.cyber-grid-overlay');
+                if (gridEl) gridEl.style.display = 'none';
+            }
+
+            // Play Trigger Button Glow
+            const playTrigger = document.getElementById('play-snippet-btn');
+            if (playTrigger) {
+                playTrigger.style.background = accent;
+                playTrigger.style.boxShadow = `0 0 ${20 + Math.round(glow * 25)}px ${accent}, 0 8px 25px rgba(0,0,0,0.5)`;
             }
 
             // Prepare Audio
@@ -1239,9 +1268,25 @@
                 }
             }
 
-            // Build Platform Links List
+            // Build Platform Links List with Selected Button Style
             const platformListEl = document.getElementById('platform-list');
             platformListEl.innerHTML = '';
+
+            if (btnStyle === 'cyber-glass') {
+                platformListEl.style.background = 'rgba(12, 16, 28, 0.72)';
+                platformListEl.style.backdropFilter = 'blur(20px)';
+                platformListEl.style.webkitBackdropFilter = 'blur(20px)';
+                platformListEl.style.border = '1px solid rgba(255, 255, 255, 0.12)';
+                platformListEl.style.boxShadow = '0 10px 30px rgba(0,0,0,0.6)';
+            } else if (btnStyle === 'solid-neon') {
+                platformListEl.style.background = '#080b14';
+                platformListEl.style.border = `1px solid ${accent}`;
+                platformListEl.style.boxShadow = `0 0 25px rgba(${rgb}, 0.25), 0 10px 30px rgba(0,0,0,0.7)`;
+            } else {
+                platformListEl.style.background = '#ffffff';
+                platformListEl.style.border = 'none';
+                platformListEl.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.35)';
+            }
 
             const links = data.links || data;
             const availablePlatforms = [
@@ -1266,12 +1311,28 @@
                     row.target = '_blank';
                     row.rel = 'noopener noreferrer';
                     row.className = 'platform-row';
+
+                    let nameColor = '#111';
+                    let actionBtnStyle = '';
+                    let rowBorder = 'border-bottom: 1px solid #f0f0f0;';
+
+                    if (btnStyle === 'cyber-glass') {
+                        nameColor = '#ffffff';
+                        rowBorder = 'border-bottom: 1px solid rgba(255, 255, 255, 0.08);';
+                        actionBtnStyle = 'background: rgba(255, 255, 255, 0.08); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px);';
+                    } else if (btnStyle === 'solid-neon') {
+                        nameColor = '#ffffff';
+                        rowBorder = `border-bottom: 1px solid rgba(${rgb}, 0.15);`;
+                        actionBtnStyle = `background: ${accent}; color: #000000; font-weight: 800; border: none; box-shadow: 0 0 12px ${accent};`;
+                    }
+
+                    row.setAttribute('style', rowBorder);
                     row.innerHTML = `
                         <div class="platform-brand">
                             <i class="${cfg.iconClass}" style="font-size: 1.45rem; color: ${cfg.logoColor}; min-width: 24px; text-align: center;"></i>
-                            <span style="font-weight: 800; font-size: 0.95rem; color: #111;">${cfg.name}</span>
+                            <span style="font-weight: 800; font-size: 0.95rem; color: ${nameColor};">${cfg.name}</span>
                         </div>
-                        <span class="platform-action-btn">${cfg.action}</span>
+                        <span class="platform-action-btn" style="${actionBtnStyle}">${cfg.action}</span>
                     `;
                     platformListEl.appendChild(row);
                     renderedCount++;
@@ -1291,12 +1352,28 @@
                     row.href = p.url;
                     row.target = '_blank';
                     row.className = 'platform-row';
+
+                    let nameColor = '#111';
+                    let actionBtnStyle = '';
+                    let rowBorder = 'border-bottom: 1px solid #f0f0f0;';
+
+                    if (btnStyle === 'cyber-glass') {
+                        nameColor = '#ffffff';
+                        rowBorder = 'border-bottom: 1px solid rgba(255, 255, 255, 0.08);';
+                        actionBtnStyle = 'background: rgba(255, 255, 255, 0.08); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.25);';
+                    } else if (btnStyle === 'solid-neon') {
+                        nameColor = '#ffffff';
+                        rowBorder = `border-bottom: 1px solid rgba(${rgb}, 0.15);`;
+                        actionBtnStyle = `background: ${accent}; color: #000000; font-weight: 800; border: none; box-shadow: 0 0 12px ${accent};`;
+                    }
+
+                    row.setAttribute('style', rowBorder);
                     row.innerHTML = `
                         <div class="platform-brand">
                             <i class="${p.icon}" style="font-size: 1.4rem; color: ${p.color};"></i>
-                            <span style="font-weight: 800; font-size: 0.95rem; color: #111;">${p.name}</span>
+                            <span style="font-weight: 800; font-size: 0.95rem; color: ${nameColor};">${p.name}</span>
                         </div>
-                        <span class="platform-action-btn">${p.action}</span>
+                        <span class="platform-action-btn" style="${actionBtnStyle}">${p.action}</span>
                     `;
                     platformListEl.appendChild(row);
                 });
