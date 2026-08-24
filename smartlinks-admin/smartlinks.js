@@ -608,13 +608,12 @@ function initActions() {
         saveBtn.disabled = true;
 
         db.ref(`smartLinks/${slug}`).set(payload).then(() => {
-            showToast(`SMART LINK "${title}" PUBLISHED LIVE!`);
             currentEditingSlug = slug;
-            document.getElementById('save-btn-text').textContent = 'UPDATE SMART LINK';
+            showToast(`SMART LINK "${title}" PUBLISHED LIVE!`);
         }).catch(err => {
             showToast("PUBLISH FAILED: " + err.message, 'error');
         }).finally(() => {
-            saveBtn.innerHTML = '<i class="fas fa-cloud-arrow-up"></i> <span id="save-btn-text">' + (currentEditingSlug ? 'UPDATE SMART LINK' : 'PUBLISH SMART LINK') + '</span>';
+            setSaveButtonText(currentEditingSlug ? 'UPDATE SMART LINK' : 'PUBLISH SMART LINK');
             saveBtn.disabled = false;
         });
     });
@@ -634,10 +633,16 @@ function initActions() {
     });
 }
 
+function setSaveButtonText(text) {
+    const saveBtn = document.getElementById('btn-save-smartlink');
+    if (!saveBtn) return;
+    saveBtn.innerHTML = `<i class="fas fa-cloud-arrow-up"></i> <span id="save-btn-text">${text}</span>`;
+}
+
 function resetForm() {
     currentEditingSlug = null;
     document.getElementById('smartlink-form').reset();
-    document.getElementById('save-btn-text').textContent = 'PUBLISH SMART LINK';
+    setSaveButtonText('PUBLISH SMART LINK');
     document.getElementById('slug-preview-text').textContent = 'release-slug';
     activePreset = 'cyber-cyan';
     updateMockupPreview();
@@ -695,7 +700,7 @@ window.loadForEdit = function(slug) {
         if (data.ui.showGrid !== undefined) document.getElementById('ui-show-grid').checked = data.ui.showGrid;
     }
 
-    document.getElementById('save-btn-text').textContent = 'UPDATE SMART LINK';
+    setSaveButtonText('UPDATE SMART LINK');
     updateMockupPreview();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     showToast(`LOADED "${data.title || slug}" FOR EDITING`);
@@ -712,7 +717,7 @@ window.duplicateSmartLink = function(slug) {
     const newSlug = `${slug}-copy`;
     document.getElementById('smartlink-input-slug').value = newSlug;
     document.getElementById('slug-preview-text').textContent = newSlug;
-    document.getElementById('save-btn-text').textContent = 'PUBLISH SMART LINK';
+    setSaveButtonText('PUBLISH SMART LINK');
     showToast(`CLONED STYLING FROM "${slug}"! EDIT & PUBLISH AS NEW`);
 };
 
