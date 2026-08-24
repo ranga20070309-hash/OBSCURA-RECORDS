@@ -3462,6 +3462,19 @@ function initSmartLinksEngine() {
     }
 
     // Helper: Smart Music Title & Producer Parser
+    // Helper: Smart Music Title & Producer Parser
+    function isGenericAuthor(name) {
+        if (!name) return true;
+        const clean = name.toLowerCase().trim();
+        return clean === 'release' || 
+               clean === 'release - topic' || 
+               clean === 'various artists' || 
+               clean === 'various artists - topic' || 
+               clean === 'youtube' || 
+               clean === 'official' || 
+               (clean.endsWith('- topic') && clean.startsWith('release'));
+    }
+
     function parseMusicVideoTitle(rawTitle, channelAuthor = '') {
         let clean = (rawTitle || '').trim();
         
@@ -3492,20 +3505,23 @@ function initSmartLinksEngine() {
             title = splitMatch[2].trim();
         } else {
             title = stripped;
-            artist = channelAuthor ? channelAuthor.replace(/\s*-\s*Topic$/i, '').replace(/VEVO$/i, '').trim() : '';
+            if (channelAuthor && !isGenericAuthor(channelAuthor)) {
+                artist = channelAuthor.replace(/\s*-\s*Topic$/i, '').replace(/VEVO$/i, '').trim();
+            }
+        }
+
+        // Filter out if extracted artist is just 'Release'
+        if (isGenericAuthor(artist)) {
+            artist = '';
         }
 
         // Merge Producer into artist name if detected
-        if (prodTag && !artist.toLowerCase().includes(prodTag.toLowerCase())) {
+        if (prodTag && (!artist || !artist.toLowerCase().includes(prodTag.toLowerCase()))) {
             artist = artist ? `${artist} / ${prodTag}` : prodTag;
         }
 
-        if ((!artist || artist.toLowerCase() === 'official') && channelAuthor) {
-            artist = channelAuthor.replace(/\s*-\s*Topic$/i, '').replace(/VEVO$/i, '').trim();
-        }
-
         return {
-            artist: artist ? artist.toUpperCase() : 'OBSCURA RECORD',
+            artist: artist ? artist.toUpperCase() : '',
             title: title ? title.toUpperCase() : clean.toUpperCase(),
             prodTag: prodTag
         };
@@ -3538,6 +3554,7 @@ function initSmartLinksEngine() {
                 let boomplayUrl = '';
                 let itunesUrl = '';
                 let pandoraUrl = '';
+                let audioPreviewDirect = '';
 
                 // Check YouTube
                 const ytMatch = rawUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
@@ -3554,7 +3571,7 @@ function initSmartLinksEngine() {
                             if (oData && oData.title) {
                                 const parsed = parseMusicVideoTitle(oData.title, oData.author_name || '');
                                 trackTitle = parsed.title;
-                                trackArtist = parsed.artist;
+                                if (parsed.artist) trackArtist = parsed.artist;
                                 if (parsed.prodTag) prodTagFound = parsed.prodTag;
                             }
                         }
@@ -3563,43 +3580,53 @@ function initSmartLinksEngine() {
                     }
                 }
 
-                // Query Songlink / Odesli Music API
-                try {
-                    const songlinkRes = await fetch(`https://api.songlink.com/v1-alpha.1/links?url=${encodeURIComponent(rawUrl)}`);
-                    if (songlinkRes.ok) {
-                        const sData = await songlinkRes.json();
-                        if (sData && sData.entitiesByUniqueId) {
-                            const entityKeys = Object.keys(sData.entitiesByUniqueId);
-                            if (entityKeys.length > 0) {
-                                const ent = sData.entitiesByUniqueId[entityKeys[0]];
-                                if (ent.title) trackTitle = ent.title.toUpperCase();
-                                if (ent.artistName) {
-                                    if (prodTagFound && !ent.artistName.toLowerCase().includes(prodTagFound.toLowerCase())) {
-                                        trackArtist = `${ent.artistName.toUpperCase()} / ${prodTagFound.toUpperCase()}`;
+                // Check Spotify URL oEmbed
+                if (rawUrl.includes('spotify.com')) {
+                    spotifyUrl = rawUrl;
+                    try {
+                        const spRes = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(rawUrl)}`);
+                        if (spRes.ok) {
+                            const spData = await spRes.json();
+                            if (spData.title) trackTitle = spData.title.toUpperCase();
+                            if (spData.thumbnail_url) trackImage = spData.thumbnail_url;
+                        }
+                    } catch (e) {
+                        console.log("Spotify oEmbed note:", e);
+                    }
+                }
+
+                // iTunes Search API Resolver for real artist & Apple Music link if generic
+                if (trackTitle) {
+                    try {
+                        const itunesSearchTerm = trackArtist ? `${trackArtist} ${trackTitle}` : trackTitle;
+                        const itunesRes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(itunesSearchTerm)}&entity=song&limit=5`);
+                        if (itunesRes.ok) {
+                            const itunesData = await itunesRes.json();
+                            if (itunesData.results && itunesData.results.length > 0) {
+                                const match = itunesData.results[0];
+                                if ((!trackArtist || isGenericAuthor(trackArtist)) && match.artistName) {
+                                    if (prodTagFound && !match.artistName.toLowerCase().includes(prodTagFound.toLowerCase())) {
+                                        trackArtist = `${match.artistName.toUpperCase()} / ${prodTagFound.toUpperCase()}`;
                                     } else {
-                                        trackArtist = ent.artistName.toUpperCase();
+                                        trackArtist = match.artistName.toUpperCase();
                                     }
                                 }
-                                if (ent.thumbnailUrl && !trackImage) trackImage = ent.thumbnailUrl;
+                                if (match.trackViewUrl && !appleUrl) {
+                                    appleUrl = match.trackViewUrl;
+                                    itunesUrl = match.trackViewUrl;
+                                }
+                                if (match.previewUrl && !audioPreviewDirect) {
+                                    audioPreviewDirect = match.previewUrl;
+                                }
                             }
                         }
-
-                        if (sData && sData.linksByPlatform) {
-                            const p = sData.linksByPlatform;
-                            if (p.spotify) spotifyUrl = p.spotify.url;
-                            if (p.appleMusic) appleUrl = p.appleMusic.url;
-                            if (p.itunes) itunesUrl = p.itunes.url;
-                            if (p.deezer) deezerUrl = p.deezer.url;
-                            if (p.amazonMusic) amazonUrl = p.amazonMusic.url;
-                            if (p.youtube) ytUrl = p.youtube.url;
-                            if (p.tidal) tidalUrl = p.tidal.url;
-                            if (p.pandora) pandoraUrl = p.pandora.url;
-                            if (p.soundcloud) soundcloudUrl = p.soundcloud.url;
-                            if (p.boomplay) boomplayUrl = p.boomplay.url;
-                        }
+                    } catch (e) {
+                        console.log("iTunes search note:", e);
                     }
-                } catch (e) {
-                    console.log("Songlink API note:", e);
+                }
+
+                if (!trackArtist) {
+                    trackArtist = 'OBSCURA RECORD';
                 }
 
                 // Populate Form Fields
@@ -3609,7 +3636,11 @@ function initSmartLinksEngine() {
                 if (ytUrl) {
                     const ytField = document.getElementById('smartlink-link-youtube');
                     if (ytField) ytField.value = ytUrl;
-                    if (previewInput && !previewInput.value) previewInput.value = ytUrl;
+                    if (audioPreviewDirect) {
+                        previewInput.value = audioPreviewDirect;
+                    } else if (previewInput && !previewInput.value) {
+                        previewInput.value = ytUrl;
+                    }
                 }
                 if (spotifyUrl) {
                     const spField = document.getElementById('smartlink-link-spotify');
