@@ -1813,6 +1813,34 @@
         <audio id="admin-preview-audio" controls></audio>
         <button type="button" id="close-dock-btn" class="close-dock">&times;</button>
     </div>
+    <div id="smartlink-qr-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 99999; align-items: center; justify-content: center;">
+        <div class="cyber-card" style="max-width: 440px; width: 90%; text-align: center; background: #070912; border: 1px solid rgba(0,240,255,0.4); border-radius: 20px; padding: 2rem; box-shadow: 0 25px 60px rgba(0,0,0,0.9), 0 0 35px rgba(0,240,255,0.15);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+                <h3 style="font-family: var(--font-heading); font-size: 1.1rem; color: #fff; margin: 0; display: flex; align-items: center; gap: 0.6rem;">
+                    <i class="fas fa-qrcode" style="color: #00f0ff;"></i> <span id="qr-modal-title">RELEASE QR TRANSMISSION</span>
+                </h3>
+                <button type="button" class="close-dock" onclick="closeSmartLinkQrModal()" style="font-size: 1.5rem; line-height: 1; background: none; border: none; color: #fff; cursor: pointer;">&times;</button>
+            </div>
+
+            <div style="background: #ffffff; padding: 1.2rem 1.2rem 0.8rem 1.2rem; border-radius: 16px; display: inline-block; margin-bottom: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <img id="qr-modal-img" src="" alt="Release QR Code" style="width: 210px; height: 210px; display: block; margin: 0 auto; object-fit: contain;">
+                <div style="font-family: var(--font-heading); font-size: 0.72rem; font-weight: 900; color: #000; letter-spacing: 0.15rem; margin-top: 0.6rem;">
+                    OBSCURA RECORDS LLC
+                </div>
+            </div>
+
+            <p id="qr-modal-url-display" style="font-family: var(--font-mono); font-size: 0.72rem; color: #00f0ff; word-break: break-all; margin-bottom: 1.4rem; padding: 0.5rem; background: rgba(0,240,255,0.05); border-radius: 8px; border: 1px solid rgba(0,240,255,0.15);"></p>
+
+            <div style="display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;">
+                <a id="qr-modal-download-btn" href="" target="_blank" download="obscura-release-qr.png" class="cyber-btn primary" style="text-decoration: none;">
+                    <i class="fas fa-download"></i> <span>DOWNLOAD HD QR (PNG)</span>
+                </a>
+                <button type="button" class="cyber-btn" onclick="copyQrModalUrl()">
+                    <i class="fas fa-copy"></i> <span>COPY LINK</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="admin.js"></script>
 </body>
