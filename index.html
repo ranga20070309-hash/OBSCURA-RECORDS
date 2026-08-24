@@ -1220,6 +1220,20 @@
                 </div>
             </div>
         </footer>
+        <!-- Queue Drawer (Slide-up from Spotify Bottom Bar) -->
+        <div id="fp-queue-drawer" class="fp-queue-drawer">
+            <div class="fp-queue-header">
+                <div class="fp-queue-title">
+                    <i class="fas fa-list-ul"></i>
+                    <span>NEXT IN QUEUE</span>
+                </div>
+                <button id="fp-queue-close" class="fp-queue-close-btn" title="Close Queue">&times;</button>
+            </div>
+            <div class="fp-queue-list" id="fp-queue-list">
+                <!-- Dynamically Populated Queue Items -->
+            </div>
+        </div>
+
         <div id="floating-audio-player" class="floating-player-bar hidden">
             <div class="fp-glow-stream"></div>
             <div class="floating-player-track-info">
@@ -1255,6 +1269,7 @@
                     <button id="fp-play-btn" class="fp-btn fp-play-btn" title="Play / Pause"><i class="fas fa-play"></i></button>
                     <button id="fp-next-btn" class="fp-btn" title="Next Track"><i class="fas fa-step-forward"></i></button>
                     <button id="fp-loop-btn" class="fp-btn fp-control-extra" title="Repeat Track"><i class="fas fa-redo-alt"></i></button>
+                    <button id="fp-speed-btn" class="fp-btn fp-speed-btn" title="Speed & Phonk Mode: Normal (1.0x) / Slowed (0.85x) / Speed Up (1.25x)"><span id="fp-speed-label">1.0x</span></button>
                 </div>
                 <div class="floating-player-progress-row">
                     <span id="fp-current-time" class="fp-time">0:00</span>
@@ -1275,6 +1290,8 @@
                     <button id="fp-mute-btn" class="fp-icon-btn" title="Mute/Unmute"><i class="fas fa-volume-up"></i></button>
                     <input type="range" id="fp-volume-slider" min="0" max="100" value="100" class="fp-vol-slider">
                 </div>
+                <button id="fp-queue-btn" class="fp-icon-btn fp-queue-btn" title="Open Queue / Playlist"><i class="fas fa-list-ul"></i></button>
+                <button id="fp-share-btn" class="fp-icon-btn fp-share-btn" title="Share Transmission Link"><i class="fas fa-share-alt"></i></button>
                 <button id="fp-expand-btn" class="fp-icon-btn fp-expand-btn" title="Focus Current Track"><i class="fas fa-crosshairs"></i></button>
                 <button id="fp-close-btn" class="fp-icon-btn close-fp" title="Minimize Player"><i class="fas fa-times"></i></button>
             </div>
