@@ -1230,15 +1230,31 @@
                     </div>
                 </div>
                 <div class="fp-text-meta">
-                    <div id="fp-title" class="fp-track-title">SELECT A TRANSMISSION</div>
-                    <div id="fp-artist" class="fp-track-artist">OBSCURA RECORD</div>
+                    <div class="fp-title-row">
+                        <div id="fp-title" class="fp-track-title">SELECT A TRANSMISSION</div>
+                        <div class="fp-equalizer-bars" id="fp-equalizer" title="Live Signal">
+                            <span class="eq-bar"></span>
+                            <span class="eq-bar"></span>
+                            <span class="eq-bar"></span>
+                            <span class="eq-bar"></span>
+                        </div>
+                    </div>
+                    <div class="fp-artist-row">
+                        <div id="fp-artist" class="fp-track-artist">OBSCURA RECORD</div>
+                        <span class="fp-hq-badge"><i class="fas fa-bolt"></i> LOSSLESS</span>
+                    </div>
                 </div>
+                <button id="fp-like-btn" class="fp-icon-btn fp-like-btn" title="Save to Favorites">
+                    <i class="far fa-heart"></i>
+                </button>
             </div>
             <div class="floating-player-center">
                 <div class="floating-player-controls">
+                    <button id="fp-shuffle-btn" class="fp-btn fp-control-extra" title="Shuffle Play"><i class="fas fa-random"></i></button>
                     <button id="fp-prev-btn" class="fp-btn" title="Previous Track"><i class="fas fa-step-backward"></i></button>
                     <button id="fp-play-btn" class="fp-btn fp-play-btn" title="Play / Pause"><i class="fas fa-play"></i></button>
                     <button id="fp-next-btn" class="fp-btn" title="Next Track"><i class="fas fa-step-forward"></i></button>
+                    <button id="fp-loop-btn" class="fp-btn fp-control-extra" title="Repeat Track"><i class="fas fa-redo-alt"></i></button>
                 </div>
                 <div class="floating-player-progress-row">
                     <span id="fp-current-time" class="fp-time">0:00</span>
@@ -1249,14 +1265,17 @@
                 </div>
             </div>
             <div class="floating-player-actions">
+                <div class="fp-external-links" id="fp-external-links">
+                    <a id="fp-spotify-link" href="#" target="_blank" class="fp-link-icon spotify" title="Listen on Spotify"><i class="fab fa-spotify"></i></a>
+                    <a id="fp-apple-link" href="#" target="_blank" class="fp-link-icon apple" title="Listen on Apple Music"><i class="fab fa-apple"></i></a>
+                    <a id="fp-yt-link" href="#" target="_blank" class="fp-link-icon youtube" title="Watch on YouTube"><i class="fab fa-youtube"></i></a>
+                    <a id="fp-soundcloud-link" href="#" target="_blank" class="fp-link-icon soundcloud" title="Listen on SoundCloud"><i class="fab fa-soundcloud"></i></a>
+                </div>
                 <div class="fp-volume-wrapper">
                     <button id="fp-mute-btn" class="fp-icon-btn" title="Mute/Unmute"><i class="fas fa-volume-up"></i></button>
                     <input type="range" id="fp-volume-slider" min="0" max="100" value="100" class="fp-vol-slider">
                 </div>
-                <div class="fp-external-links" id="fp-external-links">
-                    <a id="fp-spotify-link" href="#" target="_blank" class="fp-link-icon spotify" title="Listen on Spotify"><i class="fab fa-spotify"></i></a>
-                    <a id="fp-yt-link" href="#" target="_blank" class="fp-link-icon youtube" title="Watch on YouTube"><i class="fab fa-youtube"></i></a>
-                </div>
+                <button id="fp-expand-btn" class="fp-icon-btn fp-expand-btn" title="Focus Current Track"><i class="fas fa-crosshairs"></i></button>
                 <button id="fp-close-btn" class="fp-icon-btn close-fp" title="Minimize Player"><i class="fas fa-times"></i></button>
             </div>
         </div>
