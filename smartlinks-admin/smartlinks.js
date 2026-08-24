@@ -260,21 +260,7 @@ function updateMockupPreview() {
 
     // Dynamic Platform List in Mockup with Button Style Variants
     const platformContainer = document.getElementById('mock-platforms-container');
-
-    if (btnStyle === 'cyber-glass') {
-        platformContainer.style.background = 'rgba(12, 16, 28, 0.72)';
-        platformContainer.style.backdropFilter = 'blur(15px)';
-        platformContainer.style.border = '1px solid rgba(255,255,255,0.12)';
-        platformContainer.style.boxShadow = '0 10px 30px rgba(0,0,0,0.6)';
-    } else if (btnStyle === 'solid-neon') {
-        platformContainer.style.background = '#080b14';
-        platformContainer.style.border = `1px solid ${accent}`;
-        platformContainer.style.boxShadow = `0 0 20px rgba(${rgb}, 0.25), 0 10px 30px rgba(0,0,0,0.7)`;
-    } else {
-        platformContainer.style.background = '#ffffff';
-        platformContainer.style.border = 'none';
-        platformContainer.style.boxShadow = '0 10px 30px rgba(0,0,0,0.35)';
-    }
+    platformContainer.className = `mock-platforms-list style-${btnStyle}`;
 
     const platforms = [
         { id: 'link-spotify', name: 'Spotify', icon: 'fab fa-spotify', col: '#1DB954', action: 'Play' },
@@ -300,29 +286,9 @@ function updateMockupPreview() {
     activePlatforms.forEach(p => {
         const row = document.createElement('div');
         row.className = 'mock-platform-row';
-
-        let nameColor = '#111';
-        let actionBtnStyle = '';
-        let rowBorder = 'border-bottom: 1px solid #f0f0f0;';
-
-        if (btnStyle === 'cyber-glass') {
-            nameColor = '#ffffff';
-            rowBorder = 'border-bottom: 1px solid rgba(255, 255, 255, 0.08);';
-            actionBtnStyle = 'background: rgba(255, 255, 255, 0.08); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.25);';
-        } else if (btnStyle === 'solid-neon') {
-            nameColor = '#ffffff';
-            rowBorder = `border-bottom: 1px solid rgba(${rgb}, 0.15);`;
-            actionBtnStyle = `background: ${accent}; color: #000000; font-weight: 800; border: none; box-shadow: 0 0 10px ${accent};`;
-        } else {
-            nameColor = '#111';
-            rowBorder = 'border-bottom: 1px solid #f0f0f0;';
-            actionBtnStyle = 'background: #ffffff; color: #111; border: 1.5px solid #d1d5db;';
-        }
-
-        row.setAttribute('style', rowBorder);
         row.innerHTML = `
-            <div class="mock-p-left"><i class="${p.icon}" style="color:${p.col}; font-size:1.1rem;"></i> <span style="color:${nameColor}; font-weight:700;">${p.name}</span></div>
-            <span class="mock-p-btn" style="${actionBtnStyle}">${p.action}</span>
+            <div class="mock-p-left"><i class="${p.icon}" style="color:${p.col}; font-size:1.1rem;"></i> <span>${p.name}</span></div>
+            <span class="mock-p-btn">${p.action}</span>
         `;
         platformContainer.appendChild(row);
     });
