@@ -2040,9 +2040,13 @@ const initPortal = () => {
                     if (sideVEl) sideVEl.textContent = 'v' + data.v;
                 }
 
-                // Apply Transmissions data if present in globals
+                // Apply Transmissions data if present in globals or fallback
                 if (data.latest_transmissions) {
                     applyTransmissionData(data.latest_transmissions);
+                } else {
+                    firebase.database().ref('bot_status/latest_transmissions').once('value').then(bSnap => {
+                        if (bSnap.exists()) applyTransmissionData(bSnap.val());
+                    }).catch(() => {});
                 }
             }
         }, null, true);
