@@ -148,6 +148,7 @@ function initThemePresets() {
 
     document.getElementById('ui-button-style').addEventListener('change', updateMockupPreview);
     document.getElementById('ui-show-qr-dock').addEventListener('change', updateMockupPreview);
+    document.getElementById('ui-show-grid').addEventListener('change', updateMockupPreview);
 }
 
 // 3. Real-Time Interactive Mockup Synchronization
@@ -210,21 +211,38 @@ function updateMockupPreview() {
     const slug = document.getElementById('smartlink-input-slug').value.trim() || 'release-slug';
     const accent = document.getElementById('ui-accent-color').value || '#00f0ff';
     const cardBg = document.getElementById('ui-card-bg-color').value || '#07090f';
-    const glow = document.getElementById('ui-border-glow').value || '0.35';
+    const glowNum = parseFloat(document.getElementById('ui-border-glow').value || '0.35');
+    const darkNum = parseFloat(document.getElementById('ui-bg-darkness').value || '0.12');
+    const btnStyle = document.getElementById('ui-button-style').value || 'clean-light';
+    const showGrid = document.getElementById('ui-show-grid').checked;
+    const rgb = hexToRgb(accent);
 
     // Update Text & Image in Mockup
     document.getElementById('mock-title').textContent = title.toUpperCase();
     document.getElementById('mock-artist').textContent = displayArtist;
     document.getElementById('mock-artist').style.color = accent;
     document.getElementById('mock-cover-img').src = cover;
-    document.getElementById('mock-play-trigger').style.background = accent;
-    document.getElementById('mock-play-trigger').style.boxShadow = `0 0 25px ${accent}`;
+    
+    const playTrigger = document.getElementById('mock-play-trigger');
+    playTrigger.style.background = accent;
+    playTrigger.style.boxShadow = `0 0 ${20 + Math.round(glowNum * 25)}px ${accent}`;
 
-    // Update Card Container Style
+    // Update Canvas Background (Ambient Darkness & Grid)
+    const canvasEl = document.getElementById('mockup-canvas');
+    if (canvasEl) {
+        const gridLines = showGrid 
+            ? `linear-gradient(rgba(${rgb}, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(${rgb}, 0.04) 1px, transparent 1px), `
+            : '';
+        canvasEl.style.backgroundColor = '#03050a';
+        canvasEl.style.backgroundImage = `${gridLines}radial-gradient(circle at 50% 35%, rgba(${rgb}, ${Math.min(0.45, darkNum * 1.5)}) 0%, #030408 85%)`;
+        canvasEl.style.backgroundSize = showGrid ? '28px 28px, 28px 28px, 100% 100%' : '100% 100%';
+    }
+
+    // Update Card Container Style (Intense Responsive Glow & Border)
     const mockCard = document.getElementById('mock-card');
     mockCard.style.backgroundColor = cardBg;
-    mockCard.style.borderColor = `rgba(${hexToRgb(accent)}, ${glow})`;
-    mockCard.style.boxShadow = `0 20px 50px rgba(0,0,0,0.9), 0 0 30px rgba(${hexToRgb(accent)}, ${parseFloat(glow) * 0.4})`;
+    mockCard.style.borderColor = `rgba(${rgb}, ${Math.max(0.18, glowNum)})`;
+    mockCard.style.boxShadow = `0 25px 60px rgba(0,0,0,0.9), 0 0 ${Math.round(glowNum * 55)}px rgba(${rgb}, ${glowNum * 0.85}), inset 0 0 ${Math.round(glowNum * 18)}px rgba(${rgb}, ${glowNum * 0.25})`;
 
     // Update Mock Side QR
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`https://www.obscurarecord.com/release/?id=${slug}`)}&color=0-240-255&bgcolor=7-9-18`;
@@ -237,12 +255,26 @@ function updateMockupPreview() {
     } else {
         mockSideQr.style.removeProperty('display');
         mockSideQr.style.borderColor = accent;
-        mockSideQr.style.boxShadow = `0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(${hexToRgb(accent)}, 0.25)`;
+        mockSideQr.style.boxShadow = `0 10px 30px rgba(0,0,0,0.8), 0 0 ${Math.round(glowNum * 35)}px rgba(${rgb}, ${glowNum * 0.6})`;
     }
 
-    // Dynamic Platform List in Mockup
+    // Dynamic Platform List in Mockup with Button Style Variants
     const platformContainer = document.getElementById('mock-platforms-container');
-    const btnStyle = document.getElementById('ui-button-style').value;
+
+    if (btnStyle === 'cyber-glass') {
+        platformContainer.style.background = 'rgba(12, 16, 28, 0.72)';
+        platformContainer.style.backdropFilter = 'blur(15px)';
+        platformContainer.style.border = '1px solid rgba(255,255,255,0.12)';
+        platformContainer.style.boxShadow = '0 10px 30px rgba(0,0,0,0.6)';
+    } else if (btnStyle === 'solid-neon') {
+        platformContainer.style.background = '#080b14';
+        platformContainer.style.border = `1px solid ${accent}`;
+        platformContainer.style.boxShadow = `0 0 20px rgba(${rgb}, 0.25), 0 10px 30px rgba(0,0,0,0.7)`;
+    } else {
+        platformContainer.style.background = '#ffffff';
+        platformContainer.style.border = 'none';
+        platformContainer.style.boxShadow = '0 10px 30px rgba(0,0,0,0.35)';
+    }
 
     const platforms = [
         { id: 'link-spotify', name: 'Spotify', icon: 'fab fa-spotify', col: '#1DB954', action: 'Play' },
@@ -268,19 +300,29 @@ function updateMockupPreview() {
     activePlatforms.forEach(p => {
         const row = document.createElement('div');
         row.className = 'mock-platform-row';
+
+        let nameColor = '#111';
+        let actionBtnStyle = '';
+        let rowBorder = 'border-bottom: 1px solid #f0f0f0;';
+
         if (btnStyle === 'cyber-glass') {
-            row.style.background = 'rgba(255,255,255,0.04)';
-            row.style.color = '#fff';
-            row.style.borderColor = 'rgba(255,255,255,0.1)';
+            nameColor = '#ffffff';
+            rowBorder = 'border-bottom: 1px solid rgba(255, 255, 255, 0.08);';
+            actionBtnStyle = 'background: rgba(255, 255, 255, 0.08); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.25);';
         } else if (btnStyle === 'solid-neon') {
-            row.style.background = '#0a0d14';
-            row.style.color = '#fff';
-            row.style.borderColor = 'rgba(0,240,255,0.2)';
+            nameColor = '#ffffff';
+            rowBorder = `border-bottom: 1px solid rgba(${rgb}, 0.15);`;
+            actionBtnStyle = `background: ${accent}; color: #000000; font-weight: 800; border: none; box-shadow: 0 0 10px ${accent};`;
+        } else {
+            nameColor = '#111';
+            rowBorder = 'border-bottom: 1px solid #f0f0f0;';
+            actionBtnStyle = 'background: #ffffff; color: #111; border: 1.5px solid #d1d5db;';
         }
 
+        row.setAttribute('style', rowBorder);
         row.innerHTML = `
-            <div class="mock-p-left"><i class="${p.icon}" style="color:${p.col}; font-size:1.1rem;"></i> <span>${p.name}</span></div>
-            <span class="mock-p-btn">${p.action}</span>
+            <div class="mock-p-left"><i class="${p.icon}" style="color:${p.col}; font-size:1.1rem;"></i> <span style="color:${nameColor}; font-weight:700;">${p.name}</span></div>
+            <span class="mock-p-btn" style="${actionBtnStyle}">${p.action}</span>
         `;
         platformContainer.appendChild(row);
     });
