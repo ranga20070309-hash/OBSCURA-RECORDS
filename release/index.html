@@ -1181,10 +1181,20 @@
                 displayArtist = "OBSCURA RECORDS LLC";
             }
 
-            // Set Page Titles & Metadata
-            document.title = `${title} - ${artist} | OBSCURA RECORDS LLC`;
+            // Set Page Titles & Metadata dynamically
+            document.title = `${title} - ${displayArtist} | OBSCURA RECORDS LLC`;
             document.getElementById('track-title').textContent = title;
             document.getElementById('track-artist').textContent = displayArtist;
+
+            // Dynamically update Open Graph & Twitter Social preview tags
+            const ogImg = document.getElementById('og-image');
+            if (ogImg) ogImg.setAttribute('content', cover);
+            const ogTitle = document.getElementById('og-title');
+            if (ogTitle) ogTitle.setAttribute('content', `${title} - ${displayArtist} | OBSCURA RECORDS LLC`);
+            const twImg = document.getElementById('twitter-image');
+            if (twImg) twImg.setAttribute('content', cover);
+            const twTitle = document.getElementById('twitter-title');
+            if (twTitle) twTitle.setAttribute('content', `${title} - ${displayArtist} | OBSCURA RECORDS LLC`);
 
             // Set Cover & Ambient Background
             document.getElementById('track-cover').src = cover;
