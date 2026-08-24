@@ -237,13 +237,13 @@
 
         .track-title {
             font-family: var(--font-heading);
-            font-size: 1.45rem;
-            font-weight: 900;
+            font-size: 1.25rem;
+            font-weight: 800;
             color: #fff;
             text-transform: uppercase;
-            letter-spacing: 0.05rem;
-            line-height: 1.2;
-            margin-bottom: 0.3rem;
+            letter-spacing: 0.04rem;
+            line-height: 1.25;
+            margin-bottom: 0.25rem;
             word-break: break-word;
         }
 
@@ -673,12 +673,24 @@
             return null;
         }
 
-        // --- 5. AUDIO PREVIEW PLAYER ENGINE ---
+        // --- 5. AUDIO PREVIEW PLAYER ENGINE (30s SNIPPET LIMIT) ---
         let isAudioPlaying = false;
         let ytSnippetPlayer = null;
+        let snippetTimer = null;
         let previewAudioEl = document.getElementById('snippet-audio');
         let currentAudioSrc = '';
         let currentYtId = '';
+
+        function stopAudioPlayback() {
+            clearTimeout(snippetTimer);
+            if (previewAudioEl) previewAudioEl.pause();
+            if (ytSnippetPlayer && ytSnippetPlayer.pauseVideo) ytSnippetPlayer.pauseVideo();
+            isAudioPlaying = false;
+            const playBtn = document.getElementById('play-snippet-btn');
+            const playIcon = document.getElementById('snippet-play-icon');
+            if (playBtn) playBtn.classList.remove('playing');
+            if (playIcon) playIcon.className = 'fas fa-play';
+        }
 
         function toggleAudioPlayback() {
             const playBtn = document.getElementById('play-snippet-btn');
@@ -686,20 +698,25 @@
 
             if (isAudioPlaying) {
                 // Pause
-                if (previewAudioEl) previewAudioEl.pause();
-                if (ytSnippetPlayer && ytSnippetPlayer.pauseVideo) ytSnippetPlayer.pauseVideo();
-                isAudioPlaying = false;
-                if (playBtn) playBtn.classList.remove('playing');
-                if (playIcon) playIcon.className = 'fas fa-play';
+                stopAudioPlayback();
             } else {
-                // Play
+                // Play & Start 30s Snippet Timer
+                clearTimeout(snippetTimer);
+                snippetTimer = setTimeout(() => {
+                    stopAudioPlayback();
+                    showToast("30s PREVIEW COMPLETED", "fas fa-clock");
+                }, 30000);
+
                 if (currentAudioSrc && currentAudioSrc.startsWith('http') && (currentAudioSrc.includes('.mp3') || currentAudioSrc.includes('audio') || !currentAudioSrc.includes('youtube.com'))) {
                     previewAudioEl.src = currentAudioSrc;
                     previewAudioEl.play().then(() => {
                         isAudioPlaying = true;
                         if (playBtn) playBtn.classList.add('playing');
                         if (playIcon) playIcon.className = 'fas fa-pause';
-                    }).catch(e => console.log(e));
+                    }).catch(e => {
+                        clearTimeout(snippetTimer);
+                        console.log(e);
+                    });
                 } else if (currentYtId) {
                     if (ytSnippetPlayer && ytSnippetPlayer.playVideo) {
                         ytSnippetPlayer.seekTo(0, true);
@@ -709,6 +726,7 @@
                         if (playIcon) playIcon.className = 'fas fa-pause';
                     }
                 } else {
+                    clearTimeout(snippetTimer);
                     showToast("No Audio Preview Configured", "fas fa-info-circle");
                 }
             }
@@ -716,11 +734,7 @@
 
         if (previewAudioEl) {
             previewAudioEl.addEventListener('ended', () => {
-                isAudioPlaying = false;
-                const playBtn = document.getElementById('play-snippet-btn');
-                const playIcon = document.getElementById('snippet-play-icon');
-                if (playBtn) playBtn.classList.remove('playing');
-                if (playIcon) playIcon.className = 'fas fa-play';
+                stopAudioPlayback();
             });
         }
 
@@ -763,10 +777,23 @@
             const audioSrc = data.audioPreview || data.previewAudio || data.mp3 || "";
             const ytUrl = data.youtube || data.youtubeUrl || "";
 
+            // Format PROD. prefix with exact user-typed casing
+            let cleanArtist = (artist || '').trim();
+            let displayArtist = '';
+            if (cleanArtist) {
+                if (/^prod\.?\s*/i.test(cleanArtist)) {
+                    displayArtist = cleanArtist.replace(/^prod\.?\s*/i, 'PROD. ');
+                } else {
+                    displayArtist = `PROD. ${cleanArtist}`;
+                }
+            } else {
+                displayArtist = "OBSCURA RECORDS LLC";
+            }
+
             // Set Page Titles & Metadata
             document.title = `${title} - ${artist} | OBSCURA RECORDS LLC`;
             document.getElementById('track-title').textContent = title;
-            document.getElementById('track-artist').textContent = artist || "OBSCURA RECORDS LLC";
+            document.getElementById('track-artist').textContent = displayArtist;
             
             // Set Cover & Ambient Background
             document.getElementById('track-cover').src = cover;
