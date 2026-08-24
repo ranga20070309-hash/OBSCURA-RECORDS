@@ -159,42 +159,75 @@ module.exports = async (req, res) => {
             }
         };
 
-        // 2. Auto-Reply to USER (Optimized for 100% Inbox Placement)
+        // 2. Auto-Reply to USER (Optimized for 100% Inbox Placement & Obscura Dark Aesthetic)
         const userMailOptions = {
             from: `"Obscura Records" <${process.env.EMAIL_USER}>`,
             to: cleanEmail,
-            subject: `Thank you for submitting your demo to Obscura Records`,
-            text: `Hi ${cleanArtist},\n\nThank you for submitting your demo to Obscura Records. Our A&R team has received your submission and added it to our review queue.\n\nDue to the high volume of demos we receive daily, our team will reach out to you directly if your sound matches our upcoming releases and schedule. Please allow 2-3 weeks for our review process.\n\nWe appreciate your passion and interest in working with Obscura Records.\n\nBest Regards,\nA&R Team\nObscura Records\nhttps://obscurarecords.com\ncontact: artists@obscurarecord.com`,
+            subject: `Demo Submission Received - Obscura Records`,
+            text: `Hi ${cleanArtist},\n\nThank you for submitting your track to Obscura Records. We have safely received your demo and added it to our A&R review queue.\n\nDue to the high volume of releases we manage, we will reach out to you directly if your music aligns with our upcoming catalog and sonic direction. Please allow our team 2 to 3 weeks for our review process.\n\nKeep pushing boundaries and creating powerful music.\n\nBest Regards,\nA&R Department\nObscura Records\nhttps://obscurarecord.com\n\n---\nNOTE: This is an automated notification. Please do not reply directly to this email as incoming replies to this address are not monitored.`,
             html: `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <meta charset="utf-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Obscura Records - Demo Received</title>
                 </head>
-                <body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f7f9fa; color: #222222;">
-                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #eaeaea;">
+                <body style="margin: 0; padding: 25px 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #050510; color: #e2e8f0;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #0c0a1a; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 35px rgba(0,0,0,0.8); border: 1px solid rgba(0, 240, 255, 0.25);">
+                        <!-- Top Neon Accent Bar -->
                         <tr>
-                            <td style="background-color: #0b0c10; padding: 30px 40px; text-align: center;">
-                                <h1 style="color: #66fcf1; margin: 0; font-size: 24px; letter-spacing: 3px; text-transform: uppercase;">OBSCURA RECORDS</h1>
-                                <p style="color: #c5c6c7; margin: 5px 0 0 0; font-size: 12px; letter-spacing: 1px;">A&R DEPARTMENT</p>
+                            <td style="height: 4px; background: linear-gradient(90deg, #00f0ff 0%, #b700ff 50%, #ff007f 100%); line-height: 4px; font-size: 0;">&nbsp;</td>
+                        </tr>
+                        <!-- Header -->
+                        <tr>
+                            <td style="background-color: #080614; padding: 32px 35px 25px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.07);">
+                                <h1 style="color: #00f0ff; margin: 0; font-size: 24px; letter-spacing: 3.5px; font-weight: 800; text-transform: uppercase; text-shadow: 0 0 15px rgba(0,240,255,0.4);">OBSCURA RECORDS</h1>
+                                <p style="color: #b700ff; margin: 6px 0 0 0; font-size: 11.5px; letter-spacing: 2px; font-weight: 700; text-transform: uppercase;">A&amp;R DEPARTMENT // TRANSMISSION RECEIVED</p>
                             </td>
                         </tr>
+                        <!-- Main Message Area -->
                         <tr>
-                            <td style="padding: 40px 40px 30px 40px; font-size: 15px; line-height: 1.7; color: #333333;">
-                                <p style="margin-top: 0; font-size: 16px;">Hi <strong>${cleanArtist}</strong>,</p>
-                                <p>Thank you for submitting your track to <strong>Obscura Records</strong>. We have safely received your demo and added it to our A&R review queue.</p>
-                                <p style="color: #555555;">Our team listens to every submission carefully. Due to the high volume of releases we manage, we will reach out to you directly if your music aligns with our upcoming catalog and sonic direction.</p>
-                                <p style="color: #555555;">Please allow our team <strong>2 to 3 weeks</strong> to review your submission.</p>
-                                <hr style="border: none; border-top: 1px solid #eeeeee; margin: 30px 0;" />
-                                <p style="margin-bottom: 0;">Keep pushing boundaries and creating powerful music.</p>
-                                <p style="margin-top: 10px;"><strong>Best Regards,</strong><br/>A&R Department<br/><strong>Obscura Records</strong></p>
+                            <td style="background-color: #0f0c22; padding: 35px 35px 30px; font-size: 14.5px; line-height: 1.7; color: #cbd5e1;">
+                                <p style="margin-top: 0; font-size: 16px; color: #ffffff;">Hi <strong style="color: #00f0ff;">${cleanArtist}</strong>,</p>
+                                <p style="margin-bottom: 18px;">Thank you for submitting your track to <strong style="color: #ffffff;">Obscura Records</strong>. We have safely received your demo and added it to our active A&amp;R review queue.</p>
+                                
+                                <!-- Status Card -->
+                                <div style="background-color: #171333; border: 1px solid rgba(0, 240, 255, 0.2); border-left: 4px solid #00f0ff; border-radius: 8px; padding: 14px 18px; margin: 20px 0;">
+                                    <p style="margin: 0; color: #00f0ff; font-weight: bold; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;">A&amp;R Submission Status</p>
+                                    <p style="margin: 4px 0 0 0; font-size: 13.5px; color: #f1f5f9;">Status: <span style="color: #a78bfa; font-weight: 600;">In Review Queue</span> &bull; Estimated Turnaround: <span style="color: #00f0ff; font-weight: 600;">2 to 3 weeks</span></p>
+                                </div>
+
+                                <p style="color: #94a3b8; margin-bottom: 16px;">Our team listens to every submission carefully. Due to the high volume of releases we manage, we will reach out to you directly if your music aligns with our upcoming catalog and sonic direction.</p>
+                                
+                                <p style="color: #94a3b8;">Please allow our team <strong style="color: #ffffff;">2 to 3 weeks</strong> to thoroughly evaluate your submission.</p>
+                                
+                                <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.08); margin: 28px 0 20px;" />
+                                
+                                <p style="margin-bottom: 0; color: #cbd5e1;">Keep pushing sonic boundaries and creating powerful music.</p>
+                                <p style="margin-top: 10px; line-height: 1.5; color: #94a3b8;">
+                                    <strong style="color: #ffffff;">Best Regards,</strong><br/>
+                                    A&amp;R Department<br/>
+                                    <span style="color: #00f0ff; font-weight: bold;">Obscura Records</span>
+                                </p>
+
+                                <!-- Automated Do-Not-Reply Notice -->
+                                <div style="background: rgba(183, 0, 255, 0.08); border: 1px solid rgba(183, 0, 255, 0.25); border-radius: 8px; padding: 12px 16px; margin: 25px 0 5px; text-align: center;">
+                                    <p style="margin: 0; font-size: 12px; color: #d8b4fe; line-height: 1.5;">
+                                        ⚡ <strong>AUTOMATED NOTIFICATION:</strong> This email was generated automatically. <strong>Please do not reply directly to this email</strong> as replies to this address are not monitored.
+                                    </p>
+                                </div>
                             </td>
                         </tr>
+                        <!-- Footer -->
                         <tr>
-                            <td style="background-color: #f9fbfd; padding: 20px 40px; text-align: center; font-size: 12px; color: #888888; border-top: 1px solid #eaeaea;">
-                                <p style="margin: 0 0 5px 0;">This is an automated confirmation of your submission to <a href="https://obscurarecords.com" style="color: #0066cc; text-decoration: none;">obscurarecords.com</a>.</p>
-                                <p style="margin: 0;">Obscura Records &bull; Electronic & Phonk Movement</p>
+                            <td style="background-color: #080614; padding: 22px 35px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid rgba(255, 255, 255, 0.07);">
+                                <p style="margin: 0 0 6px 0; color: #94a3b8;">
+                                    Official Website: <a href="https://obscurarecord.com" target="_blank" style="color: #00f0ff; text-decoration: none; font-weight: 600;">obscurarecord.com</a>
+                                </p>
+                                <p style="margin: 0; font-size: 11px; color: #475569; letter-spacing: 0.5px;">
+                                    OBSCURA RECORDS &bull; ELECTRONIC &amp; PHONK MOVEMENT &bull; ALL RIGHTS RESERVED
+                                </p>
                             </td>
                         </tr>
                     </table>
