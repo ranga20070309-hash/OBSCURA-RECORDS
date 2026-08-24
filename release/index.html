@@ -91,12 +91,26 @@
             pointer-events: none;
         }
 
+        /* Stage Container for Center Card + Side QR Dock */
+        .smart-link-stage {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2.2rem;
+            width: 100%;
+            max-width: 660px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
         /* Center Smart Link Hub Card */
         .smart-link-card {
             position: relative;
             z-index: 10;
-            width: 100%;
-            max-width: 418px;
+            width: 418px;
+            max-width: 100%;
+            flex-shrink: 0;
             background: var(--card-bg);
             backdrop-filter: blur(35px);
             -webkit-backdrop-filter: blur(35px);
@@ -107,8 +121,69 @@
                 0 0 35px rgba(0, 240, 255, 0.08),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
             overflow: hidden;
-            margin: 0 auto;
             animation: cardFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Side Docked Cyber Neon QR Box (Desktop Right Side) */
+        .side-qr-dock {
+            display: none;
+            width: 184px;
+            flex-shrink: 0;
+            background: rgba(8, 10, 18, 0.92);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 22px;
+            padding: 1.2rem 1rem;
+            text-align: center;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            box-shadow: 0 20px 45px rgba(0,0,0,0.8), 0 0 25px rgba(0,240,255,0.08);
+            animation: cardFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @media (min-width: 840px) {
+            .side-qr-dock {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.75rem;
+            }
+        }
+
+        .qr-neon-frame {
+            background: #070912;
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            border-radius: 14px;
+            padding: 0.45rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15), inset 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .qr-neon-frame img {
+            width: 144px;
+            height: 144px;
+            display: block;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        .qr-dock-title {
+            font-family: var(--font-heading);
+            font-size: 0.76rem;
+            font-weight: 800;
+            color: #00f0ff;
+            letter-spacing: 0.08rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .qr-dock-desc {
+            font-size: 0.66rem;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.35;
+            margin: 0;
         }
 
         @keyframes cardFadeUp {
@@ -635,91 +710,81 @@
     <audio id="snippet-audio" preload="none"></audio>
     <div id="yt-player-slot" style="position:fixed; left:-9999px; top:-9999px; pointer-events:none; opacity:0; width:1px; height:1px;"></div>
 
-    <!-- Smart Link Card Hub -->
-    <main class="smart-link-card" id="smart-link-card">
+    <div class="smart-link-stage">
 
-        <!-- Initial Loading View -->
-        <div id="loading-state" class="loading-view">
-            <div class="cyber-spinner"></div>
-            <div style="font-family: var(--font-heading); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.15rem; color: #00f0ff;">
-                FETCHING TRANSMISSION...
-            </div>
-        </div>
+        <!-- Main Smart Link Card -->
+        <main class="smart-link-card" id="smart-link-card">
 
-        <!-- Loaded Content (Populated by JS) -->
-        <div id="content-state" style="display: none;">
-            
-            <!-- Top HD Artwork with Play Button -->
-            <div class="artwork-container">
-                <span class="audio-preview-badge">
-                    <i class="fas fa-wave-square"></i> AUDIO PREVIEW
-                </span>
-                <img id="track-cover" src="../assets/OCR.png" alt="Artwork" class="artwork-img">
-                <div class="artwork-overlay-gradient"></div>
-                <button id="play-snippet-btn" class="artwork-play-btn" title="Play 30s Snippet">
-                    <i class="fas fa-play" id="snippet-play-icon" style="margin-left: 3px;"></i>
-                </button>
-            </div>
-
-            <!-- Obscura Label Banner -->
-            <div class="label-banner">
-                <img src="../assets/OCR.png" alt="Obscura Records LLC" class="label-logo-img">
-                <div class="label-name">OBSCURA <span>RECORDS LLC</span></div>
-            </div>
-
-            <!-- Track Metadata Header -->
-            <div class="track-meta-header">
-                <h1 class="track-title" id="track-title">RELEASE TITLE</h1>
-                <div class="track-artist" id="track-artist">PROD By ARTIST</div>
-                <div class="instruction-text">Choose your preferred music service</div>
-            </div>
-
-            <!-- Streaming Services Grid -->
-            <div class="platform-list" id="platform-list">
-                <!-- Dynamically rendered platform rows -->
-            </div>
-
-            <!-- Card Footer & Share -->
-            <div class="card-footer">
-                <div style="display: flex; gap: 0.6rem; width: 100%; justify-content: center; flex-wrap: wrap;">
-                    <button id="share-btn" class="share-hub-btn">
-                        <i class="fas fa-share-alt"></i> SHARE
-                    </button>
-                    <button id="qr-modal-btn" class="share-hub-btn secondary" onclick="openQrModal()">
-                        <i class="fas fa-qrcode"></i> QR CODE
-                    </button>
+            <!-- Initial Loading View -->
+            <div id="loading-state" class="loading-view">
+                <div class="cyber-spinner"></div>
+                <div style="font-family: var(--font-heading); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.15rem; color: #00f0ff;">
+                    FETCHING TRANSMISSION...
                 </div>
-                <div class="footer-credits">
-                    &copy; 2026 <a href="../">OBSCURA RECORDS LLC</a>. ALL RIGHTS RESERVED.<br>
-                    <span style="opacity: 0.75; font-size: 0.62rem; margin-top: 0.35rem; display: inline-block;">
-                        <a href="javascript:void(0)" onclick="openPrivacyModal()">PRIVACY POLICY</a> &bull; 
-                        <a href="javascript:void(0)" onclick="openTermsModal()">TERMS OF SERVICE</a>
+            </div>
+
+            <!-- Loaded Content (Populated by JS) -->
+            <div id="content-state" style="display: none;">
+                
+                <!-- Top HD Artwork with Play Button -->
+                <div class="artwork-container">
+                    <span class="audio-preview-badge">
+                        <i class="fas fa-wave-square"></i> AUDIO PREVIEW
                     </span>
+                    <img id="track-cover" src="../assets/OCR.png" alt="Artwork" class="artwork-img">
+                    <div class="artwork-overlay-gradient"></div>
+                    <button id="play-snippet-btn" class="artwork-play-btn" title="Play 30s Snippet">
+                        <i class="fas fa-play" id="snippet-play-icon" style="margin-left: 3px;"></i>
+                    </button>
                 </div>
+
+                <!-- Obscura Label Banner -->
+                <div class="label-banner">
+                    <img src="../assets/OCR.png" alt="Obscura Records LLC" class="label-logo-img">
+                    <div class="label-name">OBSCURA <span>RECORDS LLC</span></div>
+                </div>
+
+                <!-- Track Metadata Header -->
+                <div class="track-meta-header">
+                    <h1 class="track-title" id="track-title">RELEASE TITLE</h1>
+                    <div class="track-artist" id="track-artist">PROD By ARTIST</div>
+                    <div class="instruction-text">Choose your preferred music service</div>
+                </div>
+
+                <!-- Streaming Services Grid -->
+                <div class="platform-list" id="platform-list">
+                    <!-- Dynamically rendered platform rows -->
+                </div>
+
+                <!-- Card Footer & Share -->
+                <div class="card-footer">
+                    <button id="share-btn" class="share-hub-btn">
+                        <i class="fas fa-share-alt"></i> SHARE TRANSMISSION
+                    </button>
+                    <div class="footer-credits">
+                        &copy; 2026 <a href="../">OBSCURA RECORDS LLC</a>. ALL RIGHTS RESERVED.<br>
+                        <span style="opacity: 0.75; font-size: 0.62rem; margin-top: 0.35rem; display: inline-block;">
+                            <a href="javascript:void(0)" onclick="openPrivacyModal()">PRIVACY POLICY</a> &bull; 
+                            <a href="javascript:void(0)" onclick="openTermsModal()">TERMS OF SERVICE</a>
+                        </span>
+                    </div>
+                </div>
+
             </div>
 
-        </div>
+        </main>
 
-    </main>
+        <!-- Right Side Cyber Neon QR Dock (Desktop) -->
+        <aside class="side-qr-dock" id="side-qr-dock">
+            <div class="qr-dock-title">
+                <i class="fas fa-mobile-alt"></i> SCAN TO STREAM
+            </div>
+            <div class="qr-neon-frame">
+                <img id="side-qr-img" src="" alt="Scan with Phone">
+            </div>
+            <p class="qr-dock-desc">Point your phone camera to stream directly on mobile.</p>
+        </aside>
 
-    <!-- Mobile QR Modal -->
-    <div id="mobile-qr-modal" class="cyber-modal-overlay">
-        <div class="cyber-modal-card" style="text-align: center;">
-            <button type="button" class="modal-close-btn" onclick="closeModals()">&times;</button>
-            <div class="modal-title" style="justify-content: center;">
-                <i class="fas fa-qrcode" style="color: #00f0ff;"></i> SCAN TRANSMISSION
-            </div>
-            <div class="qr-white-box" style="display: inline-block; margin: 0.8rem auto 1.2rem auto;">
-                <img id="mobile-qr-img" src="" alt="Release QR Code" style="width: 190px; height: 190px;">
-                <div class="qr-brand-tag">OBSCURA RECORDS LLC</div>
-            </div>
-            <p style="font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-bottom: 1.2rem;">
-                Scan with any phone camera or QR reader to open all streaming links.
-            </p>
-            <button type="button" class="share-hub-btn" onclick="closeModals()" style="width: 100%; justify-content: center;">
-                <i class="fas fa-check"></i> CLOSE
-            </button>
-        </div>
     </div>
 
     <!-- Privacy Policy Modal -->
@@ -1147,10 +1212,10 @@
                 });
             }
 
-            // Render QR Code for Modal
+            // Render Cyber Neon QR Code for Side Dock
             const currentReleaseUrl = window.location.href;
-            const liveQrApi = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(currentReleaseUrl)}&color=0-0-0&bgcolor=255-255-255`;
-            const qrImg = document.getElementById('mobile-qr-img');
+            const liveQrApi = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(currentReleaseUrl)}&color=0-240-255&bgcolor=7-9-18`;
+            const qrImg = document.getElementById('side-qr-img');
             if (qrImg) qrImg.src = liveQrApi;
 
             // Play Button Event Listener
@@ -1178,12 +1243,6 @@
         }
 
         // --- 7. MODAL CONTROLS & PRIVACY CONSENT ---
-        window.openQrModal = function() {
-            closeModals();
-            const modal = document.getElementById('mobile-qr-modal');
-            if (modal) modal.style.display = 'flex';
-        };
-
         window.openPrivacyModal = function() {
             closeModals();
             const modal = document.getElementById('privacy-modal');
