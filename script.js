@@ -2221,8 +2221,6 @@ const initPortal = () => {
                 const ytIdAttr = ytData ? ytData.id : '';
                 const ytTypeAttr = ytData ? ytData.type : 'video';
 
-                const releaseDate = release.date && release.date !== 'TBA' ? String(release.date).trim() : '';
-
                 const card = document.createElement('div');
                 card.className = 'release-card-large glass';
                 card.innerHTML = `
@@ -2249,7 +2247,6 @@ const initPortal = () => {
                         <span class="track-id">${cleanId} ${badge}</span>
                         <h4>${release.title || 'UNTITLED'}</h4>
                         <div class="producers-text">Produced by: <span>${artistName}</span></div>
-                        ${releaseDate ? `<div class="release-date-badge"><i class="far fa-calendar-alt"></i> ${releaseDate}</div>` : ''}
                         <div class="release-actions">
                             ${release.spotify && release.spotify !== '#' ? `<a href="${release.spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
                             ${release.apple && release.apple !== '#' ? `<a href="${release.apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
