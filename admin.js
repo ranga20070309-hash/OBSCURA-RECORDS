@@ -3689,7 +3689,7 @@ function initSmartLinksEngine() {
                     <img src="${coverImg}" style="width: 52px; height: 52px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.15);" alt="Cover">
                     <div style="display: flex; flex-direction: column; gap: 2px;">
                         <strong style="font-family: var(--font-heading); font-size: 0.98rem; color: #fff;">${title}</strong>
-                        <span style="font-size: 0.78rem; color: #00f0ff;">PROD. ${artist.toUpperCase()}</span>
+                        <span style="font-size: 0.78rem; color: #00f0ff;">PROD. ${artist}</span>
                         <small style="font-family: var(--font-mono); font-size: 0.7rem; color: rgba(255,255,255,0.5);">
                             SLUG: <strong style="color: #fff;">${slugId}</strong> &bull; <i class="fas fa-headphones"></i> ${connectedCount} PLATFORMS LINKED
                         </small>
