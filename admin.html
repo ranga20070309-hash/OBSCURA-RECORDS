@@ -107,10 +107,6 @@
                         <i class="fas fa-compact-disc"></i> <span>RELEASE ARCHIVE</span>
                         <span class="badge" id="badge-releases">0</span>
                     </a>
-                    <a href="#" class="nav-btn" data-target="smartlinks-panel">
-                        <i class="fas fa-bolt" style="color: #00f0ff;"></i> <span>SMART LINKS HUB</span>
-                        <span class="badge" id="badge-smartlinks" style="background: rgba(0, 240, 255, 0.2); color: #00f0ff; border-color: rgba(0, 240, 255, 0.4);">0</span>
-                    </a>
                     <a href="#" class="nav-btn" data-target="upcoming-panel">
                         <i class="fas fa-clock"></i> <span>UPCOMING TEASERS</span>
                         <span class="badge" id="badge-upcoming">0</span>
@@ -1635,177 +1631,10 @@
                 </div>
             </section>
 
-            <!-- ==========================================================================
-                 SMART LINKS HUB (MUSIC INDUSTRY LANDING PAGES & AUTO GENERATOR)
-                 ========================================================================== -->
-            <section id="smartlinks-panel" class="panel">
-                <div class="card-grid">
-                    
-                    <!-- 1. AUTO-FETCHER CARD (SINGLE LINK MAGIC IMPORT) -->
-                    <div class="cyber-card full-card" style="border: 1px solid rgba(0, 240, 255, 0.4); background: linear-gradient(145deg, rgba(6, 12, 24, 0.95), rgba(12, 18, 32, 0.95));">
-                        <div class="card-header">
-                            <i class="fas fa-magic card-icon" style="color: #00f0ff; text-shadow: 0 0 15px rgba(0, 240, 255, 0.8);"></i>
-                            <div>
-                                <h3>1-CLICK AUTO METADATA & STREAMING LINKS FETCHER</h3>
-                                <p>Paste a YouTube URL or Spotify track link below. Our engine will auto-detect Title, Artist, HD Artwork Cover, and all available Streaming Links!</p>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div style="display: flex; gap: 0.8rem; align-items: stretch; flex-wrap: wrap;">
-                                <div class="input-with-icon" style="flex: 1; min-width: 280px;">
-                                    <i class="fab fa-youtube" style="color: #ff0055;"></i>
-                                    <input type="text" id="smartlink-magic-url" placeholder="Paste YouTube link (e.g. https://youtu.be/... or https://youtube.com/watch?v=...) or Spotify link...">
-                                </div>
-                                <button type="button" class="cyber-btn primary" id="btn-smartlink-magic-fetch" style="min-width: 220px; font-weight: 800; letter-spacing: 0.05rem;">
-                                    <i class="fas fa-bolt"></i> <span>AUTO-FETCH INFO & LINKS</span>
-                                </button>
-                            </div>
-                            <small style="display: block; margin-top: 0.6rem; color: rgba(255, 255, 255, 0.55);">
-                                <i class="fas fa-info-circle" style="color: #00f0ff;"></i> Supported sources: YouTube official videos, Spotify tracks, Apple Music URLs, and Soundcloud.
-                            </small>
-                        </div>
-                    </div>
-
-                    <!-- 2. SMART LINK CREATOR / EDITOR FORM -->
-                    <div class="cyber-card full-card">
-                        <div class="card-header">
-                            <i class="fas fa-edit card-icon"></i>
-                            <div>
-                                <h3 id="smartlink-form-title">CREATE NEW SMART LINK (RELEASE HUB)</h3>
-                                <p>Configure release details and streaming destination URLs. Empty links will be automatically hidden on the public page.</p>
-                            </div>
-                        </div>
-                        <div class="card-body form-grid">
-                            
-                            <!-- Track Basic Information -->
-                            <div class="input-group">
-                                <label><i class="fas fa-heading"></i> TRACK / RELEASE TITLE *</label>
-                                <input type="text" id="smartlink-input-title" placeholder="e.g. NUTS FUNK">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-user-astronaut"></i> ARTIST / PRODUCER NAME *</label>
-                                <input type="text" id="smartlink-input-artist" placeholder="e.g. DJ QDR / SAYURUXT">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-image"></i> HD ARTWORK IMAGE URL *</label>
-                                <input type="text" id="smartlink-input-image" placeholder="https://... image URL (or auto-fetched)">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-link"></i> UNIQUE URL SLUG (ID) *</label>
-                                <input type="text" id="smartlink-input-slug" placeholder="e.g. nuts-funk (auto-generated)">
-                                <small>Live page will be: <strong>obscurarecords.com/release/?id=<span id="slug-preview-text">nuts-funk</span></strong></small>
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fas fa-volume-up"></i> AUDIO PREVIEW URL (MP3 URL OR YOUTUBE URL)</label>
-                                <input type="text" id="smartlink-input-preview" placeholder="https://... mp3 preview URL or YouTube URL for in-page snippet playback">
-                            </div>
-
-                            <!-- Streaming Links Grid -->
-                            <div class="full" style="margin-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1rem;">
-                                <h4 style="font-family: var(--font-heading); font-size: 0.95rem; color: #00f0ff; letter-spacing: 0.08rem; margin-bottom: 0.8rem;">
-                                    <i class="fas fa-headphones"></i> STREAMING PLATFORM DESTINATION URLS
-                                </h4>
-                            </div>
-
-                            <div class="input-group">
-                                <label><i class="fab fa-spotify" style="color: #1DB954;"></i> SPOTIFY URL</label>
-                                <input type="text" id="smartlink-link-spotify" placeholder="https://open.spotify.com/track/...">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fab fa-apple" style="color: #FA233B;"></i> APPLE MUSIC URL</label>
-                                <input type="text" id="smartlink-link-apple" placeholder="https://music.apple.com/...">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-star" style="color: #EA4CC0;"></i> ITUNES STORE URL</label>
-                                <input type="text" id="smartlink-link-itunes" placeholder="https://music.apple.com/... (Store download)">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-heart" style="color: #A238FF;"></i> DEEZER URL</label>
-                                <input type="text" id="smartlink-link-deezer" placeholder="https://www.deezer.com/track/...">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fab fa-amazon" style="color: #00A8E1;"></i> AMAZON MUSIC URL</label>
-                                <input type="text" id="smartlink-link-amazon" placeholder="https://music.amazon.com/albums/...">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fab fa-youtube" style="color: #FF0000;"></i> YOUTUBE URL</label>
-                                <input type="text" id="smartlink-link-youtube" placeholder="https://youtube.com/watch?v=...">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-play-circle" style="color: #FF0000;"></i> YOUTUBE MUSIC URL</label>
-                                <input type="text" id="smartlink-link-youtubemusic" placeholder="https://music.youtube.com/watch?v=...">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-gem" style="color: #ffffff;"></i> TIDAL URL</label>
-                                <input type="text" id="smartlink-link-tidal" placeholder="https://tidal.com/browse/track/...">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-broadcast-tower" style="color: #005483;"></i> PANDORA URL</label>
-                                <input type="text" id="smartlink-link-pandora" placeholder="https://www.pandora.com/artist/...">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-play" style="color: #00D664;"></i> BOOMPLAY URL</label>
-                                <input type="text" id="smartlink-link-boomplay" placeholder="https://www.boomplay.com/songs/...">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fab fa-soundcloud" style="color: #FF5500;"></i> SOUNDCLOUD URL</label>
-                                <input type="text" id="smartlink-link-soundcloud" placeholder="https://soundcloud.com/...">
-                            </div>
-                            <div class="input-group">
-                                <label><i class="fas fa-compact-disc" style="color: #00FF95;"></i> BEATPORT / BANDCAMP URL</label>
-                                <input type="text" id="smartlink-link-beatport" placeholder="https://www.beatport.com/track/...">
-                            </div>
-                            <div class="input-group full">
-                                <label><i class="fab fa-tiktok" style="color: #ffffff;"></i> TIKTOK SOUND URL</label>
-                                <input type="text" id="smartlink-link-tiktok" placeholder="https://www.tiktok.com/music/...">
-                            </div>
-
-                            <!-- Actions -->
-                            <div class="full" style="display: flex; gap: 0.8rem; margin-top: 1.2rem; flex-wrap: wrap;">
-                                <button type="button" class="cyber-btn primary" id="btn-save-smartlink" style="min-width: 220px;">
-                                    <i class="fas fa-cloud-upload-alt"></i> <span>PUBLISH SMART LINK</span>
-                                </button>
-                                <button type="button" class="cyber-btn" id="btn-preview-current-smartlink" style="display: none;">
-                                    <i class="fas fa-external-link-alt"></i> <span>VIEW LIVE PAGE</span>
-                                </button>
-                                <button type="button" class="cyber-btn warning" id="btn-reset-smartlink-form">
-                                    <i class="fas fa-undo"></i> <span>RESET FORM</span>
-                                </button>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- 3. PUBLISHED SMART LINKS DIRECTORY -->
-                    <div class="cyber-card full-card">
-                        <div class="card-header">
-                            <i class="fas fa-list-ul card-icon"></i>
-                            <div>
-                                <h3>PUBLISHED SMART LINKS DIRECTORY</h3>
-                                <p>All active release landing pages currently live under your domain.</p>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="panel-action-bar" style="margin-bottom: 1rem;">
-                                <div class="search-box" style="flex: 1;">
-                                    <i class="fas fa-search"></i>
-                                    <input type="text" id="smartlink-search-input" placeholder="SEARCH SMART LINKS BY TITLE, ARTIST, OR SLUG...">
-                                </div>
-                            </div>
-
-                            <div id="smartlinks-directory-list" style="display: flex; flex-direction: column; gap: 0.8rem;">
-                                <div class="loading-state">LOADING PUBLISHED SMART LINKS...</div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </section>
-
         </main>
     </div>
 
-    
+    <!-- Audio Preview Dock -->
     <div id="admin-audio-preview" class="admin-audio-dock" style="display: none;">
         <div class="dock-left">
             <i class="fas fa-play-circle dock-icon"></i>
@@ -1816,34 +1645,6 @@
         </div>
         <audio id="admin-preview-audio" controls></audio>
         <button type="button" id="close-dock-btn" class="close-dock">&times;</button>
-    </div>
-    <div id="smartlink-qr-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 99999; align-items: center; justify-content: center;">
-        <div class="cyber-card" style="max-width: 440px; width: 90%; text-align: center; background: #070912; border: 1px solid rgba(0,240,255,0.4); border-radius: 20px; padding: 2rem; box-shadow: 0 25px 60px rgba(0,0,0,0.9), 0 0 35px rgba(0,240,255,0.15);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
-                <h3 style="font-family: var(--font-heading); font-size: 1.1rem; color: #fff; margin: 0; display: flex; align-items: center; gap: 0.6rem;">
-                    <i class="fas fa-qrcode" style="color: #00f0ff;"></i> <span id="qr-modal-title">RELEASE QR TRANSMISSION</span>
-                </h3>
-                <button type="button" class="close-dock" onclick="closeSmartLinkQrModal()" style="font-size: 1.5rem; line-height: 1; background: none; border: none; color: #fff; cursor: pointer;">&times;</button>
-            </div>
-
-            <div style="background: #ffffff; padding: 1.2rem 1.2rem 0.8rem 1.2rem; border-radius: 16px; display: inline-block; margin-bottom: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-                <img id="qr-modal-img" src="" alt="Release QR Code" style="width: 210px; height: 210px; display: block; margin: 0 auto; object-fit: contain;">
-                <div style="font-family: var(--font-heading); font-size: 0.72rem; font-weight: 900; color: #000; letter-spacing: 0.15rem; margin-top: 0.6rem;">
-                    OBSCURA RECORDS LLC
-                </div>
-            </div>
-
-            <p id="qr-modal-url-display" style="font-family: var(--font-mono); font-size: 0.72rem; color: #00f0ff; word-break: break-all; margin-bottom: 1.4rem; padding: 0.5rem; background: rgba(0,240,255,0.05); border-radius: 8px; border: 1px solid rgba(0,240,255,0.15);"></p>
-
-            <div style="display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;">
-                <a id="qr-modal-download-btn" href="" target="_blank" download="obscura-release-qr.png" class="cyber-btn primary" style="text-decoration: none;">
-                    <i class="fas fa-download"></i> <span>DOWNLOAD HD QR (PNG)</span>
-                </a>
-                <button type="button" class="cyber-btn" onclick="copyQrModalUrl()">
-                    <i class="fas fa-copy"></i> <span>COPY LINK</span>
-                </button>
-            </div>
-        </div>
     </div>
 
     <script src="admin.js"></script>
