@@ -508,7 +508,7 @@
                     <i class="fas fa-share-alt"></i> SHARE TRANSMISSION
                 </button>
                 <div class="footer-credits">
-                    &copy; 2026 <a href="../index.html">OBSCURA RECORD</a>. ALL RIGHTS RESERVED.
+                    &copy; 2026 <a href="../">OBSCURA RECORD</a>. ALL RIGHTS RESERVED.
                 </div>
             </div>
 
@@ -869,63 +869,63 @@
             }
         }
 
-        // --- 7. FETCH RELEASE DATA FROM FIREBASE ---
+        // --- 7. NOT FOUND / TERMINATED TRANSMISSION VIEW ---
+        function renderNotFound(slug = '') {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('content-state').style.display = 'block';
+
+            document.title = '404 // TRANSMISSION TERMINATED | OBSCURA RECORD';
+            document.getElementById('ambient-bg').style.backgroundImage = "url('../assets/OCR.png')";
+
+            const card = document.getElementById('smart-link-card');
+            if (card) {
+                card.innerHTML = `
+                    <div style="padding: 3.2rem 1.8rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                        <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(255, 0, 85, 0.12); border: 1.5px solid #ff0055; display: flex; align-items: center; justify-content: center; color: #ff0055; font-size: 1.8rem; box-shadow: 0 0 30px rgba(255, 0, 85, 0.35); margin-bottom: 0.5rem;">
+                            <i class="fas fa-satellite-dish"></i>
+                        </div>
+
+                        <div class="label-name" style="font-size: 0.75rem; letter-spacing: 0.2rem; color: rgba(255, 255, 255, 0.5);">
+                            OBSCURA <span style="color: #00f0ff;">RECORD</span>
+                        </div>
+
+                        <h1 style="font-family: var(--font-heading); font-size: 1.35rem; font-weight: 900; color: #fff; letter-spacing: 0.06rem; text-transform: uppercase;">
+                            TRANSMISSION TERMINATED
+                        </h1>
+
+                        <p style="font-size: 0.82rem; color: rgba(255, 255, 255, 0.65); line-height: 1.6; max-width: 320px; margin-bottom: 1.2rem;">
+                            We are sorry, this release link has been archived, deleted, or is no longer broadcasting on this frequency.
+                        </p>
+
+                        <a href="../" class="share-hub-btn" style="text-decoration: none; padding: 0.75rem 1.8rem; font-size: 0.82rem; background: rgba(0, 240, 255, 0.15); border-color: var(--accent-cyan); color: #fff; display: inline-flex; box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);">
+                            <i class="fas fa-globe"></i> RETURN TO OBSCURA PORTAL
+                        </a>
+
+                        <div style="margin-top: 2rem; font-size: 0.65rem; color: rgba(255, 255, 255, 0.35); letter-spacing: 0.05rem;">
+                            &copy; 2026 <a href="../" style="color: var(--accent-cyan); text-decoration: none;">OBSCURA RECORD</a>. ALL RIGHTS RESERVED.
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // --- 8. FETCH RELEASE DATA FROM FIREBASE ---
         const releaseId = getReleaseId();
 
         if (!releaseId) {
-            // No ID -> Show default portal release
-            db.ref('siteData/releases').once('value').then(snap => {
-                const list = snap.val();
-                if (Array.isArray(list) && list.length > 0) {
-                    renderSmartLink(list[0]);
-                } else {
-                    renderSmartLink({
-                        title: "OBSCURA RECORD TRANSMISSION",
-                        artist: "OFFICIAL ROSTER",
-                        image: "../assets/OCR.png"
-                    });
-                }
-            }).catch(() => {
-                renderSmartLink({
-                    title: "OBSCURA RECORD",
-                    artist: "INTO THE VOID",
-                    image: "../assets/OCR.png"
-                });
-            });
+            renderNotFound();
         } else {
-            // First check dedicated 'smartLinks/{id}'
+            // Check dedicated smartLinks/{id}
             db.ref(`smartLinks/${releaseId}`).once('value').then(snap => {
                 const val = snap.val();
                 if (val) {
                     renderSmartLink(val);
                 } else {
-                    // Fallback to siteData/releases searching by slug/id/title
-                    db.ref('siteData/releases').once('value').then(rSnap => {
-                        const releases = rSnap.val() || [];
-                        const found = Array.isArray(releases) ? releases.find(r => 
-                            (r.id && r.id === releaseId) || 
-                            (r.slug && r.slug === releaseId) ||
-                            (r.title && r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === releaseId.toLowerCase())
-                        ) : null;
-
-                        if (found) {
-                            renderSmartLink(found);
-                        } else {
-                            renderSmartLink({
-                                title: releaseId.replace(/-/g, ' ').toUpperCase(),
-                                artist: "OBSCURA RECORD",
-                                image: "../assets/OCR.png"
-                            });
-                        }
-                    });
+                    renderNotFound(releaseId);
                 }
             }).catch(err => {
                 console.error("Firebase fetch error:", err);
-                renderSmartLink({
-                    title: releaseId.replace(/-/g, ' ').toUpperCase(),
-                    artist: "OBSCURA RECORD",
-                    image: "../assets/OCR.png"
-                });
+                renderNotFound(releaseId);
             });
         }
     </script>
