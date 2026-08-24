@@ -5825,54 +5825,56 @@ textarea.real-input:focus {
 }
 
 /* ==========================================================================
-   FEATURE 1: FLOATING CYBERPUNK MUSIC PLAYER (BALANCED 3-COLUMN LAYOUT)
+   FEATURE 1: SPOTIFY-STYLE FULL-WIDTH BOTTOM MUSIC PLAYER BAR
    ========================================================================== */
 .floating-player-bar {
     position: fixed;
-    bottom: 22px;
-    left: 50%;
-    transform: translateX(-50%) translateY(0) scale(1);
-    width: calc(100% - 48px);
-    max-width: 1240px;
-    height: 78px;
-    background: rgba(6, 6, 12, 0.88);
-    backdrop-filter: blur(28px);
-    -webkit-backdrop-filter: blur(28px);
-    border: 1px solid rgba(0, 240, 255, 0.2);
-    border-radius: 20px;
-    padding: 0 1.8rem;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100vw;
+    height: 84px;
+    background: rgba(8, 9, 14, 0.94);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0;
+    padding: 0 2.2rem;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: max(2.2rem, env(safe-area-inset-left, 2.2rem));
+    padding-right: max(2.2rem, env(safe-area-inset-right, 2.2rem));
     display: grid;
-    grid-template-columns: 280px 1fr auto;
+    grid-template-columns: minmax(280px, 350px) 1fr minmax(320px, 420px);
     align-items: center;
     gap: 2rem;
     z-index: 9999;
     box-shadow:
-        0 20px 50px rgba(0, 0, 0, 0.92),
-        0 0 25px rgba(0, 240, 255, 0.12),
-        inset 0 0 15px rgba(255, 255, 255, 0.02);
+        0 -10px 40px rgba(0, 0, 0, 0.92),
+        0 -1px 20px rgba(0, 240, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
     opacity: 1;
-    filter: blur(0px);
+    transform: translateY(0);
     visibility: visible;
-    transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.55s ease, filter 0.55s ease, visibility 0.55s, box-shadow 0.5s ease;
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease, visibility 0.4s ease, box-shadow 0.4s ease;
+    box-sizing: border-box;
 }
 
-/* Glowing Loop Border Tape Stream (Cyan & Cyber Purple - Active only when playing) */
+/* Glowing Top Accent Line (Active loop when playing) */
 .floating-player-bar::before {
     content: '';
     position: absolute;
-    inset: -1.5px;
-    border-radius: 21px;
-    padding: 1.5px;
+    top: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
     background: linear-gradient(90deg, #00f0ff, #7000ff, #00f0ff, #b700ff, #00f0ff);
-    background-size: 300% 300%;
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
+    background-size: 300% 100%;
     opacity: 0;
-    transition: opacity 0.6s ease;
+    transition: opacity 0.5s ease;
     pointer-events: none;
-    z-index: 1;
+    z-index: 2;
 }
 
 .floating-player-bar.playing::before {
@@ -5895,18 +5897,16 @@ textarea.real-input:focus {
 }
 
 .floating-player-bar.playing {
-    border-color: rgba(0, 240, 255, 0.4);
+    border-top-color: rgba(0, 240, 255, 0.35);
     box-shadow:
-        0 25px 60px rgba(0, 0, 0, 0.95),
-        0 0 35px rgba(0, 240, 255, 0.28),
-        0 0 60px rgba(183, 0, 255, 0.14),
-        inset 0 0 20px rgba(0, 240, 255, 0.05);
+        0 -12px 50px rgba(0, 0, 0, 0.95),
+        0 -2px 30px rgba(0, 240, 255, 0.2),
+        0 0 40px rgba(183, 0, 255, 0.12);
 }
 
 .floating-player-bar.hidden {
-    transform: translateX(-50%) translateY(45px) scale(0.95);
+    transform: translateY(100%);
     opacity: 0;
-    filter: blur(6px);
     pointer-events: none;
     visibility: hidden;
 }
@@ -5914,15 +5914,15 @@ textarea.real-input:focus {
 .fp-glow-stream {
     position: absolute;
     top: -1px;
-    left: 8%;
-    right: 8%;
-    height: 1.5px;
-    background: linear-gradient(90deg, transparent, var(--accent-blue), var(--accent-purple), transparent);
-    box-shadow: 0 0 14px var(--accent-blue);
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 5%, var(--accent-blue) 35%, var(--accent-purple) 65%, transparent 95%);
+    box-shadow: 0 0 16px var(--accent-blue);
     pointer-events: none;
 }
 
-/* 1. LEFT COLUMN: Track Info */
+/* 1. LEFT COLUMN: Track Info (Spotify Style) */
 .floating-player-track-info {
     display: flex;
     align-items: center;
@@ -5932,28 +5932,28 @@ textarea.real-input:focus {
 
 .fp-thumb-wrapper {
     position: relative;
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
     flex-shrink: 0;
 }
 
 .fp-cover-img {
     width: 100%;
     height: 100%;
-    border-radius: 10px;
+    border-radius: 8px;
     object-fit: cover;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     position: relative;
     z-index: 2;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.65);
 }
 
 .fp-mini-vinyl {
     position: absolute;
-    top: 2px;
+    top: 3px;
     right: -8px;
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     background: radial-gradient(circle, #222 0%, #0a0a0a 60%, #000 100%);
     border: 1px solid rgba(0, 240, 255, 0.4);
@@ -5961,7 +5961,7 @@ textarea.real-input:focus {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 8px rgba(0, 240, 255, 0.2);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
 }
 
 .floating-player-bar.playing .fp-mini-vinyl {
@@ -5990,32 +5990,121 @@ textarea.real-input:focus {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
+    min-width: 0;
+}
+
+.fp-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
 }
 
 .fp-track-title {
     font-family: var(--font-heading);
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     font-weight: 700;
     color: #fff;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    letter-spacing: 0.04rem;
+    letter-spacing: 0.03rem;
+}
+
+.fp-equalizer-bars {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2.5px;
+    height: 14px;
+    padding-bottom: 1px;
+    flex-shrink: 0;
+}
+
+.eq-bar {
+    width: 2.5px;
+    height: 3px;
+    background: var(--accent-blue);
+    border-radius: 2px;
+    transition: height 0.2s ease;
+    box-shadow: 0 0 5px var(--accent-blue);
+}
+
+.floating-player-bar.playing .eq-bar:nth-child(1) { animation: eqBarAnim 0.75s ease-in-out infinite alternate; }
+.floating-player-bar.playing .eq-bar:nth-child(2) { animation: eqBarAnim 0.9s ease-in-out infinite 0.15s alternate; }
+.floating-player-bar.playing .eq-bar:nth-child(3) { animation: eqBarAnim 0.65s ease-in-out infinite 0.3s alternate; }
+.floating-player-bar.playing .eq-bar:nth-child(4) { animation: eqBarAnim 0.85s ease-in-out infinite 0.45s alternate; }
+
+@keyframes eqBarAnim {
+    0% { height: 3px; }
+    50% { height: 13px; }
+    100% { height: 6px; }
+}
+
+.fp-artist-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
 }
 
 .fp-track-artist {
-    font-size: 0.72rem;
+    font-size: 0.74rem;
     color: var(--accent-blue);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    opacity: 0.9;
+    opacity: 0.92;
     font-weight: 500;
-    letter-spacing: 0.03rem;
+    letter-spacing: 0.02rem;
 }
 
-/* 2. CENTER COLUMN: Controls & Wide Scrubber */
+.fp-hq-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.55rem;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    color: var(--accent-blue);
+    background: rgba(0, 240, 255, 0.08);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    padding: 0.08rem 0.35rem;
+    border-radius: 4px;
+    letter-spacing: 0.05rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.fp-like-btn {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-left: 0.2rem;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.fp-like-btn:hover {
+    color: #ff2a70;
+    transform: scale(1.2);
+}
+
+.fp-like-btn.liked {
+    color: #ff2a70;
+    text-shadow: 0 0 12px rgba(255, 42, 112, 0.8);
+    animation: heartPop 0.35s ease;
+}
+
+@keyframes heartPop {
+    0% { transform: scale(0.8); }
+    50% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+}
+
+/* 2. CENTER COLUMN: Spotify Controls & Wide Scrubber */
 .floating-player-center {
     display: flex;
     flex-direction: column;
@@ -6023,7 +6112,7 @@ textarea.real-input:focus {
     justify-content: center;
     gap: 0.45rem;
     width: 100%;
-    max-width: 520px;
+    max-width: 580px;
     margin: 0 auto;
 }
 
@@ -6036,19 +6125,49 @@ textarea.real-input:focus {
 .fp-btn {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.65);
+    color: rgba(255, 255, 255, 0.7);
     font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4px;
+    padding: 6px;
+    border-radius: 50%;
 }
 
 .fp-btn:hover {
+    color: #fff;
+    transform: scale(1.15);
+}
+
+.fp-control-extra {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.42);
+    position: relative;
+}
+
+.fp-control-extra:hover {
+    color: #fff;
+    transform: scale(1.15);
+}
+
+.fp-control-extra.active {
     color: var(--accent-blue);
-    transform: scale(1.2);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
+}
+
+.fp-control-extra.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3.5px;
+    height: 3.5px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    box-shadow: 0 0 5px var(--accent-blue);
 }
 
 .fp-play-btn {
@@ -6057,8 +6176,8 @@ textarea.real-input:focus {
     border-radius: 50%;
     background: var(--accent-blue);
     color: #000;
-    font-size: 0.9rem;
-    box-shadow: 0 0 18px rgba(0, 240, 255, 0.65);
+    font-size: 0.92rem;
+    box-shadow: 0 0 18px rgba(0, 240, 255, 0.6);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -6066,7 +6185,7 @@ textarea.real-input:focus {
     background: #fff;
     box-shadow: 0 0 25px #00f0ff;
     color: #000;
-    transform: scale(1.08);
+    transform: scale(1.1);
 }
 
 .floating-player-progress-row {
@@ -6078,26 +6197,26 @@ textarea.real-input:focus {
 
 .fp-time {
     font-family: var(--font-heading);
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     color: rgba(255, 255, 255, 0.55);
     min-width: 32px;
     font-weight: 500;
     letter-spacing: 0.02rem;
+    user-select: none;
 }
 
 .fp-progress-container {
     flex: 1;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.12);
+    height: 5px;
+    background: rgba(255, 255, 255, 0.16);
     border-radius: 10px;
     position: relative;
     cursor: pointer;
-    overflow: hidden;
-    transition: height 0.2s ease;
+    transition: height 0.15s ease;
 }
 
 .fp-progress-container:hover {
-    height: 8px;
+    height: 7px;
 }
 
 .fp-progress-bar {
@@ -6106,23 +6225,90 @@ textarea.real-input:focus {
     background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
     border-radius: 10px;
     box-shadow: 0 0 10px var(--accent-blue);
-    transition: width 0.15s linear;
+    transition: width 0.12s linear;
+    position: relative;
 }
 
-/* 3. RIGHT COLUMN: Actions (Volume, Streaming, Close) */
+.fp-progress-container:hover .fp-progress-bar::after {
+    content: '';
+    position: absolute;
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 6px rgba(0, 240, 255, 0.9);
+}
+
+/* 3. RIGHT COLUMN: Actions (Streaming Platforms, Volume, Crosshairs, Close) */
 .floating-player-actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 1.4rem;
+    gap: 1.1rem;
+}
+
+.fp-external-links {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.fp-link-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.82rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.25s ease;
+    text-decoration: none;
+}
+
+.fp-link-icon.spotify:hover {
+    background: #1DB954;
+    border-color: #1DB954;
+    box-shadow: 0 0 12px rgba(29, 185, 84, 0.6);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.fp-link-icon.apple:hover {
+    background: linear-gradient(135deg, #fa233b, #fb5c74);
+    border-color: #fa233b;
+    box-shadow: 0 0 12px rgba(250, 35, 59, 0.6);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.fp-link-icon.youtube:hover {
+    background: #FF0000;
+    border-color: #FF0000;
+    box-shadow: 0 0 12px rgba(255, 0, 0, 0.6);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.fp-link-icon.soundcloud:hover {
+    background: #ff5500;
+    border-color: #ff5500;
+    box-shadow: 0 0 12px rgba(255, 85, 0, 0.6);
+    color: #fff;
+    transform: translateY(-2px);
 }
 
 .fp-volume-wrapper {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
+    gap: 0.6rem;
     background: rgba(255, 255, 255, 0.04);
-    padding: 0.4rem 0.85rem;
+    padding: 0.35rem 0.75rem;
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -6131,9 +6317,9 @@ textarea.real-input:focus {
     background: none;
     border: none;
     color: rgba(255, 255, 255, 0.7);
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     cursor: pointer;
-    transition: color 0.2s ease;
+    transition: color 0.2s ease, transform 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6143,10 +6329,15 @@ textarea.real-input:focus {
     color: var(--accent-blue);
 }
 
+.fp-expand-btn:hover {
+    color: var(--accent-blue);
+    transform: scale(1.15);
+}
+
 .fp-vol-slider {
     -webkit-appearance: none;
     appearance: none;
-    width: 80px;
+    width: 75px;
     height: 4px;
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.18);
@@ -6167,46 +6358,7 @@ textarea.real-input:focus {
 }
 
 .fp-vol-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.25);
-}
-
-.fp-external-links {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
-    padding-left: 1.2rem;
-}
-
-.fp-link-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 0.85rem;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: all 0.25s ease;
-    text-decoration: none;
-}
-
-.fp-link-icon.spotify:hover {
-    background: #1DB954;
-    border-color: #1DB954;
-    box-shadow: 0 0 12px rgba(29, 185, 84, 0.6);
-    color: #fff;
-    transform: translateY(-2px);
-}
-
-.fp-link-icon.youtube:hover {
-    background: #FF0000;
-    border-color: #FF0000;
-    box-shadow: 0 0 12px rgba(255, 0, 0, 0.6);
-    color: #fff;
-    transform: translateY(-2px);
+    transform: scale(1.3);
 }
 
 .close-fp {
@@ -6221,7 +6373,7 @@ textarea.real-input:focus {
     color: rgba(255, 255, 255, 0.5);
     font-size: 0.85rem;
     transition: all 0.25s ease;
-    margin-left: 0.2rem;
+    margin-left: 0.1rem;
 }
 
 .close-fp:hover {
@@ -6233,11 +6385,12 @@ textarea.real-input:focus {
 }
 
 /* Mobile & Tablet Responsiveness */
-@media (max-width: 1024px) {
+@media (max-width: 1140px) {
     .floating-player-bar {
-        grid-template-columns: 220px 1fr auto;
+        grid-template-columns: minmax(220px, 280px) 1fr auto;
         gap: 1.2rem;
         padding: 0 1.2rem;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     .fp-volume-wrapper {
@@ -6245,23 +6398,44 @@ textarea.real-input:focus {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 860px) {
     .floating-player-bar {
-        bottom: 12px;
-        width: calc(100% - 24px);
-        height: 66px;
-        padding: 0 0.9rem;
         grid-template-columns: 1fr auto auto;
         gap: 0.8rem;
-        border-radius: 16px;
+        padding: 0 1rem;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        height: 70px;
+    }
+
+    .floating-player-bar .fp-progress-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 3px;
+        border-radius: 0;
+        background: rgba(255, 255, 255, 0.12);
+        z-index: 10;
+        margin: 0;
+    }
+
+    .floating-player-bar .fp-progress-bar {
+        border-radius: 0;
     }
 
     .fp-thumb-wrapper {
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
     }
 
     .fp-mini-vinyl {
+        display: none;
+    }
+
+    .fp-hq-badge,
+    .fp-equalizer-bars,
+    .fp-expand-btn {
         display: none;
     }
 
@@ -6275,6 +6449,10 @@ textarea.real-input:focus {
 
     .floating-player-controls {
         gap: 0.8rem;
+    }
+
+    .fp-control-extra {
+        display: none;
     }
 
     .fp-play-btn {
