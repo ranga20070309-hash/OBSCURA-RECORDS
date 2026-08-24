@@ -360,6 +360,7 @@ function initDashboardEngine() {
     initContactEngine();
     initModalsEngine();
     initTransmissionsEngine();
+    initSmartLinksEngine();
     initSecurityLogsEngine();
 }
 
@@ -382,6 +383,7 @@ function initNavigation() {
         'demo-inbox-panel': { title: '<i class="fas fa-inbox"></i> DEMO SUBMISSIONS INBOX', desc: 'Review, stream, analyze link security, and tag artist demo transmissions.' },
         'contact-inbox-panel': { title: '<i class="fas fa-envelope-open-text"></i> CONTACT INQUIRIES', desc: 'Direct communications submitted via the public contact portal.' },
         'modals-panel': { title: '<i class="fas fa-window-restore"></i> MODALS, FAQ & FOOTER', desc: 'Interactive FAQ question/answers accordion, footer links, and legal policy editor.' },
+        'smartlinks-panel': { title: '<i class="fas fa-bolt"></i> SMART LINKS HUB // RELEASE LANDING PAGES', desc: 'Auto-generate and manage dedicated release landing pages with streaming platform links (Spotify, Apple, Deezer, YouTube, etc.).' },
         'transmissions-panel': { title: '<i class="fas fa-broadcast-tower"></i> MEDIA FEEDS & DROPS', desc: 'Configure dedicated YouTube and TikTok latest release drops displayed on the main portal.' },
         'security-panel': { title: '<i class="fas fa-shield-virus"></i> SECURITY & SYSTEM AUDIT', desc: 'Real-time database connection telemetry and administrative audit logs.' }
     };
@@ -978,6 +980,9 @@ function initReleasesEngine() {
                         </div>
                     </div>
                     <div class="rel-card-actions">
+                        <button type="button" class="cyber-btn sm" style="color: #00f0ff; border-color: rgba(0, 240, 255, 0.4);" onclick="generateSmartLinkFromRelease(${actualIndex})" title="Generate Smart Link for this Release">
+                            <i class="fas fa-bolt"></i> SMART LINK
+                        </button>
                         <button type="button" class="cyber-btn primary sm" onclick="editRelease(${actualIndex})">
                             <i class="fas fa-edit"></i> EDIT
                         </button>
@@ -989,6 +994,38 @@ function initReleasesEngine() {
             `;
         }).join('');
     }
+
+    window.generateSmartLinkFromRelease = function(index) {
+        const rel = cachedReleases[index];
+        if (!rel) return;
+
+        const navBtn = document.querySelector('.nav-btn[data-target="smartlinks-panel"]');
+        if (navBtn) navBtn.click();
+
+        const titleInput = document.getElementById('smartlink-input-title');
+        const artistInput = document.getElementById('smartlink-input-artist');
+        const imageInput = document.getElementById('smartlink-input-image');
+        const slugInput = document.getElementById('smartlink-input-slug');
+        const previewInput = document.getElementById('smartlink-input-preview');
+        const slugPreviewText = document.getElementById('slug-preview-text');
+
+        if (titleInput) titleInput.value = rel.title || '';
+        if (artistInput) artistInput.value = rel.artist || rel.producers || '';
+        if (imageInput) imageInput.value = rel.cover || rel.image || '';
+        const slug = (rel.title || 'release').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        if (slugInput) slugInput.value = slug;
+        if (slugPreviewText) slugPreviewText.textContent = slug;
+        if (previewInput) previewInput.value = rel.audioUrl || rel.previewAudio || rel.youtube || '';
+
+        if (rel.spotify) document.getElementById('smartlink-link-spotify').value = rel.spotify;
+        if (rel.apple) document.getElementById('smartlink-link-apple').value = rel.apple;
+        if (rel.youtube) document.getElementById('smartlink-link-youtube').value = rel.youtube;
+        if (rel.soundcloud) document.getElementById('smartlink-link-soundcloud').value = rel.soundcloud;
+
+        const formCard = document.getElementById('smartlink-form-title');
+        if (formCard) formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        showToast(`LOADED "${rel.title}" INTO SMART LINK GENERATOR!`);
+    };
 
     if (searchInput) {
         searchInput.addEventListener('input', renderReleasesList);
@@ -3362,5 +3399,478 @@ function initTransmissionsEngine() {
     }
 }
 
+// ==========================================================================
+// --- SMART LINKS HUB ENGINE (1-CLICK AUTO-FETCHER & DIRECTORY) ---
+// Dedicated Firebase Project: obscura-records-smart-links
+// ==========================================================================
+const smartLinksFirebaseConfig = {
+    apiKey: "AIzaSyBARRt8caSaWBTjtxzNzr670lTYfqBRIj0",
+    authDomain: "obscura-records-smart-links.firebaseapp.com",
+    databaseURL: "https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "obscura-records-smart-links",
+    storageBucket: "obscura-records-smart-links.firebasestorage.app",
+    messagingSenderId: "22595717651",
+    appId: "1:22595717651:web:b39895741f4aebe8268de6"
+};
 
+let smartLinksApp;
+try {
+    smartLinksApp = firebase.initializeApp(smartLinksFirebaseConfig, "smartLinksApp");
+} catch (e) {
+    smartLinksApp = firebase.app("smartLinksApp");
+}
+const smartLinksDb = smartLinksApp.database();
 
+let cachedSmartLinks = {};
+let currentEditingSmartLinkId = null;
+
+function initSmartLinksEngine() {
+    const magicInput = document.getElementById('smartlink-magic-url');
+    const magicBtn = document.getElementById('btn-smartlink-magic-fetch');
+
+    const titleInput = document.getElementById('smartlink-input-title');
+    const artistInput = document.getElementById('smartlink-input-artist');
+    const imageInput = document.getElementById('smartlink-input-image');
+    const slugInput = document.getElementById('smartlink-input-slug');
+    const previewInput = document.getElementById('smartlink-input-preview');
+    const slugPreviewText = document.getElementById('slug-preview-text');
+
+    const saveBtn = document.getElementById('btn-save-smartlink');
+    const resetBtn = document.getElementById('btn-reset-smartlink-form');
+    const viewCurrentBtn = document.getElementById('btn-preview-current-smartlink');
+    const searchInput = document.getElementById('smartlink-search-input');
+    const listContainer = document.getElementById('smartlinks-directory-list');
+    const badgeSmartlinks = document.getElementById('badge-smartlinks');
+
+    // Auto generate slug from title
+    if (titleInput && slugInput) {
+        titleInput.addEventListener('input', () => {
+            if (!currentEditingSmartLinkId) {
+                const slug = titleInput.value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                slugInput.value = slug;
+                if (slugPreviewText) slugPreviewText.textContent = slug || 'release-slug';
+            }
+        });
+    }
+
+    if (slugInput && slugPreviewText) {
+        slugInput.addEventListener('input', () => {
+            const slug = slugInput.value.toLowerCase().trim().replace(/[^a-z0-9-]+/g, '');
+            slugInput.value = slug;
+            slugPreviewText.textContent = slug || 'release-slug';
+        });
+    }
+
+    // 1. Magic Auto-Fetcher Engine
+    if (magicBtn && magicInput) {
+        magicBtn.addEventListener('click', async () => {
+            const rawUrl = magicInput.value.trim();
+            if (!rawUrl) {
+                showToast("PLEASE PASTE A YOUTUBE OR SPOTIFY LINK FIRST!", 'error');
+                return;
+            }
+
+            magicBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> FETCHING DATA & LINKS...';
+            magicBtn.disabled = true;
+
+            try {
+                let trackTitle = '';
+                let trackArtist = '';
+                let trackImage = '';
+                let ytUrl = '';
+                let spotifyUrl = '';
+                let appleUrl = '';
+                let deezerUrl = '';
+                let tidalUrl = '';
+                let amazonUrl = '';
+                let soundcloudUrl = '';
+                let boomplayUrl = '';
+                let itunesUrl = '';
+                let pandoraUrl = '';
+
+                // Check YouTube
+                const ytMatch = rawUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+                if (ytMatch && ytMatch[1]) {
+                    const ytId = ytMatch[1];
+                    ytUrl = `https://www.youtube.com/watch?v=${ytId}`;
+                    trackImage = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+                    
+                    // Fetch YouTube oEmbed for Title
+                    try {
+                        const oEmbedRes = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(ytUrl)}`);
+                        if (oEmbedRes.ok) {
+                            const oData = await oEmbedRes.json();
+                            if (oData && oData.title) {
+                                const cleanTitle = oData.title.replace(/\(Official.*?\)/gi, '').replace(/\[Official.*?\]/gi, '').replace(/\(Audio\)/gi, '').replace(/\[Audio\]/gi, '').replace(/\(Video\)/gi, '').replace(/\[Video\]/gi, '').trim();
+                                if (cleanTitle.includes('-')) {
+                                    const parts = cleanTitle.split('-');
+                                    trackArtist = parts[0].trim();
+                                    trackTitle = parts.slice(1).join('-').trim();
+                                } else {
+                                    trackTitle = cleanTitle;
+                                    trackArtist = oData.author_name ? oData.author_name.replace(' - Topic', '').trim() : 'OBSCURA RECORD';
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.log("oEmbed fallback:", e);
+                    }
+                }
+
+                // Query Songlink / Odesli Music API
+                try {
+                    const songlinkRes = await fetch(`https://api.songlink.com/v1-alpha.1/links?url=${encodeURIComponent(rawUrl)}`);
+                    if (songlinkRes.ok) {
+                        const sData = await songlinkRes.json();
+                        if (sData && sData.entitiesByUniqueId) {
+                            const entityKeys = Object.keys(sData.entitiesByUniqueId);
+                            if (entityKeys.length > 0) {
+                                const ent = sData.entitiesByUniqueId[entityKeys[0]];
+                                if (ent.title && !trackTitle) trackTitle = ent.title;
+                                if (ent.artistName && !trackArtist) trackArtist = ent.artistName;
+                                if (ent.thumbnailUrl && !trackImage) trackImage = ent.thumbnailUrl;
+                            }
+                        }
+
+                        if (sData && sData.linksByPlatform) {
+                            const p = sData.linksByPlatform;
+                            if (p.spotify) spotifyUrl = p.spotify.url;
+                            if (p.appleMusic) appleUrl = p.appleMusic.url;
+                            if (p.itunes) itunesUrl = p.itunes.url;
+                            if (p.deezer) deezerUrl = p.deezer.url;
+                            if (p.amazonMusic) amazonUrl = p.amazonMusic.url;
+                            if (p.youtube) ytUrl = p.youtube.url;
+                            if (p.tidal) tidalUrl = p.tidal.url;
+                            if (p.pandora) pandoraUrl = p.pandora.url;
+                            if (p.soundcloud) soundcloudUrl = p.soundcloud.url;
+                            if (p.boomplay) boomplayUrl = p.boomplay.url;
+                        }
+                    }
+                } catch (e) {
+                    console.log("Songlink API note:", e);
+                }
+
+                // Populate Form Fields
+                if (trackTitle) titleInput.value = trackTitle;
+                if (trackArtist) artistInput.value = trackArtist;
+                if (trackImage) imageInput.value = trackImage;
+                if (ytUrl) {
+                    const ytField = document.getElementById('smartlink-link-youtube');
+                    if (ytField) ytField.value = ytUrl;
+                    if (previewInput && !previewInput.value) previewInput.value = ytUrl;
+                }
+                if (spotifyUrl) {
+                    const spField = document.getElementById('smartlink-link-spotify');
+                    if (spField) spField.value = spotifyUrl;
+                }
+                if (appleUrl) {
+                    const apField = document.getElementById('smartlink-link-apple');
+                    if (apField) apField.value = appleUrl;
+                }
+                if (itunesUrl) {
+                    const itField = document.getElementById('smartlink-link-itunes');
+                    if (itField) itField.value = itunesUrl;
+                }
+                if (deezerUrl) {
+                    const dzField = document.getElementById('smartlink-link-deezer');
+                    if (dzField) dzField.value = deezerUrl;
+                }
+                if (amazonUrl) {
+                    const amField = document.getElementById('smartlink-link-amazon');
+                    if (amField) amField.value = amazonUrl;
+                }
+                if (tidalUrl) {
+                    const tdField = document.getElementById('smartlink-link-tidal');
+                    if (tdField) tdField.value = tidalUrl;
+                }
+                if (pandoraUrl) {
+                    const pdField = document.getElementById('smartlink-link-pandora');
+                    if (pdField) pdField.value = pandoraUrl;
+                }
+                if (soundcloudUrl) {
+                    const scField = document.getElementById('smartlink-link-soundcloud');
+                    if (scField) scField.value = soundcloudUrl;
+                }
+                if (boomplayUrl) {
+                    const bpField = document.getElementById('smartlink-link-boomplay');
+                    if (bpField) bpField.value = boomplayUrl;
+                }
+
+                // Auto-generate Slug
+                const generatedSlug = (trackTitle || 'new-release').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                slugInput.value = generatedSlug;
+                if (slugPreviewText) slugPreviewText.textContent = generatedSlug;
+
+                showToast("METADATA & PLATFORM LINKS AUTO-FETCHED!");
+            } catch (err) {
+                showToast("AUTO-FETCH ERROR: " + err.message, 'error');
+            } finally {
+                magicBtn.innerHTML = '<i class="fas fa-bolt"></i> <span>AUTO-FETCH INFO & LINKS</span>';
+                magicBtn.disabled = false;
+            }
+        });
+    }
+
+    // 2. Realtime Database Listener for Smart Links (on dedicated smartLinksDb)
+    smartLinksDb.ref('smartLinks').on('value', (snap) => {
+        const data = snap.val() || {};
+        cachedSmartLinks = data;
+        const total = Object.keys(data).length;
+        if (badgeSmartlinks) badgeSmartlinks.textContent = total;
+        renderSmartLinksDirectory(searchInput ? searchInput.value : '');
+    });
+
+    // 3. Render Published Smart Links List
+    function renderSmartLinksDirectory(query = '') {
+        if (!listContainer) return;
+        const items = Object.entries(cachedSmartLinks);
+        
+        if (!items.length) {
+            listContainer.innerHTML = `
+                <div style="padding: 2.5rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">
+                    <i class="fas fa-link" style="font-size: 1.8rem; margin-bottom: 0.8rem; color: #00f0ff; display: block;"></i>
+                    NO SMART LINKS PUBLISHED YET. USE THE GENERATOR ABOVE TO CREATE YOUR FIRST RELEASE SMART LINK.
+                </div>
+            `;
+            return;
+        }
+
+        const q = query.toLowerCase().trim();
+        const filtered = items.filter(([id, item]) => {
+            if (!q) return true;
+            return (item.title && item.title.toLowerCase().includes(q)) ||
+                   (item.artist && item.artist.toLowerCase().includes(q)) ||
+                   (id && id.toLowerCase().includes(q));
+        });
+
+        if (!filtered.length) {
+            listContainer.innerHTML = '<div style="padding:1.5rem; text-align:center; color:var(--text-muted);">NO MATCHING SMART LINKS FOUND.</div>';
+            return;
+        }
+
+        listContainer.innerHTML = '';
+        filtered.forEach(([slugId, item]) => {
+            const row = document.createElement('div');
+            row.className = 'cyber-card';
+            row.style.cssText = 'padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; flex-wrap: wrap; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);';
+
+            const coverImg = item.image || item.artwork || 'assets/OCR.png';
+            const title = item.title || 'UNTITLED RELEASE';
+            const artist = item.artist || 'OBSCURA RECORD';
+            const liveUrl = `${window.location.origin}${window.location.pathname.replace('admin.html', '')}release/?id=${slugId}`;
+
+            // Count connected platforms
+            let connectedCount = 0;
+            if (item.links) {
+                Object.values(item.links).forEach(v => { if (v && v.length > 5) connectedCount++; });
+            }
+
+            row.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 250px;">
+                    <img src="${coverImg}" style="width: 52px; height: 52px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.15);" alt="Cover">
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <strong style="font-family: var(--font-heading); font-size: 0.98rem; color: #fff;">${title}</strong>
+                        <span style="font-size: 0.78rem; color: #00f0ff;">PROD. ${artist.toUpperCase()}</span>
+                        <small style="font-family: var(--font-mono); font-size: 0.7rem; color: rgba(255,255,255,0.5);">
+                            SLUG: <strong style="color: #fff;">${slugId}</strong> &bull; <i class="fas fa-headphones"></i> ${connectedCount} PLATFORMS LINKED
+                        </small>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                    <button type="button" class="cyber-btn sm" onclick="copySmartLinkToClipboard('${liveUrl}')" title="Copy Live Smart Link URL">
+                        <i class="fas fa-copy"></i> COPY LINK
+                    </button>
+                    <a href="${liveUrl}" target="_blank" class="cyber-btn sm" style="text-decoration: none;" title="Open Live Smart Link in new tab">
+                        <i class="fas fa-external-link-alt"></i> VIEW PAGE
+                    </a>
+                    <button type="button" class="cyber-btn sm warning" onclick="editSmartLink('${slugId}')" title="Edit this Smart Link">
+                        <i class="fas fa-edit"></i> EDIT
+                    </button>
+                    <button type="button" class="cyber-btn sm danger" onclick="deleteSmartLink('${slugId}')" title="Delete this Smart Link">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            `;
+            listContainer.appendChild(row);
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            renderSmartLinksDirectory(e.target.value);
+        });
+    }
+
+    // 4. Save / Publish Smart Link (Direct to smartLinksDb)
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const title = titleInput.value.trim();
+            const artist = artistInput.value.trim();
+            const image = imageInput.value.trim();
+            let slug = slugInput.value.trim().toLowerCase().replace(/[^a-z0-9-]+/g, '');
+
+            if (!title) {
+                showToast("PLEASE ENTER TRACK TITLE!", 'error');
+                titleInput.focus();
+                return;
+            }
+            if (!slug) {
+                slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            }
+
+            const links = {
+                spotify: document.getElementById('smartlink-link-spotify')?.value.trim() || '',
+                apple: document.getElementById('smartlink-link-apple')?.value.trim() || '',
+                itunes: document.getElementById('smartlink-link-itunes')?.value.trim() || '',
+                deezer: document.getElementById('smartlink-link-deezer')?.value.trim() || '',
+                amazon: document.getElementById('smartlink-link-amazon')?.value.trim() || '',
+                youtube: document.getElementById('smartlink-link-youtube')?.value.trim() || '',
+                youtubemusic: document.getElementById('smartlink-link-youtubemusic')?.value.trim() || '',
+                tidal: document.getElementById('smartlink-link-tidal')?.value.trim() || '',
+                pandora: document.getElementById('smartlink-link-pandora')?.value.trim() || '',
+                boomplay: document.getElementById('smartlink-link-boomplay')?.value.trim() || '',
+                soundcloud: document.getElementById('smartlink-link-soundcloud')?.value.trim() || '',
+                beatport: document.getElementById('smartlink-link-beatport')?.value.trim() || '',
+                tiktok: document.getElementById('smartlink-link-tiktok')?.value.trim() || ''
+            };
+
+            const payload = {
+                title: title,
+                artist: artist || 'OBSCURA RECORD',
+                image: image || 'assets/OCR.png',
+                slug: slug,
+                audioPreview: previewInput.value.trim() || '',
+                youtube: links.youtube || '',
+                links: links,
+                updatedAt: Date.now()
+            };
+
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PUBLISHING...';
+            saveBtn.disabled = true;
+
+            smartLinksDb.ref(`smartLinks/${slug}`).set(payload).then(() => {
+                showToast(`SMART LINK PUBLISHED! [ ${slug} ]`);
+                bumpSiteVersion(`Published Smart Link for ${title}`);
+
+                if (viewCurrentBtn) {
+                    const liveUrl = `${window.location.origin}${window.location.pathname.replace('admin.html', '')}release/?id=${slug}`;
+                    viewCurrentBtn.style.display = 'inline-flex';
+                    viewCurrentBtn.onclick = () => window.open(liveUrl, '_blank');
+                }
+
+                currentEditingSmartLinkId = null;
+                const formTitle = document.getElementById('smartlink-form-title');
+                if (formTitle) formTitle.textContent = "CREATE NEW SMART LINK (RELEASE HUB)";
+            }).catch(err => {
+                showToast("SAVE FAILED: " + err.message, 'error');
+            }).finally(() => {
+                saveBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> <span>PUBLISH SMART LINK</span>';
+                saveBtn.disabled = false;
+            });
+        });
+    }
+
+    // 5. Reset Form
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            currentEditingSmartLinkId = null;
+            if (magicInput) magicInput.value = '';
+            titleInput.value = '';
+            artistInput.value = '';
+            imageInput.value = '';
+            slugInput.value = '';
+            previewInput.value = '';
+            if (slugPreviewText) slugPreviewText.textContent = 'release-slug';
+            if (viewCurrentBtn) viewCurrentBtn.style.display = 'none';
+
+            const platformInputs = [
+                'smartlink-link-spotify', 'smartlink-link-apple', 'smartlink-link-itunes',
+                'smartlink-link-deezer', 'smartlink-link-amazon', 'smartlink-link-youtube',
+                'smartlink-link-youtubemusic', 'smartlink-link-tidal', 'smartlink-link-pandora',
+                'smartlink-link-boomplay', 'smartlink-link-soundcloud', 'smartlink-link-beatport',
+                'smartlink-link-tiktok'
+            ];
+            platformInputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+
+            const formTitle = document.getElementById('smartlink-form-title');
+            if (formTitle) formTitle.textContent = "CREATE NEW SMART LINK (RELEASE HUB)";
+            showToast("FORM RESET COMPLETED.");
+        });
+    }
+}
+
+// Global Window Helpers for Smart Links
+window.copySmartLinkToClipboard = function(url) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+            showToast("SMART LINK COPIED TO CLIPBOARD!");
+        });
+    } else {
+        prompt("Copy your Smart Link URL:", url);
+    }
+};
+
+window.editSmartLink = function(slugId) {
+    const item = cachedSmartLinks[slugId];
+    if (!item) return;
+
+    currentEditingSmartLinkId = slugId;
+    const formTitle = document.getElementById('smartlink-form-title');
+    if (formTitle) formTitle.textContent = `EDITING SMART LINK: ${slugId.toUpperCase()}`;
+
+    const titleInput = document.getElementById('smartlink-input-title');
+    const artistInput = document.getElementById('smartlink-input-artist');
+    const imageInput = document.getElementById('smartlink-input-image');
+    const slugInput = document.getElementById('smartlink-input-slug');
+    const previewInput = document.getElementById('smartlink-input-preview');
+    const slugPreviewText = document.getElementById('slug-preview-text');
+
+    if (titleInput) titleInput.value = item.title || '';
+    if (artistInput) artistInput.value = item.artist || '';
+    if (imageInput) imageInput.value = item.image || item.artwork || '';
+    if (slugInput) slugInput.value = slugId;
+    if (slugPreviewText) slugPreviewText.textContent = slugId;
+    if (previewInput) previewInput.value = item.audioPreview || '';
+
+    const links = item.links || item;
+    const platformMap = {
+        'smartlink-link-spotify': links.spotify,
+        'smartlink-link-apple': links.apple,
+        'smartlink-link-itunes': links.itunes,
+        'smartlink-link-deezer': links.deezer,
+        'smartlink-link-amazon': links.amazon,
+        'smartlink-link-youtube': links.youtube,
+        'smartlink-link-youtubemusic': links.youtubemusic,
+        'smartlink-link-tidal': links.tidal,
+        'smartlink-link-pandora': links.pandora,
+        'smartlink-link-boomplay': links.boomplay,
+        'smartlink-link-soundcloud': links.soundcloud,
+        'smartlink-link-beatport': links.beatport,
+        'smartlink-link-tiktok': links.tiktok
+    };
+
+    Object.entries(platformMap).forEach(([elemId, val]) => {
+        const el = document.getElementById(elemId);
+        if (el) el.value = val || '';
+    });
+
+    // Scroll to form smoothly
+    const formCard = document.getElementById('smartlink-form-title');
+    if (formCard) formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    showToast(`LOADED "${item.title || slugId}" FOR EDITING.`);
+};
+
+window.deleteSmartLink = function(slugId) {
+    if (!confirm(`Are you sure you want to PERMANENTLY DELETE the smart link "${slugId}"?`)) return;
+
+    smartLinksDb.ref(`smartLinks/${slugId}`).remove().then(() => {
+        showToast(`SMART LINK "${slugId}" DELETED!`);
+        bumpSiteVersion(`Deleted Smart Link ${slugId}`);
+    }).catch(err => {
+        showToast("DELETE FAILED: " + err.message, 'error');
+    });
+};
