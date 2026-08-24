@@ -144,36 +144,68 @@ module.exports = async (req, res) => {
         const userMailOptions = {
             from: `"Obscura Records" <${process.env.EMAIL_USER}>`,
             to: cleanEmail,
-            subject: `We have received your message - Obscura Records`,
-            text: `Hi ${cleanName},\n\nThank you for reaching out to Obscura Records. We have safely received your inquiry.\n\nOur team reviews all incoming correspondence and will respond as soon as possible if your inquiry requires a response.\n\nBest Regards,\nObscura Records Team\nhttps://obscurarecords.com`,
+            subject: `Inquiry Received - Obscura Records`,
+            text: `Hi ${cleanName},\n\nThank you for reaching out to Obscura Records. We have safely received your inquiry and forwarded it to our management team.\n\nOur team reviews all incoming correspondence and will respond as soon as possible if your inquiry requires follow-up.\n\nBest Regards,\nManagement & Support\nObscura Records\nhttps://obscurarecord.com\n\n---\nNOTE: This is an automated notification. Please do not reply directly to this email as incoming replies to this address are not monitored.`,
             html: `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <meta charset="utf-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Obscura Records - Inquiry Received</title>
                 </head>
-                <body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f7f9fa; color: #222222;">
-                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #eaeaea;">
+                <body style="margin: 0; padding: 25px 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #050510; color: #e2e8f0;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #0c0a1a; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 35px rgba(0,0,0,0.8); border: 1px solid rgba(183, 0, 255, 0.25);">
+                        <!-- Top Neon Accent Bar -->
                         <tr>
-                            <td style="background-color: #0b0c10; padding: 30px 40px; text-align: center;">
-                                <h1 style="color: #b700ff; margin: 0; font-size: 24px; letter-spacing: 3px; text-transform: uppercase;">OBSCURA RECORDS</h1>
-                                <p style="color: #c5c6c7; margin: 5px 0 0 0; font-size: 12px; letter-spacing: 1px;">DIRECT TRANSMISSION RECEIVED</p>
+                            <td style="height: 4px; background: linear-gradient(90deg, #b700ff 0%, #00f0ff 50%, #ff007f 100%); line-height: 4px; font-size: 0;">&nbsp;</td>
+                        </tr>
+                        <!-- Header -->
+                        <tr>
+                            <td style="background-color: #080614; padding: 32px 35px 25px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.07);">
+                                <h1 style="color: #b700ff; margin: 0; font-size: 24px; letter-spacing: 3.5px; font-weight: 800; text-transform: uppercase; text-shadow: 0 0 15px rgba(183,0,255,0.4);">OBSCURA RECORDS</h1>
+                                <p style="color: #00f0ff; margin: 6px 0 0 0; font-size: 11.5px; letter-spacing: 2px; font-weight: 700; text-transform: uppercase;">MANAGEMENT // TRANSMISSION RECEIVED</p>
                             </td>
                         </tr>
+                        <!-- Main Message Area -->
                         <tr>
-                            <td style="padding: 40px 40px 30px 40px; font-size: 15px; line-height: 1.7; color: #333333;">
-                                <p style="margin-top: 0; font-size: 16px;">Hi <strong>${cleanName}</strong>,</p>
-                                <p>Thank you for getting in touch with <strong>Obscura Records</strong>. We have received your inquiry and forwarded it to our management team.</p>
-                                <p style="color: #555555;">We will review your inquiry and get back to you if follow-up is needed.</p>
-                                <hr style="border: none; border-top: 1px solid #eeeeee; margin: 30px 0;" />
-                                <p style="margin-top: 10px;"><strong>Best Regards,</strong><br/>Management & Support<br/><strong>Obscura Records</strong></p>
+                            <td style="background-color: #0f0c22; padding: 35px 35px 30px; font-size: 14.5px; line-height: 1.7; color: #cbd5e1;">
+                                <p style="margin-top: 0; font-size: 16px; color: #ffffff;">Hi <strong style="color: #b700ff;">${cleanName}</strong>,</p>
+                                <p style="margin-bottom: 18px;">Thank you for getting in touch with <strong style="color: #ffffff;">Obscura Records</strong>. We have safely received your transmission and forwarded it to our management team.</p>
+                                
+                                <!-- Status Card -->
+                                <div style="background-color: #171333; border: 1px solid rgba(183, 0, 255, 0.2); border-left: 4px solid #b700ff; border-radius: 8px; padding: 14px 18px; margin: 20px 0;">
+                                    <p style="margin: 0; color: #b700ff; font-weight: bold; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;">Direct Inquiry Status</p>
+                                    <p style="margin: 4px 0 0 0; font-size: 13.5px; color: #f1f5f9;">Status: <span style="color: #38bdf8; font-weight: 600;">Dispatched to Management Queue</span></p>
+                                </div>
+
+                                <p style="color: #94a3b8; margin-bottom: 16px;">Our team reviews all incoming inquiries and will respond promptly if your inquiry requires follow-up.</p>
+                                
+                                <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.08); margin: 28px 0 20px;" />
+                                
+                                <p style="margin-top: 10px; line-height: 1.5; color: #94a3b8;">
+                                    <strong style="color: #ffffff;">Best Regards,</strong><br/>
+                                    Management & Support<br/>
+                                    <span style="color: #b700ff; font-weight: bold;">Obscura Records</span>
+                                </p>
+
+                                <!-- Automated Do-Not-Reply Notice -->
+                                <div style="background: rgba(183, 0, 255, 0.08); border: 1px solid rgba(183, 0, 255, 0.25); border-radius: 8px; padding: 12px 16px; margin: 25px 0 5px; text-align: center;">
+                                    <p style="margin: 0; font-size: 12px; color: #d8b4fe; line-height: 1.5;">
+                                        ⚡ <strong>AUTOMATED NOTIFICATION:</strong> This email was generated automatically. <strong>Please do not reply directly to this email</strong> as replies to this address are not monitored.
+                                    </p>
+                                </div>
                             </td>
                         </tr>
+                        <!-- Footer -->
                         <tr>
-                            <td style="background-color: #f9fbfd; padding: 20px 40px; text-align: center; font-size: 12px; color: #888888; border-top: 1px solid #eaeaea;">
-                                <p style="margin: 0 0 5px 0;">This transmission was generated from <a href="https://obscurarecords.com" style="color: #6a0dad; text-decoration: none;">obscurarecords.com</a>.</p>
-                                <p style="margin: 0;">Obscura Records &bull; All Rights Reserved.</p>
+                            <td style="background-color: #080614; padding: 22px 35px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid rgba(255, 255, 255, 0.07);">
+                                <p style="margin: 0 0 6px 0; color: #94a3b8;">
+                                    Official Website: <a href="https://obscurarecord.com" target="_blank" style="color: #00f0ff; text-decoration: none; font-weight: 600;">obscurarecord.com</a>
+                                </p>
+                                <p style="margin: 0; font-size: 11px; color: #475569; letter-spacing: 0.5px;">
+                                    OBSCURA RECORDS &bull; ELECTRONIC &amp; PHONK MOVEMENT &bull; ALL RIGHTS RESERVED
+                                </p>
                             </td>
                         </tr>
                     </table>
