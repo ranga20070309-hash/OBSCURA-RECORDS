@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/transmit",
+      "destination": "/transmit/index.html"
+    },
+    {
+      "source": "/transmit/(.*)",
+      "destination": "/transmit/index.html"
+    },
+    {
       "source": "/release",
       "destination": "/api/release.js"
     },
