@@ -380,6 +380,7 @@ function initDashboardEngine() {
     initModalsEngine();
     initTransmissionsEngine();
     initSmartLinksEngine();
+    initQuantumDecksEngine();
     initSecurityLogsEngine();
 }
 
@@ -403,6 +404,7 @@ function initNavigation() {
         'contact-inbox-panel': { title: '<i class="fas fa-envelope-open-text"></i> CONTACT INQUIRIES', desc: 'Direct communications submitted via the public contact portal.' },
         'modals-panel': { title: '<i class="fas fa-window-restore"></i> MODALS, FAQ & FOOTER', desc: 'Interactive FAQ question/answers accordion, footer links, and legal policy editor.' },
         'smartlinks-panel': { title: '<i class="fas fa-bolt"></i> SMART LINKS HUB // RELEASE LANDING PAGES', desc: 'Auto-generate and manage dedicated release landing pages with streaming platform links (Spotify, Apple, Deezer, YouTube, etc.).' },
+        'quantum-decks-panel': { title: '<i class="fas fa-satellite-dish"></i> QUANTUM TRANSMISSION DECKS MATRIX', desc: 'Direct access, metrics, and instant launcher for all single-track interactive Quantum Decks.' },
         'transmissions-panel': { title: '<i class="fas fa-broadcast-tower"></i> MEDIA FEEDS & DROPS', desc: 'Configure dedicated YouTube and TikTok latest release drops displayed on the main portal.' },
         'security-panel': { title: '<i class="fas fa-shield-virus"></i> SECURITY & SYSTEM AUDIT', desc: 'Real-time database connection telemetry and administrative audit logs.' }
     };
@@ -3944,3 +3946,68 @@ window.copyQrModalUrl = function() {
         copySmartLinkToClipboard(currentQrModalUrl);
     }
 };
+
+// --- QUANTUM TRANSMISSION DECKS ENGINE ---
+function initQuantumDecksEngine() {
+    const grid = document.getElementById('quantum-decks-grid');
+    if (!grid) return;
+
+    db.ref('siteData/releases').on('value', snap => {
+        const releases = snap.val() || [];
+        renderQuantumDecksGrid(releases, grid);
+    });
+}
+
+function renderQuantumDecksGrid(releases, container) {
+    if (!container) return;
+    if (!Array.isArray(releases) && typeof releases === 'object' && releases !== null) {
+        releases = Object.values(releases);
+    }
+    if (!releases || releases.length === 0) {
+        container.innerHTML = `<div style="color: rgba(255,255,255,0.4); padding: 2rem; text-align: center;">NO RELEASES FOUND IN ARCHIVE.</div>`;
+        return;
+    }
+
+    const getCleanSlug = (text) => (text || 'track').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+    container.innerHTML = releases.map((rel, idx) => {
+        if (!rel) return '';
+        const title = rel.title || `RELEASE #${idx + 1}`;
+        const artist = rel.artist || rel.producers || 'OBSCURA RECORD';
+        const cover = rel.cover || rel.image || 'assets/OCR.png';
+        const slug = getCleanSlug(title);
+        const transmitUrl = `transmit/?id=${slug}`;
+
+        const spIcon = (rel.spotifyUrl || rel.spotify) ? '<i class="fab fa-spotify" style="color: #1db954;" title="Spotify Linked"></i>' : '<i class="fab fa-spotify" style="color: rgba(255,255,255,0.2);" title="No Spotify Link"></i>';
+        const appleIcon = (rel.appleUrl || rel.apple) ? '<i class="fab fa-apple" style="color: #fa233b;" title="Apple Music Linked"></i>' : '<i class="fab fa-apple" style="color: rgba(255,255,255,0.2);" title="No Apple Link"></i>';
+        const ytIcon = (rel.youtubeUrl || rel.youtube) ? '<i class="fab fa-youtube" style="color: #ff0000;" title="YouTube Linked"></i>' : '<i class="fab fa-youtube" style="color: rgba(255,255,255,0.2);" title="No YouTube Link"></i>';
+
+        return `
+            <div style="background: rgba(10, 14, 24, 0.75); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 14px; padding: 1.2rem; display: flex; flex-direction: column; gap: 0.9rem; transition: transform 0.2s ease;">
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <img src="${cover}" alt="${title}" style="width: 58px; height: 58px; border-radius: 10px; object-fit: cover; border: 1px solid rgba(0,240,255,0.3);" onerror="this.src='assets/OCR.png'">
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 0.95rem; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${title}</div>
+                        <div style="font-size: 0.78rem; color: rgba(255,255,255,0.6);">${artist}</div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.35rem; font-size: 0.9rem;">
+                            ${spIcon} ${appleIcon} ${ytIcon}
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(0,0,0,0.4); border: 1px dashed rgba(0,240,255,0.2); border-radius: 8px; padding: 0.45rem 0.7rem; font-family: monospace; font-size: 0.72rem; color: #00f0ff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    /transmit/?id=${slug}
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; margin-top: auto;">
+                    <button type="button" class="cyber-btn" onclick="window.open('${transmitUrl}', '_blank')" style="flex: 1; justify-content: center; font-size: 0.75rem; padding: 0.5rem;">
+                        <i class="fas fa-external-link-alt"></i> LAUNCH DECK
+                    </button>
+                    <button type="button" class="cyber-btn secondary" onclick="navigator.clipboard.writeText(window.location.origin + window.location.pathname.replace('admin.html', '') + '${transmitUrl}'); showToast('QUANTUM DECK LINK COPIED!');" style="padding: 0.5rem 0.8rem; font-size: 0.75rem;" title="Copy Transmission Link">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
