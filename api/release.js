@@ -58,8 +58,17 @@ module.exports = async (req, res) => {
             try {
                 const allResp = await axios.get(`${FIREBASE_DB_URL}/smartLinks.json`, { timeout: 3500 });
                 const allLinks = allResp.data || {};
-                const matchKey = Object.keys(allLinks).find(k => k.toLowerCase() === normalizedSlug);
-                if (matchKey) {
+                const clean = s => (s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                const targetClean = clean(normalizedSlug);
+
+                const matchKey = Object.keys(allLinks).find(k => {
+                    const item = allLinks[k];
+                    return k.toLowerCase() === normalizedSlug ||
+                           clean(k) === targetClean ||
+                           (item && (clean(item.title) === targetClean || clean(item.slug) === targetClean));
+                });
+
+                if (matchKey && allLinks[matchKey]) {
                     data = allLinks[matchKey];
                 }
             } catch (err) {
