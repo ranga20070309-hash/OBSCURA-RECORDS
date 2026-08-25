@@ -340,21 +340,85 @@ setTimeout(runIgnition, 250);
 let pendingYTTrack = null;
 
 window.onYouTubeIframeAPIReady = function () {
+    isYTApiReady = true;
     initYTPlayer();
 };
 
-function initYTPlayer() {
-    if (ytPlayer && isYTApiReady) return;
+function getYouTubeID(url) {
+    if (!url || typeof url !== 'string') return null;
+    const cleanUrl = url.trim();
+    if (cleanUrl.length === 11 && !cleanUrl.includes('/') && !cleanUrl.includes('?') && !cleanUrl.includes('.')) {
+        return { type: 'video', id: cleanUrl };
+    }
+    // Check playlist
+    if (cleanUrl.includes('list=')) {
+        const match = cleanUrl.match(/[?&]list=([^#\&\?]+)/);
+        if (match && match[1]) return { type: 'playlist', id: match[1] };
+    }
+    // Check video ID (standard, shorts, embed, youtu.be, music.youtube)
+    const match = cleanUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+    if (match && match[1]) {
+        return { type: 'video', id: match[1] };
+    }
+    return null;
+}
+
+function isDirectAudioUrl(url) {
+    if (!url || typeof url !== 'string') return false;
+    const lower = url.toLowerCase().trim();
+    if (getYouTubeID(lower)) return false;
+    if (lower.match(/\.(mp3|wav|ogg|m4a|aac|flac|webm)($|\?)/i)) return true;
+    if (lower.startsWith('data:audio') || lower.startsWith('blob:')) return true;
+    if (lower.includes('firebasestorage.googleapis.com') && (lower.includes('audio') || lower.includes('.mp3') || lower.includes('alt=media'))) return true;
+    if (lower.includes('cloudinary.com') && (lower.includes('/video/upload/') || lower.includes('/audio/'))) return true;
+    if (lower.includes('/assets/') || lower.includes('preview')) return true;
+    if (lower.startsWith('http') && !lower.includes('youtube.com') && !lower.includes('youtu.be') && !lower.includes('spotify.com') && !lower.includes('apple.com') && !lower.includes('soundcloud.com')) {
+        return true;
+    }
+    return false;
+}
+
+function initYTPlayer(callback) {
+    if (ytPlayer && isYTApiReady) {
+        if (typeof callback === 'function') callback();
+        return;
+    }
+
+    // Ensure #yt-player-container exists in DOM
+    let container = document.getElementById('yt-player-container');
+    if (!container) {
+        let wrap = document.getElementById('yt-player-wrap');
+        if (!wrap) {
+            wrap = document.createElement('div');
+            wrap.id = 'yt-player-wrap';
+            wrap.style.cssText = 'position:fixed;bottom:-9999px;left:-9999px;width:320px;height:240px;pointer-events:none;z-index:-1;opacity:0;';
+            document.body.appendChild(wrap);
+        }
+        container = document.createElement('div');
+        container.id = 'yt-player-container';
+        wrap.appendChild(container);
+    }
+
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+        if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            document.head.appendChild(tag);
+        }
+        return;
+    }
+
     try {
         const isFileProtocol = window.location.protocol === 'file:';
         ytPlayer = new YT.Player('yt-player-container', {
-            height: '180',
+            height: '240',
             width: '320',
             playerVars: {
-                'autoplay': 1,
+                'autoplay': 0,
                 'controls': 0,
                 'showinfo': 0,
                 'rel': 0,
+                'playsinline': 1,
                 'modestbranding': 1,
                 'enablejsapi': 1,
                 'origin': isFileProtocol ? 'https://www.youtube.com' : (window.location.origin === 'null' || !window.location.origin ? '*' : window.location.origin)
@@ -364,11 +428,13 @@ function initYTPlayer() {
                     isYTApiReady = true;
                     console.log('YT API Active');
                     if (event.target && event.target.setVolume) event.target.setVolume(100);
+                    if (event.target && event.target.unMute) event.target.unMute();
                     if (pendingYTTrack) {
                         const track = pendingYTTrack;
                         pendingYTTrack = null;
                         playYouTubeTrack(track.ytId, track.ytType, track.playBtn, track.row, track.coverImg);
                     }
+                    if (typeof callback === 'function') callback();
                 },
                 'onStateChange': onPlayerStateChange,
                 'onError': (e) => {
@@ -376,34 +442,20 @@ function initYTPlayer() {
                 }
             }
         });
-    } catch (e) { console.error("YT Setup Fail:", e); }
-}
-
-function onPlayerStateChange(event) {
-    if (event.data === YT.PlayerState.ENDED) {
-        if (typeof stopPlayback === 'function') stopPlayback();
+    } catch (e) {
+        console.error("YT Setup Fail:", e);
     }
 }
 
-function getYouTubeID(url) {
-    if (!url) return null;
-    try {
-        const u = new URL(url);
-        // Prioritize Single Video ID over Playlist ID (Embeds work better for videos)
-        if (u.searchParams.has('v')) {
-            return { type: 'video', id: u.searchParams.get('v') };
-        } else if (u.searchParams.has('list')) {
-            return { type: 'playlist', id: u.searchParams.get('list') };
-        } else if (u.hostname.includes('youtu.be')) {
-            return { type: 'video', id: u.pathname.substring(1) };
-        } else if (u.searchParams.has('v')) {
-            return { type: 'video', id: u.searchParams.get('v') };
+function onPlayerStateChange(event) {
+    if (event.data === YT.PlayerState.PLAYING) {
+        if (currentPlayingBtn) {
+            const row = currentActiveRow || currentPlayingBtn.closest('.release-card-large') || currentPlayingBtn.closest('.popular-card');
+            const img = row ? row.querySelector('.release-cover-large img') : null;
+            startUIPlayback(currentPlayingBtn, row, img);
         }
-        return null;
-    } catch (e) {
-        // Fallback for raw IDs
-        if (url.length === 11) return { type: 'video', id: url };
-        return null;
+    } else if (event.data === YT.PlayerState.ENDED) {
+        if (typeof stopPlayback === 'function') stopPlayback();
     }
 }
 
@@ -421,20 +473,32 @@ function playPreview(audioSrc, ytId, ytType, btn, row) {
     const img = row ? row.querySelector('.release-cover-large img') : null;
 
     // 1. If direct audio link (mp3, wav, etc.)
-    if (audioSrc && (audioSrc.endsWith('.mp3') || audioSrc.endsWith('.wav') || audioSrc.endsWith('.ogg') || audioSrc.includes('preview') || audioSrc.includes('assets/'))) {
+    if (audioSrc && isDirectAudioUrl(audioSrc)) {
         try {
             previewAudio.src = audioSrc;
             previewAudio.currentTime = 0;
-            previewAudio.play().then(() => {
-                startUIPlayback(btn, row, img);
-            }).catch(e => {
-                console.warn("Direct audio preview error, trying YouTube:", e);
-                if (ytId) {
-                    playYouTubeTrack(ytId, ytType || 'video', btn, row, img);
-                }
-            });
+            const playPromise = previewAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    startUIPlayback(btn, row, img);
+                }).catch(e => {
+                    console.warn("Direct audio preview error, trying YouTube:", e);
+                    if (ytId) {
+                        playYouTubeTrack(ytId, ytType || 'video', btn, row, img);
+                    } else {
+                        const ytData = getYouTubeID(audioSrc);
+                        if (ytData && ytData.id) {
+                            playYouTubeTrack(ytData.id, ytData.type || 'video', btn, row, img);
+                        } else {
+                            showCyberNotification("AUDIO STREAM BLOCKED OR UNAVAILABLE", "fas fa-exclamation-triangle");
+                        }
+                    }
+                });
+            }
             return;
-        } catch (e) {}
+        } catch (e) {
+            console.warn("previewAudio exception:", e);
+        }
     }
 
     // 2. If YouTube track ID or URL
@@ -444,8 +508,20 @@ function playPreview(audioSrc, ytId, ytType, btn, row) {
         const ytData = getYouTubeID(audioSrc);
         if (ytData && ytData.id) {
             playYouTubeTrack(ytData.id, ytData.type || 'video', btn, row, img);
+        } else if (audioSrc && audioSrc.startsWith('http')) {
+            try {
+                previewAudio.src = audioSrc;
+                previewAudio.currentTime = 0;
+                previewAudio.play().then(() => {
+                    startUIPlayback(btn, row, img);
+                }).catch(() => {
+                    showCyberNotification("NO AUDIO PREVIEW FOUND", "fas fa-info-circle");
+                });
+            } catch (err) {
+                showCyberNotification("NO AUDIO PREVIEW FOUND", "fas fa-info-circle");
+            }
         } else {
-            console.warn("No playable audio source or YouTube ID for this track.");
+            showCyberNotification("NO AUDIO PREVIEW CONFIGURED", "fas fa-info-circle");
         }
     }
 }
@@ -455,7 +531,13 @@ function playYouTubeTrack(ytId, ytType, playBtn, row, coverImg) {
 
     if (!isYTApiReady || !ytPlayer || typeof ytPlayer.loadVideoById !== 'function') {
         pendingYTTrack = { ytId, ytType, playBtn, row, coverImg };
-        initYTPlayer();
+        initYTPlayer(() => {
+            if (pendingYTTrack) {
+                const track = pendingYTTrack;
+                pendingYTTrack = null;
+                playYouTubeTrack(track.ytId, track.ytType, track.playBtn, track.row, track.coverImg);
+            }
+        });
         startUIPlayback(playBtn, row, coverImg);
         return;
     }
@@ -471,6 +553,10 @@ function playYouTubeTrack(ytId, ytType, playBtn, row, coverImg) {
         if (ytPlayer.playVideo) ytPlayer.playVideo();
     } catch (e) {
         console.warn("YT Player playback delay:", e);
+        try {
+            ytPlayer.cueVideoById(ytId);
+            ytPlayer.playVideo();
+        } catch (err) {}
     }
     startUIPlayback(playBtn, row, coverImg);
     if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
@@ -575,18 +661,41 @@ function loadPopular() {
             const title = r.title || 'POPULAR TRACK';
             const artist = r.artist || r.producers || 'OBSCURA RECORD';
             const cover = r.image || r.cover || 'assets/cover.png';
-            const youtube = r.youtube || r.streamUrl || '';
+            const previewSource = r.streamUrl || r.youtubePreview || r.preview || r.audioPreview || r.previewAudio || r.audioUrl || r.audio || r.youtubeUrl || r.youtube || '';
+            const youtube = r.youtube || r.youtubeUrl || previewSource || '';
             const spotify = r.spotify || r.spotifyUrl || '';
             const apple = r.apple || r.appleUrl || '';
+            const soundcloud = r.soundcloud || r.soundcloudUrl || '';
             const badgeText = r.badge || 'TRENDING';
             const rankFormatted = (i + 1 < 10) ? `0${i + 1}` : `${i + 1}`;
+
+            let ytData = getYouTubeID(previewSource) || getYouTubeID(youtube);
+            const ytIdAttr = ytData ? ytData.id : '';
+            const ytTypeAttr = ytData ? ytData.type : 'video';
 
             const card = document.createElement('div');
             card.className = 'popular-card release-card-large glass';
             card.innerHTML = `
                 <div class="release-cover-large">
+                    <div class="cyber-laser-scanner"></div>
                     <img src="${cover}" alt="${title}" onerror="this.onerror=null; this.src='assets/cover.png';">
                     <div class="release-type-badge">HOT #${rankFormatted}</div>
+                    <div class="player-overlay">
+                        <button class="play-btn preview-btn" 
+                            aria-label="Play Preview"
+                            data-title="${title}"
+                            data-artist="${artist}"
+                            data-image="${cover}"
+                            data-spotify="${spotify || '#'}"
+                            data-apple="${apple || '#'}"
+                            data-youtube="${youtube || '#'}"
+                            data-soundcloud="${soundcloud || '#'}"
+                            data-audio="${previewSource}"
+                            data-ytid="${ytIdAttr}"
+                            data-yttype="${ytTypeAttr}">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="release-info-large">
                     <span class="track-id">POPULAR HIT <span class="badge">${badgeText}</span></span>
@@ -596,6 +705,7 @@ function loadPopular() {
                         ${spotify && spotify !== '#' ? `<a href="${spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
                         ${apple && apple !== '#' ? `<a href="${apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
                         ${youtube && youtube !== '#' ? `<a href="${youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
+                        ${soundcloud && soundcloud !== '#' ? `<a href="${soundcloud}" target="_blank" class="platform-link soundcloud" title="SoundCloud" onclick="event.stopPropagation()"><i class="fab fa-soundcloud"></i></a>` : ''}
                     </div>
                 </div>
             `;
@@ -616,6 +726,10 @@ function loadPopular() {
                 }
             });
         });
+
+        if (typeof bindReleaseInteractions === 'function') {
+            bindReleaseInteractions();
+        }
 
         // --- POPULAR SLIDER LOGIC ---
         const popularControls = document.querySelector('.popular-controls');
@@ -2180,19 +2294,31 @@ const initPortal = () => {
         }
 
         function bindReleaseInteractions() {
-            const previewButtons = document.querySelectorAll('.releases-slider .preview-btn, .releases-slider .play-btn');
+            const previewButtons = document.querySelectorAll('.releases-slider .preview-btn, .releases-slider .play-btn, #releases .play-btn, .popular-grid .play-btn, #popular .play-btn, .popular-card .play-btn');
             previewButtons.forEach(btn => {
                 btn.onclick = (e) => {
                     e.stopPropagation();
-                    const card = btn.closest('.release-card-large') || btn.closest('.release-card');
+                    const card = btn.closest('.release-card-large') || btn.closest('.release-card') || btn.closest('.popular-card');
                     const isCurrentPlaying = (currentPlayingBtn === btn && (previewAudio && !previewAudio.paused || ytPlayer && typeof ytPlayer.getPlayerState === 'function' && ytPlayer.getPlayerState() === 1));
 
                     if (isCurrentPlaying) {
                         stopPlayback();
                     } else {
-                        const audioSrc = btn.getAttribute('data-audio') || '';
-                        const ytId = btn.getAttribute('data-ytid');
-                        const ytidFallback = getYouTubeID(btn.getAttribute('data-youtube'));
+                        let audioSrc = btn.getAttribute('data-audio') || '';
+                        let ytId = btn.getAttribute('data-ytid');
+                        let ytAttr = btn.getAttribute('data-youtube');
+
+                        // Fallback from card platform links if attributes not set
+                        if (!audioSrc && !ytId && (!ytAttr || ytAttr === '#') && card) {
+                            const ytLink = card.querySelector('.platform-link.youtube');
+                            const ytHref = ytLink ? ytLink.getAttribute('href') : '';
+                            if (ytHref && ytHref !== '#' && !ytHref.includes('/channel/') && !ytHref.includes('/c/')) {
+                                ytAttr = ytHref;
+                                audioSrc = ytHref;
+                            }
+                        }
+
+                        const ytidFallback = getYouTubeID(ytAttr || audioSrc);
                         const finalYtId = ytId || (ytidFallback ? ytidFallback.id : null);
                         const finalYtType = btn.getAttribute('data-yttype') || (ytidFallback ? ytidFallback.type : 'video');
 
@@ -2219,9 +2345,10 @@ const initPortal = () => {
                 const releaseType = release.type || 'SINGLE';
                 const artistName = release.producers || release.artist || 'OBSCURA';
 
-                // Preview player audio source (Priority: preview/streamUrl/youtubePreview, fallback to youtube)
-                const previewSource = release.streamUrl || release.youtubePreview || release.preview || release.youtube || '';
-                let ytData = getYouTubeID(previewSource);
+                // Preview player audio source (Priority: preview/streamUrl/youtubePreview/audioPreview/previewAudio, fallback to youtube)
+                const previewSource = release.streamUrl || release.youtubePreview || release.preview || release.audioPreview || release.previewAudio || release.audioUrl || release.audio || release.youtubeUrl || release.youtube || release.stream || release.preview_url || '';
+                const youtubeUrl = release.youtube || release.youtubeUrl || previewSource || '';
+                let ytData = getYouTubeID(previewSource) || getYouTubeID(youtubeUrl);
                 const ytIdAttr = ytData ? ytData.id : '';
                 const ytTypeAttr = ytData ? ytData.type : 'video';
 
@@ -2239,7 +2366,9 @@ const initPortal = () => {
                                 data-artist="${artistName}"
                                 data-image="${coverImg}"
                                 data-spotify="${release.spotify || release.spotifyUrl || '#'}"
-                                data-youtube="${release.youtube || release.youtubeUrl || '#'}"
+                                data-apple="${release.apple || release.appleUrl || '#'}"
+                                data-youtube="${youtubeUrl || '#'}"
+                                data-soundcloud="${release.soundcloud || release.soundcloudUrl || '#'}"
                                 data-audio="${previewSource}"
                                 data-ytid="${ytIdAttr}"
                                 data-yttype="${ytTypeAttr}">
@@ -2254,7 +2383,7 @@ const initPortal = () => {
                         <div class="release-actions">
                             ${release.spotify && release.spotify !== '#' ? `<a href="${release.spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
                             ${release.apple && release.apple !== '#' ? `<a href="${release.apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
-                            ${release.youtube && release.youtube !== '#' ? `<a href="${release.youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
+                            ${youtubeUrl && youtubeUrl !== '#' ? `<a href="${youtubeUrl}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
                             ${release.soundcloud && release.soundcloud !== '#' ? `<a href="${release.soundcloud}" target="_blank" class="platform-link soundcloud" title="SoundCloud" onclick="event.stopPropagation()"><i class="fab fa-soundcloud"></i></a>` : ''}
                         </div>
                     </div>
