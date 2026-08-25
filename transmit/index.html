@@ -804,7 +804,7 @@
 
         @media (max-width: 480px) {
             body {
-                padding: 1rem;
+                padding: 1rem 1rem 3rem 1rem;
             }
 
             .deck-top-bar {
@@ -815,173 +815,190 @@
                 max-width: 260px;
             }
 
-            /* Deck Bottom Footer */
-            .deck-footer {
-                position: relative;
-                z-index: 10;
-                width: 100%;
-                max-width: 1120px;
-                margin-top: 1rem;
-                margin-bottom: 2rem;
-                padding-top: 1.5rem;
-                border-top: 1px solid rgba(0, 240, 255, 0.15);
+            .deck-bottom-tools {
+                flex-direction: column;
+                align-items: stretch;
                 text-align: center;
             }
 
-            .deck-footer-inner {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 0.9rem;
-            }
-
-            .footer-brand-domain {
-                display: inline-flex;
-                align-items: center;
-                gap: 0.6rem;
-                background: rgba(0, 240, 255, 0.05);
-                border: 1px solid rgba(0, 240, 255, 0.2);
-                padding: 0.45rem 1.1rem;
-                border-radius: 50px;
-                font-family: var(--font-mono);
-                font-size: 0.75rem;
-            }
-
-            .domain-badge {
-                color: var(--accent-cyan);
-                text-decoration: none;
-                font-weight: 700;
-                letter-spacing: 0.06rem;
-                display: inline-flex;
-                align-items: center;
-                gap: 0.45rem;
-                transition: all 0.2s ease;
-            }
-
-            .domain-badge:hover {
-                color: #fff;
-                text-shadow: 0 0 10px var(--accent-cyan);
-            }
-
-            .domain-divider {
-                color: rgba(255, 255, 255, 0.3);
-            }
-
-            .domain-tag {
-                color: rgba(255, 255, 255, 0.6);
-                font-size: 0.68rem;
-                letter-spacing: 0.04rem;
-            }
-
-            .footer-legal-links {
-                display: flex;
-                align-items: center;
+            .deck-action-buttons {
                 justify-content: center;
-                gap: 0.8rem;
-                flex-wrap: wrap;
-                font-family: var(--font-mono);
-                font-size: 0.72rem;
-                font-weight: 600;
-                letter-spacing: 0.05rem;
             }
+        }
 
-            .footer-legal-links a {
-                color: rgba(255, 255, 255, 0.65);
-                text-decoration: none;
-                transition: color 0.2s ease;
-            }
+        /* Deck Bottom Footer (Global - Visible on all devices) */
+        .deck-footer {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1120px;
+            margin-top: 1.5rem;
+            margin-bottom: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0, 240, 255, 0.2);
+            text-align: center;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
 
-            .footer-legal-links a:hover {
-                color: var(--accent-cyan);
-                text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
-            }
+        .deck-footer-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.9rem;
+        }
 
-            .footer-legal-links .sep {
-                color: rgba(255, 255, 255, 0.2);
-            }
+        .footer-brand-domain {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+            padding: 0.45rem 1.2rem;
+            border-radius: 50px;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+        }
 
-            .footer-copyright {
-                font-family: var(--font-body);
-                font-size: 0.72rem;
-                color: rgba(255, 255, 255, 0.4);
-                letter-spacing: 0.04rem;
-            }
+        .domain-badge {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 800;
+            letter-spacing: 0.06rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            transition: all 0.2s ease;
+        }
 
-            .footer-copyright a {
-                color: var(--accent-cyan);
-                text-decoration: none;
-                font-weight: 700;
-            }
+        .domain-badge:hover {
+            color: #fff;
+            text-shadow: 0 0 12px var(--accent-cyan);
+        }
 
-            /* Legal Modal */
-            .legal-modal {
-                position: fixed;
-                inset: 0;
-                background: rgba(3, 5, 10, 0.85);
-                backdrop-filter: blur(20px);
-                z-index: 200;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 1.5rem;
-                opacity: 0;
-                visibility: hidden;
-                pointer-events: none;
-                transition: all 0.3s ease;
-            }
+        .domain-divider {
+            color: rgba(255, 255, 255, 0.3);
+        }
 
-            .legal-modal.active {
-                opacity: 1;
-                visibility: visible;
-                pointer-events: auto;
-            }
+        .domain-tag {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.7rem;
+            letter-spacing: 0.04rem;
+            font-weight: 600;
+        }
 
-            .legal-card {
-                background: #090d18;
-                border: 1px solid var(--accent-cyan);
-                border-radius: 20px;
-                padding: 2.2rem;
-                max-width: 580px;
-                width: 100%;
-                max-height: 80vh;
-                display: flex;
-                flex-direction: column;
-                box-shadow: 0 0 45px rgba(0, 240, 255, 0.3);
-                position: relative;
-            }
+        .footer-legal-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05rem;
+        }
 
-            .legal-header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding-bottom: 1rem;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                margin-bottom: 1.2rem;
-            }
+        .footer-legal-links a {
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
 
-            .legal-header h3 {
-                font-family: var(--font-display);
-                font-size: 1rem;
-                color: #fff;
-                letter-spacing: 0.06rem;
-            }
+        .footer-legal-links a:hover {
+            color: var(--accent-cyan);
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+        }
 
-            .legal-content {
-                overflow-y: auto;
-                color: rgba(255, 255, 255, 0.75);
-                font-size: 0.85rem;
-                line-height: 1.6;
-                padding-right: 0.5rem;
-                margin-bottom: 1.5rem;
-            }
+        .footer-legal-links .sep {
+            color: rgba(255, 255, 255, 0.25);
+        }
 
-            .legal-content h4 {
-                color: var(--accent-cyan);
-                font-family: var(--font-heading);
-                margin-top: 1rem;
-                margin-bottom: 0.3rem;
-                font-size: 0.95rem;
-            }
+        .footer-copyright {
+            font-family: var(--font-body);
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.04rem;
+        }
+
+        .footer-copyright a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        /* Legal Modal */
+        .legal-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 5, 10, 0.85);
+            backdrop-filter: blur(20px);
+            z-index: 200;
+            display: none !important;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .legal-modal.active {
+            display: flex !important;
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .legal-card {
+            background: #090d18;
+            border: 1px solid var(--accent-cyan);
+            border-radius: 20px;
+            padding: 2.2rem;
+            max-width: 580px;
+            width: 100%;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 45px rgba(0, 240, 255, 0.3);
+            position: relative;
+        }
+
+        .legal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.2rem;
+        }
+
+        .legal-header h3 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            color: #fff;
+            letter-spacing: 0.06rem;
+        }
+
+        .legal-content {
+            overflow-y: auto;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            padding-right: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .legal-content h4 {
+            color: var(--accent-cyan);
+            font-family: var(--font-heading);
+            margin-top: 1rem;
+            margin-bottom: 0.3rem;
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 
@@ -1617,7 +1634,7 @@
                     <h4>1. COPYRIGHT INQUIRIES</h4>
                     <p>OBSCURA RECORD respects the intellectual property rights of all creators and producers. For DMCA claims, sample clearance, synchronization (Film/Game/TV) or commercial licensing requests, please contact our legal directive.</p>
                     <h4>2. DIRECT CONTACT</h4>
-                    <p>Official Legal Inquiries: <a href="mailto:artists@obscurarecord.com" style="color: var(--accent-cyan);">artists@obscurarecord.com</a></p>
+                    <p>Official Legal Inquiries: <a href="mailto:sayurux@gmail.com" style="color: var(--accent-cyan);">sayurux@gmail.com</a></p>
                 `
             }
         };
