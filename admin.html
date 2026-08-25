@@ -136,9 +136,13 @@
                     </a>
 
                     <div class="nav-section-label">AFFILIATES & EXTENSIONS</div>
-                    <a href="smartlinks-admin/index.html" class="nav-btn" style="background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.3); color: #00f0ff; margin-bottom: 0.4rem;">
+                    <a href="#" class="nav-btn" data-target="quantum-decks-panel" style="background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.3); color: #00f0ff; margin-bottom: 0.4rem;">
+                        <i class="fas fa-satellite-dish" style="color: #00f0ff;"></i> <span>QUANTUM DECKS MATRIX</span>
+                        <span class="badge" style="background:#00f0ff; color:#000; font-weight:800;">LIVE</span>
+                    </a>
+                    <a href="smartlinks-admin/index.html" class="nav-btn" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; margin-bottom: 0.4rem;">
                         <i class="fas fa-bolt" style="color: #00f0ff;"></i> <span>SMART LINKS STUDIO</span>
-                        <span class="badge" style="background:#00f0ff; color:#000; font-weight:800;">PRO</span>
+                        <span class="badge" style="background:rgba(255,255,255,0.15); color:#fff; font-weight:800;">PRO</span>
                     </a>
                     <a href="#" class="nav-btn" data-target="security-panel" style="display: none;">
                         <i class="fas fa-shield-virus"></i> <span>SECURITY & AUDIT</span>
@@ -1625,6 +1629,41 @@
                             <div class="sec-item">
                                 <span>SESSION EXPIRATION & AUTH:</span>
                                 <strong style="color: #ffcc00;">MASTER ROOT PASSKEY PROTECTED</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==========================================================================
+                 QUANTUM TRANSMISSION DECKS MATRIX (DIRECT TRACK EXPERIENCES)
+                 ========================================================================== -->
+            <section id="quantum-decks-panel" class="panel">
+                <div class="form-section-header">
+                    <i class="fas fa-satellite-dish" style="color: var(--accent-cyan);"></i>
+                    <div>
+                        <h2>QUANTUM TRANSMISSION DECKS MATRIX</h2>
+                        <p>Instant access, live telemetry, and direct launch links for each single-track Quantum Deck Experience.</p>
+                    </div>
+                </div>
+
+                <div class="cyber-card full-card">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fas fa-cubes card-icon" style="color: var(--accent-cyan);"></i>
+                            <div>
+                                <h3>ACTIVE TRACK TRANSMISSION DECKS</h3>
+                                <p>Every release automatically generates its own interactive 3D Quantum Deck page with Spotify, Apple Music, and YouTube chips.</p>
+                            </div>
+                        </div>
+                        <button type="button" class="cyber-btn" onclick="initQuantumDecksEngine()" style="padding: 0.45rem 0.9rem; font-size: 0.75rem;">
+                            <i class="fas fa-sync-alt"></i> REFRESH DECKS
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="quantum-decks-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.2rem; margin-top: 0.5rem;">
+                            <div style="color: rgba(255,255,255,0.5); font-family: monospace; padding: 1.5rem; text-align: center;">
+                                <i class="fas fa-circle-notch fa-spin"></i> SYNCING QUANTUM DECKS...
                             </div>
                         </div>
                     </div>
