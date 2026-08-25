@@ -135,6 +135,14 @@
                         <i class="fas fa-broadcast-tower"></i> <span>MEDIA FEEDS (YT & TIKTOK)</span>
                     </a>
 
+                    <div class="nav-section-label">LABEL DIRECTIVES & PAGES</div>
+                    <a href="#" class="nav-btn" data-target="label-hub-panel">
+                        <i class="fas fa-layer-group"></i> <span>LABEL HUB & SOUND STYLES</span>
+                    </a>
+                    <a href="#" class="nav-btn" data-target="privacy-admin-panel">
+                        <i class="fas fa-shield-alt"></i> <span>FULL PRIVACY POLICY</span>
+                    </a>
+
                     <div class="nav-section-label">AFFILIATES & EXTENSIONS</div>
                     <a href="#" class="nav-btn" data-target="quantum-decks-panel" style="background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.3); color: #00f0ff; margin-bottom: 0.4rem;">
                         <i class="fas fa-satellite-dish" style="color: #00f0ff;"></i> <span>QUANTUM DECKS MATRIX</span>
@@ -1667,6 +1675,367 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            <!-- ==========================================================================
+                 LABEL HUB & SOUND STYLES CONTROL PANEL
+                 ========================================================================== -->
+            <section id="label-hub-panel" class="panel">
+                <div class="form-section-header">
+                    <i class="fas fa-layer-group" style="color: var(--accent-cyan);"></i>
+                    <div>
+                        <h2>LABEL HUB, SOUND STYLES & SUBMISSION PIPELINE</h2>
+                        <p>Configure the public Label Hub page, curated Phonk/Funk/Electronic guidelines, Spotify reference playlist link, 4-step progression pipeline, live review turnaround time, and YouTube/TikTok promotion network.</p>
+                    </div>
+                </div>
+
+                <div class="cyber-card-grid">
+                    <!-- Hero & Dual Turnaround Queues -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-bolt card-icon" style="color: var(--accent-cyan);"></i>
+                            <div>
+                                <h3>1. HERO & DUAL TURNAROUND REVIEW QUEUES</h3>
+                                <p>Control hero messaging, Discord priority queue (48-72h), and Web standard queue (2-3 weeks).</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label><i class="fas fa-tag"></i> HERO PILL BADGE</label>
+                                <input type="text" id="hub_heroPill" value="OFFICIAL ARTIST DIRECTIVE // A&R HUB">
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fab fa-discord" style="color: #5865F2;"></i> DISCORD REVIEW TIME (FAST TRACK)</label>
+                                <input type="text" id="hub_discordTime" value="48–72 HOURS">
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-globe" style="color: var(--accent-cyan);"></i> WEB PORTAL REVIEW TIME (STANDARD)</label>
+                                <input type="text" id="hub_webTime" value="2–3 WEEKS">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-heading"></i> HERO TITLE (HTML ALLOWED)</label>
+                                <input type="text" id="hub_heroTitle" value="CURATING NEXT-GEN <span class='glow-accent'>FUNK, PHONK & ELECTRONIC</span>">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-align-left"></i> HERO DESCRIPTION</label>
+                                <textarea id="hub_heroDesc" rows="2">OBSCURA RECORDS is strictly focused on new-wave, atmospheric, and innovative sound design. We do not release dated classic styles—we pioneer fresh sonic identities across modern Funk, next-gen Phonk, and dark electronic music.</textarea>
+                            </div>
+                            <div class="input-group">
+                                <label>DISCORD QUEUE SUBTITLE</label>
+                                <input type="text" id="hub_discordQueueSub" value="Priority evaluation directly with our A&R board on our official Discord server.">
+                            </div>
+                            <div class="input-group">
+                                <label>WEB QUEUE SUBTITLE</label>
+                                <input type="text" id="hub_webQueueSub" value="Standard submission inbox undergoing thorough acoustic auditing and catalog scheduling.">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Spotify Style Playlist Reference -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header" style="border-bottom-color: rgba(29, 185, 84, 0.3);">
+                            <i class="fab fa-spotify card-icon" style="color: #1ed760;"></i>
+                            <div>
+                                <h3 style="color: #1ed760;">2. SPOTIFY STYLE REFERENCE PLAYLIST</h3>
+                                <p>Provide a direct Spotify playlist link so producers & artists can hear and match the label's signature sound.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group full">
+                                <label><i class="fab fa-spotify"></i> SPOTIFY PLAYLIST URL (CLICKABLE LINK & EMBED)</label>
+                                <input type="text" id="hub_spotifyPlaylistUrl" value="https://open.spotify.com/playlist/37i9dQZF1DX11ghcLi9WqN">
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-heading"></i> SECTION TITLE</label>
+                                <input type="text" id="hub_spotifyTitle" value="OFFICIAL STYLE PLAYLIST">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-paragraph"></i> DESCRIPTION & CLICKABLE TEXT</label>
+                                <textarea id="hub_spotifyDesc" rows="3">Before transmitting your unreleased track, listen to our curated <a href="https://open.spotify.com" target="_blank" class="clickable-link" id="link-spotify-text">Official OBSCURA Style & Phonk Playlist on Spotify</a>. Use this reference stream to inspect the exact acoustic balance, low-end punch, and atmospheric identity we sign.</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Curated Sound Genres (Phonk, Funk, Electronic) -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-compact-disc card-icon"></i>
+                            <div>
+                                <h3>3. PRIORITY GENRES & NEW SOUND STYLES (NO RIGID BPM)</h3>
+                                <p>Details for our 3 core priorities: Atmospheric Funk, Next-Gen Phonk, and Dark Electronic.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <!-- Genre 1: Funk -->
+                            <div class="input-group">
+                                <label><i class="fas fa-fire" style="color: #b700ff;"></i> GENRE 1: FUNK TITLE</label>
+                                <input type="text" id="hub_g1Name" value="ATMOSPHERIC & NEW-WAVE FUNK">
+                            </div>
+                            <div class="input-group">
+                                <label>GENRE 1: TEMPO & SPECS</label>
+                                <input type="text" id="hub_g1Bpm" value="FLUID TEMPOS • RAW SYNCOPATED BOUNCE & AMBIENT SPACES">
+                            </div>
+                            <div class="input-group full">
+                                <label>GENRE 1: SOUND DESCRIPTION</label>
+                                <textarea id="hub_g1Desc" rows="2">Focusing on fresh modern Funk—deep atmospheric textures, hypnotic melodic chops, raw club percussion, and dynamic modern drops engineered for viral resonance and club energy.</textarea>
+                            </div>
+
+                            <!-- Genre 2: Phonk -->
+                            <div class="input-group">
+                                <label><i class="fas fa-wave-square" style="color: #ff0077;"></i> GENRE 2: PHONK TITLE</label>
+                                <input type="text" id="hub_g2Name" value="NEXT-GEN & CYBER PHONK">
+                            </div>
+                            <div class="input-group">
+                                <label>GENRE 2: TEMPO & SPECS</label>
+                                <input type="text" id="hub_g2Bpm" value="FLUID TEMPOS • HIGH-OCTANE 808s & FUTURISTIC SOUND DESIGN">
+                            </div>
+                            <div class="input-group full">
+                                <label>GENRE 2: SOUND DESCRIPTION</label>
+                                <textarea id="hub_g2Desc" rows="2">We avoid repetitive classic drift loops in favor of cutting-edge, experimental, and high-production Phonk—heavy sub-bass articulation, futuristic synth layers, and cinematic energy.</textarea>
+                            </div>
+
+                            <!-- Genre 3: Electronic -->
+                            <div class="input-group">
+                                <label><i class="fas fa-bolt" style="color: #00f0ff;"></i> GENRE 3: ELECTRONIC TITLE</label>
+                                <input type="text" id="hub_g3Name" value="DARK ELECTRONIC & WAVE">
+                            </div>
+                            <div class="input-group">
+                                <label>GENRE 3: TEMPO & SPECS</label>
+                                <input type="text" id="hub_g3Bpm" value="FLUID TEMPOS • MIDTEMPO, INDUSTRIAL & HYPNOTIC BASS">
+                            </div>
+                            <div class="input-group full">
+                                <label>GENRE 3: SOUND DESCRIPTION</label>
+                                <textarea id="hub_g3Desc" rows="2">Aggressive midtempo electro, cyberpunk atmospheres, industrial dark club beats, and melodic bass soundscapes designed for sound systems and immersive visual media.</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4-Step Submission Progression Pipeline -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-road card-icon" style="color: var(--accent-cyan);"></i>
+                            <div>
+                                <h3>4. 4-STEP SUBMISSION PROGRESSION PIPELINE</h3>
+                                <p>Configure titles and descriptions for the 4 submission lifecycle stages.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <!-- Step 1 -->
+                            <div class="input-group">
+                                <label>STEP 1 TITLE</label>
+                                <input type="text" id="hub_step1Title" value="DEMO SUBMISSION">
+                            </div>
+                            <div class="input-group">
+                                <label>STEP 1 DESCRIPTION</label>
+                                <input type="text" id="hub_step1Desc" value="Submit your unreleased track via our secure portal. We require a private streaming link (SoundCloud / Dropbox / Google Drive) in 320kbps MP3 or 24-bit WAV format.">
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div class="input-group">
+                                <label>STEP 2 TITLE</label>
+                                <input type="text" id="hub_step2Title" value="A&R REVIEW">
+                            </div>
+                            <div class="input-group">
+                                <label>STEP 2 DESCRIPTION</label>
+                                <input type="text" id="hub_step2Desc" value="Our A&R listening board evaluates the mixdown balance, arrangement, groove, and label fit. If accepted, you receive an official release agreement and contract.">
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div class="input-group">
+                                <label>STEP 3 TITLE</label>
+                                <input type="text" id="hub_step3Title" value="DSP INGESTION">
+                            </div>
+                            <div class="input-group">
+                                <label>STEP 3 DESCRIPTION</label>
+                                <input type="text" id="hub_step3Desc" value="We encode ISRC/UPC codes, finalize metadata, schedule delivery to Spotify, Apple Music, YouTube Music, TikTok, Beatport, and build your smart link portal.">
+                            </div>
+
+                            <!-- Step 4 -->
+                            <div class="input-group">
+                                <label>STEP 4 TITLE</label>
+                                <input type="text" id="hub_step4Title" value="GLOBAL RELEASE DAY">
+                            </div>
+                            <div class="input-group">
+                                <label>STEP 4 DESCRIPTION</label>
+                                <input type="text" id="hub_step4Desc" value="Track goes live worldwide! We activate our YouTube drops, Shorts blast, TikTok sound campaigns, playlist pitching, and artist social media amplification.">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- YouTube & TikTok Promotion Network -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-bullhorn card-icon" style="color: #ff0077;"></i>
+                            <div>
+                                <h3>5. YOUTUBE & TIKTOK PROMOTION PROFILES</h3>
+                                <p>Manage social handles, subscriber metrics, monthly reach, and network statistics.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label><i class="fab fa-youtube" style="color: #ff0033;"></i> YOUTUBE CHANNEL HANDLE</label>
+                                <input type="text" id="hub_ytHandle" value="@OBSCURA.RECORDS">
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fab fa-youtube" style="color: #ff0033;"></i> YOUTUBE SUBSCRIBERS STAT</label>
+                                <input type="text" id="hub_ytSub" value="50K+">
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fab fa-youtube" style="color: #ff0033;"></i> YOUTUBE TOTAL VIEWS STAT</label>
+                                <input type="text" id="hub_ytViews" value="10M+">
+                            </div>
+
+                            <div class="input-group">
+                                <label><i class="fab fa-tiktok" style="color: #00f0ff;"></i> TIKTOK HANDLE</label>
+                                <input type="text" id="hub_ttHandle" value="@OBSCURA.RECORDS">
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fab fa-tiktok" style="color: #00f0ff;"></i> TIKTOK MONTHLY REACH STAT</label>
+                                <input type="text" id="hub_ttReach" value="5M+">
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fab fa-tiktok" style="color: #00f0ff;"></i> TIKTOK CREATOR NETWORK STAT</label>
+                                <input type="text" id="hub_ttCreators" value="100+">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-footer">
+                    <button type="button" class="cyber-btn primary" id="save-label-hub-btn"><i class="fas fa-save"></i> SAVE & SYNC LABEL HUB DIRECTIVE</button>
+                    <a href="label-hub.html" target="_blank" class="cyber-btn" style="background: rgba(0, 240, 255, 0.1); border-color: rgba(0, 240, 255, 0.3); color: #00f0ff;">
+                        <i class="fas fa-external-link-alt"></i> PREVIEW LIVE LABEL HUB
+                    </a>
+                    <span id="save-msg-label-hub" class="save-status-indicator"></span>
+                </div>
+            </section>
+
+            <!-- ==========================================================================
+                 FULL PRIVACY POLICY CONTROL PANEL
+                 ========================================================================== -->
+            <section id="privacy-admin-panel" class="panel">
+                <div class="form-section-header">
+                    <i class="fas fa-shield-alt" style="color: var(--accent-cyan);"></i>
+                    <div>
+                        <h2>FULL PRIVACY POLICY & LEGAL TERMS EDITOR</h2>
+                        <p>Real-time editor for the standalone Privacy Policy portal (`privacy.html`). Manage legal sections, data retention, copyright, and contact details.</p>
+                    </div>
+                </div>
+
+                <div class="cyber-card-grid">
+                    <!-- General Policy Meta -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-file-contract card-icon"></i>
+                            <div>
+                                <h3>DOCUMENT METADATA & CONTACT</h3>
+                                <p>Header title, effective date tag, and administrative inquiry email.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <div class="input-group">
+                                <label><i class="fas fa-heading"></i> POLICY PAGE TITLE</label>
+                                <input type="text" id="priv_pageTitle" value="PRIVACY POLICY & DATA TERMS">
+                            </div>
+                            <div class="input-group">
+                                <label><i class="fas fa-calendar-alt"></i> EFFECTIVE DATE NOTICE</label>
+                                <input type="text" id="priv_effectiveDate" value="FEBRUARY 2026">
+                            </div>
+                            <div class="input-group full">
+                                <label><i class="fas fa-envelope"></i> OFFICIAL LEGAL CONTACT EMAIL</label>
+                                <input type="email" id="priv_contactEmail" value="artists@obscurarecord.com">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 7 Policy Sections -->
+                    <div class="cyber-card full-card">
+                        <div class="card-header">
+                            <i class="fas fa-list-ol card-icon"></i>
+                            <div>
+                                <h3>7 LEGAL POLICY CLAUSES & SECTIONS</h3>
+                                <p>Customize all 7 comprehensive clauses of the legal terms document.</p>
+                            </div>
+                        </div>
+                        <div class="card-body form-grid">
+                            <!-- Section 1 -->
+                            <div class="input-group">
+                                <label>SECTION 1: TITLE</label>
+                                <input type="text" id="priv_s1Title" value="1. DATA COLLECTION & PERSONAL PRIVACY">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 1: BODY TEXT</label>
+                                <textarea id="priv_s1Body" rows="2">OBSCURA RECORDS respects your personal privacy. We only collect essential information required to deliver label services, evaluate demo submissions, manage communications, and administer audio releases. We never sell, rent, or lease your personal identity to third-party advertisers.</textarea>
+                            </div>
+
+                            <!-- Section 2 -->
+                            <div class="input-group">
+                                <label>SECTION 2: TITLE</label>
+                                <input type="text" id="priv_s2Title" value="2. DEMO SUBMISSIONS & INTELLECTUAL PROPERTY">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 2: BODY TEXT</label>
+                                <textarea id="priv_s2Body" rows="2">When you submit unreleased music, audio stems, artwork, or artist profiles through the OBSCURA submission portal, you retain all underlying intellectual property rights until an official, mutually signed release agreement is executed. We treat all incoming demo links as strictly confidential.</textarea>
+                            </div>
+
+                            <!-- Section 3 -->
+                            <div class="input-group">
+                                <label>SECTION 3: TITLE</label>
+                                <input type="text" id="priv_s3Title" value="3. DSP PLATFORMS & THIRD-PARTY INTEGRATIONS">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 3: BODY TEXT</label>
+                                <textarea id="priv_s3Body" rows="2">Our platform interfaces with third-party streaming services (Spotify, Apple Music, YouTube, TikTok, SoundCloud, and Beatport). When you click external smartlinks or listen via embedded players, your engagement is governed by their respective privacy terms and cookie protocols.</textarea>
+                            </div>
+
+                            <!-- Section 4 -->
+                            <div class="input-group">
+                                <label>SECTION 4: TITLE</label>
+                                <input type="text" id="priv_s4Title" value="4. PROMOTIONAL TRANSMISSIONS & CAMPAIGNS">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 4: BODY TEXT</label>
+                                <textarea id="priv_s4Body" rows="2">Artists and community members who opt-in to communications may receive notifications regarding upcoming drops, playlist additions, merchandise, and promotional network campaigns. You may unsubscribe or request removal from our contact directory at any time.</textarea>
+                            </div>
+
+                            <!-- Section 5 -->
+                            <div class="input-group">
+                                <label>SECTION 5: TITLE</label>
+                                <input type="text" id="priv_s5Title" value="5. DATA RETENTION & ENCRYPTION">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 5: BODY TEXT</label>
+                                <textarea id="priv_s5Body" rows="2">All communications and transmission payloads submitted through our portals are stored on encrypted cloud infrastructure protected by standard TLS encryption and reCAPTCHA authentication. Data is retained only for the duration necessary for legal compliance and artist management.</textarea>
+                            </div>
+
+                            <!-- Section 6 -->
+                            <div class="input-group">
+                                <label>SECTION 6: TITLE</label>
+                                <input type="text" id="priv_s6Title" value="6. GOVERNING LAW & JURISDICTION">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 6: BODY TEXT</label>
+                                <textarea id="priv_s6Body" rows="2">All legal operations, copyright protection, and digital rights management are governed under international copyright conventions and digital media regulations.</textarea>
+                            </div>
+
+                            <!-- Section 7 -->
+                            <div class="input-group">
+                                <label>SECTION 7: TITLE</label>
+                                <input type="text" id="priv_s7Title" value="7. LEGAL CONTACT & DATA REQUESTS">
+                            </div>
+                            <div class="input-group full">
+                                <label>SECTION 7: BODY TEXT</label>
+                                <textarea id="priv_s7Body" rows="2">For questions regarding rights management, data deletion requests, or licensing terms, contact the OBSCURA legal administration at artists@obscurarecord.com.</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-footer">
+                    <button type="button" class="cyber-btn primary" id="save-privacy-policy-btn"><i class="fas fa-save"></i> SAVE & SYNC PRIVACY POLICY</button>
+                    <a href="privacy" target="_blank" class="cyber-btn" style="background: rgba(0, 240, 255, 0.1); border-color: rgba(0, 240, 255, 0.3); color: #00f0ff;">
+                        <i class="fas fa-external-link-alt"></i> PREVIEW PRIVACY POLICY
+                    </a>
+                    <span id="save-msg-privacy" class="save-status-indicator"></span>
                 </div>
             </section>
 

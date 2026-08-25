@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBSCURA RECORDS // Privacy Policy &amp; Legal Directive</title>
+    <meta name="description" content="Official Privacy Policy, Artist Data Protection, and Intellectual Property Directive for OBSCURA RECORDS.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;800&family=Space+Grotesk:wght@500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="label-hub.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+</head>
+
+<body>
+    <!-- Ambient Scene Background -->
+    <div class="ambient-scene">
+        <div class="ambient-glow-1"></div>
+        <div class="ambient-glow-2"></div>
+    </div>
+    <div class="cyber-mesh"></div>
+
+    <!-- Mobile Top Bar -->
+    <header class="mobile-top-bar">
+        <a href="/" class="mobile-brand-name">
+            OBSCURA <span>LEGAL</span>
+        </a>
+        <button id="mobile-menu-btn" class="mobile-dock-trigger" aria-label="Toggle Menu">
+            <i class="fas fa-bars"></i>
+            <span>MENU</span>
+        </button>
+    </header>
+
+    <!-- Mobile Backdrop Overlay -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+    <!-- CLEAN EXPANDABLE SIDEBAR -->
+    <aside id="expandable-sidebar" class="expandable-sidebar">
+        <div>
+            <!-- Top Header & Toggle Button -->
+            <div class="sidebar-header-row">
+                <a href="/" class="brand-text-name">
+                    OBSCURA <span>LEGAL</span>
+                </a>
+                <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" title="Toggle Sidebar">
+                    <i class="fas fa-bars" id="toggle-icon"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="sidebar-nav-menu">
+                <div class="nav-category-tag">// MENU</div>
+                
+                <a href="/" class="nav-item-btn" data-tooltip="Home">
+                    <div class="nav-item-icon"><i class="fas fa-home"></i></div>
+                    <span class="nav-item-text">Home</span>
+                </a>
+                
+                <a href="label-hub" class="nav-item-btn" data-tooltip="Sound Directive">
+                    <div class="nav-item-icon"><i class="fas fa-layer-group"></i></div>
+                    <span class="nav-item-text">Sound Directive</span>
+                </a>
+                
+                <div class="nav-category-tag" style="margin-top: 1rem;">// LEGAL</div>
+                <a href="privacy" class="nav-item-btn active" data-tooltip="Privacy Policy">
+                    <div class="nav-item-icon"><i class="fas fa-shield-alt"></i></div>
+                    <span class="nav-item-text">Privacy Policy</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Clean Action Buttons -->
+        <div class="sidebar-bottom-actions">
+            <a href="/#demo" class="action-btn-clean demo" title="Submit Demo">
+                <i class="fas fa-paper-plane"></i> <span>Submit Demo</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- RIGHT MAIN CONTENT DECK -->
+    <main class="main-content-deck">
+        <div class="deck-inner-container">
+            
+            <div class="privacy-grid-wrap">
+                
+                <!-- Prominent Table of Contents Box -->
+                <aside class="privacy-toc-box">
+                    <h4><i class="fas fa-list-ul"></i> TABLE OF CONTENTS</h4>
+                    <ul class="toc-list">
+                        <li class="toc-item"><a href="javascript:void(0)" data-scroll="section-1" class="smooth-toc-link"><i class="fas fa-chevron-right" style="font-size:0.75rem; color:var(--neon-cyan); margin-right:0.6rem;"></i> 1. Data Collection &amp; Identity</a></li>
+                        <li class="toc-item"><a href="javascript:void(0)" data-scroll="section-2" class="smooth-toc-link"><i class="fas fa-chevron-right" style="font-size:0.75rem; color:var(--neon-cyan); margin-right:0.6rem;"></i> 2. Intellectual Property &amp; Demos</a></li>
+                        <li class="toc-item"><a href="javascript:void(0)" data-scroll="section-3" class="smooth-toc-link"><i class="fas fa-chevron-right" style="font-size:0.75rem; color:var(--neon-cyan); margin-right:0.6rem;"></i> 3. DSP &amp; Third-Party Players</a></li>
+                        <li class="toc-item"><a href="javascript:void(0)" data-scroll="section-4" class="smooth-toc-link"><i class="fas fa-chevron-right" style="font-size:0.75rem; color:var(--neon-cyan); margin-right:0.6rem;"></i> 4. Promotional Updates</a></li>
+                        <li class="toc-item"><a href="javascript:void(0)" data-scroll="section-5" class="smooth-toc-link"><i class="fas fa-chevron-right" style="font-size:0.75rem; color:var(--neon-cyan); margin-right:0.6rem;"></i> 5. Encryption &amp; Data Retention</a></li>
+                        <li class="toc-item"><a href="javascript:void(0)" data-scroll="section-6" class="smooth-toc-link"><i class="fas fa-chevron-right" style="font-size:0.75rem; color:var(--neon-cyan); margin-right:0.6rem;"></i> 6. Governing Law &amp; Jurisdiction</a></li>
+                        <li class="toc-item"><a href="javascript:void(0)" data-scroll="section-7" class="smooth-toc-link"><i class="fas fa-chevron-right" style="font-size:0.75rem; color:var(--neon-cyan); margin-right:0.6rem;"></i> 7. Legal Inquiries &amp; DMCA</a></li>
+                    </ul>
+                </aside>
+
+                <!-- Document Content -->
+                <article class="privacy-doc-body">
+                    <div class="privacy-doc-header">
+                        <h1 id="priv-page-title">PRIVACY POLICY &amp; DATA DIRECTIVE</h1>
+                    </div>
+
+                    <!-- Section 1 -->
+                    <section id="section-1" class="legal-section-block">
+                        <h3><i class="fas fa-user-shield"></i> <span id="priv-s1-title">1. DATA COLLECTION &amp; PERSONAL IDENTITY</span></h3>
+                        <p id="priv-s1-body">
+                            OBSCURA RECORDS respects your personal privacy. We collect only essential connection information, artist identification, and transmission payloads required to deliver label services, evaluate incoming demo submissions, manage direct communications, and administer audio releases. We never sell, rent, or distribute your personal data or identity to third-party marketing networks.
+                        </p>
+                    </section>
+
+                    <!-- Section 2 -->
+                    <section id="section-2" class="legal-section-block">
+                        <h3><i class="fas fa-music"></i> <span id="priv-s2-title">2. DEMO SUBMISSIONS &amp; INTELLECTUAL PROPERTY</span></h3>
+                        <p id="priv-s2-body">
+                            All official content across the OBSCURA domain—including audio recordings, stems, graphics, branding logos, visual artwork, and artist profiles—is protected by international copyright laws. When you submit unreleased music through the submission portal, you retain 100% of your underlying intellectual property rights until a formal, mutually executed release agreement is signed. We treat all incoming demo links and audio stems with strict confidentiality.
+                        </p>
+                    </section>
+
+                    <!-- Section 3 -->
+                    <section id="section-3" class="legal-section-block">
+                        <h3><i class="fas fa-globe"></i> <span id="priv-s3-title">3. DSP PLATFORMS &amp; THIRD-PARTY EMBEDS</span></h3>
+                        <p id="priv-s3-body">
+                            Our portals interface with global streaming distribution networks (Spotify, Apple Music, YouTube Music, TikTok, SoundCloud, and Beatport). When you click external smartlinks or listen through integrated streaming audio players, your engagement is subject to the respective privacy policies, terms of service, and cookie protocols of those independent platforms.
+                        </p>
+                    </section>
+
+                    <!-- Section 4 -->
+                    <section id="section-4" class="legal-section-block">
+                        <h3><i class="fas fa-bullhorn"></i> <span id="priv-s4-title">4. PROMOTIONAL TRANSMISSIONS &amp; CAMPAIGNS</span></h3>
+                        <p id="priv-s4-body">
+                            Artists and community members who connect with our portal or opt in to communications may receive notifications regarding upcoming drops, playlist placements, merchandise launches, and viral network promotion campaigns. You may request removal from our contact directory or unsubscribe at any time.
+                        </p>
+                    </section>
+
+                    <!-- Section 5 -->
+                    <section id="section-5" class="legal-section-block">
+                        <h3><i class="fas fa-lock"></i> <span id="priv-s5-title">5. DATA RETENTION &amp; ENCRYPTION PROTOCOLS</span></h3>
+                        <p id="priv-s5-body">
+                            All messages, submission files, and transmission metadata are stored on encrypted cloud infrastructure guarded by TLS security protocols and Google reCAPTCHA authentication. We retain transmission data only for the period necessary for artist evaluation, legal compliance, and community record-keeping.
+                        </p>
+                    </section>
+
+                    <!-- Section 6 -->
+                    <section id="section-6" class="legal-section-block">
+                        <h3><i class="fas fa-balance-scale"></i> <span id="priv-s6-title">6. GOVERNING LAW &amp; JURISDICTION</span></h3>
+                        <p id="priv-s6-body">
+                            All operational directives, intellectual property rights management, artist contracts, and legal inquiries are governed under international copyright conventions and digital media regulations.
+                        </p>
+                    </section>
+
+                    <!-- Section 7 -->
+                    <section id="section-7" class="legal-section-block">
+                        <h3><i class="fas fa-envelope-open-text"></i> <span id="priv-s7-title">7. LEGAL CONTACT, DMCA &amp; DATA INQUIRIES</span></h3>
+                        <p id="priv-s7-body">
+                            For all legal inquiries, copyright complaints (DMCA), data deletion requests, licensing terms, or general rights management, contact the OBSCURA legal administration directly at:
+                        </p>
+                        <p>
+                            <a href="mailto:artists@obscurarecord.com" class="clickable-link" id="priv-contact-email"><strong>artists@obscurarecord.com</strong></a>
+                        </p>
+                    </section>
+
+                </article>
+
+            </div>
+
+        </div>
+
+        <!-- Clean Seamless Footer (Only Home, Privacy, Discord) -->
+        <footer class="site-footer-public">
+            <div class="footer-nav-public-links">
+                <a href="/">Home</a>
+                <a href="privacy">Privacy Policy</a>
+                <a href="https://discord.gg/E3Sn72cpBR" target="_blank">Discord Community</a>
+            </div>
+            <p class="footer-copy-text">&copy; 2026 OBSCURA RECORDS. ALL RIGHTS RESERVED.</p>
+        </footer>
+
+    </main>
+
+    <!-- Firebase Realtime Sync Script & Clean URL Smooth Scrolling -->
+    <script>
+        // Local file protocol fallback for seamless offline testing
+        if (window.location.protocol === 'file:') {
+            document.querySelectorAll('a[href]').forEach(a => {
+                const href = a.getAttribute('href');
+                if (href === 'label-hub') a.setAttribute('href', 'label-hub.html');
+                else if (href === 'privacy') a.setAttribute('href', 'privacy.html');
+                else if (href === '/') a.setAttribute('href', 'index.html');
+                else if (href === '/#demo') a.setAttribute('href', 'index.html#demo');
+            });
+        }
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHf_R1n2Qn-q4NHAjfJt6xD_TWIRjiN1o",
+            authDomain: "obscura-records.firebaseapp.com",
+            databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "obscura-records",
+            storageBucket: "obscura-records.firebasestorage.app",
+            messagingSenderId: "831882873428",
+            appId: "1:831882873428:web:3cf009875e160a9f8efbc1"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        const sidebar = document.getElementById('expandable-sidebar');
+        const toggleBtn = document.getElementById('sidebar-toggle-btn');
+        const toggleIcon = document.getElementById('toggle-icon');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const backdrop = document.getElementById('sidebar-backdrop');
+
+        if (localStorage.getItem('obscura_sidebar_expanded') === 'true') {
+            if (window.innerWidth > 768) {
+                sidebar.classList.add('expanded');
+                if (toggleIcon) toggleIcon.className = 'fas fa-chevron-left';
+            }
+        }
+
+        if (toggleBtn && sidebar) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isExp = sidebar.classList.toggle('expanded');
+                if (toggleIcon) {
+                    toggleIcon.className = isExp ? 'fas fa-chevron-left' : 'fas fa-bars';
+                }
+                localStorage.setItem('obscura_sidebar_expanded', isExp);
+            });
+        }
+
+        if (mobileMenuBtn && sidebar && backdrop) {
+            const toggleMobile = () => {
+                sidebar.classList.toggle('open');
+                backdrop.classList.toggle('active');
+            };
+            mobileMenuBtn.addEventListener('click', toggleMobile);
+            backdrop.addEventListener('click', toggleMobile);
+        }
+
+        // 100% Clean URL Smooth Scrolling: using data-scroll attribute
+        document.querySelectorAll('.smooth-toc-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetName = this.getAttribute('data-scroll');
+                if (targetName) {
+                    const targetEl = document.getElementById(targetName);
+                    if (targetEl) {
+                        targetEl.scrollIntoView({ behavior: 'smooth' });
+
+                        if (window.history && window.history.replaceState) {
+                            window.history.replaceState(null, null, window.location.pathname);
+                        }
+
+                        if (window.innerWidth <= 768 && sidebar && backdrop) {
+                            sidebar.classList.remove('open');
+                            backdrop.classList.remove('active');
+                        }
+                    }
+                }
+            });
+        });
+
+        // Listen for Realtime Privacy Updates from Admin
+        db.ref('siteData/privacyPolicy').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+
+            if (data.pageTitle) document.getElementById('priv-page-title').textContent = data.pageTitle;
+            if (data.contactEmail) {
+                const mailLink = document.getElementById('priv-contact-email');
+                mailLink.href = 'mailto:' + data.contactEmail;
+                mailLink.innerHTML = `<strong>` + data.contactEmail + `</strong>`;
+            }
+
+            // Sections 1-7
+            for (let i = 1; i <= 7; i++) {
+                const titleEl = document.getElementById(`priv-s${i}-title`);
+                const bodyEl = document.getElementById(`priv-s${i}-body`);
+                if (titleEl && data[`s${i}Title`]) titleEl.textContent = data[`s${i}Title`];
+                if (bodyEl && data[`s${i}Body`]) bodyEl.textContent = data[`s${i}Body`];
+            }
+        });
+    </script>
+</body>
+</html>

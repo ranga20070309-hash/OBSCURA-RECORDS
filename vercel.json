@@ -1,5 +1,15 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
+    {
+      "source": "/label-hub",
+      "destination": "/label-hub.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy.html"
+    },
     {
       "source": "/share",
       "destination": "/share/index.html"
@@ -26,4 +36,3 @@
     }
   ]
 }
-

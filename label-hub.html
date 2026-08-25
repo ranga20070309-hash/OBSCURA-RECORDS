@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBSCURA RECORDS // Sound Directive &amp; Submission Pipeline</title>
+    <meta name="description" content="Official OBSCURA RECORDS Artist Directive. Explore our modern Phonk & Atmospheric Funk sound signature, dual turnaround review times, 4-step progression pipeline, and promotion network.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;800&family=Space+Grotesk:wght@500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="label-hub.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+</head>
+
+<body>
+    <!-- Ambient Scene Background -->
+    <div class="ambient-scene">
+        <div class="ambient-glow-1"></div>
+        <div class="ambient-glow-2"></div>
+    </div>
+    <div class="cyber-mesh"></div>
+
+    <!-- Mobile Top Bar (Responsive for Small Screens) -->
+    <header class="mobile-top-bar">
+        <a href="/" class="mobile-brand-name">
+            OBSCURA <span>RECORD</span>
+        </a>
+        <button id="mobile-menu-btn" class="mobile-dock-trigger" aria-label="Toggle Menu">
+            <i class="fas fa-bars"></i>
+            <span>MENU</span>
+        </button>
+    </header>
+
+    <!-- Mobile Backdrop Overlay -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+    <!-- CLEAN EXPANDABLE SIDEBAR -->
+    <aside id="expandable-sidebar" class="expandable-sidebar">
+        <div>
+            <!-- Top Header & Toggle Button -->
+            <div class="sidebar-header-row">
+                <a href="/" class="brand-text-name">
+                    OBSCURA <span>RECORD</span>
+                </a>
+                <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" title="Toggle Sidebar">
+                    <i class="fas fa-bars" id="toggle-icon"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="sidebar-nav-menu">
+                <div class="nav-category-tag">// MENU</div>
+                
+                <a href="/" class="nav-item-btn" data-tooltip="Home">
+                    <div class="nav-item-icon"><i class="fas fa-home"></i></div>
+                    <span class="nav-item-text">Home</span>
+                </a>
+                
+                <a href="javascript:void(0)" data-scroll="styles" class="nav-item-btn active smooth-nav-link" data-tooltip="Sound Styles">
+                    <div class="nav-item-icon"><i class="fas fa-compact-disc"></i></div>
+                    <span class="nav-item-text">Sound Styles</span>
+                </a>
+                
+                <a href="javascript:void(0)" data-scroll="spotify-ref" class="nav-item-btn smooth-nav-link" data-tooltip="Spotify Reference">
+                    <div class="nav-item-icon"><i class="fab fa-spotify" style="color: var(--spotify-green);"></i></div>
+                    <span class="nav-item-text">Spotify Reference</span>
+                </a>
+                
+                <a href="javascript:void(0)" data-scroll="pipeline" class="nav-item-btn smooth-nav-link" data-tooltip="4-Step Pipeline">
+                    <div class="nav-item-icon"><i class="fas fa-layer-group"></i></div>
+                    <span class="nav-item-text">4-Step Pipeline</span>
+                </a>
+                
+                <a href="javascript:void(0)" data-scroll="promo" class="nav-item-btn smooth-nav-link" data-tooltip="Promo Network">
+                    <div class="nav-item-icon"><i class="fas fa-bullhorn"></i></div>
+                    <span class="nav-item-text">Promo Network</span>
+                </a>
+                
+                <div class="nav-category-tag" style="margin-top: 1rem;">// LEGAL</div>
+                <a href="privacy" class="nav-item-btn" data-tooltip="Privacy Policy">
+                    <div class="nav-item-icon"><i class="fas fa-shield-alt"></i></div>
+                    <span class="nav-item-text">Privacy Policy</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Clean Action Buttons -->
+        <div class="sidebar-bottom-actions">
+            <a href="https://discord.gg/E3Sn72cpBR" target="_blank" class="action-btn-clean discord" title="Discord A&R (48-72h)">
+                <i class="fab fa-discord"></i> <span>Discord (48-72h)</span>
+            </a>
+            <a href="/#demo" class="action-btn-clean demo" title="Submit Web Demo (2-3w)">
+                <i class="fas fa-paper-plane"></i> <span>Submit Demo</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- RIGHT MAIN CONTENT DECK -->
+    <main class="main-content-deck">
+        <div class="deck-inner-container">
+            
+            <!-- Hero Directive -->
+            <section class="directive-hero">
+                <div class="hero-pill-tag" id="hub-hero-pill">
+                    <span class="pulse-node"></span>
+                    <span id="txt-hero-pill">OFFICIAL ARTIST DIRECTIVE // A&amp;R HUB</span>
+                </div>
+                <h1 class="directive-hero-h1" id="hub-hero-title">
+                    CURATING NEXT-GEN <span class="glow-accent">FUNK, PHONK &amp; ELECTRONIC</span>
+                </h1>
+                <p class="directive-hero-p" id="hub-hero-desc">
+                    OBSCURA RECORDS is strictly focused on new-wave, atmospheric, and innovative sound design. We do not release dated classic styles—we pioneer fresh sonic identities across modern Funk, next-gen Phonk, and dark electronic music.
+                </p>
+                <div style="display: flex; justify-content: center; gap: 0.85rem; flex-wrap: wrap;">
+                    <a href="javascript:void(0)" data-scroll="spotify-ref" class="action-btn-clean demo smooth-nav-link" style="padding: 0.65rem 1.4rem;" id="btn-hero-spotify">
+                        <i class="fab fa-spotify" style="color: var(--spotify-green);"></i> <span style="display: inline; opacity: 1;">Listen to Reference Vibe</span>
+                    </a>
+                    <a href="https://discord.gg/E3Sn72cpBR" target="_blank" class="action-btn-clean discord" style="padding: 0.65rem 1.4rem;">
+                        <i class="fab fa-discord"></i> <span style="display: inline; opacity: 1;">Submit via Discord (Fast Track)</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- DUAL TURNAROUND REVIEW QUEUES (WEBSITE vs DISCORD) -->
+            <section class="turnaround-split-grid">
+                <!-- Discord Fast Track -->
+                <div class="queue-card discord">
+                    <div class="queue-left">
+                        <div class="queue-icon-badge">
+                            <i class="fab fa-discord"></i>
+                        </div>
+                        <div>
+                            <div class="queue-title" id="txt-discord-queue-title">Discord A&amp;R Queue</div>
+                            <div class="queue-sub" id="txt-discord-queue-sub">Priority evaluation directly with our A&amp;R board on Discord.</div>
+                        </div>
+                    </div>
+                    <div class="queue-time-badge" id="badge-discord-time">
+                        <i class="fas fa-bolt"></i> <span id="val-discord-time">48–72 HOURS</span>
+                    </div>
+                </div>
+
+                <!-- Website Standard Queue -->
+                <div class="queue-card website">
+                    <div class="queue-left">
+                        <div class="queue-icon-badge">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div>
+                            <div class="queue-title" id="txt-web-queue-title">Website Portal Demo Queue</div>
+                            <div class="queue-sub" id="txt-web-queue-sub">Standard submission inbox undergoing thorough acoustic auditing.</div>
+                        </div>
+                    </div>
+                    <div class="queue-time-badge" id="badge-web-time">
+                        <i class="fas fa-clock"></i> <span id="val-web-time">2–3 WEEKS</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 1. SOUND STYLES & GENRES (NEW-WAVE & ATMOSPHERIC ONLY) -->
+            <section id="styles" class="directive-section">
+                <div class="section-lead">
+                    <div class="section-label-tag">// SOUND PHILOSOPHY</div>
+                    <h2 class="section-main-heading" id="txt-genres-heading">OUR PRIORITY GENRES &amp; NEW STYLES</h2>
+                    <p class="section-subtext" id="txt-genres-desc">We prioritize fresh, updated, and atmospheric sound design. We do not enforce fixed BPM boundaries because our sound evolves across fluid, modern tempos.</p>
+                </div>
+
+                <div class="styles-grid" id="styles-grid-container">
+                    <!-- Genre 1: Atmospheric & New-Wave Funk -->
+                    <div class="style-card funk">
+                        <div class="style-category-badge">PRIMARY FOCUS</div>
+                        <div class="style-icon"><i class="fas fa-fire"></i></div>
+                        <h3 class="style-title" id="g1-name">ATMOSPHERIC &amp; NEW-WAVE FUNK</h3>
+                        <div class="style-tempo-spec" id="g1-bpm">FLUID TEMPOS • RAW SYNCOPATED BOUNCE &amp; AMBIENT SPACES</div>
+                        <p class="style-desc" id="g1-desc">Focusing on fresh modern Funk—deep atmospheric textures, hypnotic melodic chops, raw club percussion, and dynamic modern drops engineered for viral resonance and club energy.</p>
+                        <div class="style-chips-row" id="g1-tags">
+                            <span class="style-chip">Atmospheric Funk</span>
+                            <span class="style-chip">New-Wave Baile</span>
+                            <span class="style-chip">Modern MTG</span>
+                            <span class="style-chip">Ambient Funk</span>
+                        </div>
+                    </div>
+
+                    <!-- Genre 2: Next-Gen & Cyber Phonk -->
+                    <div class="style-card phonk">
+                        <div class="style-category-badge">INNOVATION PRIORITY</div>
+                        <div class="style-icon"><i class="fas fa-wave-square"></i></div>
+                        <h3 class="style-title" id="g2-name">NEXT-GEN &amp; CYBER PHONK</h3>
+                        <div class="style-tempo-spec" id="g2-bpm">FLUID TEMPOS • HIGH-OCTANE 808s &amp; FUTURISTIC SOUND DESIGN</div>
+                        <p class="style-desc" id="g2-desc">We avoid repetitive classic drift loops in favor of cutting-edge, experimental, and high-production Phonk—heavy sub-bass articulation, futuristic synth layers, and cinematic energy.</p>
+                        <div class="style-chips-row" id="g2-tags">
+                            <span class="style-chip">Next-Gen Phonk</span>
+                            <span class="style-chip">Cyber Phonk</span>
+                            <span class="style-chip">Wave Phonk</span>
+                            <span class="style-chip">Hard-Hitting 808s</span>
+                        </div>
+                    </div>
+
+                    <!-- Genre 3: Futuristic Electronic & Wave -->
+                    <div class="style-card electronic">
+                        <div class="style-category-badge">LABEL SIGNATURE</div>
+                        <div class="style-icon"><i class="fas fa-bolt"></i></div>
+                        <h3 class="style-title" id="g3-name">DARK ELECTRONIC &amp; WAVE</h3>
+                        <div class="style-tempo-spec" id="g3-bpm">FLUID TEMPOS • MIDTEMPO, INDUSTRIAL &amp; HYPNOTIC BASS</div>
+                        <p class="style-desc" id="g3-desc">Aggressive midtempo electro, cyberpunk atmospheres, industrial dark club beats, and melodic bass soundscapes designed for sound systems and immersive visual media.</p>
+                        <div class="style-chips-row" id="g3-tags">
+                            <span class="style-chip">Midtempo Bass</span>
+                            <span class="style-chip">Cyberpunk Electro</span>
+                            <span class="style-chip">Dark Wave</span>
+                            <span class="style-chip">Industrial Bass</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. SPOTIFY REFERENCE PLAYLIST SECTION -->
+            <section id="spotify-ref" class="directive-section">
+                <div class="spotify-showcase-box">
+                    <div>
+                        <div class="section-label-tag" style="color: var(--spotify-green);">// REFERENCE VIBE &amp; MIX CLARITY</div>
+                        <h3 class="spotify-title-h3" id="txt-spotify-title"><i class="fab fa-spotify"></i> OFFICIAL STYLE PLAYLIST</h3>
+                        <p class="spotify-text-p" id="txt-spotify-desc">
+                            Before transmitting your unreleased track, listen to our curated <a href="https://open.spotify.com" target="_blank" class="clickable-link" id="link-spotify-text">Official OBSCURA Style &amp; Phonk Playlist on Spotify</a>. Use this reference stream to inspect the exact acoustic balance, low-end punch, and atmospheric identity we sign.
+                        </p>
+                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                            <a href="https://open.spotify.com" target="_blank" class="action-btn-clean demo" style="background: var(--spotify-green); color: #000; font-weight: 800; padding: 0.65rem 1.4rem;" id="btn-spotify-external">
+                                <i class="fab fa-spotify"></i> <span style="display: inline; opacity: 1;">Listen on Spotify</span>
+                            </a>
+                            <a href="https://discord.gg/E3Sn72cpBR" target="_blank" class="action-btn-clean discord" style="padding: 0.65rem 1.4rem;">
+                                <i class="fab fa-discord"></i> <span style="display: inline; opacity: 1;">Submit Matching Demo</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="spotify-player-frame-wrap" id="spotify-embed-container">
+                        <iframe id="spotify-iframe" style="border-radius:14px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DX11ghcLi9WqN?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. 4-STEP SUBMISSION PROGRESSION PIPELINE -->
+            <section id="pipeline" class="directive-section">
+                <div class="section-lead">
+                    <div class="section-label-tag">// RELEASE ROADMAP</div>
+                    <h2 class="section-main-heading" id="txt-progression-heading">4-STEP SUBMISSION PROGRESSION</h2>
+                    <p class="section-subtext" id="txt-progression-desc">A transparent look at the exact lifecycle of your music from the moment you submit to the worldwide release blast.</p>
+                </div>
+
+                <div class="pipeline-flow" id="pipeline-container">
+                    <!-- Step 1 -->
+                    <div class="pipeline-step-node">
+                        <div>
+                            <div class="step-num-row">
+                                <span>01</span>
+                                <div class="step-glyph"><i class="fas fa-file-audio"></i></div>
+                            </div>
+                            <h4 class="step-h4" id="step1-title">DEMO SUBMISSION</h4>
+                            <p class="step-body-p" id="step1-desc">
+                                Submit your unreleased demo via Discord (48-72h) or Web Form (2-3w). We require a private streaming link (SoundCloud, Google Drive, or Dropbox) in 320kbps MP3 or 24-bit WAV format.
+                            </p>
+                        </div>
+                        <div class="step-footer-meta">
+                            <span>FORMAT: 320K / WAV</span>
+                            <span style="color: var(--neon-cyan);"><i class="fas fa-check-circle"></i> OPEN</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="pipeline-step-node">
+                        <div>
+                            <div class="step-num-row">
+                                <span>02</span>
+                                <div class="step-glyph"><i class="fas fa-headphones"></i></div>
+                            </div>
+                            <h4 class="step-h4" id="step2-title">A&amp;R REVIEW</h4>
+                            <p class="step-body-p" id="step2-desc">
+                                Our A&amp;R board evaluates acoustic balance, originality, and catalog fit. If accepted, you receive an official release agreement and contract terms.
+                            </p>
+                        </div>
+                        <div class="step-footer-meta">
+                            <span>DISCORD: 48-72h | WEB: 2-3w</span>
+                            <span style="color: var(--neon-purple);"><i class="fas fa-bolt"></i> ACTIVE</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="pipeline-step-node">
+                        <div>
+                            <div class="step-num-row">
+                                <span>03</span>
+                                <div class="step-glyph"><i class="fas fa-network-wired"></i></div>
+                            </div>
+                            <h4 class="step-h4" id="step3-title">DSP INGESTION</h4>
+                            <p class="step-body-p" id="step3-desc">
+                                We encode ISRC/UPC codes, finalize metadata, schedule delivery to Spotify, Apple Music, YouTube Music, TikTok, Beatport, and generate your dedicated SmartLink.
+                            </p>
+                        </div>
+                        <div class="step-footer-meta">
+                            <span>GLOBAL DSP INGESTION</span>
+                            <span style="color: var(--neon-magenta);"><i class="fas fa-globe"></i> SCHEDULED</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="pipeline-step-node">
+                        <div>
+                            <div class="step-num-row">
+                                <span>04</span>
+                                <div class="step-glyph"><i class="fas fa-rocket"></i></div>
+                            </div>
+                            <h4 class="step-h4" id="step4-title">GLOBAL RELEASE DAY</h4>
+                            <p class="step-body-p" id="step4-desc">
+                                Track goes live worldwide! We activate our official YouTube drops (1080p+), Shorts blasts, TikTok sound seeding, and network playlist push.
+                            </p>
+                        </div>
+                        <div class="step-footer-meta">
+                            <span>PROMO BLAST ACTIVATED</span>
+                            <span style="color: var(--neon-emerald);"><i class="fas fa-fire"></i> WORLDWIDE</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. YOUTUBE & TIKTOK PROMOTION NETWORK -->
+            <section id="promo" class="directive-section">
+                <div class="section-lead">
+                    <div class="section-label-tag">// REACH AMPLIFICATION</div>
+                    <h2 class="section-main-heading" id="txt-promo-heading">YOUTUBE &amp; TIKTOK PROMOTION NETWORK</h2>
+                    <p class="section-subtext" id="txt-promo-desc">Every official release is supported with high-bitrate visualizer drops (1080p and above), short-form viral campaigns, and creator network syndication.</p>
+                </div>
+
+                <div class="promo-showcase-grid">
+                    <!-- YouTube Card -->
+                    <div class="promo-platform-card yt-card">
+                        <div class="promo-card-head">
+                            <div class="platform-identity">
+                                <i class="fab fa-youtube platform-icon"></i>
+                                <div>
+                                    <div class="platform-name">YouTube Network</div>
+                                    <div class="platform-handle" id="yt-handle">@OBSCURA.RECORDS</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <ul class="promo-perks-list">
+                            <li><i class="fas fa-check"></i> <strong>1080p Full HD+ Audio-Visualizer Releases</strong> on official channel.</li>
+                            <li><i class="fas fa-check"></i> <strong>YouTube Shorts Drops</strong> targeting viral trends.</li>
+                            <li><i class="fas fa-check"></i> <strong>YouTube Music Ingestion</strong> &amp; Content ID protection.</li>
+                            <li><i class="fas fa-check"></i> <strong>Algorithmic SEO &amp; Tag Optimization</strong> for reach.</li>
+                        </ul>
+                    </div>
+
+                    <!-- TikTok Card -->
+                    <div class="promo-platform-card tt-card">
+                        <div class="promo-card-head">
+                            <div class="platform-identity">
+                                <i class="fab fa-tiktok platform-icon"></i>
+                                <div>
+                                    <div class="platform-name">TikTok Sound Engine</div>
+                                    <div class="platform-handle" id="tt-handle">@OBSCURA.RECORDS</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <ul class="promo-perks-list">
+                            <li><i class="fas fa-check"></i> <strong>Official TikTok Sound Placement</strong> linked directly to DSP stores.</li>
+                            <li><i class="fas fa-check"></i> <strong>Creator Network Seeding</strong> across video editors.</li>
+                            <li><i class="fas fa-check"></i> <strong>Hook Clips &amp; Trend Optimization</strong> for high replay count.</li>
+                            <li><i class="fas fa-check"></i> <strong>Real-time Sound Trend Analytics</strong> &amp; amplification.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. CALL TO ACTION -->
+            <section class="fast-demo-cta">
+                <h2 id="txt-cta-title">READY TO TRANSMIT YOUR SOUND?</h2>
+                <p id="txt-cta-desc">
+                    If your unreleased Funk, Phonk, or Electronic production matches our modern sound signature, submit your private stream link to our A&amp;R department now.
+                </p>
+                <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                    <a href="https://discord.gg/E3Sn72cpBR" target="_blank" class="action-btn-clean discord" style="padding: 0.75rem 1.8rem; font-size: 0.9rem;">
+                        <i class="fab fa-discord"></i> <span>Fast Track on Discord (48-72h)</span>
+                    </a>
+                    <a href="/#demo" class="action-btn-clean demo" style="padding: 0.75rem 1.8rem; font-size: 0.9rem;">
+                        <i class="fas fa-paper-plane"></i> <span>Submit via Web (2-3w)</span>
+                    </a>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Clean Seamless Footer (Only Home, Privacy, Discord) -->
+        <footer class="site-footer-public">
+            <div class="footer-nav-public-links">
+                <a href="/">Home</a>
+                <a href="privacy">Privacy Policy</a>
+                <a href="https://discord.gg/E3Sn72cpBR" target="_blank">Discord Community</a>
+            </div>
+            <p class="footer-copy-text" id="txt-hub-copyright">&copy; 2026 OBSCURA RECORDS. ALL RIGHTS RESERVED. MUSIC DIRECTIVE // SONIC VOID TRANSMISSION.</p>
+        </footer>
+
+    </main>
+
+    <!-- Firebase Realtime Sync Script & 100% Clean URL Smooth Scroll -->
+    <script>
+        // Local file protocol fallback for seamless offline testing
+        if (window.location.protocol === 'file:') {
+            document.querySelectorAll('a[href]').forEach(a => {
+                const href = a.getAttribute('href');
+                if (href === 'label-hub') a.setAttribute('href', 'label-hub.html');
+                else if (href === 'privacy') a.setAttribute('href', 'privacy.html');
+                else if (href === '/') a.setAttribute('href', 'index.html');
+                else if (href === '/#demo') a.setAttribute('href', 'index.html#demo');
+            });
+        }
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHf_R1n2Qn-q4NHAjfJt6xD_TWIRjiN1o",
+            authDomain: "obscura-records.firebaseapp.com",
+            databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "obscura-records",
+            storageBucket: "obscura-records.firebasestorage.app",
+            messagingSenderId: "831882873428",
+            appId: "1:831882873428:web:3cf009875e160a9f8efbc1"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        // Expand / Collapse Sidebar Logic
+        const sidebar = document.getElementById('expandable-sidebar');
+        const toggleBtn = document.getElementById('sidebar-toggle-btn');
+        const toggleIcon = document.getElementById('toggle-icon');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const backdrop = document.getElementById('sidebar-backdrop');
+
+        if (localStorage.getItem('obscura_sidebar_expanded') === 'true') {
+            if (window.innerWidth > 768) {
+                sidebar.classList.add('expanded');
+                if (toggleIcon) toggleIcon.className = 'fas fa-chevron-left';
+            }
+        }
+
+        if (toggleBtn && sidebar) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isExp = sidebar.classList.toggle('expanded');
+                if (toggleIcon) {
+                    toggleIcon.className = isExp ? 'fas fa-chevron-left' : 'fas fa-bars';
+                }
+                localStorage.setItem('obscura_sidebar_expanded', isExp);
+            });
+        }
+
+        if (mobileMenuBtn && sidebar && backdrop) {
+            const toggleMobile = () => {
+                sidebar.classList.toggle('open');
+                backdrop.classList.toggle('active');
+            };
+            mobileMenuBtn.addEventListener('click', toggleMobile);
+            backdrop.addEventListener('click', toggleMobile);
+        }
+
+        // 100% Clean URL Smooth Scrolling: using data-scroll attribute
+        document.querySelectorAll('.smooth-nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetName = this.getAttribute('data-scroll');
+                if (targetName) {
+                    const targetEl = document.getElementById(targetName);
+                    if (targetEl) {
+                        targetEl.scrollIntoView({ behavior: 'smooth' });
+
+                        // Update active state on navigation
+                        document.querySelectorAll('.sidebar-nav-menu .nav-item-btn').forEach(btn => btn.classList.remove('active'));
+                        if (this.classList.contains('nav-item-btn')) {
+                            this.classList.add('active');
+                        }
+
+                        // Ensure NO # hash appears in URL bar
+                        if (window.history && window.history.replaceState) {
+                            window.history.replaceState(null, null, window.location.pathname);
+                        }
+
+                        // Close mobile drawer if open
+                        if (window.innerWidth <= 768 && sidebar && backdrop) {
+                            sidebar.classList.remove('open');
+                            backdrop.classList.remove('active');
+                        }
+                    }
+                }
+            });
+        });
+
+        // Listen for Realtime Label Hub Updates from Admin
+        db.ref('siteData/labelHub').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+
+            // Hero & Queues
+            if (data.heroPill) document.getElementById('txt-hero-pill').textContent = data.heroPill;
+            if (data.heroTitle) document.getElementById('hub-hero-title').innerHTML = data.heroTitle;
+            if (data.heroDesc) document.getElementById('hub-hero-desc').textContent = data.heroDesc;
+            
+            if (data.discordTime) document.getElementById('val-discord-time').textContent = data.discordTime;
+            if (data.webTime) document.getElementById('val-web-time').textContent = data.webTime;
+            if (data.discordQueueSub) document.getElementById('txt-discord-queue-sub').textContent = data.discordQueueSub;
+            if (data.webQueueSub) document.getElementById('txt-web-queue-sub').textContent = data.webQueueSub;
+
+            // Spotify Link & Embed
+            if (data.spotifyPlaylistUrl) {
+                const spLink = document.getElementById('link-spotify-text');
+                const spBtn = document.getElementById('btn-spotify-external');
+                const spHeroBtn = document.getElementById('btn-hero-spotify');
+                if (spLink) spLink.href = data.spotifyPlaylistUrl;
+                if (spBtn) spBtn.href = data.spotifyPlaylistUrl;
+                if (spHeroBtn) spHeroBtn.href = data.spotifyPlaylistUrl;
+
+                let embedUrl = data.spotifyPlaylistUrl;
+                if (embedUrl.includes('open.spotify.com/playlist/') && !embedUrl.includes('/embed/')) {
+                    embedUrl = embedUrl.replace('open.spotify.com/playlist/', 'open.spotify.com/embed/playlist/');
+                }
+                const spIframe = document.getElementById('spotify-iframe');
+                if (spIframe && embedUrl) spIframe.src = embedUrl;
+            }
+            if (data.spotifyTitle) document.getElementById('txt-spotify-title').innerHTML = `<i class="fab fa-spotify"></i> ` + data.spotifyTitle;
+            if (data.spotifyDesc) document.getElementById('txt-spotify-desc').innerHTML = data.spotifyDesc;
+
+            // 4 Progression Steps
+            if (data.step1Title) document.getElementById('step1-title').textContent = data.step1Title;
+            if (data.step1Desc) document.getElementById('step1-desc').textContent = data.step1Desc;
+            if (data.step2Title) document.getElementById('step2-title').textContent = data.step2Title;
+            if (data.step2Desc) document.getElementById('step2-desc').textContent = data.step2Desc;
+            if (data.step3Title) document.getElementById('step3-title').textContent = data.step3Title;
+            if (data.step3Desc) document.getElementById('step3-desc').textContent = data.step3Desc;
+            if (data.step4Title) document.getElementById('step4-title').textContent = data.step4Title;
+            if (data.step4Desc) document.getElementById('step4-desc').textContent = data.step4Desc;
+
+            // Genres
+            if (data.g1Name) document.getElementById('g1-name').textContent = data.g1Name;
+            if (data.g1Bpm) document.getElementById('g1-bpm').textContent = data.g1Bpm;
+            if (data.g1Desc) document.getElementById('g1-desc').textContent = data.g1Desc;
+            if (data.g2Name) document.getElementById('g2-name').textContent = data.g2Name;
+            if (data.g2Bpm) document.getElementById('g2-bpm').textContent = data.g2Bpm;
+            if (data.g2Desc) document.getElementById('g2-desc').textContent = data.g2Desc;
+            if (data.g3Name) document.getElementById('g3-name').textContent = data.g3Name;
+            if (data.g3Bpm) document.getElementById('g3-bpm').textContent = data.g3Bpm;
+            if (data.g3Desc) document.getElementById('g3-desc').textContent = data.g3Desc;
+
+            // Handles
+            if (data.ytHandle) document.getElementById('yt-handle').textContent = data.ytHandle;
+            if (data.ttHandle) document.getElementById('tt-handle').textContent = data.ttHandle;
+        });
+    </script>
+</body>
+</html>
