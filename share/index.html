@@ -1517,7 +1517,7 @@
             } catch (e) { }
         }
 
-        // Main Fetch Engine (Live Auto-Sync with siteData/releases)
+        // Main Fetch Engine (Live Auto-Sync with siteData/releases, popular & smartLinks)
         const targetId = getTargetId();
         const cleanSlug = getCleanSlug(targetId);
 
@@ -1534,12 +1534,45 @@
                     if (popMatched) {
                         renderDeck(popMatched, cleanSlug);
                     } else {
-                        renderDeck({
-                            title: targetId.replace(/-/g, ' ').toUpperCase(),
-                            artist: "OBSCURA RECORD",
-                            cover: "../assets/OCR.png",
-                            type: "SINGLE // LOSSLESS"
-                        }, cleanSlug);
+                        // Fallback: Check smartLinks database
+                        fetch("https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks.json")
+                            .then(res => res.json())
+                            .then(allLinks => {
+                                if (allLinks && typeof allLinks === 'object') {
+                                    const matchKey = Object.keys(allLinks).find(k => {
+                                        const item = allLinks[k];
+                                        return getCleanSlug(k) === cleanSlug || (item && (getCleanSlug(item.title) === cleanSlug || getCleanSlug(item.slug) === cleanSlug));
+                                    });
+                                    if (matchKey && allLinks[matchKey]) {
+                                        const sl = allLinks[matchKey];
+                                        return renderDeck({
+                                            title: sl.title || cleanSlug.toUpperCase(),
+                                            artist: sl.artist || "OBSCURA RECORD",
+                                            cover: sl.image || sl.artwork || "../assets/OCR.png",
+                                            audioPreview: sl.audioPreview || "",
+                                            youtube: sl.youtube || sl.links?.youtube || "",
+                                            spotify: sl.links?.spotify || "",
+                                            apple: sl.links?.apple || "",
+                                            soundcloud: sl.links?.soundcloud || "",
+                                            type: "SINGLE // LOSSLESS"
+                                        }, cleanSlug);
+                                    }
+                                }
+                                renderDeck({
+                                    title: targetId.replace(/-/g, ' ').toUpperCase(),
+                                    artist: "OBSCURA RECORD",
+                                    cover: "../assets/OCR.png",
+                                    type: "SINGLE // LOSSLESS"
+                                }, cleanSlug);
+                            })
+                            .catch(() => {
+                                renderDeck({
+                                    title: targetId.replace(/-/g, ' ').toUpperCase(),
+                                    artist: "OBSCURA RECORD",
+                                    cover: "../assets/OCR.png",
+                                    type: "SINGLE // LOSSLESS"
+                                }, cleanSlug);
+                            });
                     }
                 });
             }
@@ -1634,7 +1667,7 @@
                     <h4>1. COPYRIGHT INQUIRIES</h4>
                     <p>OBSCURA RECORD respects the intellectual property rights of all creators and producers. For DMCA claims, sample clearance, synchronization (Film/Game/TV) or commercial licensing requests, please contact our legal directive.</p>
                     <h4>2. DIRECT CONTACT</h4>
-                    <p>Official Legal Inquiries: <a href="mailto:artists@obscurarecord.com" style="color: var(--accent-cyan);">artists@obscurarecord.com</a></p>
+                    <p>Official Legal Inquiries: <a href="mailto:sayurux@gmail.com" style="color: var(--accent-cyan);">sayurux@gmail.com</a></p>
                 `
             }
         };
