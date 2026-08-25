@@ -1567,21 +1567,58 @@
         if (!rawReleaseId) {
             renderNotFound();
         } else {
-            const cleanSlug = (text) => (text || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-            const targetSlug = cleanSlug(rawReleaseId);
+            resolveSmartLink(rawReleaseId);
+        }
 
-            // Step 1: Check dedicated smartLinks/{id} first (Zero impact on existing custom smartlinks)
-            db.ref(`smartLinks/${rawReleaseId}`).once('value').then(snap => {
+        async function resolveSmartLink(rawId) {
+            const clean = (text) => (text || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            const targetSlug = clean(rawId);
+            const rawClean = (rawId || '').toLowerCase().trim();
+
+            // 1. Direct RTDB fetch
+            try {
+                const snap = await db.ref(`smartLinks/${rawId}`).once('value');
                 const val = snap.val();
-                if (val) {
-                    renderSmartLink(val);
-                } else {
-                    // Step 2: Query main site releases & popular catalog from main database
-                    fetchMainSiteRelease(targetSlug, rawReleaseId);
+                if (val && typeof val === 'object') {
+                    return renderSmartLink(val);
                 }
-            }).catch(() => {
-                fetchMainSiteRelease(targetSlug, rawReleaseId);
-            });
+            } catch (e) {}
+
+            // 2. Direct REST fetch
+            try {
+                const res = await fetch(`https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks/${encodeURIComponent(rawId)}.json`);
+                const data = await res.json();
+                if (data && typeof data === 'object') {
+                    return renderSmartLink(data);
+                }
+            } catch (e) {}
+
+            // 3. Fallback: Search all smartLinks for fuzzy/normalized slug matches
+            try {
+                const allRes = await fetch("https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks.json");
+                const allLinks = await allRes.json();
+                if (allLinks && typeof allLinks === 'object') {
+                    // Exact key match (case insensitive)
+                    let foundKey = Object.keys(allLinks).find(k => k.toLowerCase() === rawClean);
+                    // Normalized slug match
+                    if (!foundKey) {
+                        foundKey = Object.keys(allLinks).find(k => clean(k) === targetSlug);
+                    }
+                    // Title match
+                    if (!foundKey) {
+                        foundKey = Object.keys(allLinks).find(k => {
+                            const item = allLinks[k];
+                            return item && (clean(item.title) === targetSlug || (item.slug && clean(item.slug) === targetSlug));
+                        });
+                    }
+                    if (foundKey && allLinks[foundKey]) {
+                        return renderSmartLink(allLinks[foundKey]);
+                    }
+                }
+            } catch (e) {}
+
+            // 4. Query main site releases & popular catalog from main database
+            fetchMainSiteRelease(targetSlug, rawId);
         }
 
         function fetchMainSiteRelease(targetSlug, rawReleaseId) {
