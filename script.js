@@ -3481,17 +3481,17 @@ function initFloatingPlayer() {
                 }
             }
             const slug = (title || 'release').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-            const baseUrl = window.location.origin + window.location.pathname.replace(/index\.html$/, '');
-            const transmitUrl = `${baseUrl}transmit/?id=${slug}`;
+            const baseUrl = window.location.origin + window.location.pathname.replace(/\/index\.html$/, '').replace(/\/$/, '') + '/';
+            const smartLinkUrl = `${baseUrl}release/?id=${encodeURIComponent(slug)}`;
 
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(transmitUrl).then(() => {
-                    showCyberNotification('QUANTUM DECK LINK COPIED TO CLIPBOARD', 'fas fa-share-alt');
+                navigator.clipboard.writeText(smartLinkUrl).then(() => {
+                    showCyberNotification('SMART LINK COPIED TO CLIPBOARD', 'fas fa-share-alt');
                 }).catch(() => {
-                    showCyberNotification('TRANSMISSION READY', 'fas fa-share-alt');
+                    showCyberNotification('SMART LINK READY', 'fas fa-share-alt');
                 });
             } else {
-                showCyberNotification('QUANTUM DECK LINK COPIED', 'fas fa-share-alt');
+                showCyberNotification('SMART LINK COPIED', 'fas fa-share-alt');
             }
         });
     }
