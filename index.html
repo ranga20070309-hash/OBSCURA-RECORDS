@@ -89,13 +89,24 @@
         };
         // Bootstrapping the site engine
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        // Single fetch to determine latest version
+        // Single fetch to determine latest version with instant fail-safe
+        let scriptLoaded = false;
+        function loadMainScript(version) {
+            if (scriptLoaded) return;
+            scriptLoaded = true;
+            const scr = document.createElement('script');
+            scr.src = 'script.js?v=' + encodeURIComponent(version || '1.0');
+            document.head.appendChild(scr);
+            console.log("ENGINE BOOT: v" + (version || '1.0'));
+        }
+
+        setTimeout(() => loadMainScript('1.0'), 1500);
+
         firebase.database().ref('siteData/globals/v').once('value').then((snapshot) => {
             const v = snapshot.val() || '1.0';
-            const scr = document.createElement('script');
-            scr.src = 'script.js?v=' + encodeURIComponent(v);
-            document.head.appendChild(scr);
-            console.log("ENGINE BOOT: v" + v);
+            loadMainScript(v);
+        }).catch(() => {
+            loadMainScript('1.0');
         });
     </script>
 </head>
