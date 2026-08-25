@@ -1016,8 +1016,9 @@
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
-        // --- 1. NEW DEDICATED FIREBASE CONFIGURATION (OBSCURA SMART LINKS) ---
-        const firebaseConfig = {
+        // --- 1. FIREBASE CONFIGURATIONS ---
+        // 1A. Smart Links Database (Custom Label & Producer Smart Links)
+        const smartLinksFirebaseConfig = {
             apiKey: "AIzaSyBARRt8caSaWBTjtxzNzr670lTYfqBRIj0",
             authDomain: "obscura-records-smart-links.firebaseapp.com",
             databaseURL: "https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -1027,8 +1028,31 @@
             appId: "1:22595717651:web:b39895741f4aebe8268de6"
         };
 
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        // 1B. Main Site Database (Official Label Releases & 3 Streaming Platform Links)
+        const mainSiteFirebaseConfig = {
+            apiKey: "AIzaSyCHf_R1n2Qn-q4NHAjfJt6xD_TWIRjiN1o",
+            authDomain: "obscura-records.firebaseapp.com",
+            databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "obscura-records",
+            storageBucket: "obscura-records.firebasestorage.app",
+            messagingSenderId: "831882873428",
+            appId: "1:831882873428:web:3cf009875e160a9f8efbc1"
+        };
+
+        let smartLinksApp, mainSiteApp;
+        if (!firebase.apps.length) {
+            smartLinksApp = firebase.initializeApp(smartLinksFirebaseConfig);
+        } else {
+            smartLinksApp = firebase.app();
+        }
+        try {
+            mainSiteApp = firebase.initializeApp(mainSiteFirebaseConfig, "mainSiteApp");
+        } catch (e) {
+            mainSiteApp = firebase.app("mainSiteApp");
+        }
+
+        const db = smartLinksApp.database();
+        const mainDb = mainSiteApp.database();
 
         // --- 2. PLATFORM DEFINITIONS & LOGO ASSETS ---
         const PLATFORM_CONFIG = {
@@ -1537,24 +1561,103 @@
             }
         }
 
-        // --- 8. FETCH RELEASE DATA FROM FIREBASE ---
-        const releaseId = getReleaseId();
+        // --- 8. FETCH RELEASE DATA FROM FIREBASE (CUSTOM SMART LINKS & MAIN SITE RELEASES) ---
+        const rawReleaseId = getReleaseId();
 
-        if (!releaseId) {
+        if (!rawReleaseId) {
             renderNotFound();
         } else {
-            // Check dedicated smartLinks/{id}
-            db.ref(`smartLinks/${releaseId}`).once('value').then(snap => {
+            const cleanSlug = (text) => (text || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            const targetSlug = cleanSlug(rawReleaseId);
+
+            // Step 1: Check dedicated smartLinks/{id} first (Zero impact on existing custom smartlinks)
+            db.ref(`smartLinks/${rawReleaseId}`).once('value').then(snap => {
                 const val = snap.val();
                 if (val) {
                     renderSmartLink(val);
                 } else {
-                    renderNotFound(releaseId);
+                    // Step 2: Query main site releases & popular catalog from main database
+                    fetchMainSiteRelease(targetSlug, rawReleaseId);
+                }
+            }).catch(() => {
+                fetchMainSiteRelease(targetSlug, rawReleaseId);
+            });
+        }
+
+        function fetchMainSiteRelease(targetSlug, rawReleaseId) {
+            mainDb.ref('siteData/releases').once('value').then(snap => {
+                const releases = snap.val() || [];
+                let matched = findReleaseMatch(releases, targetSlug, rawReleaseId);
+
+                if (matched) {
+                    renderMainReleaseSmartLink(matched);
+                } else {
+                    // Try searching popular releases catalog
+                    mainDb.ref('siteData/popular').once('value').then(popSnap => {
+                        const popularList = popSnap.val() || [];
+                        let popMatched = findReleaseMatch(popularList, targetSlug, rawReleaseId);
+                        if (popMatched) {
+                            renderMainReleaseSmartLink(popMatched);
+                        } else {
+                            renderNotFound(rawReleaseId);
+                        }
+                    }).catch(() => renderNotFound(rawReleaseId));
                 }
             }).catch(err => {
-                console.error("Firebase fetch error:", err);
-                renderNotFound(releaseId);
+                console.error("Main DB fetch error:", err);
+                renderNotFound(rawReleaseId);
             });
+        }
+
+        function findReleaseMatch(list, targetSlug, rawId) {
+            if (!list) return null;
+            if (!Array.isArray(list)) {
+                if (typeof list === 'object' && list !== null) {
+                    list = Object.values(list);
+                } else {
+                    return null;
+                }
+            }
+            const cleanSlug = (text) => (text || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            const lowerRaw = (rawId || '').toLowerCase().trim();
+
+            for (const r of list) {
+                if (!r) continue;
+                const rTitle = r.title || '';
+                const rSlug = cleanSlug(rTitle);
+                const rCatalog = (r.catalog || r.id || '').toLowerCase().trim();
+
+                if (rSlug === targetSlug || rCatalog === lowerRaw || rSlug.includes(targetSlug) || targetSlug.includes(rSlug)) {
+                    return r;
+                }
+            }
+            return null;
+        }
+
+        function renderMainReleaseSmartLink(rel) {
+            const data = {
+                title: rel.title || "OBSCURA RELEASE",
+                artist: rel.artist || rel.producers || "OBSCURA RECORD",
+                image: rel.cover || rel.image || "../assets/OCR.png",
+                audioPreview: rel.streamUrl || rel.preview || rel.youtubePreview || rel.mp3 || "",
+                youtube: rel.youtubeUrl || rel.youtube || rel.youtubeAlbum || "",
+                links: {
+                    spotify: rel.spotifyUrl || rel.spotify || "",
+                    apple: rel.appleUrl || rel.apple || "",
+                    youtube: rel.youtubeUrl || rel.youtube || rel.youtubeAlbum || "",
+                    soundcloud: rel.soundcloudUrl || rel.soundcloud || "",
+                    dlUrl: rel.dlUrl || ""
+                },
+                ui: {
+                    accent: "#00f0ff",
+                    borderGlow: 0.45,
+                    darkness: 0.12,
+                    buttonStyle: "clean-light",
+                    showQrDock: true,
+                    showGrid: true
+                }
+            };
+            renderSmartLink(data);
         }
     </script>
 </body>
