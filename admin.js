@@ -3976,7 +3976,7 @@ function renderQuantumDecksGrid(releases, container) {
         const artist = rel.artist || rel.producers || 'OBSCURA RECORD';
         const cover = rel.cover || rel.image || 'assets/OCR.png';
         const slug = getCleanSlug(title);
-        const transmitUrl = `transmit/?id=${slug}`;
+        const shareUrl = `share/?id=${slug}`;
 
         const spIcon = (rel.spotifyUrl || rel.spotify) ? '<i class="fab fa-spotify" style="color: #1db954;" title="Spotify Linked"></i>' : '<i class="fab fa-spotify" style="color: rgba(255,255,255,0.2);" title="No Spotify Link"></i>';
         const appleIcon = (rel.appleUrl || rel.apple) ? '<i class="fab fa-apple" style="color: #fa233b;" title="Apple Music Linked"></i>' : '<i class="fab fa-apple" style="color: rgba(255,255,255,0.2);" title="No Apple Link"></i>';
@@ -3996,14 +3996,14 @@ function renderQuantumDecksGrid(releases, container) {
                 </div>
                 
                 <div style="background: rgba(0,0,0,0.4); border: 1px dashed rgba(0,240,255,0.2); border-radius: 8px; padding: 0.45rem 0.7rem; font-family: monospace; font-size: 0.72rem; color: #00f0ff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    /transmit/?id=${slug}
+                    /share/?id=${slug}
                 </div>
 
                 <div style="display: flex; gap: 0.5rem; margin-top: auto;">
-                    <button type="button" class="cyber-btn" onclick="window.open('${transmitUrl}', '_blank')" style="flex: 1; justify-content: center; font-size: 0.75rem; padding: 0.5rem;">
+                    <button type="button" class="cyber-btn" onclick="window.open('${shareUrl}', '_blank')" style="flex: 1; justify-content: center; font-size: 0.75rem; padding: 0.5rem;">
                         <i class="fas fa-external-link-alt"></i> LAUNCH DECK
                     </button>
-                    <button type="button" class="cyber-btn secondary" onclick="navigator.clipboard.writeText(window.location.origin + window.location.pathname.replace('admin.html', '') + '${transmitUrl}'); showToast('QUANTUM DECK LINK COPIED!');" style="padding: 0.5rem 0.8rem; font-size: 0.75rem;" title="Copy Transmission Link">
+                    <button type="button" class="cyber-btn secondary" onclick="navigator.clipboard.writeText(window.location.origin + window.location.pathname.replace('admin.html', '') + '${shareUrl}'); showToast('SHARE LINK COPIED!');" style="padding: 0.5rem 0.8rem; font-size: 0.75rem;" title="Copy Transmission Link">
                         <i class="fas fa-copy"></i>
                     </button>
                 </div>
