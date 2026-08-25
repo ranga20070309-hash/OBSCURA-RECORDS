@@ -11,20 +11,28 @@
       "destination": "/privacy.html"
     },
     {
+      "source": "/smartlinks-admin",
+      "destination": "/smartlinks-admin/index.html"
+    },
+    {
+      "source": "/smartlinks-admin/(.*)",
+      "destination": "/smartlinks-admin/index.html"
+    },
+    {
       "source": "/share",
-      "destination": "/share/index.html"
+      "destination": "/api/release.js"
     },
     {
       "source": "/share/(.*)",
-      "destination": "/share/index.html"
+      "destination": "/api/release.js"
     },
     {
       "source": "/transmit",
-      "destination": "/share/index.html"
+      "destination": "/api/release.js"
     },
     {
       "source": "/transmit/(.*)",
-      "destination": "/share/index.html"
+      "destination": "/api/release.js"
     },
     {
       "source": "/release",
