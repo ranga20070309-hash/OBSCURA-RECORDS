@@ -1,12 +1,34 @@
 const fs = require('fs');
 const path = require('path');
-const axios = require('axios');
+const https = require('https');
 
 const FIREBASE_DB_URL = "https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app";
 
+function fetchJson(url) {
+    return new Promise((resolve) => {
+        try {
+            const req = https.get(url, { timeout: 3500 }, (res) => {
+                let data = '';
+                res.on('data', chunk => { data += chunk; });
+                res.on('end', () => {
+                    try {
+                        resolve(JSON.parse(data));
+                    } catch (e) {
+                        resolve(null);
+                    }
+                });
+            });
+            req.on('error', () => resolve(null));
+            req.on('timeout', () => { req.destroy(); resolve(null); });
+        } catch (e) {
+            resolve(null);
+        }
+    });
+}
+
 module.exports = async (req, res) => {
     try {
-        const host = req.headers['x-forwarded-host'] || req.headers.host || 'www.obscurarecord.com';
+        const host = req.headers['x-forwarded-host'] || req.headers?.host || 'www.obscurarecord.com';
         const proto = req.headers['x-forwarded-proto'] || 'https';
         const parsedUrl = new URL(req.url, `${proto}://${host}`);
         
@@ -23,7 +45,7 @@ module.exports = async (req, res) => {
 
         if (!slug) {
             const pathParts = parsedUrl.pathname.replace(/^\/+|\/+$/g, '').split('/');
-            if (pathParts.length >= 2 && pathParts[0].toLowerCase() === 'release') {
+            if (pathParts.length >= 2 && (pathParts[0].toLowerCase() === 'release' || pathParts[0].toLowerCase() === 'transmit' || pathParts[0].toLowerCase() === 'share')) {
                 const candidate = pathParts[1];
                 if (candidate && !candidate.includes('.')) {
                     slug = candidate;
@@ -47,17 +69,13 @@ module.exports = async (req, res) => {
         const normalizedSlug = slug.toLowerCase();
         let data = null;
 
-        try {
-            const resp = await axios.get(`${FIREBASE_DB_URL}/smartLinks/${encodeURIComponent(normalizedSlug)}.json`, { timeout: 3500 });
-            data = resp.data;
-        } catch (err) {
-            console.error("Firebase direct fetch error:", err.message);
-        }
+        // 1. Direct fetch
+        data = await fetchJson(`${FIREBASE_DB_URL}/smartLinks/${encodeURIComponent(normalizedSlug)}.json`);
 
+        // 2. All links fuzzy match fallback
         if (!data) {
-            try {
-                const allResp = await axios.get(`${FIREBASE_DB_URL}/smartLinks.json`, { timeout: 3500 });
-                const allLinks = allResp.data || {};
+            const allLinks = await fetchJson(`${FIREBASE_DB_URL}/smartLinks.json`);
+            if (allLinks && typeof allLinks === 'object') {
                 const clean = s => (s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
                 const targetClean = clean(normalizedSlug);
 
@@ -71,8 +89,6 @@ module.exports = async (req, res) => {
                 if (matchKey && allLinks[matchKey]) {
                     data = allLinks[matchKey];
                 }
-            } catch (err) {
-                console.error("Firebase allLinks fallback error:", err.message);
             }
         }
 
@@ -89,7 +105,7 @@ module.exports = async (req, res) => {
             }
 
             const cleanTitle = `${title}`;
-            const shortDesc = `Listen to ${title}`;
+            const shortDesc = `Listen to ${title} on all platforms`;
             const currentUrl = `https://www.obscurarecord.com/release/?id=${encodeURIComponent(normalizedSlug)}`;
 
             // Remove any existing duplicate social meta tags from HTML template
