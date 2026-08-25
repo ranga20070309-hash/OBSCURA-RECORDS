@@ -1,12 +1,20 @@
 {
   "rewrites": [
     {
+      "source": "/share",
+      "destination": "/share/index.html"
+    },
+    {
+      "source": "/share/(.*)",
+      "destination": "/share/index.html"
+    },
+    {
       "source": "/transmit",
-      "destination": "/transmit/index.html"
+      "destination": "/share/index.html"
     },
     {
       "source": "/transmit/(.*)",
-      "destination": "/transmit/index.html"
+      "destination": "/share/index.html"
     },
     {
       "source": "/release",
@@ -18,3 +26,4 @@
     }
   ]
 }
+
