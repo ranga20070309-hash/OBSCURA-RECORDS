@@ -737,15 +737,172 @@
                 max-width: 260px;
             }
 
-            .deck-bottom-tools {
-                flex-direction: column;
-                align-items: stretch;
-                text-align: center;
-            }
+        /* Deck Bottom Footer */
+        .deck-footer {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1120px;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0, 240, 255, 0.15);
+            text-align: center;
+        }
 
-            .deck-action-buttons {
-                justify-content: center;
-            }
+        .deck-footer-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .footer-brand-domain {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            padding: 0.45rem 1.1rem;
+            border-radius: 50px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+        }
+
+        .domain-badge {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 700;
+            letter-spacing: 0.06rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            transition: all 0.2s ease;
+        }
+
+        .domain-badge:hover {
+            color: #fff;
+            text-shadow: 0 0 10px var(--accent-cyan);
+        }
+
+        .domain-divider {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .domain-tag {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.68rem;
+            letter-spacing: 0.04rem;
+        }
+
+        .footer-legal-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.05rem;
+        }
+
+        .footer-legal-links a {
+            color: rgba(255, 255, 255, 0.65);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-legal-links a:hover {
+            color: var(--accent-cyan);
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+        }
+
+        .footer-legal-links .sep {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .footer-copyright {
+            font-family: var(--font-body);
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 0.04rem;
+        }
+
+        .footer-copyright a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        /* Legal Modal */
+        .legal-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 5, 10, 0.85);
+            backdrop-filter: blur(20px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .legal-modal.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .legal-card {
+            background: #090d18;
+            border: 1px solid var(--accent-cyan);
+            border-radius: 20px;
+            padding: 2.2rem;
+            max-width: 580px;
+            width: 100%;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 45px rgba(0, 240, 255, 0.3);
+            position: relative;
+        }
+
+        .legal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.2rem;
+        }
+
+        .legal-header h3 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            color: #fff;
+            letter-spacing: 0.06rem;
+        }
+
+        .legal-content {
+            overflow-y: auto;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            padding-right: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .legal-content h4 {
+            color: var(--accent-cyan);
+            font-family: var(--font-heading);
+            margin-top: 1rem;
+            margin-bottom: 0.3rem;
+            font-size: 0.95rem;
         }
     </style>
 </head>
@@ -889,6 +1046,31 @@
         </section>
     </main>
 
+    <!-- Footer Section -->
+    <footer class="deck-footer">
+        <div class="deck-footer-inner">
+            <div class="footer-brand-domain">
+                <a href="../" class="domain-badge">
+                    <i class="fas fa-globe"></i> WWW.OBSCURARECORD.COM
+                </a>
+                <span class="domain-divider">•</span>
+                <span class="domain-tag">OFFICIAL QUANTUM PORTAL</span>
+            </div>
+
+            <div class="footer-legal-links">
+                <a href="javascript:void(0)" onclick="openLegalModal('privacy')">PRIVACY POLICY</a>
+                <span class="sep">|</span>
+                <a href="javascript:void(0)" onclick="openLegalModal('terms')">TERMS OF SERVICE</a>
+                <span class="sep">|</span>
+                <a href="javascript:void(0)" onclick="openLegalModal('dmca')">DMCA & LICENSING</a>
+            </div>
+
+            <div class="footer-copyright">
+                &copy; 2026 <a href="../">OBSCURA RECORD LLC</a>. ALL RIGHTS RESERVED. RECORDED & BROADCASTED VIA QUANTUM FREQUENCY.
+            </div>
+        </div>
+    </footer>
+
     <!-- Expandable QR Dock Modal -->
     <div class="qr-dock-modal" id="qr-modal">
         <div class="qr-card">
@@ -903,6 +1085,24 @@
             </div>
             <button class="deck-btn" id="close-qr-btn" style="width: 100%; justify-content: center;">
                 <i class="fas fa-times"></i> CLOSE
+            </button>
+        </div>
+    </div>
+
+    <!-- Legal Policy Modal -->
+    <div class="legal-modal" id="legal-modal">
+        <div class="legal-card">
+            <div class="legal-header">
+                <h3 id="legal-title"><i class="fas fa-shield-alt" style="color: var(--accent-cyan);"></i> LEGAL DIRECTIVES</h3>
+                <button class="deck-btn" onclick="closeLegalModal()" style="padding: 0.35rem 0.7rem; font-size: 0.75rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="legal-content" id="legal-body">
+                <!-- Injected dynamically -->
+            </div>
+            <button class="deck-btn" onclick="closeLegalModal()" style="width: 100%; justify-content: center; margin-top: auto;">
+                <i class="fas fa-check"></i> I UNDERSTAND & AGREE
             </button>
         </div>
     </div>
@@ -1297,9 +1497,61 @@
         document.getElementById('close-qr-btn').addEventListener('click', () => {
             qrModal.classList.remove('active');
         });
-        qrModal.addEventListener('click', (e) => {
-            if (e.target === qrModal) qrModal.classList.remove('active');
-        });
+        // Legal Policy Modal
+        const legalModal = document.getElementById('legal-modal');
+        const legalTitle = document.getElementById('legal-title');
+        const legalBody = document.getElementById('legal-body');
+
+        const legalTexts = {
+            privacy: {
+                title: "PRIVACY POLICY // OBSCURA RECORD",
+                content: `
+                    <h4>1. DATA INTEGRITY</h4>
+                    <p>OBSCURA RECORD LLC does not collect, sell, or monetize personally identifiable information from listener transmissions. Audio telemetry and listener metrics are processed anonymously for audio delivery and broadcast quality optimization.</p>
+                    <h4>2. THIRD-PARTY STREAMING</h4>
+                    <p>When you navigate to third-party streaming platforms (Spotify, Apple Music, YouTube, SoundCloud), your interaction is subject to their respective privacy terms and service protocols.</p>
+                    <h4>3. TELEMETRY & PREFERENCES</h4>
+                    <p>We utilize local browser storage solely to preserve your playback speed modes and preferences.</p>
+                `
+            },
+            terms: {
+                title: "TERMS OF SERVICE // OBSCURA RECORD",
+                content: `
+                    <h4>1. MASTER RECORDING RIGHTS</h4>
+                    <p>All music compositions, phonographic sound recordings, artwork visuals, and transmission assets hosted on this deck are the exclusive intellectual property of OBSCURA RECORD LLC and affiliated recording artists.</p>
+                    <h4>2. STREAMING LICENSE</h4>
+                    <p>Listeners are granted a personal, non-exclusive, non-transferable license to stream, share, and preview broadcasted audio snippets.</p>
+                    <h4>3. PROHIBITED USAGE</h4>
+                    <p>Unauthorized commercial redistribution, automated ripping, or unauthorized re-licensing of sound masters is strictly prohibited without explicit written clearance from OBSCURA RECORD.</p>
+                `
+            },
+            dmca: {
+                title: "DMCA & COPYRIGHT CLEARANCE",
+                content: `
+                    <h4>1. COPYRIGHT INQUIRIES</h4>
+                    <p>OBSCURA RECORD respects the intellectual property rights of all creators and producers. For DMCA claims, sample clearance, synchronization (Film/Game/TV) or commercial licensing requests, please contact our legal directive.</p>
+                    <h4>2. DIRECT CONTACT</h4>
+                    <p>Official Legal Inquiries: <a href="mailto:sayurux@gmail.com" style="color: var(--accent-cyan);">sayurux@gmail.com</a></p>
+                `
+            }
+        };
+
+        window.openLegalModal = function(type) {
+            const data = legalTexts[type] || legalTexts.privacy;
+            if (legalTitle) legalTitle.innerHTML = `<i class="fas fa-shield-alt" style="color: var(--accent-cyan);"></i> ${data.title}`;
+            if (legalBody) legalBody.innerHTML = data.content;
+            if (legalModal) legalModal.classList.add('active');
+        };
+
+        window.closeLegalModal = function() {
+            if (legalModal) legalModal.classList.remove('active');
+        };
+
+        if (legalModal) {
+            legalModal.addEventListener('click', (e) => {
+                if (e.target === legalModal) closeLegalModal();
+            });
+        }
     </script>
 </body>
 
