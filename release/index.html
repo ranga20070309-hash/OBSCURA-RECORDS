@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="page-title">OBSCURA RECORDS LLC | Release Smart Link</title>
+    <link rel="icon" type="image/png" href="/assets/OCR.png?v=61.0">
+    <link rel="apple-touch-icon" href="/assets/OCR_solid.png?v=61.0">
+
+    <!-- Meta tags for social sharing preview -->
+    <meta name="description" id="meta-desc" content="Official Music Release on Obscura Records LLC">
+    <meta property="og:site_name" content="OBSCURA RECORDS LLC">
+    <meta property="og:title" id="og-title" content="OBSCURA RECORDS LLC">
+    <meta property="og:description" id="og-desc" content="Official Music Release on Obscura Records LLC">
+    <meta property="og:image" id="og-image" content="https://www.obscurarecord.com/assets/OCR.png">
+    <meta property="og:type" content="music.song">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" id="twitter-title" content="OBSCURA RECORDS LLC">
+    <meta name="twitter:description" id="twitter-desc" content="Official Music Release on Obscura Records LLC">
+    <meta name="twitter:image" id="twitter-image" content="https://www.obscurarecord.com/assets/OCR.png">
+    <meta name="theme-color" content="#00f0ff">
+
+    <!-- Google Fonts & Font Awesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-dark: #040508;
+            --card-bg: rgba(7, 9, 15, 0.94);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-cyan: #00f0ff;
+            --accent-purple: #7000ff;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.65);
+            --font-main: 'Outfit', sans-serif;
+            --font-heading: 'Space Grotesk', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2.5rem 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Dynamic Background Art (Dark Phonk / Cyber Mood) */
+        .ambient-backdrop {
+            position: fixed;
+            inset: -40px;
+            background-size: cover;
+            background-position: center;
+            filter: blur(65px) brightness(0.12) saturate(1.1);
+            transform: scale(1.1);
+            z-index: 1;
+            pointer-events: none;
+            transition: background-image 0.8s ease;
+        }
+
+        .dark-vignette-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 35%, rgba(0, 0, 0, 0.3) 0%, rgba(3, 4, 7, 0.92) 80%);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .cyber-grid-overlay {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-size: 36px 36px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Stage Container for Center Card */
+        .smart-link-stage {
+            position: relative;
+            width: 100%;
+            max-width: 418px;
+            margin: 0 auto;
+            z-index: 10;
+        }
+
+        /* Center Smart Link Hub Card (Always 100% Centered) */
+        .smart-link-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 418px;
+            min-height: 620px;
+            background: var(--card-bg);
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, 0.9),
+                0 0 35px rgba(0, 240, 255, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        /* Side Docked Cyber Neon QR Box (Vertically Centered with the Release Card - Frozen in place) */
+        .side-qr-dock {
+            display: none;
+        }
+
+        @media (min-width: 1040px) {
+            .side-qr-dock {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.85rem;
+                position: absolute;
+                left: calc(100% + 75px);
+                top: 50%;
+                transform: translateY(-50%);
+                z-index: 40;
+                width: 250px;
+                background: rgba(8, 10, 18, 0.94);
+                border: 1px solid rgba(0, 240, 255, 0.35);
+                border-radius: 24px;
+                padding: 1.4rem 1.2rem;
+                text-align: center;
+                backdrop-filter: blur(35px);
+                -webkit-backdrop-filter: blur(35px);
+                box-shadow:
+                    0 25px 55px rgba(0, 0, 0, 0.88),
+                    0 0 35px rgba(0, 240, 255, 0.14),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        .qr-neon-frame {
+            background: #070912;
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            border-radius: 16px;
+            padding: 0.65rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.18), inset 0 0 12px rgba(0, 0, 0, 0.85);
+        }
+
+        .qr-neon-frame img {
+            width: 195px;
+            height: 195px;
+            display: block;
+            border-radius: 10px;
+            object-fit: contain;
+        }
+
+        .qr-dock-title {
+            font-family: var(--font-heading);
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: #00f0ff;
+            letter-spacing: 0.09rem;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .qr-dock-desc {
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        @keyframes cardFadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(25px) scale(0.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .qr-companion-title {
+            font-family: var(--font-heading);
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #00f0ff;
+            letter-spacing: 0.08rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .qr-companion-desc {
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        /* Top Release Artwork & Snippet Player */
+        .artwork-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .artwork-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .artwork-container:hover .artwork-img {
+            transform: scale(1.03);
+        }
+
+        .artwork-overlay-gradient {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0) 40%, rgba(13, 15, 24, 0.95) 100%);
+            pointer-events: none;
+        }
+
+        /* Snippet Play Button Overlay on Artwork */
+        .artwork-play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(0, 240, 255, 0.92);
+            color: #000;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            box-shadow:
+                0 0 30px rgba(0, 240, 255, 0.7),
+                0 8px 25px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 5;
+        }
+
+        .artwork-play-btn:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            background: #fff;
+            box-shadow: 0 0 40px #00f0ff;
+        }
+
+        .artwork-play-btn.playing {
+            background: #fff;
+            animation: pulseGlow 1.8s infinite;
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 25px rgba(0, 240, 255, 0.8);
+            }
+
+            50% {
+                box-shadow: 0 0 45px rgba(0, 240, 255, 1);
+            }
+        }
+
+        .audio-preview-badge {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 0.65rem;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            letter-spacing: 0.08rem;
+            padding: 0.3rem 0.65rem;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            z-index: 4;
+        }
+
+        .audio-preview-badge i {
+            color: var(--accent-cyan);
+        }
+
+        /* Label Banner Header */
+        .label-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1.1rem 1rem 0.4rem 1rem;
+            text-align: center;
+        }
+
+        .label-logo-img {
+            height: 22px;
+            width: auto;
+            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.5));
+        }
+
+        .label-name {
+            font-family: var(--font-heading);
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 0.18rem;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .label-name span {
+            color: var(--accent-cyan);
+        }
+
+        /* Track Info Header */
+        .track-meta-header {
+            text-align: center;
+            padding: 0.4rem 1.4rem 1.2rem 1.4rem;
+        }
+
+        .track-title {
+            font-family: var(--font-heading);
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.04rem;
+            line-height: 1.25;
+            margin-bottom: 0.25rem;
+            word-break: break-word;
+        }
+
+        .track-artist {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin-bottom: 0.7rem;
+            letter-spacing: 0.03rem;
+        }
+
+        .instruction-text {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08rem;
+            font-weight: 500;
+        }
+
+        /* Platform Service Rows - Dynamic Scoped Themes */
+        .platform-list {
+            border-radius: 18px;
+            margin: 0 0.85rem 1rem 0.85rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .platform-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.95rem 1.2rem;
+            text-decoration: none;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .platform-row:last-child {
+            border-bottom: none !important;
+        }
+
+        .platform-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .platform-name {
+            font-weight: 800;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+        }
+
+        .platform-action-btn {
+            border-radius: 8px;
+            padding: 0.42rem 1.15rem;
+            font-family: var(--font-main);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02rem;
+            min-width: 82px;
+            text-align: center;
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+
+        /* 1. Light Minimalist Style */
+        .platform-list.style-clean-light {
+            background: #ffffff;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+        .platform-list.style-clean-light .platform-row {
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .platform-list.style-clean-light .platform-row:hover {
+            background-color: #f4f6f8;
+        }
+        .platform-list.style-clean-light .platform-name {
+            color: #111111;
+        }
+        .platform-list.style-clean-light .platform-action-btn {
+            background: #ffffff;
+            color: #111111;
+            border: 1.5px solid #d1d5db;
+        }
+        .platform-list.style-clean-light .platform-row:hover .platform-action-btn {
+            background: #111111;
+            color: #ffffff;
+            border-color: #111111;
+            transform: scale(1.04);
+        }
+
+        /* 2. Dark Cyber Glassmorphism Style */
+        .platform-list.style-cyber-glass {
+            background: rgba(12, 16, 28, 0.72);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+        .platform-list.style-cyber-glass .platform-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .platform-list.style-cyber-glass .platform-row:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        .platform-list.style-cyber-glass .platform-name {
+            color: #ffffff;
+        }
+        .platform-list.style-cyber-glass .platform-action-btn {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+        }
+        .platform-list.style-cyber-glass .platform-row:hover .platform-action-btn {
+            background: var(--accent-cyan, #00f0ff);
+            color: #000000;
+            font-weight: 800;
+            border-color: var(--accent-cyan, #00f0ff);
+            box-shadow: 0 0 16px var(--accent-cyan, #00f0ff);
+            transform: scale(1.04);
+        }
+
+        /* 3. Solid Neon Accent Style */
+        .platform-list.style-solid-neon {
+            background: #080b14;
+            border: 1px solid var(--accent-cyan, #00f0ff);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.2), 0 10px 30px rgba(0, 0, 0, 0.7);
+        }
+        .platform-list.style-solid-neon .platform-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .platform-list.style-solid-neon .platform-row:hover {
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+        .platform-list.style-solid-neon .platform-name {
+            color: #ffffff;
+        }
+        .platform-list.style-solid-neon .platform-action-btn {
+            background: var(--accent-cyan, #00f0ff);
+            color: #000000;
+            font-weight: 800;
+            border: none;
+            box-shadow: 0 0 12px var(--accent-cyan, #00f0ff);
+        }
+        .platform-list.style-solid-neon .platform-row:hover .platform-action-btn {
+            background: #ffffff;
+            color: #000000;
+            box-shadow: 0 0 20px #ffffff;
+            transform: scale(1.04);
+        }
+
+        /* 4. Holographic Border Glow Style */
+        .platform-list.style-holographic {
+            background: rgba(10, 12, 22, 0.85);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(139, 92, 246, 0.35);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+        }
+        .platform-list.style-holographic .platform-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .platform-list.style-holographic .platform-row:hover {
+            background-color: rgba(139, 92, 246, 0.12);
+        }
+        .platform-list.style-holographic .platform-name {
+            color: #ffffff;
+        }
+        .platform-list.style-holographic .platform-action-btn {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(139, 92, 246, 0.3));
+            color: #ffffff;
+            border: 1px solid rgba(0, 240, 255, 0.4);
+        }
+        .platform-list.style-holographic .platform-row:hover .platform-action-btn {
+            background: linear-gradient(135deg, #00f0ff, #8b5cf6);
+            color: #000;
+            font-weight: 800;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+            transform: scale(1.04);
+        }
+
+        /* Footer & Share Bar */
+        .card-footer {
+            padding: 0.8rem 1.4rem 1.4rem 1.4rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .share-hub-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            padding: 0.55rem 1.2rem;
+            border-radius: 30px;
+            font-family: var(--font-heading);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.06rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .share-hub-btn:hover {
+            background: rgba(0, 240, 255, 0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .footer-credits {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 0.05rem;
+        }
+
+        .share-hub-btn.secondary {
+            background: rgba(0, 240, 255, 0.08);
+            border-color: rgba(0, 240, 255, 0.25);
+            color: #00f0ff;
+        }
+
+        .share-hub-btn.secondary:hover {
+            background: rgba(0, 240, 255, 0.2);
+            border-color: var(--accent-cyan);
+            color: #fff;
+        }
+
+        /* Modal Overlays for Privacy, Terms & QR */
+        .cyber-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.2rem;
+        }
+
+        .cyber-modal-card {
+            background: #080a14;
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            border-radius: 22px;
+            width: 100%;
+            max-width: 460px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 1.8rem;
+            color: #fff;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(0, 240, 255, 0.15);
+            position: relative;
+            animation: cardFadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 1.2rem;
+            right: 1.2rem;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+
+        .modal-close-btn:hover {
+            color: var(--accent-cyan);
+        }
+
+        .modal-title {
+            font-family: var(--font-heading);
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .legal-body {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.75);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+
+        .legal-body h4 {
+            font-family: var(--font-heading);
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+            margin-bottom: 0.2rem;
+        }
+
+        /* Floating Privacy Consent Bar */
+        .privacy-consent-bar {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 580px;
+            background: rgba(6, 8, 15, 0.96);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(0, 240, 255, 0.15);
+            border-radius: 16px;
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            z-index: 9999;
+            animation: slideConsent 0.4s ease;
+        }
+
+        @keyframes slideConsent {
+            from {
+                transform: translateX(-50%) translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .consent-text {
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.4;
+        }
+
+        .consent-text a {
+            color: var(--accent-cyan);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .consent-btn {
+            background: var(--accent-cyan);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 0.48rem 1rem;
+            font-family: var(--font-heading);
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.04rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .consent-btn:hover {
+            background: #fff;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+            transform: scale(1.04);
+        }
+
+        @media (max-width: 580px) {
+            .privacy-consent-bar {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+                padding: 1rem;
+            }
+        }
+
+        /* Loading / Error States */
+        .loading-view {
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .cyber-spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(0, 240, 255, 0.2);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1.2rem auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Cyber Toast Notification */
+        .cyber-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(30px);
+            background: rgba(6, 8, 16, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--accent-cyan);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
+            border-radius: 30px;
+            padding: 0.65rem 1.4rem;
+            color: #fff;
+            font-family: var(--font-heading);
+            font-size: 0.78rem;
+            font-weight: 700;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cyber-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+
+        .cyber-toast i {
+            color: var(--accent-cyan);
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 480px) {
+            body {
+                padding: 1rem 0.6rem;
+            }
+
+            .smart-link-card {
+                border-radius: 20px;
+            }
+
+            .track-title {
+                font-size: 1.25rem;
+            }
+
+            .platform-row {
+                padding: 0.85rem 1rem;
+            }
+
+            .platform-logo-svg {
+                max-width: 110px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Dynamic Ambient Blurred Backdrop -->
+    <div id="ambient-bg" class="ambient-backdrop"></div>
+    <div class="dark-vignette-overlay"></div>
+    <div class="cyber-grid-overlay"></div>
+
+    <!-- Hidden Audio Preview Element -->
+    <audio id="snippet-audio" preload="none"></audio>
+    <div id="yt-player-slot"
+        style="position:fixed; left:-9999px; top:-9999px; pointer-events:none; opacity:0; width:1px; height:1px;"></div>
+
+    <div class="smart-link-stage">
+
+        <!-- Main Smart Link Card -->
+        <main class="smart-link-card" id="smart-link-card">
+
+            <!-- Initial Loading View -->
+            <div id="loading-state" class="loading-view">
+                <div class="cyber-spinner"></div>
+                <div
+                    style="font-family: var(--font-heading); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.15rem; color: #00f0ff;">
+                    FETCHING TRANSMISSION...
+                </div>
+            </div>
+
+            <!-- Loaded Content (Populated by JS) -->
+            <div id="content-state" style="display: none;">
+
+                <!-- Top HD Artwork with Play Button -->
+                <div class="artwork-container">
+                    <span class="audio-preview-badge">
+                        <i class="fas fa-wave-square"></i> AUDIO PREVIEW
+                    </span>
+                    <img id="track-cover" src="../assets/OCR.png" alt="Artwork" class="artwork-img">
+                    <div class="artwork-overlay-gradient"></div>
+                    <button id="play-snippet-btn" class="artwork-play-btn" title="Play 30s Snippet">
+                        <i class="fas fa-play" id="snippet-play-icon" style="margin-left: 3px;"></i>
+                    </button>
+                </div>
+
+                <!-- Obscura Label Banner -->
+                <div class="label-banner">
+                    <img src="../assets/OCR.png" alt="Obscura Records LLC" class="label-logo-img">
+                    <div class="label-name">OBSCURA <span>RECORDS</span></div>
+                </div>
+
+                <!-- Track Metadata Header -->
+                <div class="track-meta-header">
+                    <h1 class="track-title" id="track-title">RELEASE TITLE</h1>
+                    <div class="track-artist" id="track-artist">PROD By ARTIST</div>
+                    <div class="instruction-text">Choose your preferred music service</div>
+                </div>
+
+                <!-- Streaming Services Grid -->
+                <div class="platform-list" id="platform-list">
+                    <!-- Dynamically rendered platform rows -->
+                </div>
+
+                <!-- Card Footer & Share -->
+                <div class="card-footer">
+                    <button id="share-btn" class="share-hub-btn">
+                        <i class="fas fa-share-alt"></i> SHARE TRANSMISSION
+                    </button>
+                    <div class="footer-credits">
+                        &copy; 2026 <a href="../">OBSCURA RECORDS LLC</a>. ALL RIGHTS RESERVED.<br>
+                        <span style="opacity: 0.75; font-size: 0.62rem; margin-top: 0.35rem; display: inline-block;">
+                            <a href="javascript:void(0)" onclick="openPrivacyModal()">PRIVACY POLICY</a> &bull;
+                            <a href="javascript:void(0)" onclick="openTermsModal()">TERMS OF SERVICE</a>
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- Right Side Cyber Neon QR Dock (Desktop) -->
+        <aside class="side-qr-dock" id="side-qr-dock">
+            <div class="qr-dock-title">
+                <i class="fas fa-mobile-alt"></i> SCAN TO STREAM
+            </div>
+            <div class="qr-neon-frame">
+                <img id="side-qr-img" src="" alt="Scan with Phone">
+            </div>
+            <p class="qr-dock-desc">Point your phone camera to stream directly on mobile.</p>
+        </aside>
+
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div id="privacy-modal" class="cyber-modal-overlay">
+        <div class="cyber-modal-card">
+            <button type="button" class="modal-close-btn" onclick="closeModals()">&times;</button>
+            <div class="modal-title">
+                <i class="fas fa-shield-alt" style="color: #00f0ff;"></i> PRIVACY POLICY
+            </div>
+            <div class="legal-body">
+                <div>
+                    <h4>1. Data Collection & Privacy</h4>
+                    <p>OBSCURA RECORDS LLC respects your personal privacy. We do not sell, rent, or monetize your
+                        personal identity or browsing data. We only process anonymous streaming telemetry and
+                        country-level geo-location to route you to your local music provider.</p>
+                </div>
+                <div>
+                    <h4>2. Streaming Services & Third Parties</h4>
+                    <p>When you click any destination button (Spotify, Apple Music, Deezer, YouTube, etc.), you will be
+                        securely redirected to that respective third-party platform governed by their privacy terms.</p>
+                </div>
+                <div>
+                    <h4>3. Essential Cookies</h4>
+                    <p>We use lightweight local storage tokens to remember your audio snippet preferences and cookie
+                        consent status.</p>
+                </div>
+                <div>
+                    <h4>4. Contact & Compliance</h4>
+                    <p>For rights management or privacy inquiries, contact the label administration at <strong
+                            style="color:#00f0ff;">artists@obscurarecord.com</strong>.</p>
+                </div>
+            </div>
+            <button type="button" class="consent-btn" onclick="acceptConsent(); closeModals();"
+                style="margin-top: 1.4rem; width: 100%; padding: 0.65rem;">
+                <i class="fas fa-check"></i> I AGREE & ACCEPT
+            </button>
+        </div>
+    </div>
+
+    <!-- Terms of Service Modal -->
+    <div id="terms-modal" class="cyber-modal-overlay">
+        <div class="cyber-modal-card">
+            <button type="button" class="modal-close-btn" onclick="closeModals()">&times;</button>
+            <div class="modal-title">
+                <i class="fas fa-file-contract" style="color: #00f0ff;"></i> TERMS OF SERVICE
+            </div>
+            <div class="legal-body">
+                <div>
+                    <h4>1. Master Copyright & Intellectual Property</h4>
+                    <p>All phonogram master recordings, visual artwork, phonk compositions, and branding materials
+                        published on this portal are the exclusive intellectual property of OBSCURA RECORDS LLC and its
+                        affiliated producers/artists.</p>
+                </div>
+                <div>
+                    <h4>2. Audio Snippets & Fair Use</h4>
+                    <p>30-second promotional audio preview snippets are provided solely for consumer listening preview
+                        prior to streaming on licensed distributor platforms.</p>
+                </div>
+                <div>
+                    <h4>3. Unauthorized Distribution</h4>
+                    <p>Unauthorized re-uploading, commercial reselling, or sample pack repackaging without explicit
+                        master clearance is strictly prohibited.</p>
+                </div>
+            </div>
+            <button type="button" class="consent-btn" onclick="acceptConsent(); closeModals();"
+                style="margin-top: 1.4rem; width: 100%; padding: 0.65rem;">
+                <i class="fas fa-check"></i> I UNDERSTAND & AGREE
+            </button>
+        </div>
+    </div>
+
+    <!-- Floating Cookie / Privacy Consent Notice -->
+    <div id="privacy-consent-bar" class="privacy-consent-bar" style="display: none;">
+        <div class="consent-text">
+            <i class="fas fa-shield-alt" style="color: #00f0ff; margin-right: 4px;"></i>
+            We use essential telemetry to deliver HD audio streams. By continuing, you agree to our <a
+                onclick="openPrivacyModal()">Privacy Policy</a>.
+        </div>
+        <button type="button" class="consent-btn" onclick="acceptConsent()">
+            <i class="fas fa-check"></i> AGREE & CONTINUE
+        </button>
+    </div>
+
+    <!-- Global Toast Notification -->
+    <div id="cyber-toast" class="cyber-toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toast-text">SMART LINK COPIED</span>
+    </div>
+
+    <!-- YouTube iframe API for preview audio if source is YT -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        // --- 1. FIREBASE CONFIGURATIONS ---
+        // 1A. Smart Links Database (Custom Label & Producer Smart Links)
+        const smartLinksFirebaseConfig = {
+            apiKey: "AIzaSyBARRt8caSaWBTjtxzNzr670lTYfqBRIj0",
+            authDomain: "obscura-records-smart-links.firebaseapp.com",
+            databaseURL: "https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "obscura-records-smart-links",
+            storageBucket: "obscura-records-smart-links.firebasestorage.app",
+            messagingSenderId: "22595717651",
+            appId: "1:22595717651:web:b39895741f4aebe8268de6"
+        };
+
+        // 1B. Main Site Database (Official Label Releases & 3 Streaming Platform Links)
+        const mainSiteFirebaseConfig = {
+            apiKey: "AIzaSyCHf_R1n2Qn-q4NHAjfJt6xD_TWIRjiN1o",
+            authDomain: "obscura-records.firebaseapp.com",
+            databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "obscura-records",
+            storageBucket: "obscura-records.firebasestorage.app",
+            messagingSenderId: "831882873428",
+            appId: "1:831882873428:web:3cf009875e160a9f8efbc1"
+        };
+
+        let smartLinksApp, mainSiteApp;
+        if (!firebase.apps.length) {
+            smartLinksApp = firebase.initializeApp(smartLinksFirebaseConfig);
+        } else {
+            smartLinksApp = firebase.app();
+        }
+        try {
+            mainSiteApp = firebase.initializeApp(mainSiteFirebaseConfig, "mainSiteApp");
+        } catch (e) {
+            mainSiteApp = firebase.app("mainSiteApp");
+        }
+
+        const db = smartLinksApp.database();
+        const mainDb = mainSiteApp.database();
+
+        // --- 2. PLATFORM DEFINITIONS & LOGO ASSETS ---
+        const PLATFORM_CONFIG = {
+            spotify: {
+                name: "Spotify",
+                action: "Play",
+                logoSvg: `https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png`,
+                logoFallbackText: "Spotify",
+                logoColor: "#1DB954",
+                iconClass: "fab fa-spotify"
+            },
+            apple: {
+                name: "Apple Music",
+                action: "Play",
+                logoSvg: `https://music.apple.com/assets/favicon/favicon-180.png`,
+                logoFallbackText: "Apple Music",
+                logoColor: "#FA233B",
+                iconClass: "fab fa-apple"
+            },
+            itunes: {
+                name: "iTunes Store",
+                action: "Download",
+                logoSvg: ``,
+                logoFallbackText: "iTunes Store",
+                logoColor: "#EA4CC0",
+                iconClass: "fas fa-star"
+            },
+            deezer: {
+                name: "Deezer",
+                action: "Play",
+                logoSvg: ``,
+                logoFallbackText: "Deezer",
+                logoColor: "#A238FF",
+                iconClass: "fas fa-heart"
+            },
+            amazon: {
+                name: "Amazon Music",
+                action: "Play",
+                logoSvg: ``,
+                logoFallbackText: "Amazon Music",
+                logoColor: "#00A8E1",
+                iconClass: "fab fa-amazon"
+            },
+            youtube: {
+                name: "YouTube",
+                action: "Watch",
+                logoSvg: ``,
+                logoFallbackText: "YouTube",
+                logoColor: "#FF0000",
+                iconClass: "fab fa-youtube"
+            },
+            youtubemusic: {
+                name: "YouTube Music",
+                action: "Play",
+                logoSvg: ``,
+                logoFallbackText: "YouTube Music",
+                logoColor: "#FF0000",
+                iconClass: "fas fa-play-circle"
+            },
+            tidal: {
+                name: "TIDAL",
+                action: "Play",
+                logoSvg: ``,
+                logoFallbackText: "TIDAL",
+                logoColor: "#000000",
+                iconClass: "fas fa-gem"
+            },
+            pandora: {
+                name: "Pandora",
+                action: "Play",
+                logoSvg: ``,
+                logoFallbackText: "Pandora",
+                logoColor: "#005483",
+                iconClass: "fas fa-broadcast-tower"
+            },
+            boomplay: {
+                name: "Boomplay",
+                action: "Stream",
+                logoSvg: ``,
+                logoFallbackText: "Boomplay",
+                logoColor: "#00D664",
+                iconClass: "fas fa-play"
+            },
+            soundcloud: {
+                name: "SoundCloud",
+                action: "Play",
+                logoSvg: ``,
+                logoFallbackText: "SoundCloud",
+                logoColor: "#FF5500",
+                iconClass: "fab fa-soundcloud"
+            },
+            beatport: {
+                name: "Beatport",
+                action: "Buy",
+                logoSvg: ``,
+                logoFallbackText: "Beatport",
+                logoColor: "#00FF95",
+                iconClass: "fas fa-compact-disc"
+            },
+            tiktok: {
+                name: "TikTok",
+                action: "Use Sound",
+                logoSvg: ``,
+                logoFallbackText: "TikTok Sound",
+                logoColor: "#000000",
+                iconClass: "fab fa-tiktok"
+            }
+        };
+
+        // --- 3. TOAST NOTIFICATION ---
+        function showToast(text, icon = "fas fa-check-circle") {
+            const toast = document.getElementById('cyber-toast');
+            const toastText = document.getElementById('toast-text');
+            if (!toast || !toastText) return;
+            toastText.textContent = text;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2800);
+        }
+
+        // --- 4. EXTRACT SLUG/ID FROM URL ---
+        function getReleaseId() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('id')) return params.get('id').trim();
+            if (params.get('track')) return params.get('track').trim();
+            if (params.get('release')) return params.get('release').trim();
+
+            // Or from path: /release/nuts-funk
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            if (pathParts.length > 1 && pathParts[0] === 'release') {
+                return pathParts[1].replace('.html', '').trim();
+            }
+            return null;
+        }
+
+        // --- 5. AUDIO PREVIEW PLAYER ENGINE (30s SNIPPET LIMIT) ---
+        let isAudioPlaying = false;
+        let ytSnippetPlayer = null;
+        let snippetTimer = null;
+        let previewAudioEl = document.getElementById('snippet-audio');
+        let currentAudioSrc = '';
+        let currentYtId = '';
+
+        function stopAudioPlayback() {
+            clearTimeout(snippetTimer);
+            if (previewAudioEl) previewAudioEl.pause();
+            if (ytSnippetPlayer && ytSnippetPlayer.pauseVideo) ytSnippetPlayer.pauseVideo();
+            isAudioPlaying = false;
+            const playBtn = document.getElementById('play-snippet-btn');
+            const playIcon = document.getElementById('snippet-play-icon');
+            if (playBtn) playBtn.classList.remove('playing');
+            if (playIcon) playIcon.className = 'fas fa-play';
+        }
+
+        function toggleAudioPlayback() {
+            const playBtn = document.getElementById('play-snippet-btn');
+            const playIcon = document.getElementById('snippet-play-icon');
+
+            if (isAudioPlaying) {
+                // Pause
+                stopAudioPlayback();
+            } else {
+                // Play & Start 30s Snippet Timer
+                clearTimeout(snippetTimer);
+                snippetTimer = setTimeout(() => {
+                    stopAudioPlayback();
+                    showToast("30s PREVIEW COMPLETED", "fas fa-clock");
+                }, 30000);
+
+                if (currentAudioSrc && currentAudioSrc.startsWith('http') && (currentAudioSrc.includes('.mp3') || currentAudioSrc.includes('audio') || !currentAudioSrc.includes('youtube.com'))) {
+                    previewAudioEl.src = currentAudioSrc;
+                    previewAudioEl.play().then(() => {
+                        isAudioPlaying = true;
+                        if (playBtn) playBtn.classList.add('playing');
+                        if (playIcon) playIcon.className = 'fas fa-pause';
+                    }).catch(e => {
+                        clearTimeout(snippetTimer);
+                        console.log(e);
+                    });
+                } else if (currentYtId) {
+                    if (ytSnippetPlayer && ytSnippetPlayer.playVideo) {
+                        ytSnippetPlayer.seekTo(0, true);
+                        ytSnippetPlayer.playVideo();
+                        isAudioPlaying = true;
+                        if (playBtn) playBtn.classList.add('playing');
+                        if (playIcon) playIcon.className = 'fas fa-pause';
+                    }
+                } else {
+                    clearTimeout(snippetTimer);
+                    showToast("No Audio Preview Configured", "fas fa-info-circle");
+                }
+            }
+        }
+
+        if (previewAudioEl) {
+            previewAudioEl.addEventListener('ended', () => {
+                stopAudioPlayback();
+            });
+        }
+
+        // YouTube iFrame Setup for Preview
+        window.onYouTubeIframeAPIReady = function () {
+            if (currentYtId) initYtSnippet(currentYtId);
+        };
+
+        function initYtSnippet(vidId) {
+            if (!vidId) return;
+            try {
+                ytSnippetPlayer = new YT.Player('yt-player-slot', {
+                    height: '1',
+                    width: '1',
+                    videoId: vidId,
+                    playerVars: { autoplay: 0, controls: 0, disablekb: 1, fs: 0, rel: 0 },
+                    events: {
+                        'onStateChange': function (event) {
+                            if (event.data === YT.PlayerState.ENDED) {
+                                isAudioPlaying = false;
+                                const playBtn = document.getElementById('play-snippet-btn');
+                                const playIcon = document.getElementById('snippet-play-icon');
+                                if (playBtn) playBtn.classList.remove('playing');
+                                if (playIcon) playIcon.className = 'fas fa-play';
+                            }
+                        }
+                    }
+                });
+            } catch (e) { }
+        }
+
+        // --- 6. RENDER SMART LINK DATA ---
+        function renderSmartLink(data) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('content-state').style.display = 'block';
+
+            const title = data.title || data.name || "OBSCURA RELEASE";
+            const artist = data.artist || data.producers || "OBSCURA RECORD";
+            const cover = data.image || data.artwork || data.cover || "../assets/OCR.png";
+            const audioSrc = data.audioPreview || data.previewAudio || data.mp3 || "";
+            const ytUrl = data.youtube || data.youtubeUrl || "";
+
+            // Format PROD By prefix with exact user-typed casing
+            let cleanArtist = (artist || '').trim();
+            let displayArtist = '';
+            if (cleanArtist) {
+                if (/^prod(?:uced)?\.?\s*(?:by)?\s*/i.test(cleanArtist)) {
+                    displayArtist = cleanArtist.replace(/^prod(?:uced)?\.?\s*(?:by)?\s*/i, 'PROD By ');
+                } else {
+                    displayArtist = `PROD By ${cleanArtist}`;
+                }
+            } else {
+                displayArtist = "OBSCURA RECORDS LLC";
+            }
+
+            // Set Page Titles & Metadata dynamically
+            document.title = `${title} - ${displayArtist} | OBSCURA RECORDS LLC`;
+            document.getElementById('track-title').textContent = title;
+            document.getElementById('track-artist').textContent = displayArtist;
+
+            // Dynamically update Open Graph & Twitter Social preview tags
+            const ogImg = document.getElementById('og-image');
+            if (ogImg) ogImg.setAttribute('content', cover);
+            const ogTitle = document.getElementById('og-title');
+            if (ogTitle) ogTitle.setAttribute('content', `${title} - ${displayArtist} | OBSCURA RECORDS LLC`);
+            const twImg = document.getElementById('twitter-image');
+            if (twImg) twImg.setAttribute('content', cover);
+            const twTitle = document.getElementById('twitter-title');
+            if (twTitle) twTitle.setAttribute('content', `${title} - ${displayArtist} | OBSCURA RECORDS LLC`);
+
+            // Set Cover & Ambient Background
+            document.getElementById('track-cover').src = cover;
+            document.getElementById('ambient-bg').style.backgroundImage = `url('${cover}')`;
+
+            // Helper for RGB extraction
+            function parseRgbStr(hex) {
+                let c = (hex || '#00f0ff').replace('#', '');
+                if (c.length === 3) c = c.split('').map(x => x + x).join('');
+                const num = parseInt(c, 16);
+                return `${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}`;
+            }
+
+            // Apply 100% UI Customizations if present
+            const ui = data.ui || {};
+            const accent = ui.accent || '#00f0ff';
+            const rgb = parseRgbStr(accent);
+            const glow = (ui.borderGlow !== undefined) ? parseFloat(ui.borderGlow) : 0.35;
+            const dark = (ui.darkness !== undefined) ? parseFloat(ui.darkness) : 0.12;
+            const btnStyle = ui.buttonStyle || 'clean-light';
+
+            document.documentElement.style.setProperty('--accent-cyan', accent);
+            if (ui.cardBg) {
+                document.documentElement.style.setProperty('--card-bg', ui.cardBg);
+            }
+
+            // Ambient Backdrop Darkness & Filter
+            const ambientEl = document.getElementById('ambient-bg');
+            if (ambientEl) {
+                ambientEl.style.filter = `blur(65px) brightness(${dark}) saturate(1.2)`;
+            }
+
+            // Card Intense Reactive Border & Glow Shadow
+            const cardEl = document.getElementById('smart-link-card');
+            if (cardEl) {
+                cardEl.style.borderColor = `rgba(${rgb}, ${Math.max(0.18, glow)})`;
+                cardEl.style.boxShadow = `0 25px 60px rgba(0, 0, 0, 0.9), 0 0 ${Math.round(glow * 55)}px rgba(${rgb}, ${glow * 0.85}), inset 0 0 ${Math.round(glow * 18)}px rgba(${rgb}, ${glow * 0.25})`;
+            }
+
+            // Side QR Dock Reactive Style
+            const sideQr = document.getElementById('side-qr-dock');
+            if (sideQr) {
+                if (ui.showQrDock === false) {
+                    sideQr.style.setProperty('display', 'none', 'important');
+                } else {
+                    sideQr.style.borderColor = accent;
+                    sideQr.style.boxShadow = `0 10px 30px rgba(0,0,0,0.8), 0 0 ${Math.round(glow * 35)}px rgba(${rgb}, ${glow * 0.6})`;
+                }
+            }
+
+            // Grid Overlay Toggle
+            if (ui.showGrid === false) {
+                const gridEl = document.querySelector('.cyber-grid-overlay');
+                if (gridEl) gridEl.style.display = 'none';
+            }
+
+            // Play Trigger Button Glow
+            const playTrigger = document.getElementById('play-snippet-btn');
+            if (playTrigger) {
+                playTrigger.style.background = accent;
+                playTrigger.style.boxShadow = `0 0 ${20 + Math.round(glow * 25)}px ${accent}, 0 8px 25px rgba(0,0,0,0.5)`;
+            }
+
+            // Prepare Audio
+            currentAudioSrc = audioSrc;
+            if (ytUrl) {
+                const match = ytUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+                if (match && match[1]) {
+                    currentYtId = match[1];
+                    if (window.YT && window.YT.Player) initYtSnippet(currentYtId);
+                }
+            }
+
+            // Build Platform Links List with Selected Button Style
+            const platformListEl = document.getElementById('platform-list');
+            platformListEl.innerHTML = '';
+            platformListEl.className = `platform-list style-${btnStyle}`;
+
+            const links = data.links || data;
+            const availablePlatforms = [
+                'spotify', 'apple', 'itunes', 'deezer', 'amazon',
+                'youtube', 'youtubemusic', 'tidal', 'pandora',
+                'boomplay', 'soundcloud', 'beatport', 'tiktok'
+            ];
+
+            let renderedCount = 0;
+            availablePlatforms.forEach(key => {
+                const url = links[key] || links[`${key}Url`] || (data[key] && typeof data[key] === 'string' ? data[key] : null);
+                if (url && url !== '#' && url.trim().length > 3) {
+                    const cfg = PLATFORM_CONFIG[key] || {
+                        name: key.toUpperCase(),
+                        action: "Play",
+                        logoColor: "#111",
+                        iconClass: "fas fa-play"
+                    };
+
+                    const row = document.createElement('a');
+                    row.href = url;
+                    row.target = '_blank';
+                    row.rel = 'noopener noreferrer';
+                    row.className = 'platform-row';
+                    row.innerHTML = `
+                        <div class="platform-brand">
+                            <i class="${cfg.iconClass}" style="font-size: 1.45rem; color: ${cfg.logoColor}; min-width: 24px; text-align: center;"></i>
+                            <span class="platform-name">${cfg.name}</span>
+                        </div>
+                        <span class="platform-action-btn">${cfg.action}</span>
+                    `;
+                    platformListEl.appendChild(row);
+                    renderedCount++;
+                }
+            });
+
+            // If no individual links were provided, provide default Spotify and YouTube search/portal links
+            if (renderedCount === 0) {
+                const fallbackPlatforms = [
+                    { name: "Spotify", url: "https://open.spotify.com/", icon: "fab fa-spotify", color: "#1DB954", action: "Play" },
+                    { name: "Apple Music", url: "https://music.apple.com/", icon: "fab fa-apple", color: "#FA233B", action: "Play" },
+                    { name: "YouTube", url: "https://youtube.com/", icon: "fab fa-youtube", color: "#FF0000", action: "Watch" },
+                    { name: "SoundCloud", url: "https://soundcloud.com/", icon: "fab fa-soundcloud", color: "#FF5500", action: "Stream" }
+                ];
+                fallbackPlatforms.forEach(p => {
+                    const row = document.createElement('a');
+                    row.href = p.url;
+                    row.target = '_blank';
+                    row.className = 'platform-row';
+                    row.innerHTML = `
+                        <div class="platform-brand">
+                            <i class="${p.icon}" style="font-size: 1.4rem; color: ${p.color};"></i>
+                            <span class="platform-name">${p.name}</span>
+                        </div>
+                        <span class="platform-action-btn">${p.action}</span>
+                    `;
+                    platformListEl.appendChild(row);
+                });
+            }
+
+            // Render Cyber Neon QR Code for Side Dock
+            const currentReleaseUrl = window.location.href;
+            const liveQrApi = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(currentReleaseUrl)}&color=0-240-255&bgcolor=7-9-18`;
+            const qrImg = document.getElementById('side-qr-img');
+            if (qrImg) qrImg.src = liveQrApi;
+
+            // Play Button Event Listener
+            const playBtn = document.getElementById('play-snippet-btn');
+            if (playBtn) {
+                playBtn.addEventListener('click', toggleAudioPlayback);
+            }
+
+            // Share Button Event Listener
+            const shareBtn = document.getElementById('share-btn');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', () => {
+                    const shareUrl = window.location.href;
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(shareUrl).then(() => {
+                            showToast("LINK COPIED TO CLIPBOARD!");
+                        }).catch(() => {
+                            showToast("TRANSMISSION LINK READY");
+                        });
+                    } else {
+                        showToast("LINK COPIED!");
+                    }
+                });
+            }
+        }
+
+        // --- 7. MODAL CONTROLS & PRIVACY CONSENT ---
+        window.openPrivacyModal = function () {
+            closeModals();
+            const modal = document.getElementById('privacy-modal');
+            if (modal) modal.style.display = 'flex';
+        };
+
+        window.openTermsModal = function () {
+            closeModals();
+            const modal = document.getElementById('terms-modal');
+            if (modal) modal.style.display = 'flex';
+        };
+
+        window.closeModals = function () {
+            document.querySelectorAll('.cyber-modal-overlay').forEach(el => el.style.display = 'none');
+        };
+
+        window.acceptConsent = function () {
+            try {
+                localStorage.setItem('obscura_privacy_consent', 'true');
+            } catch (e) { }
+            const bar = document.getElementById('privacy-consent-bar');
+            if (bar) bar.style.display = 'none';
+            showToast("PREFERENCES RECORDED", "fas fa-shield-alt");
+        };
+
+        // Initialize Consent Banner if not accepted
+        try {
+            if (!localStorage.getItem('obscura_privacy_consent')) {
+                setTimeout(() => {
+                    const bar = document.getElementById('privacy-consent-bar');
+                    if (bar) bar.style.display = 'flex';
+                }, 1400);
+            }
+        } catch (e) { }
+
+        // --- 7. NOT FOUND / TERMINATED TRANSMISSION VIEW ---
+        function renderNotFound(slug = '') {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('content-state').style.display = 'block';
+
+            document.title = '404 // TRANSMISSION TERMINATED | OBSCURA RECORDS LLC';
+            document.getElementById('ambient-bg').style.backgroundImage = "url('../assets/OCR.png')";
+
+            const card = document.getElementById('smart-link-card');
+            if (card) {
+                card.innerHTML = `
+                    <div style="padding: 3.2rem 1.8rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                        <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(255, 0, 85, 0.12); border: 1.5px solid #ff0055; display: flex; align-items: center; justify-content: center; color: #ff0055; font-size: 1.8rem; box-shadow: 0 0 30px rgba(255, 0, 85, 0.35); margin-bottom: 0.5rem;">
+                            <i class="fas fa-satellite-dish"></i>
+                        </div>
+
+                        <div class="label-name" style="font-size: 0.75rem; letter-spacing: 0.2rem; color: rgba(255, 255, 255, 0.5);">
+                            OBSCURA <span style="color: #00f0ff;">RECORDS LLC</span>
+                        </div>
+
+                        <h1 style="font-family: var(--font-heading); font-size: 1.35rem; font-weight: 900; color: #fff; letter-spacing: 0.06rem; text-transform: uppercase;">
+                            TRANSMISSION TERMINATED
+                        </h1>
+
+                        <p style="font-size: 0.82rem; color: rgba(255, 255, 255, 0.65); line-height: 1.6; max-width: 320px; margin-bottom: 1.2rem;">
+                            We are sorry, this release link has been archived, deleted, or is no longer broadcasting on this frequency.
+                        </p>
+
+                        <a href="../" class="share-hub-btn" style="text-decoration: none; padding: 0.75rem 1.8rem; font-size: 0.82rem; background: rgba(0, 240, 255, 0.15); border-color: var(--accent-cyan); color: #fff; display: inline-flex; box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);">
+                            <i class="fas fa-globe"></i> RETURN TO OBSCURA PORTAL
+                        </a>
+
+                        <div style="margin-top: 2rem; font-size: 0.65rem; color: rgba(255, 255, 255, 0.35); letter-spacing: 0.05rem;">
+                            &copy; 2026 <a href="../" style="color: var(--accent-cyan); text-decoration: none;">OBSCURA RECORDS LLC</a>. ALL RIGHTS RESERVED.
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // --- 8. FETCH RELEASE DATA (CUSTOM SMART LINKS & MAIN SITE RELEASES) ---
+        const rawReleaseId = getReleaseId();
+
+        if (!rawReleaseId) {
+            renderNotFound();
+        } else {
+            resolveSmartLink(rawReleaseId);
+        }
+
+        async function resolveSmartLink(rawId) {
+            const clean = (text) => (text || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            const targetSlug = clean(rawId);
+            const rawClean = (rawId || '').toLowerCase().trim();
+
+            // 1. Instant Direct REST Fetch (0-50ms, zero-dependency, no WebSocket blocking)
+            try {
+                const res = await fetch("https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks.json");
+                const allLinks = await res.json();
+                if (allLinks && typeof allLinks === 'object') {
+                    // Exact key match
+                    if (allLinks[rawId]) return renderSmartLink(allLinks[rawId]);
+                    if (allLinks[targetSlug]) return renderSmartLink(allLinks[targetSlug]);
+                    if (allLinks[`-${targetSlug}`]) return renderSmartLink(allLinks[`-${targetSlug}`]);
+
+                    // Case-insensitive key match
+                    let foundKey = Object.keys(allLinks).find(k => k.toLowerCase() === rawClean || clean(k) === targetSlug);
+                    // Title or slug match
+                    if (!foundKey) {
+                        foundKey = Object.keys(allLinks).find(k => {
+                            const item = allLinks[k];
+                            return item && (clean(item.title) === targetSlug || (item.slug && clean(item.slug) === targetSlug));
+                        });
+                    }
+                    if (foundKey && allLinks[foundKey]) {
+                        return renderSmartLink(allLinks[foundKey]);
+                    }
+                }
+            } catch (e) {
+                console.warn("SmartLinks REST direct error:", e);
+            }
+
+            // 2. Query main database catalog via direct REST
+            try {
+                const mainRes = await fetch("https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app/siteData.json");
+                const mainData = await mainRes.json();
+                if (mainData && typeof mainData === 'object') {
+                    const releases = mainData.releases || [];
+                    const matched = findReleaseMatch(releases, targetSlug, rawId);
+                    if (matched) return renderMainReleaseSmartLink(matched);
+
+                    const popular = mainData.popular_releases || mainData.popular || [];
+                    const popMatched = findReleaseMatch(popular, targetSlug, rawId);
+                    if (popMatched) return renderMainReleaseSmartLink(popMatched);
+                }
+            } catch (e) {
+                console.warn("Main DB REST direct error:", e);
+            }
+
+            // 3. Fallback to Firebase SDK realtime listeners with a 2-second timeout
+            let resolved = false;
+            try {
+                const snap = await Promise.race([
+                    db.ref(`smartLinks/${rawId}`).once('value'),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+                ]);
+                const val = snap.val();
+                if (val && typeof val === 'object') {
+                    resolved = true;
+                    return renderSmartLink(val);
+                }
+            } catch (e) {}
+
+            if (!resolved) {
+                renderNotFound(rawReleaseId);
+            }
+        }
+
+        function findReleaseMatch(list, targetSlug, rawId) {
+            if (!list) return null;
+            if (!Array.isArray(list)) {
+                if (typeof list === 'object' && list !== null) {
+                    list = Object.values(list);
+                } else {
+                    return null;
+                }
+            }
+            const cleanSlug = (text) => (text || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            const lowerRaw = (rawId || '').toLowerCase().trim();
+
+            for (const r of list) {
+                if (!r) continue;
+                const rTitle = r.title || '';
+                const rSlug = cleanSlug(rTitle);
+                const rCatalog = (r.catalog || r.id || '').toLowerCase().trim();
+
+                if (rSlug === targetSlug || rCatalog === lowerRaw || rSlug.includes(targetSlug) || targetSlug.includes(rSlug)) {
+                    return r;
+                }
+            }
+            return null;
+        }
+
+        function renderMainReleaseSmartLink(rel) {
+            const data = {
+                title: rel.title || "OBSCURA RELEASE",
+                artist: rel.artist || rel.producers || "OBSCURA RECORD",
+                image: rel.cover || rel.image || "/assets/OCR.png",
+                audioPreview: rel.streamUrl || rel.preview || rel.youtubePreview || rel.mp3 || "",
+                youtube: rel.youtubeUrl || rel.youtube || rel.youtubeAlbum || "",
+                links: {
+                    spotify: rel.spotifyUrl || rel.spotify || "",
+                    apple: rel.appleUrl || rel.apple || "",
+                    youtube: rel.youtubeUrl || rel.youtube || rel.youtubeAlbum || "",
+                    soundcloud: rel.soundcloudUrl || rel.soundcloud || "",
+                    dlUrl: rel.dlUrl || ""
+                },
+                ui: {
+                    accent: "#00f0ff",
+                    borderGlow: 0.45,
+                    darkness: 0.12,
+                    buttonStyle: "clean-light",
+                    showQrDock: true,
+                    showGrid: true
+                }
+            };
+            renderSmartLink(data);
+        }
+    </script>
+</body>
+
+</html>
