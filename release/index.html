@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title id="page-title">OBSCURA RECORDS LLC | Release Smart Link</title>
-    <link rel="icon" type="image/png" href="../assets/OCR.png?v=61.0">
-    <link rel="apple-touch-icon" href="../assets/OCR_solid.png?v=61.0">
+    <link rel="icon" type="image/png" href="/assets/OCR.png?v=61.0">
+    <link rel="apple-touch-icon" href="/assets/OCR_solid.png?v=61.0">
 
     <!-- Meta tags for social sharing preview -->
     <meta name="description" id="meta-desc" content="Official Music Release on Obscura Records LLC">
@@ -1561,7 +1561,7 @@
             }
         }
 
-        // --- 8. FETCH RELEASE DATA FROM FIREBASE (CUSTOM SMART LINKS & MAIN SITE RELEASES) ---
+        // --- 8. FETCH RELEASE DATA (CUSTOM SMART LINKS & MAIN SITE RELEASES) ---
         const rawReleaseId = getReleaseId();
 
         if (!rawReleaseId) {
@@ -1575,36 +1575,19 @@
             const targetSlug = clean(rawId);
             const rawClean = (rawId || '').toLowerCase().trim();
 
-            // 1. Direct RTDB fetch
+            // 1. Instant Direct REST Fetch (0-50ms, zero-dependency, no WebSocket blocking)
             try {
-                const snap = await db.ref(`smartLinks/${rawId}`).once('value');
-                const val = snap.val();
-                if (val && typeof val === 'object') {
-                    return renderSmartLink(val);
-                }
-            } catch (e) {}
-
-            // 2. Direct REST fetch
-            try {
-                const res = await fetch(`https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks/${encodeURIComponent(rawId)}.json`);
-                const data = await res.json();
-                if (data && typeof data === 'object') {
-                    return renderSmartLink(data);
-                }
-            } catch (e) {}
-
-            // 3. Fallback: Search all smartLinks for fuzzy/normalized slug matches
-            try {
-                const allRes = await fetch("https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks.json");
-                const allLinks = await allRes.json();
+                const res = await fetch("https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks.json");
+                const allLinks = await res.json();
                 if (allLinks && typeof allLinks === 'object') {
-                    // Exact key match (case insensitive)
-                    let foundKey = Object.keys(allLinks).find(k => k.toLowerCase() === rawClean);
-                    // Normalized slug match
-                    if (!foundKey) {
-                        foundKey = Object.keys(allLinks).find(k => clean(k) === targetSlug);
-                    }
-                    // Title match
+                    // Exact key match
+                    if (allLinks[rawId]) return renderSmartLink(allLinks[rawId]);
+                    if (allLinks[targetSlug]) return renderSmartLink(allLinks[targetSlug]);
+                    if (allLinks[`-${targetSlug}`]) return renderSmartLink(allLinks[`-${targetSlug}`]);
+
+                    // Case-insensitive key match
+                    let foundKey = Object.keys(allLinks).find(k => k.toLowerCase() === rawClean || clean(k) === targetSlug);
+                    // Title or slug match
                     if (!foundKey) {
                         foundKey = Object.keys(allLinks).find(k => {
                             const item = allLinks[k];
@@ -1615,35 +1598,44 @@
                         return renderSmartLink(allLinks[foundKey]);
                     }
                 }
+            } catch (e) {
+                console.warn("SmartLinks REST direct error:", e);
+            }
+
+            // 2. Query main database catalog via direct REST
+            try {
+                const mainRes = await fetch("https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app/siteData.json");
+                const mainData = await mainRes.json();
+                if (mainData && typeof mainData === 'object') {
+                    const releases = mainData.releases || [];
+                    const matched = findReleaseMatch(releases, targetSlug, rawId);
+                    if (matched) return renderMainReleaseSmartLink(matched);
+
+                    const popular = mainData.popular_releases || mainData.popular || [];
+                    const popMatched = findReleaseMatch(popular, targetSlug, rawId);
+                    if (popMatched) return renderMainReleaseSmartLink(popMatched);
+                }
+            } catch (e) {
+                console.warn("Main DB REST direct error:", e);
+            }
+
+            // 3. Fallback to Firebase SDK realtime listeners with a 2-second timeout
+            let resolved = false;
+            try {
+                const snap = await Promise.race([
+                    db.ref(`smartLinks/${rawId}`).once('value'),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+                ]);
+                const val = snap.val();
+                if (val && typeof val === 'object') {
+                    resolved = true;
+                    return renderSmartLink(val);
+                }
             } catch (e) {}
 
-            // 4. Query main site releases & popular catalog from main database
-            fetchMainSiteRelease(targetSlug, rawId);
-        }
-
-        function fetchMainSiteRelease(targetSlug, rawReleaseId) {
-            mainDb.ref('siteData/releases').once('value').then(snap => {
-                const releases = snap.val() || [];
-                let matched = findReleaseMatch(releases, targetSlug, rawReleaseId);
-
-                if (matched) {
-                    renderMainReleaseSmartLink(matched);
-                } else {
-                    // Try searching popular releases catalog
-                    mainDb.ref('siteData/popular').once('value').then(popSnap => {
-                        const popularList = popSnap.val() || [];
-                        let popMatched = findReleaseMatch(popularList, targetSlug, rawReleaseId);
-                        if (popMatched) {
-                            renderMainReleaseSmartLink(popMatched);
-                        } else {
-                            renderNotFound(rawReleaseId);
-                        }
-                    }).catch(() => renderNotFound(rawReleaseId));
-                }
-            }).catch(err => {
-                console.error("Main DB fetch error:", err);
+            if (!resolved) {
                 renderNotFound(rawReleaseId);
-            });
+            }
         }
 
         function findReleaseMatch(list, targetSlug, rawId) {
@@ -1675,7 +1667,7 @@
             const data = {
                 title: rel.title || "OBSCURA RELEASE",
                 artist: rel.artist || rel.producers || "OBSCURA RECORD",
-                image: rel.cover || rel.image || "../assets/OCR.png",
+                image: rel.cover || rel.image || "/assets/OCR.png",
                 audioPreview: rel.streamUrl || rel.preview || rel.youtubePreview || rel.mp3 || "",
                 youtube: rel.youtubeUrl || rel.youtube || rel.youtubeAlbum || "",
                 links: {
