@@ -757,9 +757,11 @@
     <div class="cyber-grid"></div>
     <div class="scanlines"></div>
 
-    <!-- Hidden audio engines -->
+    <!-- Hidden audio engines with proper render dimensions for YouTube API -->
     <audio id="snippet-audio" preload="auto" crossOrigin="anonymous"></audio>
-    <div id="yt-player-slot" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"></div>
+    <div id="yt-player-wrap" style="position: fixed; bottom: -9999px; left: -9999px; width: 320px; height: 240px; pointer-events: none; z-index: -1;">
+        <div id="yt-player-slot"></div>
+    </div>
 
     <!-- Top Navigation Telemetry Bar -->
     <header class="deck-top-bar">
@@ -964,6 +966,15 @@
             setTimeout(() => toast.classList.remove('show'), 2800);
         }
 
+        // YouTube ID Extractor
+        function extractYouTubeId(url) {
+            if (!url || typeof url !== 'string') return '';
+            url = url.trim();
+            if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url;
+            const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))([a-zA-Z0-9_-]{11})/);
+            return match ? match[1] : '';
+        }
+
         // Slug Helper
         function getCleanSlug(text) {
             return (text || 'track').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -986,6 +997,7 @@
         let isPlaying = false;
         let audioEl = document.getElementById('snippet-audio');
         let ytPlayer = null;
+        let isYtReady = false;
         let currentAudioSrc = '';
         let currentYtId = '';
         let snippetTimeout = null;
@@ -993,8 +1005,13 @@
 
         function stopPlayback() {
             clearTimeout(snippetTimeout);
-            if (audioEl) audioEl.pause();
-            if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
+            if (audioEl) {
+                audioEl.pause();
+                audioEl.currentTime = 0;
+            }
+            if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
+                try { ytPlayer.pauseVideo(); } catch (e) {}
+            }
             isPlaying = false;
             document.getElementById('vinyl-disc').classList.remove('playing');
             document.getElementById('deck-play-icon').className = 'fas fa-play';
@@ -1004,26 +1021,32 @@
         function togglePlayback() {
             if (isPlaying) {
                 stopPlayback();
-            } else {
-                clearTimeout(snippetTimeout);
-                snippetTimeout = setTimeout(() => {
-                    stopPlayback();
-                    showToast("30s PREVIEW COMPLETED", "fas fa-clock");
-                }, 30000);
+                return;
+            }
 
-                if (currentAudioSrc && currentAudioSrc.startsWith('http') && !currentAudioSrc.includes('youtube.com')) {
-                    audioEl.src = currentAudioSrc;
-                    audioEl.playbackRate = currentPlaybackRate;
-                    audioEl.play().then(() => {
-                        isPlaying = true;
-                        document.getElementById('vinyl-disc').classList.add('playing');
-                        document.getElementById('deck-play-icon').className = 'fas fa-pause';
-                        document.querySelectorAll('.deck-bar').forEach(b => b.classList.add('active'));
-                    }).catch(() => {
-                        clearTimeout(snippetTimeout);
-                    });
-                } else if (currentYtId) {
-                    if (ytPlayer && ytPlayer.playVideo) {
+            // Start 30s Snippet Timer
+            clearTimeout(snippetTimeout);
+            snippetTimeout = setTimeout(() => {
+                stopPlayback();
+                showToast("30s PREVIEW COMPLETED", "fas fa-clock");
+            }, 30000);
+
+            if (currentAudioSrc) {
+                audioEl.src = currentAudioSrc;
+                audioEl.currentTime = 0;
+                audioEl.playbackRate = currentPlaybackRate;
+                audioEl.play().then(() => {
+                    isPlaying = true;
+                    document.getElementById('vinyl-disc').classList.add('playing');
+                    document.getElementById('deck-play-icon').className = 'fas fa-pause';
+                    document.querySelectorAll('.deck-bar').forEach(b => b.classList.add('active'));
+                }).catch((err) => {
+                    clearTimeout(snippetTimeout);
+                    showToast("PLAYBACK ERROR", "fas fa-exclamation-triangle");
+                });
+            } else if (currentYtId) {
+                if (ytPlayer && typeof ytPlayer.playVideo === 'function' && isYtReady) {
+                    try {
                         ytPlayer.seekTo(0, true);
                         ytPlayer.setPlaybackRate(currentPlaybackRate);
                         ytPlayer.playVideo();
@@ -1031,11 +1054,27 @@
                         document.getElementById('vinyl-disc').classList.add('playing');
                         document.getElementById('deck-play-icon').className = 'fas fa-pause';
                         document.querySelectorAll('.deck-bar').forEach(b => b.classList.add('active'));
+                    } catch (e) {
+                        showToast("BUFFERING AUDIO...", "fas fa-spinner");
                     }
                 } else {
-                    clearTimeout(snippetTimeout);
-                    showToast("NO AUDIO PREVIEW FOUND", "fas fa-info-circle");
+                    showToast("INITIALIZING AUDIO...", "fas fa-satellite");
+                    initYT(currentYtId);
+                    setTimeout(() => {
+                        if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+                            ytPlayer.seekTo(0, true);
+                            ytPlayer.setPlaybackRate(currentPlaybackRate);
+                            ytPlayer.playVideo();
+                            isPlaying = true;
+                            document.getElementById('vinyl-disc').classList.add('playing');
+                            document.getElementById('deck-play-icon').className = 'fas fa-pause';
+                            document.querySelectorAll('.deck-bar').forEach(b => b.classList.add('active'));
+                        }
+                    }, 1200);
                 }
+            } else {
+                clearTimeout(snippetTimeout);
+                showToast("NO AUDIO PREVIEW FOUND", "fas fa-info-circle");
             }
         }
 
@@ -1049,19 +1088,46 @@
 
         function initYT(vidId) {
             if (!vidId) return;
+            if (ytPlayer && typeof ytPlayer.cueVideoById === 'function') {
+                try {
+                    ytPlayer.cueVideoById(vidId);
+                    isYtReady = true;
+                    return;
+                } catch (e) {}
+            }
             try {
                 ytPlayer = new YT.Player('yt-player-slot', {
-                    height: '1',
-                    width: '1',
+                    height: '240',
+                    width: '320',
                     videoId: vidId,
-                    playerVars: { autoplay: 0, controls: 0, disablekb: 1, fs: 0, rel: 0 },
+                    playerVars: { 
+                        autoplay: 0, 
+                        controls: 0, 
+                        disablekb: 1, 
+                        fs: 0, 
+                        rel: 0, 
+                        playsinline: 1,
+                        origin: window.location.origin 
+                    },
                     events: {
+                        'onReady': (e) => {
+                            isYtReady = true;
+                        },
                         'onStateChange': (e) => {
-                            if (e.data === YT.PlayerState.ENDED) stopPlayback();
+                            if (e.data === YT.PlayerState.PLAYING) {
+                                isPlaying = true;
+                                document.getElementById('vinyl-disc').classList.add('playing');
+                                document.getElementById('deck-play-icon').className = 'fas fa-pause';
+                                document.querySelectorAll('.deck-bar').forEach(b => b.classList.add('active'));
+                            } else if (e.data === YT.PlayerState.ENDED) {
+                                stopPlayback();
+                            }
                         }
                     }
                 });
-            } catch (e) {}
+            } catch (e) {
+                console.error("YT init error:", e);
+            }
         }
 
         // Render Track Details onto Deck
@@ -1070,8 +1136,6 @@
             const artist = trackData.artist || trackData.producers || "OBSCURA RECORD";
             const cover = trackData.cover || trackData.image || "../assets/OCR.png";
             const type = trackData.type || "SINGLE // LOSSLESS";
-            const audio = trackData.streamUrl || trackData.preview || trackData.audioPreview || trackData.mp3 || "";
-            const yt = trackData.youtubeUrl || trackData.youtube || "";
 
             document.title = `${title} // QUANTUM DECK | OBSCURA RECORD`;
             document.getElementById('track-title').textContent = title;
@@ -1080,14 +1144,23 @@
             document.getElementById('track-cover').src = cover;
             document.getElementById('ambient-bg').style.backgroundImage = `url('${cover}')`;
 
-            // Prepare Audio
-            currentAudioSrc = audio;
-            if (yt) {
-                const match = yt.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
-                if (match && match[1]) {
-                    currentYtId = match[1];
-                    if (window.YT && window.YT.Player) initYT(currentYtId);
-                }
+            // Audio & YouTube Resolution
+            const candidateStream = (trackData.streamUrl || trackData.preview || trackData.youtubePreview || trackData.mp3 || "").trim();
+            const candidateYt = (trackData.youtubeUrl || trackData.youtube || trackData.youtubeAlbum || "").trim();
+
+            const ytFromStream = extractYouTubeId(candidateStream);
+            const ytFromUrl = extractYouTubeId(candidateYt);
+
+            currentYtId = ytFromStream || ytFromUrl || '';
+
+            if (!currentYtId && candidateStream && (candidateStream.startsWith('http') || candidateStream.startsWith('/') || candidateStream.startsWith('data:'))) {
+                currentAudioSrc = candidateStream;
+            } else {
+                currentAudioSrc = '';
+            }
+
+            if (currentYtId && window.YT && window.YT.Player) {
+                initYT(currentYtId);
             }
 
             // Platform Streaming Links
@@ -1141,12 +1214,11 @@
             } catch (e) {}
         }
 
-        // Main Fetch Engine
+        // Main Fetch Engine (Live Auto-Sync with siteData/releases)
         const targetId = getTargetId();
         const cleanSlug = getCleanSlug(targetId);
 
-        // Fetch from main site releases
-        mainDb.ref('siteData/releases').once('value').then(snap => {
+        mainDb.ref('siteData/releases').on('value', snap => {
             const list = snap.val() || [];
             let matched = findMatch(list, cleanSlug, targetId);
 
@@ -1159,7 +1231,6 @@
                     if (popMatched) {
                         renderDeck(popMatched, cleanSlug);
                     } else {
-                        // Fallback default
                         renderDeck({
                             title: targetId.replace(/-/g, ' ').toUpperCase(),
                             artist: "OBSCURA RECORD",
@@ -1169,13 +1240,6 @@
                     }
                 });
             }
-        }).catch(() => {
-            renderDeck({
-                title: targetId.replace(/-/g, ' ').toUpperCase(),
-                artist: "OBSCURA RECORD",
-                cover: "../assets/OCR.png",
-                type: "SINGLE // LOSSLESS"
-            }, cleanSlug);
         });
 
         function findMatch(list, slug, rawId) {
@@ -1204,7 +1268,9 @@
                 btn.classList.add('active');
                 currentPlaybackRate = parseFloat(btn.getAttribute('data-speed'));
                 if (audioEl) audioEl.playbackRate = currentPlaybackRate;
-                if (ytPlayer && ytPlayer.setPlaybackRate) ytPlayer.setPlaybackRate(currentPlaybackRate);
+                if (ytPlayer && typeof ytPlayer.setPlaybackRate === 'function') {
+                    try { ytPlayer.setPlaybackRate(currentPlaybackRate); } catch (e) {}
+                }
                 showToast(`MODE: ${btn.textContent} (${currentPlaybackRate}x)`, "fas fa-tachometer-alt");
             });
         });
