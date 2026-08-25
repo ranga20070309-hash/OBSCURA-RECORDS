@@ -214,7 +214,7 @@ function updateMockupPreview() {
         displayArtist = /^prod/i.test(rawArtist) ? rawArtist : `PROD By ${rawArtist}`;
     }
 
-    const cover = document.getElementById('smartlink-input-image').value.trim() || '../assets/OCR.png';
+    const cover = document.getElementById('smartlink-input-image').value.trim() || '/assets/OCR.png';
     const slug = document.getElementById('smartlink-input-slug').value.trim() || 'release-slug';
     const accent = document.getElementById('ui-accent-color').value || '#00f0ff';
     const cardBg = document.getElementById('ui-card-bg-color').value || '#07090f';
@@ -544,7 +544,7 @@ function renderDirectory(query = '') {
         const card = document.createElement('div');
         card.className = 'dir-item-card';
 
-        const cover = item.image || item.artwork || '../assets/OCR.png';
+        const cover = item.image || item.artwork || '/assets/OCR.png';
         const title = item.title || slug.toUpperCase();
         let artist = item.artist || 'OBSCURA RECORDS LLC';
         if (!/^prod/i.test(artist) && artist !== 'OBSCURA RECORDS LLC') artist = `PROD By ${artist}`;
