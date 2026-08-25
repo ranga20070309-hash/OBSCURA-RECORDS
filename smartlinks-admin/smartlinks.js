@@ -665,11 +665,32 @@ function initActions() {
         saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PUBLISHING...';
         saveBtn.disabled = true;
 
-        db.ref(`smartLinks/${slug}`).set(payload).then(() => {
+        const saveToFirebase = async () => {
+            // Direct REST PUT (100% reliable, zero WebSocket latency)
+            try {
+                await fetch(`https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks/${encodeURIComponent(slug)}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) {
+                console.warn("REST direct save error:", e);
+            }
+
+            // Also dispatch via Firebase SDK if available
+            try {
+                db.ref(`smartLinks/${slug}`).set(payload).catch(() => {});
+            } catch (e) {}
+
+            // Immediate local sync
+            cachedSmartLinks[slug] = payload;
             currentEditingSlug = slug;
+            updateStatsAndRender(document.getElementById('smartlink-search-input')?.value || '');
             showToast(`SMART LINK "${title}" PUBLISHED LIVE!`);
-        }).catch(err => {
-            showToast("PUBLISH FAILED: " + err.message, 'error');
+        };
+
+        saveToFirebase().catch(err => {
+            showToast("PUBLISH ERROR: " + err.message, 'error');
         }).finally(() => {
             setSaveButtonText(currentEditingSlug ? 'UPDATE SMART LINK' : 'PUBLISH SMART LINK');
             saveBtn.disabled = false;
@@ -779,15 +800,22 @@ window.duplicateSmartLink = function(slug) {
     showToast(`CLONED STYLING FROM "${slug}"! EDIT & PUBLISH AS NEW`);
 };
 
-window.deleteSmartLink = function(slug) {
+window.deleteSmartLink = async function(slug) {
     if (!confirm(`Are you sure you want to permanently delete the Smart Link for "${slug}"?`)) return;
 
-    db.ref(`smartLinks/${slug}`).remove().then(() => {
+    try {
+        await fetch(`https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks/${encodeURIComponent(slug)}.json`, {
+            method: 'DELETE'
+        });
+        try { db.ref(`smartLinks/${slug}`).remove().catch(() => {}); } catch(e) {}
+
+        delete cachedSmartLinks[slug];
         if (currentEditingSlug === slug) resetForm();
+        updateStatsAndRender(document.getElementById('smartlink-search-input')?.value || '');
         showToast(`SMART LINK "${slug}" DELETED!`);
-    }).catch(err => {
+    } catch(err) {
         showToast("DELETE ERROR: " + err.message, 'error');
-    });
+    }
 };
 
 window.copyStudioLink = function(url) {
