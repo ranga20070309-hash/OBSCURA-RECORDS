@@ -528,12 +528,26 @@
                 if (spBtn) spBtn.href = data.spotifyPlaylistUrl;
                 if (spHeroBtn) spHeroBtn.href = data.spotifyPlaylistUrl;
 
-                let embedUrl = data.spotifyPlaylistUrl;
-                if (embedUrl.includes('open.spotify.com/playlist/') && !embedUrl.includes('/embed/')) {
-                    embedUrl = embedUrl.replace('open.spotify.com/playlist/', 'open.spotify.com/embed/playlist/');
+                // Robust Spotify Embed ID Extractor (Strips dirty tokens like ?si=... &pt=...)
+                let cleanEmbedUrl = '';
+                const playlistMatch = data.spotifyPlaylistUrl.match(/playlist\/([a-zA-Z0-9]+)/);
+                const albumMatch = data.spotifyPlaylistUrl.match(/album\/([a-zA-Z0-9]+)/);
+                const trackMatch = data.spotifyPlaylistUrl.match(/track\/([a-zA-Z0-9]+)/);
+
+                if (playlistMatch && playlistMatch[1]) {
+                    cleanEmbedUrl = `https://open.spotify.com/embed/playlist/${playlistMatch[1]}?utm_source=generator&theme=0`;
+                } else if (albumMatch && albumMatch[1]) {
+                    cleanEmbedUrl = `https://open.spotify.com/embed/album/${albumMatch[1]}?utm_source=generator&theme=0`;
+                } else if (trackMatch && trackMatch[1]) {
+                    cleanEmbedUrl = `https://open.spotify.com/embed/track/${trackMatch[1]}?utm_source=generator&theme=0`;
+                } else if (data.spotifyPlaylistUrl.includes('/embed/')) {
+                    cleanEmbedUrl = data.spotifyPlaylistUrl;
                 }
+
                 const spIframe = document.getElementById('spotify-iframe');
-                if (spIframe && embedUrl) spIframe.src = embedUrl;
+                if (spIframe && cleanEmbedUrl) {
+                    spIframe.src = cleanEmbedUrl;
+                }
             }
             if (data.spotifyTitle) document.getElementById('txt-spotify-title').innerHTML = `<i class="fab fa-spotify"></i> ` + data.spotifyTitle;
             if (data.spotifyDesc) document.getElementById('txt-spotify-desc').innerHTML = data.spotifyDesc;
