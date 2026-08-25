@@ -12,19 +12,23 @@
     <meta name="description" id="meta-desc" content="Official Quantum Audio Transmission on Obscura Record LLC">
     <meta property="og:site_name" content="OBSCURA RECORD">
     <meta property="og:title" id="og-title" content="OBSCURA RECORD // QUANTUM TRANSMISSION">
-    <meta property="og:description" id="og-desc" content="Stream official lossless audio transmission from Obscura Record LLC">
+    <meta property="og:description" id="og-desc"
+        content="Stream official lossless audio transmission from Obscura Record LLC">
     <meta property="og:image" id="og-image" content="https://www.obscurarecord.com/assets/OCR.png">
     <meta property="og:type" content="music.song">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" id="twitter-title" content="OBSCURA RECORD // QUANTUM TRANSMISSION">
-    <meta name="twitter:description" id="twitter-desc" content="Stream official lossless audio transmission from Obscura Record LLC">
+    <meta name="twitter:description" id="twitter-desc"
+        content="Stream official lossless audio transmission from Obscura Record LLC">
     <meta name="twitter:image" id="twitter-image" content="https://www.obscurarecord.com/assets/OCR.png">
     <meta name="theme-color" content="#00f0ff">
 
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Space+Grotesk:wght@500;700;800&family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Space+Grotesk:wght@500;700;800&family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Firebase SDKs -->
@@ -180,8 +184,17 @@
         }
 
         @keyframes pulseAnim {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 0.4; }
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.5);
+                opacity: 0.4;
+            }
         }
 
         /* Main Deck Hub Container */
@@ -227,8 +240,15 @@
         }
 
         @keyframes ringGlowPulse {
-            0% { transform: scale(0.95); opacity: 0.7; }
-            100% { transform: scale(1.08); opacity: 1; }
+            0% {
+                transform: scale(0.95);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: scale(1.08);
+                opacity: 1;
+            }
         }
 
         .vinyl-disc {
@@ -251,8 +271,13 @@
         }
 
         @keyframes spinVinyl {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .artwork-core {
@@ -336,8 +361,13 @@
         }
 
         @keyframes deckWavePulse {
-            0% { height: 15%; }
-            100% { height: 95%; }
+            0% {
+                height: 15%;
+            }
+
+            100% {
+                height: 95%;
+            }
         }
 
         /* Right Section: Terminal Matrix */
@@ -361,10 +391,30 @@
             border-style: solid;
             pointer-events: none;
         }
-        .corner-tl { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
-        .corner-tr { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
-        .corner-bl { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
-        .corner-br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
+
+        .corner-tl {
+            top: 8px;
+            left: 8px;
+            border-width: 2px 0 0 2px;
+        }
+
+        .corner-tr {
+            top: 8px;
+            right: 8px;
+            border-width: 2px 2px 0 0;
+        }
+
+        .corner-bl {
+            bottom: 8px;
+            left: 8px;
+            border-width: 0 0 2px 2px;
+        }
+
+        .corner-br {
+            bottom: 8px;
+            right: 8px;
+            border-width: 0 2px 2px 0;
+        }
 
         /* Track Header Intel */
         .track-meta-header {
@@ -519,32 +569,60 @@
             box-shadow: 0 0 20px rgba(29, 185, 84, 0.3);
             transform: translateY(-2px);
         }
-        .gateway-chip.spotify i { color: #1db954; }
-        .gateway-chip.spotify:hover .gateway-action { background: #1db954; color: #000; }
+
+        .gateway-chip.spotify i {
+            color: #1db954;
+        }
+
+        .gateway-chip.spotify:hover .gateway-action {
+            background: #1db954;
+            color: #000;
+        }
 
         .gateway-chip.apple:hover {
             border-color: #fa233b;
             box-shadow: 0 0 20px rgba(250, 35, 59, 0.3);
             transform: translateY(-2px);
         }
-        .gateway-chip.apple i { color: #fa233b; }
-        .gateway-chip.apple:hover .gateway-action { background: #fa233b; color: #fff; }
+
+        .gateway-chip.apple i {
+            color: #fa233b;
+        }
+
+        .gateway-chip.apple:hover .gateway-action {
+            background: #fa233b;
+            color: #fff;
+        }
 
         .gateway-chip.youtube:hover {
             border-color: #ff0000;
             box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
             transform: translateY(-2px);
         }
-        .gateway-chip.youtube i { color: #ff0000; }
-        .gateway-chip.youtube:hover .gateway-action { background: #ff0000; color: #fff; }
+
+        .gateway-chip.youtube i {
+            color: #ff0000;
+        }
+
+        .gateway-chip.youtube:hover .gateway-action {
+            background: #ff0000;
+            color: #fff;
+        }
 
         .gateway-chip.soundcloud:hover {
             border-color: #ff5500;
             box-shadow: 0 0 20px rgba(255, 85, 0, 0.3);
             transform: translateY(-2px);
         }
-        .gateway-chip.soundcloud i { color: #ff5500; }
-        .gateway-chip.soundcloud:hover .gateway-action { background: #ff5500; color: #fff; }
+
+        .gateway-chip.soundcloud i {
+            color: #ff5500;
+        }
+
+        .gateway-chip.soundcloud:hover .gateway-action {
+            background: #ff5500;
+            color: #fff;
+        }
 
         /* Bottom Beam & Telemetry Hub */
         .deck-bottom-tools {
@@ -737,173 +815,173 @@
                 max-width: 260px;
             }
 
-        /* Deck Bottom Footer */
-        .deck-footer {
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            max-width: 1120px;
-            margin-top: 1rem;
-            margin-bottom: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid rgba(0, 240, 255, 0.15);
-            text-align: center;
-        }
+            /* Deck Bottom Footer */
+            .deck-footer {
+                position: relative;
+                z-index: 10;
+                width: 100%;
+                max-width: 1120px;
+                margin-top: 1rem;
+                margin-bottom: 2rem;
+                padding-top: 1.5rem;
+                border-top: 1px solid rgba(0, 240, 255, 0.15);
+                text-align: center;
+            }
 
-        .deck-footer-inner {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.9rem;
-        }
+            .deck-footer-inner {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.9rem;
+            }
 
-        .footer-brand-domain {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-            background: rgba(0, 240, 255, 0.05);
-            border: 1px solid rgba(0, 240, 255, 0.2);
-            padding: 0.45rem 1.1rem;
-            border-radius: 50px;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-        }
+            .footer-brand-domain {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.6rem;
+                background: rgba(0, 240, 255, 0.05);
+                border: 1px solid rgba(0, 240, 255, 0.2);
+                padding: 0.45rem 1.1rem;
+                border-radius: 50px;
+                font-family: var(--font-mono);
+                font-size: 0.75rem;
+            }
 
-        .domain-badge {
-            color: var(--accent-cyan);
-            text-decoration: none;
-            font-weight: 700;
-            letter-spacing: 0.06rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            transition: all 0.2s ease;
-        }
+            .domain-badge {
+                color: var(--accent-cyan);
+                text-decoration: none;
+                font-weight: 700;
+                letter-spacing: 0.06rem;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                transition: all 0.2s ease;
+            }
 
-        .domain-badge:hover {
-            color: #fff;
-            text-shadow: 0 0 10px var(--accent-cyan);
-        }
+            .domain-badge:hover {
+                color: #fff;
+                text-shadow: 0 0 10px var(--accent-cyan);
+            }
 
-        .domain-divider {
-            color: rgba(255, 255, 255, 0.3);
-        }
+            .domain-divider {
+                color: rgba(255, 255, 255, 0.3);
+            }
 
-        .domain-tag {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.68rem;
-            letter-spacing: 0.04rem;
-        }
+            .domain-tag {
+                color: rgba(255, 255, 255, 0.6);
+                font-size: 0.68rem;
+                letter-spacing: 0.04rem;
+            }
 
-        .footer-legal-links {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.8rem;
-            flex-wrap: wrap;
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            font-weight: 600;
-            letter-spacing: 0.05rem;
-        }
+            .footer-legal-links {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.8rem;
+                flex-wrap: wrap;
+                font-family: var(--font-mono);
+                font-size: 0.72rem;
+                font-weight: 600;
+                letter-spacing: 0.05rem;
+            }
 
-        .footer-legal-links a {
-            color: rgba(255, 255, 255, 0.65);
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
+            .footer-legal-links a {
+                color: rgba(255, 255, 255, 0.65);
+                text-decoration: none;
+                transition: color 0.2s ease;
+            }
 
-        .footer-legal-links a:hover {
-            color: var(--accent-cyan);
-            text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
-        }
+            .footer-legal-links a:hover {
+                color: var(--accent-cyan);
+                text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+            }
 
-        .footer-legal-links .sep {
-            color: rgba(255, 255, 255, 0.2);
-        }
+            .footer-legal-links .sep {
+                color: rgba(255, 255, 255, 0.2);
+            }
 
-        .footer-copyright {
-            font-family: var(--font-body);
-            font-size: 0.72rem;
-            color: rgba(255, 255, 255, 0.4);
-            letter-spacing: 0.04rem;
-        }
+            .footer-copyright {
+                font-family: var(--font-body);
+                font-size: 0.72rem;
+                color: rgba(255, 255, 255, 0.4);
+                letter-spacing: 0.04rem;
+            }
 
-        .footer-copyright a {
-            color: var(--accent-cyan);
-            text-decoration: none;
-            font-weight: 700;
-        }
+            .footer-copyright a {
+                color: var(--accent-cyan);
+                text-decoration: none;
+                font-weight: 700;
+            }
 
-        /* Legal Modal */
-        .legal-modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(3, 5, 10, 0.85);
-            backdrop-filter: blur(20px);
-            z-index: 200;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            transition: all 0.3s ease;
-        }
+            /* Legal Modal */
+            .legal-modal {
+                position: fixed;
+                inset: 0;
+                background: rgba(3, 5, 10, 0.85);
+                backdrop-filter: blur(20px);
+                z-index: 200;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1.5rem;
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+                transition: all 0.3s ease;
+            }
 
-        .legal-modal.active {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
-        }
+            .legal-modal.active {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: auto;
+            }
 
-        .legal-card {
-            background: #090d18;
-            border: 1px solid var(--accent-cyan);
-            border-radius: 20px;
-            padding: 2.2rem;
-            max-width: 580px;
-            width: 100%;
-            max-height: 80vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 45px rgba(0, 240, 255, 0.3);
-            position: relative;
-        }
+            .legal-card {
+                background: #090d18;
+                border: 1px solid var(--accent-cyan);
+                border-radius: 20px;
+                padding: 2.2rem;
+                max-width: 580px;
+                width: 100%;
+                max-height: 80vh;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 0 0 45px rgba(0, 240, 255, 0.3);
+                position: relative;
+            }
 
-        .legal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 1.2rem;
-        }
+            .legal-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding-bottom: 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                margin-bottom: 1.2rem;
+            }
 
-        .legal-header h3 {
-            font-family: var(--font-display);
-            font-size: 1rem;
-            color: #fff;
-            letter-spacing: 0.06rem;
-        }
+            .legal-header h3 {
+                font-family: var(--font-display);
+                font-size: 1rem;
+                color: #fff;
+                letter-spacing: 0.06rem;
+            }
 
-        .legal-content {
-            overflow-y: auto;
-            color: rgba(255, 255, 255, 0.75);
-            font-size: 0.85rem;
-            line-height: 1.6;
-            padding-right: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
+            .legal-content {
+                overflow-y: auto;
+                color: rgba(255, 255, 255, 0.75);
+                font-size: 0.85rem;
+                line-height: 1.6;
+                padding-right: 0.5rem;
+                margin-bottom: 1.5rem;
+            }
 
-        .legal-content h4 {
-            color: var(--accent-cyan);
-            font-family: var(--font-heading);
-            margin-top: 1rem;
-            margin-bottom: 0.3rem;
-            font-size: 0.95rem;
-        }
+            .legal-content h4 {
+                color: var(--accent-cyan);
+                font-family: var(--font-heading);
+                margin-top: 1rem;
+                margin-bottom: 0.3rem;
+                font-size: 0.95rem;
+            }
     </style>
 </head>
 
@@ -916,14 +994,16 @@
 
     <!-- Hidden audio engines with proper render dimensions for YouTube API -->
     <audio id="snippet-audio" preload="auto" crossOrigin="anonymous"></audio>
-    <div id="yt-player-wrap" style="position: fixed; bottom: -9999px; left: -9999px; width: 320px; height: 240px; pointer-events: none; z-index: -1;">
+    <div id="yt-player-wrap"
+        style="position: fixed; bottom: -9999px; left: -9999px; width: 320px; height: 240px; pointer-events: none; z-index: -1;">
         <div id="yt-player-slot"></div>
     </div>
 
     <!-- Top Navigation Telemetry Bar -->
     <header class="deck-top-bar">
         <a href="../" class="brand-pill">
-            <img src="../assets/OCR.png" alt="Obscura Logo" class="brand-emblem" onerror="this.src='../assets/cover.png'">
+            <img src="../assets/OCR.png" alt="Obscura Logo" class="brand-emblem"
+                onerror="this.src='../assets/cover.png'">
             <div class="brand-text">OBSCURA <span>RECORD</span></div>
         </a>
         <div class="telemetry-tag">
@@ -1019,7 +1099,8 @@
                     <span class="gateway-action">WATCH</span>
                 </a>
 
-                <a href="#" target="_blank" rel="noopener noreferrer" class="gateway-chip soundcloud" id="chip-soundcloud">
+                <a href="#" target="_blank" rel="noopener noreferrer" class="gateway-chip soundcloud"
+                    id="chip-soundcloud">
                     <div class="gateway-brand">
                         <i class="fab fa-soundcloud"></i>
                         <span>SoundCloud</span>
@@ -1032,7 +1113,8 @@
             <div class="deck-bottom-tools">
                 <div class="beam-counter-block">
                     <span class="beam-counter-label">TOTAL TRANSMISSIONS:</span>
-                    <span class="beam-counter-val" id="beam-counter"><i class="fas fa-satellite-dish"></i> SYNCING...</span>
+                    <span class="beam-counter-val" id="beam-counter"><i class="fas fa-satellite-dish"></i>
+                        SYNCING...</span>
                 </div>
                 <div class="deck-action-buttons">
                     <button class="deck-btn" id="open-qr-btn" title="Scan to Phone">
@@ -1066,7 +1148,8 @@
             </div>
 
             <div class="footer-copyright">
-                &copy; 2026 <a href="../">OBSCURA RECORD LLC</a>. ALL RIGHTS RESERVED. RECORDED & BROADCASTED VIA QUANTUM FREQUENCY.
+                &copy; 2026 <a href="../">OBSCURA RECORD LLC</a>. ALL RIGHTS RESERVED. RECORDED & BROADCASTED VIA
+                QUANTUM FREQUENCY.
             </div>
         </div>
     </footer>
@@ -1093,15 +1176,18 @@
     <div class="legal-modal" id="legal-modal">
         <div class="legal-card">
             <div class="legal-header">
-                <h3 id="legal-title"><i class="fas fa-shield-alt" style="color: var(--accent-cyan);"></i> LEGAL DIRECTIVES</h3>
-                <button class="deck-btn" onclick="closeLegalModal()" style="padding: 0.35rem 0.7rem; font-size: 0.75rem;">
+                <h3 id="legal-title"><i class="fas fa-shield-alt" style="color: var(--accent-cyan);"></i> LEGAL
+                    DIRECTIVES</h3>
+                <button class="deck-btn" onclick="closeLegalModal()"
+                    style="padding: 0.35rem 0.7rem; font-size: 0.75rem;">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="legal-content" id="legal-body">
                 <!-- Injected dynamically -->
             </div>
-            <button class="deck-btn" onclick="closeLegalModal()" style="width: 100%; justify-content: center; margin-top: auto;">
+            <button class="deck-btn" onclick="closeLegalModal()"
+                style="width: 100%; justify-content: center; margin-top: auto;">
                 <i class="fas fa-check"></i> I UNDERSTAND & AGREE
             </button>
         </div>
@@ -1210,7 +1296,7 @@
                 audioEl.currentTime = 0;
             }
             if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
-                try { ytPlayer.pauseVideo(); } catch (e) {}
+                try { ytPlayer.pauseVideo(); } catch (e) { }
             }
             isPlaying = false;
             document.getElementById('vinyl-disc').classList.remove('playing');
@@ -1293,21 +1379,21 @@
                     ytPlayer.cueVideoById(vidId);
                     isYtReady = true;
                     return;
-                } catch (e) {}
+                } catch (e) { }
             }
             try {
                 ytPlayer = new YT.Player('yt-player-slot', {
                     height: '240',
                     width: '320',
                     videoId: vidId,
-                    playerVars: { 
-                        autoplay: 0, 
-                        controls: 0, 
-                        disablekb: 1, 
-                        fs: 0, 
-                        rel: 0, 
+                    playerVars: {
+                        autoplay: 0,
+                        controls: 0,
+                        disablekb: 1,
+                        fs: 0,
+                        rel: 0,
                         playsinline: 1,
-                        origin: window.location.origin 
+                        origin: window.location.origin
                     },
                     events: {
                         'onReady': (e) => {
@@ -1411,7 +1497,7 @@
                 transmissionDb.ref(`transmissions/${slug}/count`).transaction(c => (c || 0) + 1);
                 transmissionDb.ref(`transmissions/${slug}/last_beamed`).set(firebase.database.ServerValue.TIMESTAMP);
                 transmissionDb.ref(`transmissions/${slug}/channels/${channel}`).transaction(c => (c || 0) + 1);
-            } catch (e) {}
+            } catch (e) { }
         }
 
         // Main Fetch Engine (Live Auto-Sync with siteData/releases)
@@ -1469,7 +1555,7 @@
                 currentPlaybackRate = parseFloat(btn.getAttribute('data-speed'));
                 if (audioEl) audioEl.playbackRate = currentPlaybackRate;
                 if (ytPlayer && typeof ytPlayer.setPlaybackRate === 'function') {
-                    try { ytPlayer.setPlaybackRate(currentPlaybackRate); } catch (e) {}
+                    try { ytPlayer.setPlaybackRate(currentPlaybackRate); } catch (e) { }
                 }
                 showToast(`MODE: ${btn.textContent} (${currentPlaybackRate}x)`, "fas fa-tachometer-alt");
             });
@@ -1531,19 +1617,19 @@
                     <h4>1. COPYRIGHT INQUIRIES</h4>
                     <p>OBSCURA RECORD respects the intellectual property rights of all creators and producers. For DMCA claims, sample clearance, synchronization (Film/Game/TV) or commercial licensing requests, please contact our legal directive.</p>
                     <h4>2. DIRECT CONTACT</h4>
-                    <p>Official Legal Inquiries: <a href="mailto:sayurux@gmail.com" style="color: var(--accent-cyan);">sayurux@gmail.com</a></p>
+                    <p>Official Legal Inquiries: <a href="mailto:artists@obscurarecord.com" style="color: var(--accent-cyan);">artists@obscurarecord.com</a></p>
                 `
             }
         };
 
-        window.openLegalModal = function(type) {
+        window.openLegalModal = function (type) {
             const data = legalTexts[type] || legalTexts.privacy;
             if (legalTitle) legalTitle.innerHTML = `<i class="fas fa-shield-alt" style="color: var(--accent-cyan);"></i> ${data.title}`;
             if (legalBody) legalBody.innerHTML = data.content;
             if (legalModal) legalModal.classList.add('active');
         };
 
-        window.closeLegalModal = function() {
+        window.closeLegalModal = function () {
             if (legalModal) legalModal.classList.remove('active');
         };
 
