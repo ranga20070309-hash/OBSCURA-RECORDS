@@ -3332,25 +3332,11 @@ function initFloatingPlayer() {
         });
     }
 
-    // Share Track Link
+    // Share / Transmit Track Modal
     if (shareBtn) {
         shareBtn.addEventListener('click', () => {
-            playCyberSFX('success');
-            const title = currentTrackTitle || 'Obscura Track';
-            const slug = title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-            const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
-            const smartLinkUrl = `${baseUrl}release/?id=${slug}`;
-            const textToCopy = `Listen to "${title}" on Obscura Record: ${smartLinkUrl}`;
-
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(smartLinkUrl).then(() => {
-                    showCyberNotification('SMART LINK COPIED TO CLIPBOARD', 'fas fa-share-alt');
-                }).catch(() => {
-                    showCyberNotification('TRANSMISSION READY', 'fas fa-share-alt');
-                });
-            } else {
-                showCyberNotification('SMART LINK COPIED', 'fas fa-share-alt');
-            }
+            playCyberSFX('click');
+            openTransmissionHubModal();
         });
     }
 
@@ -3584,11 +3570,372 @@ function initGlobalSFXListeners() {
     });
 }
 
+// ==========================================================================
+// DEDICATED FIREBASE REALTIME DATABASE FOR PLAYER TRANSMISSIONS & DEEP LINKS
+// ==========================================================================
+const transmissionFirebaseConfig = {
+    apiKey: "AIzaSyBEPrdUL7r18iZzP1pJ8S_RIWreQc4Gs1o",
+    authDomain: "direct-track-deep-links.firebaseapp.com",
+    databaseURL: "https://direct-track-deep-links-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "direct-track-deep-links",
+    storageBucket: "direct-track-deep-links.firebasestorage.app",
+    messagingSenderId: "199609800902",
+    appId: "1:199609800902:web:194083ad31301ef3d45fc7"
+};
+
+let transmissionApp = null;
+let transmissionDb = null;
+
+try {
+    if (typeof firebase !== 'undefined') {
+        transmissionApp = firebase.initializeApp(transmissionFirebaseConfig, "transmissionApp");
+        transmissionDb = transmissionApp.database();
+    }
+} catch (e) {
+    try {
+        if (typeof firebase !== 'undefined') {
+            transmissionApp = firebase.app("transmissionApp");
+            transmissionDb = transmissionApp.database();
+        }
+    } catch (err) {
+        console.warn("Transmission App Init Note:", err);
+    }
+}
+
+let activeTransmissionTrack = {
+    title: 'OBSCURA RELEASE',
+    artist: 'OBSCURA RECORD',
+    image: 'assets/OCR.png',
+    slug: 'obscura-release',
+    url: window.location.origin + window.location.pathname
+};
+let transmissionCountListenerRef = null;
+
+function getCleanSlug(text) {
+    return (text || 'track')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
+function recordTrackTransmission(slug, channel = 'direct') {
+    if (!transmissionDb || !slug) return;
+    try {
+        const trackRef = transmissionDb.ref(`transmissions/${slug}`);
+        trackRef.child('count').transaction((currentCount) => {
+            return (currentCount || 0) + 1;
+        });
+        trackRef.child('last_broadcast').set(firebase.database.ServerValue.TIMESTAMP);
+        trackRef.child(`channels/${channel}`).transaction((count) => {
+            return (count || 0) + 1;
+        });
+        transmissionDb.ref('globals/total_transmissions').transaction((total) => {
+            return (total || 0) + 1;
+        });
+    } catch (e) {
+        console.warn("Transmission logging error:", e);
+    }
+}
+
+function openTransmissionHubModal() {
+    const modal = document.getElementById('transmission-hub-modal');
+    if (!modal) return;
+
+    // Determine current active track info
+    let title = currentTrackTitle;
+    let artist = '';
+    let image = 'assets/OCR.png';
+
+    const fpTitleEl = document.getElementById('fp-title');
+    const fpArtistEl = document.getElementById('fp-artist');
+    const fpThumbEl = document.getElementById('fp-thumb');
+
+    if (!title && fpTitleEl && fpTitleEl.textContent !== 'SELECT A TRANSMISSION') {
+        title = fpTitleEl.textContent.trim();
+    }
+
+    // If still no track playing, grab the very first track in releases
+    if (!title || title === 'SELECT A TRANSMISSION') {
+        const firstBtn = document.querySelector('#releases .play-btn, .releases-slider .play-btn, .popular-card .play-btn');
+        if (firstBtn) {
+            const card = firstBtn.closest('.release-card-large, .popular-card, .release-card');
+            const tEl = card ? card.querySelector('h4, .release-title') : null;
+            const pEl = card ? card.querySelector('.producers-text span, .popular-artist') : null;
+            const iEl = card ? card.querySelector('.release-cover-large > img, .popular-thumb img, img') : null;
+            title = (firstBtn.getAttribute('data-title') || (tEl ? tEl.textContent : 'OBSCURA RELEASE')).trim();
+            artist = (firstBtn.getAttribute('data-artist') || (pEl ? pEl.textContent : 'OBSCURA RECORD')).trim();
+            image = (firstBtn.getAttribute('data-image') || (iEl ? iEl.src : 'assets/OCR.png'));
+        } else {
+            title = 'OBSCURA RELEASE';
+            artist = 'OBSCURA RECORD';
+            image = 'assets/OCR.png';
+        }
+    } else {
+        artist = fpArtistEl ? fpArtistEl.textContent.replace(/^PROD\.\s*/i, '').trim() : 'OBSCURA RECORD';
+        image = fpThumbEl && fpThumbEl.src ? fpThumbEl.src : 'assets/OCR.png';
+    }
+
+    const slug = getCleanSlug(title);
+    const cleanOrigin = window.location.origin;
+    const cleanPath = window.location.pathname.replace(/index\.html$/, '');
+    const directTrackUrl = `${cleanOrigin}${cleanPath}?track=${encodeURIComponent(slug)}`;
+
+    activeTransmissionTrack = {
+        title,
+        artist,
+        image,
+        slug,
+        url: directTrackUrl
+    };
+
+    // Update Modal DOM
+    const thTitle = document.getElementById('th-track-title');
+    const thArtist = document.getElementById('th-track-artist');
+    const thCover = document.getElementById('th-cover-img');
+    const thInput = document.getElementById('th-link-input');
+    const thQr = document.getElementById('th-qr-img');
+    const thCounter = document.getElementById('th-counter-val');
+    const thFreq = document.getElementById('th-freq-code');
+
+    if (thTitle) thTitle.textContent = title.toUpperCase();
+    if (thArtist) thArtist.textContent = artist ? `PROD. ${artist.toUpperCase()}` : 'OBSCURA RECORD';
+    if (thCover) thCover.src = image;
+    if (thInput) thInput.value = directTrackUrl;
+
+    // Generate dynamic glowing QR code
+    if (thQr) {
+        thQr.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(directTrackUrl)}&color=00f0ff&bgcolor=080a14`;
+    }
+
+    // Set pseudo frequency
+    if (thFreq) {
+        const hash = Math.abs(slug.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0));
+        const freqNum = (90 + (hash % 180) / 10).toFixed(1);
+        thFreq.textContent = `${freqNum} MHz OBSCURA BEAM`;
+    }
+
+    // Live Sync with Realtime Database for Transmission Count
+    if (thCounter) {
+        thCounter.innerHTML = '<i class="fas fa-satellite"></i> SYNCING...';
+        if (transmissionCountListenerRef) {
+            transmissionCountListenerRef.off();
+            transmissionCountListenerRef = null;
+        }
+
+        if (transmissionDb) {
+            try {
+                transmissionCountListenerRef = transmissionDb.ref(`transmissions/${slug}/count`);
+                transmissionCountListenerRef.on('value', (snap) => {
+                    const val = snap.val() || 0;
+                    thCounter.innerHTML = `<i class="fas fa-satellite-dish"></i> ${val.toLocaleString()} BEAMS`;
+                });
+            } catch (e) {
+                thCounter.innerHTML = `<i class="fas fa-satellite-dish"></i> 142 BEAMS`;
+            }
+        } else {
+            thCounter.innerHTML = `<i class="fas fa-satellite-dish"></i> 142 BEAMS`;
+        }
+    }
+
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    playCyberSFX('whoosh');
+}
+
+function closeTransmissionHubModal() {
+    const modal = document.getElementById('transmission-hub-modal');
+    if (!modal) return;
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    if (transmissionCountListenerRef) {
+        transmissionCountListenerRef.off();
+        transmissionCountListenerRef = null;
+    }
+}
+
+function initTransmissionHub() {
+    const modal = document.getElementById('transmission-hub-modal');
+    const closeBtn = document.getElementById('th-close-btn');
+    const copyBtn = document.getElementById('th-copy-btn');
+    const urlInput = document.getElementById('th-link-input');
+
+    const shareWa = document.getElementById('th-share-wa');
+    const shareX = document.getElementById('th-share-x');
+    const shareTg = document.getElementById('th-share-tg');
+    const shareDiscord = document.getElementById('th-share-discord');
+    const shareNative = document.getElementById('th-share-native');
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            playCyberSFX('click');
+            closeTransmissionHubModal();
+        });
+    }
+
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                playCyberSFX('click');
+                closeTransmissionHubModal();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal && modal.classList.contains('active')) {
+            closeTransmissionHubModal();
+        }
+    });
+
+    if (copyBtn && urlInput) {
+        copyBtn.addEventListener('click', () => {
+            playCyberSFX('success');
+            const urlToCopy = urlInput.value || activeTransmissionTrack.url;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(urlToCopy).then(() => {
+                    showCyberNotification('FREQUENCY LINK COPIED TO CLIPBOARD', 'fas fa-check-circle');
+                    recordTrackTransmission(activeTransmissionTrack.slug, 'copy');
+                }).catch(() => {
+                    urlInput.select();
+                    document.execCommand('copy');
+                    showCyberNotification('FREQUENCY LINK COPIED', 'fas fa-check-circle');
+                    recordTrackTransmission(activeTransmissionTrack.slug, 'copy');
+                });
+            } else {
+                urlInput.select();
+                document.execCommand('copy');
+                showCyberNotification('FREQUENCY LINK COPIED', 'fas fa-check-circle');
+                recordTrackTransmission(activeTransmissionTrack.slug, 'copy');
+            }
+
+            const origSpan = copyBtn.querySelector('span');
+            if (origSpan) {
+                origSpan.textContent = 'COPIED!';
+                setTimeout(() => { origSpan.textContent = 'COPY LINK'; }, 2000);
+            }
+        });
+    }
+
+    // Social Broadcasts
+    if (shareWa) {
+        shareWa.addEventListener('click', () => {
+            playCyberSFX('click');
+            recordTrackTransmission(activeTransmissionTrack.slug, 'whatsapp');
+            const text = `⚡ Tune into "${activeTransmissionTrack.title}" on Obscura Record: ${activeTransmissionTrack.url}`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        });
+    }
+
+    if (shareX) {
+        shareX.addEventListener('click', () => {
+            playCyberSFX('click');
+            recordTrackTransmission(activeTransmissionTrack.slug, 'twitter');
+            const text = `Streaming "${activeTransmissionTrack.title}" on @recordsobscura ⚡ Broadcast Signal:`;
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(activeTransmissionTrack.url)}`, '_blank');
+        });
+    }
+
+    if (shareTg) {
+        shareTg.addEventListener('click', () => {
+            playCyberSFX('click');
+            recordTrackTransmission(activeTransmissionTrack.slug, 'telegram');
+            const text = `⚡ Listen to "${activeTransmissionTrack.title}" on Obscura Record`;
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(activeTransmissionTrack.url)}&text=${encodeURIComponent(text)}`, '_blank');
+        });
+    }
+
+    if (shareDiscord) {
+        shareDiscord.addEventListener('click', () => {
+            playCyberSFX('success');
+            recordTrackTransmission(activeTransmissionTrack.slug, 'discord');
+            const discordMsg = `🎧 **${activeTransmissionTrack.title}** (${activeTransmissionTrack.artist || 'Obscura Record'})\n📡 Transmission Frequency: <${activeTransmissionTrack.url}>`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(discordMsg).then(() => {
+                    showCyberNotification('DISCORD BROADCAST TEXT COPIED', 'fab fa-discord');
+                });
+            } else {
+                showCyberNotification('DISCORD BROADCAST READY', 'fab fa-discord');
+            }
+        });
+    }
+
+    if (shareNative) {
+        shareNative.addEventListener('click', () => {
+            playCyberSFX('click');
+            recordTrackTransmission(activeTransmissionTrack.slug, 'native_share');
+            if (navigator.share) {
+                navigator.share({
+                    title: `${activeTransmissionTrack.title} - Obscura Record`,
+                    text: `Tune into "${activeTransmissionTrack.title}" on Obscura Record`,
+                    url: activeTransmissionTrack.url
+                }).catch(() => {});
+            } else {
+                if (copyBtn) copyBtn.click();
+            }
+        });
+    }
+}
+
+// ==========================================================================
+// DEEP-LINK FREQUENCY DETECTOR & AUTO-PLAY ENGINE (?track=slug)
+// ==========================================================================
+function checkUrlDeepLinkAndPlay() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetSlug = urlParams.get('track');
+        if (!targetSlug) return;
+
+        const cleanTarget = getCleanSlug(targetSlug);
+
+        const tryLockAndPlay = () => {
+            const allPlayBtns = Array.from(document.querySelectorAll('#releases .play-btn, .releases-slider .play-btn, .popular-card .play-btn'));
+            if (!allPlayBtns.length) return false;
+
+            for (const btn of allPlayBtns) {
+                const card = btn.closest('.release-card-large, .popular-card, .release-card');
+                const titleEl = card ? card.querySelector('h4, .release-title') : null;
+                const title = (btn.getAttribute('data-title') || (titleEl ? titleEl.textContent : '')).trim();
+                const btnSlug = getCleanSlug(title);
+
+                if (btnSlug === cleanTarget || cleanTarget.includes(btnSlug) || btnSlug.includes(cleanTarget)) {
+                    setTimeout(() => {
+                        btn.click();
+                        if (card) {
+                            card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                            card.classList.add('signal-locked-highlight');
+                            setTimeout(() => card.classList.remove('signal-locked-highlight'), 3500);
+                        }
+                        showCyberNotification(`FREQUENCY LOCKED: ${title.toUpperCase()}`, 'fas fa-satellite-dish');
+                        playCyberSFX('success');
+                    }, 600);
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        if (!tryLockAndPlay()) {
+            let retries = 0;
+            const interval = setInterval(() => {
+                retries++;
+                if (tryLockAndPlay() || retries > 12) {
+                    clearInterval(interval);
+                }
+            }, 350);
+        }
+    } catch (e) {
+        console.warn("Deep-link error:", e);
+    }
+}
+
 // --- ENGINE INITIALIZATION (STATE-AWARE) ---
 const startEngines = () => {
     initPortal();
     loadPopular();
     initFloatingPlayer();
+    initTransmissionHub();
+    checkUrlDeepLinkAndPlay();
     initScrollProximityAudio();
     initGlobalSFXListeners();
 };
