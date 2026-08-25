@@ -49,8 +49,8 @@ const THEME_PRESETS = {
     'minimal-obsidian': { accent: '#ffffff', cardBg: '#09090b', darkness: 0.06, glow: 0.15, buttonStyle: 'clean-light' }
 };
 
-// DOM Init
-document.addEventListener('DOMContentLoaded', () => {
+// Studio Engine Startup
+function initStudioEngine() {
     initTabs();
     initThemePresets();
     initMagicFetcher();
@@ -58,7 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initDirectoryEngine();
     initFileUploads();
     initActions();
-});
+    updateMockupPreview();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initStudioEngine);
+} else {
+    initStudioEngine();
+}
 
 // 1. Customizer Tabs Engine
 function initTabs() {
@@ -439,29 +446,69 @@ function initFileUploads() {
 }
 
 // 6. Directory Engine & Realtime Synchronization
+function updateStatsAndRender(query = '') {
+    const count = Object.keys(cachedSmartLinks).length;
+    const statTotal = document.getElementById('stat-total-links');
+    if (statTotal) statTotal.textContent = count;
+    const dirCount = document.getElementById('directory-count');
+    if (dirCount) dirCount.textContent = count;
+
+    let previewsCount = 0;
+    Object.values(cachedSmartLinks).forEach(item => {
+        if (item && (item.audioPreview || item.youtube)) previewsCount++;
+    });
+    const statPrev = document.getElementById('stat-previews');
+    if (statPrev) statPrev.textContent = previewsCount;
+
+    renderDirectory(query);
+}
+
 function initDirectoryEngine() {
     const listContainer = document.getElementById('smartlinks-directory-list');
     const searchInp = document.getElementById('smartlink-search-input');
 
+    // Instant REST Fetch (Immediate 0ms data load on load)
+    fetch("https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks.json")
+        .then(res => res.json())
+        .then(data => {
+            if (data && typeof data === 'object') {
+                cachedSmartLinks = data;
+                updateStatsAndRender(searchInp ? searchInp.value : '');
+            } else if (!data) {
+                cachedSmartLinks = {};
+                updateStatsAndRender(searchInp ? searchInp.value : '');
+            }
+        })
+        .catch(err => console.warn("Smartlinks REST fallback:", err));
+
     // Realtime Listener
-    db.ref('smartLinks').on('value', snap => {
-        cachedSmartLinks = snap.val() || {};
-        const count = Object.keys(cachedSmartLinks).length;
-        document.getElementById('stat-total-links').textContent = count;
-        document.getElementById('directory-count').textContent = count;
-
-        let previewsCount = 0;
-        Object.values(cachedSmartLinks).forEach(item => {
-            if (item.audioPreview || item.youtube) previewsCount++;
+    try {
+        db.ref('smartLinks').on('value', snap => {
+            const val = snap.val();
+            cachedSmartLinks = (val && typeof val === 'object') ? val : {};
+            updateStatsAndRender(searchInp ? searchInp.value : '');
+        }, err => {
+            console.warn("RTDB listener error:", err);
+            // In case of RTDB listener delay/error, retry REST
+            fetch("https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks.json")
+                .then(res => res.json())
+                .then(data => {
+                    if (data && typeof data === 'object') {
+                        cachedSmartLinks = data;
+                        updateStatsAndRender(searchInp ? searchInp.value : '');
+                    }
+                })
+                .catch(() => {});
         });
-        document.getElementById('stat-previews').textContent = previewsCount;
+    } catch(e) {
+        console.warn("RTDB listener subscription error:", e);
+    }
 
-        renderDirectory(searchInp ? searchInp.value : '');
-    });
-
-    searchInp.addEventListener('input', (e) => {
-        renderDirectory(e.target.value);
-    });
+    if (searchInp) {
+        searchInp.addEventListener('input', (e) => {
+            renderDirectory(e.target.value);
+        });
+    }
 }
 
 function renderDirectory(query = '') {
@@ -502,12 +549,15 @@ function renderDirectory(query = '') {
         let artist = item.artist || 'OBSCURA RECORDS LLC';
         if (!/^prod/i.test(artist) && artist !== 'OBSCURA RECORDS LLC') artist = `PROD By ${artist}`;
 
-        const liveUrl = `https://www.obscurarecord.com/release/?id=${slug}`;
+        const liveUrl = `https://www.obscurarecord.com/release/?id=${encodeURIComponent(slug)}`;
 
         let linkedCount = 0;
         if (item.links) {
             Object.values(item.links).forEach(v => { if (v && v.length > 5) linkedCount++; });
         }
+
+        const safeTitle = (item.title || slug).replace(/'/g, "\\'");
+        const safeSlug = slug.replace(/'/g, "\\'");
 
         card.innerHTML = `
             <div class="dir-item-left">
@@ -522,7 +572,7 @@ function renderDirectory(query = '') {
             </div>
 
             <div class="dir-item-actions">
-                <button type="button" class="cyber-btn sm" onclick="openStudioQr('${slug}', '${(item.title || slug).replace(/'/g, "\\'")}', '${liveUrl}')">
+                <button type="button" class="cyber-btn sm" onclick="openStudioQr('${safeSlug}', '${safeTitle}', '${liveUrl}')">
                     <i class="fas fa-qrcode"></i> QR CODE
                 </button>
                 <button type="button" class="cyber-btn sm" onclick="copyStudioLink('${liveUrl}')">
@@ -531,13 +581,13 @@ function renderDirectory(query = '') {
                 <a href="${liveUrl}" target="_blank" class="cyber-btn sm secondary">
                     <i class="fas fa-external-link-alt"></i> VIEW PAGE
                 </a>
-                <button type="button" class="cyber-btn sm warning" onclick="loadForEdit('${slug}')">
+                <button type="button" class="cyber-btn sm warning" onclick="loadForEdit('${safeSlug}')">
                     <i class="fas fa-edit"></i> EDIT
                 </button>
-                <button type="button" class="cyber-btn sm accent" onclick="duplicateSmartLink('${slug}')" title="Clone release style">
+                <button type="button" class="cyber-btn sm accent" onclick="duplicateSmartLink('${safeSlug}')" title="Clone release style">
                     <i class="fas fa-clone"></i> CLONE
                 </button>
-                <button type="button" class="cyber-btn sm danger" onclick="deleteSmartLink('${slug}')">
+                <button type="button" class="cyber-btn sm danger" onclick="deleteSmartLink('${safeSlug}')">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </div>
@@ -556,7 +606,7 @@ function initActions() {
         const title = document.getElementById('smartlink-input-title').value.trim();
         const artist = document.getElementById('smartlink-input-artist').value.trim();
         const image = document.getElementById('smartlink-input-image').value.trim();
-        let slug = document.getElementById('smartlink-input-slug').value.trim().toLowerCase().replace(/[^a-z0-9-]+/g, '');
+        let slug = document.getElementById('smartlink-input-slug').value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
         if (!title) {
             showToast("PLEASE ENTER TRACK TITLE!", 'error');
