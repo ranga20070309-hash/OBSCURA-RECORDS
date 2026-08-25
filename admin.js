@@ -379,6 +379,8 @@ function initDashboardEngine() {
     initContactEngine();
     initModalsEngine();
     initTransmissionsEngine();
+    initLabelHubEngine();
+    initPrivacyPolicyEngine();
     initSmartLinksEngine();
     initQuantumDecksEngine();
     initSecurityLogsEngine();
@@ -403,6 +405,8 @@ function initNavigation() {
         'demo-inbox-panel': { title: '<i class="fas fa-inbox"></i> DEMO SUBMISSIONS INBOX', desc: 'Review, stream, analyze link security, and tag artist demo transmissions.' },
         'contact-inbox-panel': { title: '<i class="fas fa-envelope-open-text"></i> CONTACT INQUIRIES', desc: 'Direct communications submitted via the public contact portal.' },
         'modals-panel': { title: '<i class="fas fa-window-restore"></i> MODALS, FAQ & FOOTER', desc: 'Interactive FAQ question/answers accordion, footer links, and legal policy editor.' },
+        'label-hub-panel': { title: '<i class="fas fa-layer-group"></i> LABEL HUB, SOUND STYLES & PIPELINE', desc: 'Curate accepted Phonk, Funk, and Electronic soundscapes, Spotify style playlist link, 4-step progression, turnaround time, and YT/TikTok promo.' },
+        'privacy-admin-panel': { title: '<i class="fas fa-shield-alt"></i> FULL PRIVACY POLICY & LEGAL TERMS', desc: 'Real-time legal document editor for the standalone Privacy Policy portal (privacy.html).' },
         'smartlinks-panel': { title: '<i class="fas fa-bolt"></i> SMART LINKS HUB // RELEASE LANDING PAGES', desc: 'Auto-generate and manage dedicated release landing pages with streaming platform links (Spotify, Apple, Deezer, YouTube, etc.).' },
         'quantum-decks-panel': { title: '<i class="fas fa-satellite-dish"></i> QUANTUM TRANSMISSION DECKS MATRIX', desc: 'Direct access, metrics, and instant launcher for all single-track interactive Quantum Decks.' },
         'transmissions-panel': { title: '<i class="fas fa-broadcast-tower"></i> MEDIA FEEDS & DROPS', desc: 'Configure dedicated YouTube and TikTok latest release drops displayed on the main portal.' },
@@ -1016,7 +1020,7 @@ function initReleasesEngine() {
         }).join('');
     }
 
-    window.generateSmartLinkFromRelease = function(index) {
+    window.generateSmartLinkFromRelease = function (index) {
         const rel = cachedReleases[index];
         if (!rel) return;
 
@@ -3481,18 +3485,18 @@ function initSmartLinksEngine() {
     function isGenericAuthor(name) {
         if (!name) return true;
         const clean = name.toLowerCase().trim();
-        return clean === 'release' || 
-               clean === 'release - topic' || 
-               clean === 'various artists' || 
-               clean === 'various artists - topic' || 
-               clean === 'youtube' || 
-               clean === 'official' || 
-               (clean.endsWith('- topic') && clean.startsWith('release'));
+        return clean === 'release' ||
+            clean === 'release - topic' ||
+            clean === 'various artists' ||
+            clean === 'various artists - topic' ||
+            clean === 'youtube' ||
+            clean === 'official' ||
+            (clean.endsWith('- topic') && clean.startsWith('release'));
     }
 
     function parseMusicVideoTitle(rawTitle, channelAuthor = '') {
         let clean = (rawTitle || '').trim();
-        
+
         // Extract Producer tag like (prod. by X) or [prod. X] or (beat by X)
         let prodTag = '';
         const prodMatch = clean.match(/[\(\[\{](?:prod(?:uced)?\.?\s*(?:by)?|beat\s*by)\s*:?\s*([^\]\)\\}]+)[\)\]\}]/i);
@@ -3566,7 +3570,7 @@ function initSmartLinksEngine() {
                     const ytId = ytMatch[1];
                     ytUrl = `https://www.youtube.com/watch?v=${ytId}`;
                     trackImage = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
-                    
+
                     // Fetch YouTube oEmbed for Title
                     try {
                         const oEmbedRes = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(ytUrl)}`);
@@ -3581,7 +3585,7 @@ function initSmartLinksEngine() {
                                     .replace(/\|\s*visualizer/gi, '')
                                     .replace(/\|\s*phonk/gi, '')
                                     .trim();
-                                
+
                                 // If formatted as "Artist - Title", extract Title
                                 const splitMatch = cleanTitle.match(/^.+?\s*[-–—|/•:]\s*(.+)$/);
                                 if (splitMatch && splitMatch[1]) {
@@ -3658,7 +3662,7 @@ function initSmartLinksEngine() {
     function renderSmartLinksDirectory(query = '') {
         if (!listContainer) return;
         const items = Object.entries(cachedSmartLinks);
-        
+
         if (!items.length) {
             listContainer.innerHTML = `
                 <div style="padding: 2.5rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">
@@ -3673,8 +3677,8 @@ function initSmartLinksEngine() {
         const filtered = items.filter(([id, item]) => {
             if (!q) return true;
             return (item.title && item.title.toLowerCase().includes(q)) ||
-                   (item.artist && item.artist.toLowerCase().includes(q)) ||
-                   (id && id.toLowerCase().includes(q));
+                (item.artist && item.artist.toLowerCase().includes(q)) ||
+                (id && id.toLowerCase().includes(q));
         });
 
         if (!filtered.length) {
@@ -3841,7 +3845,7 @@ function initSmartLinksEngine() {
 }
 
 // Global Window Helpers for Smart Links
-window.copySmartLinkToClipboard = function(url) {
+window.copySmartLinkToClipboard = function (url) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(url).then(() => {
             showToast("SMART LINK COPIED TO CLIPBOARD!");
@@ -3851,7 +3855,7 @@ window.copySmartLinkToClipboard = function(url) {
     }
 };
 
-window.editSmartLink = function(slugId) {
+window.editSmartLink = function (slugId) {
     const item = cachedSmartLinks[slugId];
     if (!item) return;
 
@@ -3901,7 +3905,7 @@ window.editSmartLink = function(slugId) {
     showToast(`LOADED "${item.title || slugId}" FOR EDITING.`);
 };
 
-window.deleteSmartLink = function(slugId) {
+window.deleteSmartLink = function (slugId) {
     if (!confirm(`Are you sure you want to PERMANENTLY DELETE the smart link "${slugId}"?`)) return;
 
     smartLinksDb.ref(`smartLinks/${slugId}`).remove().then(() => {
@@ -3913,7 +3917,7 @@ window.deleteSmartLink = function(slugId) {
 };
 
 let currentQrModalUrl = '';
-window.openSmartLinkQr = function(slugId, title, url) {
+window.openSmartLinkQr = function (slugId, title, url) {
     currentQrModalUrl = url;
     const modal = document.getElementById('smartlink-qr-modal');
     const titleEl = document.getElementById('qr-modal-title');
@@ -3936,12 +3940,12 @@ window.openSmartLinkQr = function(slugId, title, url) {
     }
 };
 
-window.closeSmartLinkQrModal = function() {
+window.closeSmartLinkQrModal = function () {
     const modal = document.getElementById('smartlink-qr-modal');
     if (modal) modal.style.display = 'none';
 };
 
-window.copyQrModalUrl = function() {
+window.copyQrModalUrl = function () {
     if (currentQrModalUrl) {
         copySmartLinkToClipboard(currentQrModalUrl);
     }
@@ -4011,3 +4015,225 @@ function renderQuantumDecksGrid(releases, container) {
         `;
     }).join('');
 }
+
+// ==========================================================================
+// ==========================================================================
+// LABEL HUB, GENRES & 4-STEP PIPELINE ENGINE
+// ==========================================================================
+window.saveLabelHubDirective = function () {
+    const saveBtn = document.getElementById('save-label-hub-btn');
+    const statusMsg = document.getElementById('save-msg-label-hub');
+
+    const getVal = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+    };
+
+    const payload = {
+        heroPill: getVal('hub_heroPill'),
+        discordTime: getVal('hub_discordTime'),
+        webTime: getVal('hub_webTime'),
+        heroTitle: getVal('hub_heroTitle'),
+        heroDesc: getVal('hub_heroDesc'),
+        discordQueueSub: getVal('hub_discordQueueSub'),
+        webQueueSub: getVal('hub_webQueueSub'),
+        spotifyPlaylistUrl: getVal('hub_spotifyPlaylistUrl'),
+        spotifyTitle: getVal('hub_spotifyTitle'),
+        spotifyDesc: getVal('hub_spotifyDesc'),
+        g1Name: getVal('hub_g1Name'),
+        g1Bpm: getVal('hub_g1Bpm'),
+        g1Desc: getVal('hub_g1Desc'),
+        g2Name: getVal('hub_g2Name'),
+        g2Bpm: getVal('hub_g2Bpm'),
+        g2Desc: getVal('hub_g2Desc'),
+        g3Name: getVal('hub_g3Name'),
+        g3Bpm: getVal('hub_g3Bpm'),
+        g3Desc: getVal('hub_g3Desc'),
+        step1Title: getVal('hub_step1Title'),
+        step1Desc: getVal('hub_step1Desc'),
+        step2Title: getVal('hub_step2Title'),
+        step2Desc: getVal('hub_step2Desc'),
+        step3Title: getVal('hub_step3Title'),
+        step3Desc: getVal('hub_step3Desc'),
+        step4Title: getVal('hub_step4Title'),
+        step4Desc: getVal('hub_step4Desc'),
+        ytHandle: getVal('hub_ytHandle'),
+        ytSub: getVal('hub_ytSub'),
+        ytViews: getVal('hub_ytViews'),
+        ttHandle: getVal('hub_ttHandle'),
+        ttReach: getVal('hub_ttReach'),
+        ttCreators: getVal('hub_ttCreators'),
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
+    };
+
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> SYNCING DIRECTIVE...';
+    }
+
+    db.ref('siteData/labelHub').set(payload)
+        .then(() => {
+            try { bumpSiteVersion('Updated Label Hub & Music Directive'); } catch(e) {}
+            showToast('LABEL HUB DIRECTIVE SYNCHRONIZED SUCCESSFULLY!');
+            if (statusMsg) {
+                statusMsg.innerHTML = '<span style="color: #00ff8c;"><i class="fas fa-check"></i> SYNCED TO REALTIME CLOUD</span>';
+                setTimeout(() => { statusMsg.innerHTML = ''; }, 4000);
+            }
+        })
+        .catch((err) => {
+            console.error('Error saving label hub:', err);
+            showToast('FAILED TO SYNC LABEL HUB: ' + err.message, 'error');
+        })
+        .finally(() => {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> SAVE & SYNC LABEL HUB DIRECTIVE';
+            }
+        });
+};
+
+function initLabelHubEngine() {
+    const saveBtn = document.getElementById('save-label-hub-btn');
+
+    // Realtime Listener from Firebase
+    db.ref('siteData/labelHub').on('value', (snapshot) => {
+        const data = snapshot.val() || {};
+        
+        const setVal = (id, val, defaultVal) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (document.activeElement === el) return; // Don't overwrite while user is actively typing
+            if (val !== undefined && val !== null && val !== '') el.value = val;
+            else if (defaultVal !== undefined && !el.value) el.value = defaultVal;
+        };
+
+        setVal('hub_heroPill', data.heroPill, 'OFFICIAL ARTIST DIRECTIVE // A&R HUB');
+        setVal('hub_discordTime', data.discordTime, '48–72 HOURS');
+        setVal('hub_webTime', data.webTime, '2–3 WEEKS');
+        setVal('hub_heroTitle', data.heroTitle, "CURATING NEXT-GEN <span class='glow-accent'>FUNK, PHONK & ELECTRONIC</span>");
+        setVal('hub_heroDesc', data.heroDesc, "OBSCURA RECORDS is strictly focused on new-wave, atmospheric, and innovative sound design. We do not release dated classic styles—we pioneer fresh sonic identities across modern Funk, next-gen Phonk, and dark electronic music.");
+        setVal('hub_discordQueueSub', data.discordQueueSub, "Priority evaluation directly with our A&R board on our official Discord server.");
+        setVal('hub_webQueueSub', data.webQueueSub, "Standard submission inbox undergoing thorough acoustic auditing and catalog scheduling.");
+        
+        setVal('hub_spotifyPlaylistUrl', data.spotifyPlaylistUrl, "https://open.spotify.com/playlist/37i9dQZF1DX11ghcLi9WqN");
+        setVal('hub_spotifyTitle', data.spotifyTitle, "OFFICIAL STYLE PLAYLIST");
+        setVal('hub_spotifyDesc', data.spotifyDesc, 'Before transmitting your unreleased track, listen to our curated <a href="https://open.spotify.com" target="_blank" class="clickable-link" id="link-spotify-text">Official OBSCURA Style & Phonk Playlist on Spotify</a>. Use this reference stream to inspect the exact acoustic balance, low-end punch, and atmospheric identity we sign.');
+
+        setVal('hub_g1Name', data.g1Name, "ATMOSPHERIC & NEW-WAVE FUNK");
+        setVal('hub_g1Bpm', data.g1Bpm, "FLUID TEMPOS • RAW SYNCOPATED BOUNCE & AMBIENT SPACES");
+        setVal('hub_g1Desc', data.g1Desc, "Focusing on fresh modern Funk—deep atmospheric textures, hypnotic melodic chops, raw club percussion, and dynamic modern drops engineered for viral resonance and club energy.");
+
+        setVal('hub_g2Name', data.g2Name, "NEXT-GEN & CYBER PHONK");
+        setVal('hub_g2Bpm', data.g2Bpm, "FLUID TEMPOS • HIGH-OCTANE 808s & FUTURISTIC SOUND DESIGN");
+        setVal('hub_g2Desc', data.g2Desc, "We avoid repetitive classic drift loops in favor of cutting-edge, experimental, and high-production Phonk—heavy sub-bass articulation, futuristic synth layers, and cinematic energy.");
+
+        setVal('hub_g3Name', data.g3Name, "DARK ELECTRONIC & WAVE");
+        setVal('hub_g3Bpm', data.g3Bpm, "FLUID TEMPOS • MIDTEMPO, INDUSTRIAL & HYPNOTIC BASS");
+        setVal('hub_g3Desc', data.g3Desc, "Aggressive midtempo electro, cyberpunk atmospheres, industrial dark club beats, and melodic bass soundscapes designed for sound systems and immersive visual media.");
+
+        setVal('hub_step1Title', data.step1Title, "DEMO SUBMISSION");
+        setVal('hub_step1Desc', data.step1Desc, "Submit your unreleased demo via Discord (48-72h) or Web Form (2-3w). We require a private streaming link (SoundCloud, Google Drive, or Dropbox) in 320kbps MP3 or 24-bit WAV format.");
+
+        setVal('hub_step2Title', data.step2Title, "A&R REVIEW");
+        setVal('hub_step2Desc', data.step2Desc, "Our A&R board evaluates acoustic balance, originality, and catalog fit. If accepted, you receive an official release agreement and contract terms.");
+
+        setVal('hub_step3Title', data.step3Title, "DSP INGESTION");
+        setVal('hub_step3Desc', data.step3Desc, "We encode ISRC/UPC codes, finalize metadata, schedule delivery to Spotify, Apple Music, YouTube Music, TikTok, Beatport, and generate your dedicated SmartLink.");
+
+        setVal('hub_step4Title', data.step4Title, "GLOBAL RELEASE DAY");
+        setVal('hub_step4Desc', data.step4Desc, "Track goes live worldwide! We activate our official YouTube drops (1080p+), Shorts blasts, TikTok sound seeding, and network playlist push.");
+
+        setVal('hub_ytHandle', data.ytHandle, "@OBSCURA.RECORDS");
+        setVal('hub_ytSub', data.ytSub, "50K+");
+        setVal('hub_ytViews', data.ytViews, "10M+");
+
+        setVal('hub_ttHandle', data.ttHandle, "@OBSCURA.RECORDS");
+        setVal('hub_ttReach', data.ttReach, "5M+");
+        setVal('hub_ttCreators', data.ttCreators, "100+");
+    });
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', window.saveLabelHubDirective);
+    }
+}
+
+// ==========================================================================
+// FULL PRIVACY POLICY ENGINE
+// ==========================================================================
+window.savePrivacyPolicyDirective = function () {
+    const saveBtn = document.getElementById('save-privacy-policy-btn');
+    const statusMsg = document.getElementById('save-msg-privacy');
+
+    const getVal = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+    };
+
+    const payload = {
+        pageTitle: getVal('priv_pageTitle'),
+        effectiveDate: getVal('priv_effectiveDate'),
+        contactEmail: getVal('priv_contactEmail'),
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
+    };
+
+    for (let i = 1; i <= 7; i++) {
+        payload[`s${i}Title`] = getVal(`priv_s${i}Title`);
+        payload[`s${i}Body`] = getVal(`priv_s${i}Body`);
+    }
+
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> SYNCING POLICY...';
+    }
+
+    db.ref('siteData/privacyPolicy').set(payload)
+        .then(() => {
+            try { bumpSiteVersion('Updated Full Privacy Policy & Legal Terms'); } catch(e) {}
+            showToast('PRIVACY POLICY SYNCHRONIZED SUCCESSFULLY!');
+            if (statusMsg) {
+                statusMsg.innerHTML = '<span style="color: #00ff8c;"><i class="fas fa-check"></i> PRIVACY TERMS LIVE & SYNCED</span>';
+                setTimeout(() => { statusMsg.innerHTML = ''; }, 4000);
+            }
+        })
+        .catch((err) => {
+            console.error('Error saving privacy policy:', err);
+            showToast('FAILED TO SYNC PRIVACY POLICY: ' + err.message, 'error');
+        })
+        .finally(() => {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> SAVE & SYNC PRIVACY POLICY';
+            }
+        });
+};
+
+function initPrivacyPolicyEngine() {
+    const saveBtn = document.getElementById('save-privacy-policy-btn');
+
+    // Realtime Listener from Firebase
+    db.ref('siteData/privacyPolicy').on('value', (snapshot) => {
+        const data = snapshot.val() || {};
+        
+        const setVal = (id, val, defaultVal) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (document.activeElement === el) return; // Don't overwrite while user is actively typing
+            if (val !== undefined && val !== null && val !== '') el.value = val;
+            else if (defaultVal !== undefined && !el.value) el.value = defaultVal;
+        };
+
+        setVal('priv_pageTitle', data.pageTitle, 'PRIVACY POLICY & DATA TERMS');
+        setVal('priv_effectiveDate', data.effectiveDate, 'FEBRUARY 2026');
+        setVal('priv_contactEmail', data.contactEmail, 'artists@obscurarecord.com');
+
+        for (let i = 1; i <= 7; i++) {
+            setVal(`priv_s${i}Title`, data[`s${i}Title`]);
+            setVal(`priv_s${i}Body`, data[`s${i}Body`]);
+        }
+    });
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', window.savePrivacyPolicyDirective);
+    }
+}
+
