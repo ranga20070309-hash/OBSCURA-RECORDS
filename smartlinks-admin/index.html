@@ -1024,6 +1024,33 @@
             margin-bottom: 0.5rem;
         }
 
+        .smartlink-expiry-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid rgba(255, 170, 0, 0.3);
+            color: #ffaa00;
+            font-family: var(--font-heading);
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.03rem;
+            text-transform: uppercase;
+            padding: 0.3rem 0.65rem;
+            border-radius: 20px;
+            margin: 0 auto 0.5rem auto;
+            box-shadow: 0 0 10px rgba(255, 170, 0, 0.12);
+            text-align: center;
+            max-width: 95%;
+            line-height: 1.25;
+        }
+
+        .smartlink-expiry-tag i {
+            color: #ffaa00;
+            font-size: 0.68rem;
+        }
+
         .mock-prompt {
             font-size: 0.62rem;
             color: var(--text-muted);
@@ -2012,6 +2039,9 @@
                         <div class="mock-meta-box">
                             <h2 class="mock-title" id="mock-title">UNTITLED RELEASE</h2>
                             <div class="mock-artist" id="mock-artist">PROD By ARTIST</div>
+                            <div class="smartlink-expiry-tag">
+                                <i class="fas fa-clock"></i> This smart link will only be available 2 weeks after release
+                            </div>
                             <div class="mock-prompt">CHOOSE YOUR PREFERRED MUSIC SERVICE</div>
                         </div>
 
