@@ -463,14 +463,16 @@
         /* 1. Light Minimalist Style */
         .platform-list.style-clean-light {
             background: #ffffff;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
         }
         .platform-list.style-clean-light .platform-row {
             border-bottom: 1px solid #f0f0f0;
+            transition: all 0.25s ease;
         }
         .platform-list.style-clean-light .platform-row:hover {
-            background-color: #f4f6f8;
+            background-color: #f8fafc;
+            border-left: 3px solid var(--accent-cyan, #111111);
         }
         .platform-list.style-clean-light .platform-name {
             color: #111111;
@@ -485,21 +487,24 @@
             color: #ffffff;
             border-color: #111111;
             transform: scale(1.04);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
         }
 
         /* 2. Dark Cyber Glassmorphism Style */
         .platform-list.style-cyber-glass {
-            background: rgba(12, 16, 28, 0.72);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(10, 14, 25, 0.76);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.65), 0 0 20px rgba(var(--accent-rgb, 0, 240, 255), 0.08);
         }
         .platform-list.style-cyber-glass .platform-row {
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.25s ease;
         }
         .platform-list.style-cyber-glass .platform-row:hover {
             background-color: rgba(255, 255, 255, 0.08);
+            border-left: 3px solid var(--accent-cyan, #00f0ff);
         }
         .platform-list.style-cyber-glass .platform-name {
             color: #ffffff;
@@ -507,7 +512,7 @@
         .platform-list.style-cyber-glass .platform-action-btn {
             background: rgba(255, 255, 255, 0.08);
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.22);
             backdrop-filter: blur(10px);
         }
         .platform-list.style-cyber-glass .platform-row:hover .platform-action-btn {
@@ -515,15 +520,15 @@
             color: #000000;
             font-weight: 800;
             border-color: var(--accent-cyan, #00f0ff);
-            box-shadow: 0 0 16px var(--accent-cyan, #00f0ff);
-            transform: scale(1.04);
+            box-shadow: 0 0 18px var(--accent-cyan, #00f0ff);
+            transform: scale(1.05);
         }
 
         /* 3. Solid Neon Accent Style */
         .platform-list.style-solid-neon {
             background: #080b14;
-            border: 1px solid var(--accent-cyan, #00f0ff);
-            box-shadow: 0 0 25px rgba(0, 240, 255, 0.2), 0 10px 30px rgba(0, 0, 0, 0.7);
+            border: 1.5px solid var(--accent-cyan, #00f0ff);
+            box-shadow: 0 0 25px rgba(var(--accent-rgb, 0, 240, 255), 0.22), 0 12px 35px rgba(0, 0, 0, 0.75);
         }
         .platform-list.style-solid-neon .platform-row {
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -539,42 +544,110 @@
             color: #000000;
             font-weight: 800;
             border: none;
-            box-shadow: 0 0 12px var(--accent-cyan, #00f0ff);
+            box-shadow: 0 0 14px var(--accent-cyan, #00f0ff);
         }
         .platform-list.style-solid-neon .platform-row:hover .platform-action-btn {
             background: #ffffff;
             color: #000000;
-            box-shadow: 0 0 20px #ffffff;
-            transform: scale(1.04);
+            box-shadow: 0 0 22px #ffffff;
+            transform: scale(1.05);
         }
 
         /* 4. Holographic Border Glow Style */
         .platform-list.style-holographic {
-            background: rgba(10, 12, 22, 0.85);
+            background: rgba(10, 12, 24, 0.85);
             backdrop-filter: blur(25px);
-            border: 1px solid rgba(139, 92, 246, 0.35);
-            box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(var(--accent-rgb, 139, 92, 246), 0.38);
+            box-shadow: 0 0 30px rgba(var(--accent-rgb, 0, 240, 255), 0.18), 0 10px 30px rgba(0,0,0,0.7);
         }
         .platform-list.style-holographic .platform-row {
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
         .platform-list.style-holographic .platform-row:hover {
-            background-color: rgba(139, 92, 246, 0.12);
+            background-color: rgba(255, 255, 255, 0.06);
         }
         .platform-list.style-holographic .platform-name {
             color: #ffffff;
         }
         .platform-list.style-holographic .platform-action-btn {
-            background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(139, 92, 246, 0.3));
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
             color: #ffffff;
-            border: 1px solid rgba(0, 240, 255, 0.4);
+            border: 1px solid var(--accent-cyan, #00f0ff);
+            box-shadow: 0 0 10px rgba(var(--accent-rgb, 0, 240, 255), 0.25);
         }
         .platform-list.style-holographic .platform-row:hover .platform-action-btn {
-            background: linear-gradient(135deg, #00f0ff, #8b5cf6);
-            color: #000;
+            background: linear-gradient(135deg, var(--accent-cyan, #00f0ff), #ffffff);
+            color: #000000;
             font-weight: 800;
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
-            transform: scale(1.04);
+            border-color: var(--accent-cyan, #00f0ff);
+            box-shadow: 0 0 22px var(--accent-cyan, #00f0ff);
+            transform: scale(1.05);
+        }
+
+        /* 5. Cyber Neon Outline Style */
+        .platform-list.style-neon-outline {
+            background: rgba(8, 10, 18, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+        .platform-list.style-neon-outline .platform-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.25s ease;
+        }
+        .platform-list.style-neon-outline .platform-row:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid var(--accent-cyan, #00f0ff);
+        }
+        .platform-list.style-neon-outline .platform-name {
+            color: #ffffff;
+        }
+        .platform-list.style-neon-outline .platform-action-btn {
+            background: transparent;
+            color: var(--accent-cyan, #00f0ff);
+            border: 1.5px solid var(--accent-cyan, #00f0ff);
+            box-shadow: 0 0 8px rgba(var(--accent-rgb, 0, 240, 255), 0.18);
+        }
+        .platform-list.style-neon-outline .platform-row:hover .platform-action-btn {
+            background: var(--accent-cyan, #00f0ff);
+            color: #000000;
+            font-weight: 800;
+            box-shadow: 0 0 22px var(--accent-cyan, #00f0ff);
+            transform: scale(1.05);
+        }
+
+        /* 6. Velvet Luxury Dark Style */
+        .platform-list.style-velvet-dark {
+            background: rgba(6, 8, 14, 0.94);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85);
+        }
+        .platform-list.style-velvet-dark .platform-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.25s ease;
+        }
+        .platform-list.style-velvet-dark .platform-row:hover {
+            background-color: rgba(255, 255, 255, 0.04);
+            border-left: 3px solid var(--accent-cyan, #ffffff);
+        }
+        .platform-list.style-velvet-dark .platform-name {
+            color: rgba(255, 255, 255, 0.95);
+        }
+        .platform-list.style-velvet-dark .platform-action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+        }
+        .platform-list.style-velvet-dark .platform-row:hover .platform-action-btn {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: var(--accent-cyan, #ffffff);
+            color: #ffffff;
+            box-shadow: 0 0 16px var(--accent-cyan, #ffffff);
+            transform: scale(1.05);
         }
 
         /* Footer & Share Bar */
@@ -1306,6 +1379,7 @@
             const btnStyle = ui.buttonStyle || 'clean-light';
 
             document.documentElement.style.setProperty('--accent-cyan', accent);
+            document.documentElement.style.setProperty('--accent-rgb', rgb);
             if (ui.cardBg) {
                 document.documentElement.style.setProperty('--card-bg', ui.cardBg);
             }
