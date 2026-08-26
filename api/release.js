@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 
-const FIREBASE_DB_URL = "https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app";
+const SMARTLINKS_DB_URL = "https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app";
+const MAIN_SITE_DB_URL = "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app";
 
 function fetchJson(url) {
     return new Promise((resolve) => {
@@ -26,6 +27,10 @@ function fetchJson(url) {
     });
 }
 
+function cleanSlug(text) {
+    return (text || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
 module.exports = async (req, res) => {
     try {
         const host = req.headers['x-forwarded-host'] || req.headers?.host || 'www.obscurarecord.com';
@@ -40,6 +45,7 @@ module.exports = async (req, res) => {
             parsedUrl.searchParams.get('id') ||
             parsedUrl.searchParams.get('track') ||
             parsedUrl.searchParams.get('release') ||
+            parsedUrl.searchParams.get('slug') ||
             ''
         ).trim();
 
@@ -53,7 +59,11 @@ module.exports = async (req, res) => {
             }
         }
 
-        const htmlPath = path.join(process.cwd(), 'release', 'index.html');
+        let htmlPath = path.join(process.cwd(), 'release', 'index.html');
+        if (!fs.existsSync(htmlPath)) {
+            htmlPath = path.join(process.cwd(), 'release.html');
+        }
+
         let html = '';
         try {
             html = fs.readFileSync(htmlPath, 'utf8');
@@ -66,28 +76,67 @@ module.exports = async (req, res) => {
             return res.status(200).send(html);
         }
 
-        const normalizedSlug = slug.toLowerCase();
+        const normalizedSlug = cleanSlug(slug);
+        const rawSlugLower = slug.toLowerCase();
         let data = null;
 
-        // 1. Direct fetch
-        data = await fetchJson(`${FIREBASE_DB_URL}/smartLinks/${encodeURIComponent(normalizedSlug)}.json`);
-
-        // 2. All links fuzzy match fallback
+        // 1. Direct fetch from smartLinks database
+        data = await fetchJson(`${SMARTLINKS_DB_URL}/smartLinks/${encodeURIComponent(slug)}.json`);
+        if (!data && normalizedSlug !== slug) {
+            data = await fetchJson(`${SMARTLINKS_DB_URL}/smartLinks/${encodeURIComponent(normalizedSlug)}.json`);
+        }
         if (!data) {
-            const allLinks = await fetchJson(`${FIREBASE_DB_URL}/smartLinks.json`);
-            if (allLinks && typeof allLinks === 'object') {
-                const clean = s => (s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-                const targetClean = clean(normalizedSlug);
+            data = await fetchJson(`${SMARTLINKS_DB_URL}/smartLinks/-${encodeURIComponent(normalizedSlug)}.json`);
+        }
 
+        // 2. All links search fallback in smartLinks database
+        if (!data) {
+            const allLinks = await fetchJson(`${SMARTLINKS_DB_URL}/smartLinks.json`);
+            if (allLinks && typeof allLinks === 'object') {
                 const matchKey = Object.keys(allLinks).find(k => {
                     const item = allLinks[k];
-                    return k.toLowerCase() === normalizedSlug ||
-                           clean(k) === targetClean ||
-                           (item && (clean(item.title) === targetClean || clean(item.slug) === targetClean));
+                    if (!item) return false;
+                    const kClean = cleanSlug(k);
+                    const kLower = k.toLowerCase();
+                    const titleClean = cleanSlug(item.title || item.name);
+                    const slugClean = cleanSlug(item.slug);
+                    return kLower === rawSlugLower ||
+                           kClean === normalizedSlug ||
+                           titleClean === normalizedSlug ||
+                           slugClean === normalizedSlug ||
+                           (item.id && cleanSlug(item.id) === normalizedSlug);
                 });
 
                 if (matchKey && allLinks[matchKey]) {
                     data = allLinks[matchKey];
+                }
+            }
+        }
+
+        // 3. Main catalog siteData.json fallback
+        if (!data) {
+            const siteData = await fetchJson(`${MAIN_SITE_DB_URL}/siteData.json`);
+            if (siteData && typeof siteData === 'object') {
+                const releases = [
+                    ...(Array.isArray(siteData.releases) ? siteData.releases : Object.values(siteData.releases || {})),
+                    ...(Array.isArray(siteData.popular_releases) ? siteData.popular_releases : Object.values(siteData.popular_releases || {})),
+                    ...(Array.isArray(siteData.popular) ? siteData.popular : Object.values(siteData.popular || {}))
+                ];
+
+                const matched = releases.find(r => {
+                    if (!r) return false;
+                    const rTitle = cleanSlug(r.title || '');
+                    const rCatalog = (r.catalog || r.id || '').toLowerCase().trim();
+                    return rTitle === normalizedSlug || rCatalog === rawSlugLower || rTitle.includes(normalizedSlug) || normalizedSlug.includes(rTitle);
+                });
+
+                if (matched) {
+                    data = {
+                        title: matched.title,
+                        artist: matched.artist || matched.producers,
+                        image: matched.cover || matched.image,
+                        links: matched
+                    };
                 }
             }
         }
@@ -99,14 +148,16 @@ module.exports = async (req, res) => {
                 artist = `PROD By ${artist}`;
             }
 
-            let cover = String(data.image || data.artwork || data.cover || data.thumbnail || "https://www.obscurarecord.com/assets/OCR.png").trim();
-            if (cover && !cover.startsWith('http')) {
+            let cover = String(data.image || data.artwork || data.cover || data.thumbnail || data.trackCover || "https://www.obscurarecord.com/assets/OCR.png").trim();
+            if (cover.startsWith('data:')) {
+                cover = `https://www.obscurarecord.com/api/artwork?id=${encodeURIComponent(normalizedSlug || slug)}`;
+            } else if (!cover.startsWith('http://') && !cover.startsWith('https://')) {
                 cover = `https://www.obscurarecord.com/${cover.replace(/^\/+/, '')}`;
             }
 
-            const cleanTitle = `${title}`;
-            const shortDesc = `Listen to ${title} on all platforms`;
-            const currentUrl = `https://www.obscurarecord.com/release/?id=${encodeURIComponent(normalizedSlug)}`;
+            const cleanTitle = `${title} - ${artist} | OBSCURA RECORDS LLC`;
+            const shortDesc = `Official Music Release: ${title} (${artist}) on Obscura Records LLC. Listen and stream on all digital platforms.`;
+            const currentUrl = `https://www.obscurarecord.com/release/?id=${encodeURIComponent(normalizedSlug || slug)}`;
 
             // Remove any existing duplicate social meta tags from HTML template
             html = html.replace(/<meta\s+property=["']og:[^"']*["'][^>]*>/gi, '');
