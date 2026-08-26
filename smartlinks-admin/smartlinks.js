@@ -184,6 +184,37 @@ function initRealtimeMockupSync() {
 
     imageInp.addEventListener('input', updateMockupPreview);
 
+    // Release Date / Pre-Save Schedule inputs
+    const releaseDateInp = document.getElementById('smartlink-input-release-date');
+    if (releaseDateInp) {
+        releaseDateInp.addEventListener('input', updateMockupPreview);
+        releaseDateInp.addEventListener('change', updateMockupPreview);
+    }
+
+    const clearScheduleBtn = document.getElementById('btn-schedule-clear');
+    if (clearScheduleBtn && releaseDateInp) {
+        clearScheduleBtn.addEventListener('click', () => {
+            releaseDateInp.value = '';
+            updateMockupPreview();
+            showToast("RELEASE DATE CLEARED (MARKED AS OUT NOW)");
+        });
+    }
+
+    const chipBtns = document.querySelectorAll('.quick-chip-btn');
+    chipBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const hours = parseInt(btn.getAttribute('data-hours') || '24', 10);
+            const targetDate = new Date(Date.now() + hours * 60 * 60 * 1000);
+            // Format to local datetime-local value (YYYY-MM-DDTHH:mm)
+            const localIso = new Date(targetDate.getTime() - targetDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            if (releaseDateInp) {
+                releaseDateInp.value = localIso;
+                updateMockupPreview();
+                showToast(`SCHEDULE SET: +${hours >= 24 ? (hours/24) + ' DAY(S)' : hours + ' HOURS'}`);
+            }
+        });
+    });
+
     // Platform input triggers
     const platformInputs = document.querySelectorAll('#tab-platforms input');
     platformInputs.forEach(inp => inp.addEventListener('input', updateMockupPreview));
@@ -265,19 +296,22 @@ function updateMockupPreview() {
         mockSideQr.style.boxShadow = `0 10px 30px rgba(0,0,0,0.8), 0 0 ${Math.round(glowNum * 35)}px rgba(${rgb}, ${glowNum * 0.6})`;
     }
 
-    // Dynamic Platform List in Mockup with Button Style Variants
+    // Dynamic Platform List in Mockup with Button Style Variants & Pre-Save Check
     const platformContainer = document.getElementById('mock-platforms-container');
     platformContainer.className = `mock-platforms-list style-${btnStyle}`;
 
+    const releaseDateVal = document.getElementById('smartlink-input-release-date')?.value;
+    const isPreSave = Boolean(releaseDateVal && new Date(releaseDateVal).getTime() > Date.now());
+
     const platforms = [
-        { id: 'link-spotify', name: 'Spotify', icon: 'fab fa-spotify', col: '#1DB954', action: 'Play' },
-        { id: 'link-apple', name: 'Apple Music', icon: 'fab fa-apple', col: '#FA243C', action: 'Play' },
-        { id: 'link-youtube', name: 'YouTube', icon: 'fab fa-youtube', col: '#FF0000', action: 'Watch' },
-        { id: 'link-youtubemusic', name: 'YouTube Music', icon: 'fas fa-play-circle', col: '#FF0000', action: 'Play' },
-        { id: 'link-amazon', name: 'Amazon Music', icon: 'fab fa-amazon', col: '#00A8E1', action: 'Play' },
-        { id: 'link-tidal', name: 'Tidal', icon: 'fas fa-compact-disc', col: '#00f0ff', action: 'Play' },
-        { id: 'link-deezer', name: 'Deezer', icon: 'fab fa-deezer', col: '#FF0092', action: 'Play' },
-        { id: 'link-soundcloud', name: 'SoundCloud', icon: 'fab fa-soundcloud', col: '#FF5500', action: 'Stream' }
+        { id: 'link-spotify', name: 'Spotify', icon: 'fab fa-spotify', col: '#1DB954', action: isPreSave ? 'Pre-Save' : 'Play' },
+        { id: 'link-apple', name: 'Apple Music', icon: 'fab fa-apple', col: '#FA243C', action: isPreSave ? 'Pre-Save' : 'Play' },
+        { id: 'link-youtube', name: 'YouTube', icon: 'fab fa-youtube', col: '#FF0000', action: isPreSave ? 'Pre-Save' : 'Watch' },
+        { id: 'link-youtubemusic', name: 'YouTube Music', icon: 'fas fa-play-circle', col: '#FF0000', action: isPreSave ? 'Pre-Save' : 'Play' },
+        { id: 'link-amazon', name: 'Amazon Music', icon: 'fab fa-amazon', col: '#00A8E1', action: isPreSave ? 'Pre-Save' : 'Play' },
+        { id: 'link-tidal', name: 'Tidal', icon: 'fas fa-compact-disc', col: '#00f0ff', action: isPreSave ? 'Pre-Save' : 'Play' },
+        { id: 'link-deezer', name: 'Deezer', icon: 'fab fa-deezer', col: '#FF0092', action: isPreSave ? 'Pre-Save' : 'Play' },
+        { id: 'link-soundcloud', name: 'SoundCloud', icon: 'fab fa-soundcloud', col: '#FF5500', action: isPreSave ? 'Pre-Save' : 'Stream' }
     ];
 
     let activePlatforms = platforms.filter(p => {
@@ -559,11 +593,16 @@ function renderDirectory(query = '') {
         const safeTitle = (item.title || slug).replace(/'/g, "\\'");
         const safeSlug = slug.replace(/'/g, "\\'");
 
+        const isItemPreSave = Boolean(item.releaseDate && new Date(item.releaseDate).getTime() > Date.now());
+        const preSaveBadge = isItemPreSave
+            ? `<span style="background: rgba(255, 0, 85, 0.2); color: #ff0055; border: 1px solid rgba(255, 0, 85, 0.4); padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.68rem; margin-left: 6px;"><i class="fas fa-clock"></i> PRE-SAVE ACTIVE</span>`
+            : '';
+
         card.innerHTML = `
             <div class="dir-item-left">
                 <img src="${cover}" alt="Cover" class="dir-item-thumb">
                 <div class="dir-item-info">
-                    <strong class="dir-item-title">${title}</strong>
+                    <strong class="dir-item-title">${title} ${preSaveBadge}</strong>
                     <span class="dir-item-artist">${artist}</span>
                     <small class="dir-item-meta">
                         SLUG: <strong>${slug}</strong> &bull; <i class="fas fa-headphones" style="color: #00f0ff;"></i> ${linkedCount} SERVICES &bull; THEME: <strong style="color: ${item.ui?.accent || '#00f0ff'};">${item.ui?.theme || 'Default'}</strong>
@@ -650,10 +689,13 @@ function initActions() {
             showFooter: document.getElementById('legal-show-footer').checked
         };
 
+        const releaseDate = document.getElementById('smartlink-input-release-date')?.value || '';
+
         const payload = {
             title: title,
             artist: artist,
             image: image,
+            releaseDate: releaseDate,
             audioPreview: document.getElementById('smartlink-input-preview').value.trim(),
             youtube: document.getElementById('smartlink-input-youtube').value.trim(),
             links: links,
@@ -721,6 +763,9 @@ function setSaveButtonText(text) {
 function resetForm() {
     currentEditingSlug = null;
     document.getElementById('smartlink-form').reset();
+    if (document.getElementById('smartlink-input-release-date')) {
+        document.getElementById('smartlink-input-release-date').value = '';
+    }
     setSaveButtonText('PUBLISH SMART LINK');
     document.getElementById('slug-preview-text').textContent = 'release-slug';
     activePreset = 'cyber-cyan';
@@ -740,6 +785,9 @@ window.loadForEdit = function(slug) {
     document.getElementById('smartlink-input-image').value = data.image || data.artwork || '';
     document.getElementById('smartlink-input-preview').value = data.audioPreview || data.previewAudio || '';
     document.getElementById('smartlink-input-youtube').value = data.youtube || '';
+    if (document.getElementById('smartlink-input-release-date')) {
+        document.getElementById('smartlink-input-release-date').value = data.releaseDate || '';
+    }
 
     // Platforms
     const l = data.links || {};
