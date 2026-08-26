@@ -1056,110 +1056,44 @@
 
         // --- 2. PLATFORM DEFINITIONS & LOGO ASSETS ---
         const PLATFORM_CONFIG = {
-            spotify: {
-                name: "Spotify",
-                action: "Play",
-                logoSvg: `https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png`,
-                logoFallbackText: "Spotify",
-                logoColor: "#1DB954",
-                iconClass: "fab fa-spotify"
-            },
-            apple: {
-                name: "Apple Music",
-                action: "Play",
-                logoSvg: `https://music.apple.com/assets/favicon/favicon-180.png`,
-                logoFallbackText: "Apple Music",
-                logoColor: "#FA233B",
-                iconClass: "fab fa-apple"
-            },
-            itunes: {
-                name: "iTunes Store",
-                action: "Download",
-                logoSvg: ``,
-                logoFallbackText: "iTunes Store",
-                logoColor: "#EA4CC0",
-                iconClass: "fas fa-star"
-            },
-            deezer: {
-                name: "Deezer",
-                action: "Play",
-                logoSvg: ``,
-                logoFallbackText: "Deezer",
-                logoColor: "#A238FF",
-                iconClass: "fas fa-heart"
-            },
-            amazon: {
-                name: "Amazon Music",
-                action: "Play",
-                logoSvg: ``,
-                logoFallbackText: "Amazon Music",
-                logoColor: "#00A8E1",
-                iconClass: "fab fa-amazon"
-            },
-            youtube: {
-                name: "YouTube",
-                action: "Watch",
-                logoSvg: ``,
-                logoFallbackText: "YouTube",
-                logoColor: "#FF0000",
-                iconClass: "fab fa-youtube"
-            },
-            youtubemusic: {
-                name: "YouTube Music",
-                action: "Play",
-                logoSvg: ``,
-                logoFallbackText: "YouTube Music",
-                logoColor: "#FF0000",
-                iconClass: "fas fa-play-circle"
-            },
-            tidal: {
-                name: "TIDAL",
-                action: "Play",
-                logoSvg: ``,
-                logoFallbackText: "TIDAL",
-                logoColor: "#000000",
-                iconClass: "fas fa-gem"
-            },
-            pandora: {
-                name: "Pandora",
-                action: "Play",
-                logoSvg: ``,
-                logoFallbackText: "Pandora",
-                logoColor: "#005483",
-                iconClass: "fas fa-broadcast-tower"
-            },
-            boomplay: {
-                name: "Boomplay",
-                action: "Stream",
-                logoSvg: ``,
-                logoFallbackText: "Boomplay",
-                logoColor: "#00D664",
-                iconClass: "fas fa-play"
-            },
-            soundcloud: {
-                name: "SoundCloud",
-                action: "Play",
-                logoSvg: ``,
-                logoFallbackText: "SoundCloud",
-                logoColor: "#FF5500",
-                iconClass: "fab fa-soundcloud"
-            },
-            beatport: {
-                name: "Beatport",
-                action: "Buy",
-                logoSvg: ``,
-                logoFallbackText: "Beatport",
-                logoColor: "#00FF95",
-                iconClass: "fas fa-compact-disc"
-            },
-            tiktok: {
-                name: "TikTok",
-                action: "Use Sound",
-                logoSvg: ``,
-                logoFallbackText: "TikTok Sound",
-                logoColor: "#000000",
-                iconClass: "fab fa-tiktok"
-            }
+            spotify: { name: "Spotify", action: "Play", logoSvg: ``, logoFallbackText: "Spotify", logoColor: "#1DB954", iconClass: "fab fa-spotify" },
+            apple: { name: "Apple Music", action: "Play", logoSvg: ``, logoFallbackText: "Apple Music", logoColor: "#FA233B", iconClass: "fab fa-apple" },
+            itunes: { name: "iTunes Store", action: "Download", logoSvg: ``, logoFallbackText: "iTunes Store", logoColor: "#EA4CC0", iconClass: "fab fa-itunes" },
+            youtube: { name: "YouTube", action: "Watch", logoSvg: ``, logoFallbackText: "YouTube", logoColor: "#FF0000", iconClass: "fab fa-youtube" },
+            youtubemusic: { name: "YouTube Music", action: "Play", logoSvg: ``, logoFallbackText: "YouTube Music", logoColor: "#FF0000", iconClass: "fas fa-play-circle" },
+            amazon: { name: "Amazon Music", action: "Play", logoSvg: ``, logoFallbackText: "Amazon Music", logoColor: "#00A8E1", iconClass: "fab fa-amazon" },
+            tidal: { name: "TIDAL", action: "Play", logoSvg: ``, logoFallbackText: "TIDAL", logoColor: "#00f0ff", iconClass: "fas fa-compact-disc" },
+            deezer: { name: "Deezer", action: "Play", logoSvg: ``, logoFallbackText: "Deezer", logoColor: "#FF0092", iconClass: "fab fa-deezer" },
+            soundcloud: { name: "SoundCloud", action: "Stream", logoSvg: ``, logoFallbackText: "SoundCloud", logoColor: "#FF5500", iconClass: "fab fa-soundcloud" },
+            beatport: { name: "Beatport", action: "Buy", logoSvg: ``, logoFallbackText: "Beatport", logoColor: "#00FF95", iconClass: "fas fa-bolt" },
+            boomplay: { name: "Boomplay", action: "Stream", logoSvg: ``, logoFallbackText: "Boomplay", logoColor: "#00E676", iconClass: "fas fa-play" },
+            audiomack: { name: "Audiomack", action: "Stream", logoSvg: ``, logoFallbackText: "Audiomack", logoColor: "#FFAA00", iconClass: "fas fa-music" },
+            pandora: { name: "Pandora", action: "Play", logoSvg: ``, logoFallbackText: "Pandora", logoColor: "#005483", iconClass: "fas fa-radio" },
+            tiktok: { name: "TikTok", action: "Use Sound", logoSvg: ``, logoFallbackText: "TikTok Sound", logoColor: "#00f2fe", iconClass: "fab fa-tiktok" },
+            sevendigital: { name: "7digital", action: "Download", logoSvg: ``, logoFallbackText: "7digital", logoColor: "#20B2AA", iconClass: "fas fa-music" },
+            alibaba: { name: "Alibaba Music", action: "Stream", logoSvg: ``, logoFallbackText: "Alibaba", logoColor: "#FF6A00", iconClass: "fas fa-store" },
+            anghami: { name: "Anghami", action: "Play", logoSvg: ``, logoFallbackText: "Anghami", logoColor: "#75147C", iconClass: "fas fa-play" },
+            audiblemagic: { name: "Audible Magic", action: "Verify", logoSvg: ``, logoFallbackText: "Audible Magic", logoColor: "#9B51E0", iconClass: "fas fa-shield-alt" },
+            awa: { name: "AWA", action: "Play", logoSvg: ``, logoFallbackText: "AWA", logoColor: "#FA4870", iconClass: "fas fa-compact-disc" },
+            bmat: { name: "BMAT", action: "Track", logoSvg: ``, logoFallbackText: "BMAT", logoColor: "#3B82F6", iconClass: "fas fa-chart-simple" },
+            claromusica: { name: "ClaroMusica", action: "Play", logoSvg: ``, logoFallbackText: "ClaroMusica", logoColor: "#DA291C", iconClass: "fas fa-music" },
+            facebook: { name: "Facebook Audio", action: "Use Audio", logoSvg: ``, logoFallbackText: "Facebook", logoColor: "#1877F2", iconClass: "fab fa-facebook" },
+            flo: { name: "FLO", action: "Play", logoSvg: ``, logoFallbackText: "FLO", logoColor: "#0045FF", iconClass: "fas fa-wave-square" },
+            iheart: { name: "iHeartRadio", action: "Listen", logoSvg: ``, logoFallbackText: "iHeartRadio", logoColor: "#C6002B", iconClass: "fas fa-heart" },
+            jaxsta: { name: "Jaxsta", action: "Credits", logoSvg: ``, logoFallbackText: "Jaxsta", logoColor: "#00f0ff", iconClass: "fas fa-award" },
+            kanjian: { name: "Kanjian", action: "Stream", logoSvg: ``, logoFallbackText: "Kanjian", logoColor: "#FF3366", iconClass: "fas fa-eye" },
+            kkbox: { name: "KKBox", action: "Play", logoSvg: ``, logoFallbackText: "KKBox", logoColor: "#00C8FF", iconClass: "fas fa-box-open" },
+            netease: { name: "NetEase Cloud Music", action: "Play", logoSvg: ``, logoFallbackText: "NetEase", logoColor: "#E60026", iconClass: "fas fa-cloud" },
+            peloton: { name: "Peloton", action: "Ride", logoSvg: ``, logoFallbackText: "Peloton", logoColor: "#DF1C25", iconClass: "fas fa-bicycle" },
+            qobuz: { name: "Qobuz", action: "Stream", logoSvg: ``, logoFallbackText: "Qobuz", logoColor: "#0058A8", iconClass: "fas fa-circle-play" },
+            saavn: { name: "JioSaavn", action: "Play", logoSvg: ``, logoFallbackText: "JioSaavn", logoColor: "#2BC5B4", iconClass: "fas fa-compact-disc" },
+            securycast: { name: "Securycast", action: "Broadcast", logoSvg: ``, logoFallbackText: "Securycast", logoColor: "#10B981", iconClass: "fas fa-shield-halved" },
+            slacker: { name: "Slacker / LiveOne", action: "Play", logoSvg: ``, logoFallbackText: "LiveOne", logoColor: "#E02020", iconClass: "fas fa-sliders" },
+            soundmouse: { name: "Soundmouse", action: "Monitor", logoSvg: ``, logoFallbackText: "Soundmouse", logoColor: "#00BCD4", iconClass: "fas fa-computer-mouse" },
+            tencent: { name: "Tencent / QQ Music", action: "Play", logoSvg: ``, logoFallbackText: "QQ Music", logoColor: "#12B7F5", iconClass: "fab fa-qq" },
+            trebel: { name: "Trebel", action: "Download", logoSvg: ``, logoFallbackText: "Trebel", logoColor: "#FF4500", iconClass: "fas fa-arrow-down" },
+            tunedglobal: { name: "Tuned Global", action: "Stream", logoSvg: ``, logoFallbackText: "Tuned Global", logoColor: "#4A90E2", iconClass: "fas fa-globe" },
+            yousee: { name: "YouSee / Telmore", action: "Play", logoSvg: ``, logoFallbackText: "YouSee", logoColor: "#E30613", iconClass: "fas fa-tv" }
         };
 
         // --- 3. TOAST NOTIFICATION ---
@@ -1178,11 +1112,13 @@
             if (params.get('id')) return params.get('id').trim();
             if (params.get('track')) return params.get('track').trim();
             if (params.get('release')) return params.get('release').trim();
+            if (params.get('slug')) return params.get('slug').trim();
 
-            // Or from path: /release/nuts-funk
-            const pathParts = window.location.pathname.split('/').filter(Boolean);
-            if (pathParts.length > 1 && pathParts[0] === 'release') {
-                return pathParts[1].replace('.html', '').trim();
+            const path = window.location.pathname.replace(/\/+$/, '');
+            const segments = path.split('/');
+            const last = segments[segments.length - 1];
+            if (last && last !== 'release' && last !== 'index.html' && last !== '') {
+                return last;
             }
             return null;
         }
@@ -1415,9 +1351,13 @@
 
             const links = data.links || data;
             const availablePlatforms = [
-                'spotify', 'apple', 'itunes', 'deezer', 'amazon',
-                'youtube', 'youtubemusic', 'tidal', 'pandora',
-                'boomplay', 'soundcloud', 'beatport', 'tiktok'
+                'spotify', 'apple', 'itunes', 'youtube', 'youtubemusic', 'amazon',
+                'tidal', 'deezer', 'soundcloud', 'beatport', 'boomplay', 'audiomack',
+                'pandora', 'tiktok', 'sevendigital', 'alibaba', 'anghami', 'audiblemagic',
+                'awa', 'bmat', 'claromusica', 'facebook', 'flo', 'iheart',
+                'jaxsta', 'kanjian', 'kkbox', 'netease', 'peloton', 'qobuz',
+                'saavn', 'securycast', 'slacker', 'soundmouse', 'tencent', 'trebel',
+                'tunedglobal', 'yousee'
             ];
 
             let renderedCount = 0;
