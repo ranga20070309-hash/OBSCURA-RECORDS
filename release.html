@@ -1391,6 +1391,23 @@
                 }
             }
 
+            // Check Release Date & Pre-Save Status
+            const releaseDateVal = data.releaseDate || (data.schedule && data.schedule.releaseDate) || '';
+            const targetReleaseTime = releaseDateVal ? new Date(releaseDateVal).getTime() : 0;
+
+            function isCurrentlyPreSave() {
+                return Boolean(targetReleaseTime && targetReleaseTime > Date.now());
+            }
+
+            function updatePlatformButtonLabels() {
+                const isPreSave = isCurrentlyPreSave();
+                const btnSpans = platformListEl.querySelectorAll('.platform-action-btn');
+                btnSpans.forEach(btn => {
+                    const normalAction = btn.getAttribute('data-normal-action') || 'Play';
+                    btn.textContent = isPreSave ? 'Pre-Save' : normalAction;
+                });
+            }
+
             // Build Platform Links List with Selected Button Style
             const platformListEl = document.getElementById('platform-list');
             platformListEl.innerHTML = '';
@@ -1414,6 +1431,9 @@
                         iconClass: "fas fa-play"
                     };
 
+                    const isPreSave = isCurrentlyPreSave();
+                    const initialAction = isPreSave ? 'Pre-Save' : cfg.action;
+
                     const row = document.createElement('a');
                     row.href = url;
                     row.target = '_blank';
@@ -1424,7 +1444,7 @@
                             <i class="${cfg.iconClass}" style="font-size: 1.45rem; color: ${cfg.logoColor}; min-width: 24px; text-align: center;"></i>
                             <span class="platform-name">${cfg.name}</span>
                         </div>
-                        <span class="platform-action-btn">${cfg.action}</span>
+                        <span class="platform-action-btn" data-normal-action="${cfg.action}">${initialAction}</span>
                     `;
                     platformListEl.appendChild(row);
                     renderedCount++;
@@ -1440,6 +1460,9 @@
                     { name: "SoundCloud", url: "https://soundcloud.com/", icon: "fab fa-soundcloud", color: "#FF5500", action: "Stream" }
                 ];
                 fallbackPlatforms.forEach(p => {
+                    const isPreSave = isCurrentlyPreSave();
+                    const initialAction = isPreSave ? 'Pre-Save' : p.action;
+
                     const row = document.createElement('a');
                     row.href = p.url;
                     row.target = '_blank';
@@ -1449,10 +1472,21 @@
                             <i class="${p.icon}" style="font-size: 1.4rem; color: ${p.color};"></i>
                             <span class="platform-name">${p.name}</span>
                         </div>
-                        <span class="platform-action-btn">${p.action}</span>
+                        <span class="platform-action-btn" data-normal-action="${p.action}">${initialAction}</span>
                     `;
                     platformListEl.appendChild(row);
                 });
+            }
+
+            // Real-Time Background Monitor: auto-switch buttons the instant release time arrives
+            if (targetReleaseTime && targetReleaseTime > Date.now()) {
+                const releaseTimer = setInterval(() => {
+                    if (Date.now() >= targetReleaseTime) {
+                        clearInterval(releaseTimer);
+                        updatePlatformButtonLabels();
+                        showToast("TRACK RELEASED! NOW STREAMING", "fas fa-bolt");
+                    }
+                }, 1000);
             }
 
             // Render Cyber Neon QR Code for Side Dock
