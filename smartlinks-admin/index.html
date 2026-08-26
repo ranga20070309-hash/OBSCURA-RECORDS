@@ -626,14 +626,14 @@
         /* Color-Matched Dynamic Active States (No Harsh White/Cyan Clashing) */
         .preset-btn[data-preset="cyber-cyan"].active {
             border-color: #00f0ff;
-            background: rgba(0, 240, 255, 0.12);
+            background: rgba(0, 240, 255, 0.14);
             color: #00f0ff;
             box-shadow: 0 0 15px rgba(0, 240, 255, 0.25), inset 0 0 10px rgba(0, 240, 255, 0.08);
         }
 
         .preset-btn[data-preset="dark-phonk"].active {
             border-color: #ff0055;
-            background: rgba(255, 0, 85, 0.12);
+            background: rgba(255, 0, 85, 0.14);
             color: #ff3377;
             box-shadow: 0 0 15px rgba(255, 0, 85, 0.25), inset 0 0 10px rgba(255, 0, 85, 0.08);
         }
@@ -647,16 +647,65 @@
 
         .preset-btn[data-preset="acid-emerald"].active {
             border-color: #00ff8c;
-            background: rgba(0, 255, 140, 0.12);
+            background: rgba(0, 255, 140, 0.14);
             color: #00ff8c;
             box-shadow: 0 0 15px rgba(0, 255, 140, 0.25), inset 0 0 10px rgba(0, 255, 140, 0.08);
         }
 
+        .preset-btn[data-preset="solar-amber"].active {
+            border-color: #ffaa00;
+            background: rgba(255, 170, 0, 0.14);
+            color: #ffaa00;
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.25), inset 0 0 10px rgba(255, 170, 0, 0.08);
+        }
+
+        .preset-btn[data-preset="magma-inferno"].active {
+            border-color: #ff5500;
+            background: rgba(255, 85, 0, 0.14);
+            color: #ff6622;
+            box-shadow: 0 0 15px rgba(255, 85, 0, 0.25), inset 0 0 10px rgba(255, 85, 0, 0.08);
+        }
+
+        .preset-btn[data-preset="neon-sakura"].active {
+            border-color: #ff2a8d;
+            background: rgba(255, 42, 141, 0.14);
+            color: #ff4da6;
+            box-shadow: 0 0 15px rgba(255, 42, 141, 0.25), inset 0 0 10px rgba(255, 42, 141, 0.08);
+        }
+
+        .preset-btn[data-preset="electric-azure"].active {
+            border-color: #0099ff;
+            background: rgba(0, 153, 255, 0.14);
+            color: #33adff;
+            box-shadow: 0 0 15px rgba(0, 153, 255, 0.25), inset 0 0 10px rgba(0, 153, 255, 0.08);
+        }
+
+        .preset-btn[data-preset="ice-glacier"].active {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.14);
+            color: #38bdf8;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.25), inset 0 0 10px rgba(56, 189, 248, 0.08);
+        }
+
+        .preset-btn[data-preset="nebula-magenta"].active {
+            border-color: #d946ef;
+            background: rgba(217, 70, 239, 0.14);
+            color: #e879f9;
+            box-shadow: 0 0 15px rgba(217, 70, 239, 0.25), inset 0 0 10px rgba(217, 70, 239, 0.08);
+        }
+
+        .preset-btn[data-preset="luxury-champagne"].active {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.14);
+            color: #fbbf24;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.25), inset 0 0 10px rgba(245, 158, 11, 0.08);
+        }
+
         .preset-btn[data-preset="minimal-obsidian"].active {
             border-color: rgba(255, 255, 255, 0.4);
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.1);
             color: #ffffff;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.15), inset 0 0 10px rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.18), inset 0 0 10px rgba(255, 255, 255, 0.05);
         }
 
         .swatch {
@@ -685,6 +734,41 @@
         .swatch.emerald {
             background: #00ff8c;
             box-shadow: 0 0 8px #00ff8c;
+        }
+
+        .swatch.amber {
+            background: #ffaa00;
+            box-shadow: 0 0 8px #ffaa00;
+        }
+
+        .swatch.orange {
+            background: #ff5500;
+            box-shadow: 0 0 8px #ff5500;
+        }
+
+        .swatch.pink {
+            background: #ff2a8d;
+            box-shadow: 0 0 8px #ff2a8d;
+        }
+
+        .swatch.azure {
+            background: #0099ff;
+            box-shadow: 0 0 8px #0099ff;
+        }
+
+        .swatch.ice {
+            background: #38bdf8;
+            box-shadow: 0 0 8px #38bdf8;
+        }
+
+        .swatch.magenta {
+            background: #d946ef;
+            box-shadow: 0 0 8px #d946ef;
+        }
+
+        .swatch.gold {
+            background: #f59e0b;
+            box-shadow: 0 0 8px #f59e0b;
         }
 
         .swatch.obsidian {
@@ -1096,17 +1180,19 @@
         /* 1. Light Minimalist Mockup */
         .mock-platforms-list.style-clean-light {
             background: #ffffff;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
         }
 
         .mock-platforms-list.style-clean-light .mock-platform-row {
             border-bottom: 1px solid #f0f0f0;
             color: #111;
+            transition: all 0.2s ease;
         }
 
         .mock-platforms-list.style-clean-light .mock-platform-row:hover {
-            background: #f4f6f8;
+            background: #f8fafc;
+            border-left: 3px solid var(--accent-cyan, #111);
         }
 
         .mock-platforms-list.style-clean-light .mock-p-btn {
@@ -1117,8 +1203,9 @@
 
         /* 2. Dark Cyber Glassmorphism Mockup */
         .mock-platforms-list.style-cyber-glass {
-            background: rgba(12, 16, 28, 0.72);
-            backdrop-filter: blur(15px);
+            background: rgba(10, 14, 25, 0.76);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.12);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
         }
@@ -1126,23 +1213,25 @@
         .mock-platforms-list.style-cyber-glass .mock-platform-row {
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             color: #ffffff;
+            transition: all 0.2s ease;
         }
 
         .mock-platforms-list.style-cyber-glass .mock-platform-row:hover {
             background: rgba(255, 255, 255, 0.08);
+            border-left: 3px solid var(--accent-cyan, #00f0ff);
         }
 
         .mock-platforms-list.style-cyber-glass .mock-p-btn {
             background: rgba(255, 255, 255, 0.08);
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.22);
         }
 
         /* 3. Solid Neon Mockup */
         .mock-platforms-list.style-solid-neon {
             background: #080b14;
-            border: 1px solid var(--accent-cyan, #00f0ff);
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.25), 0 10px 30px rgba(0, 0, 0, 0.7);
+            border: 1.5px solid var(--accent-cyan, #00f0ff);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.22), 0 10px 30px rgba(0, 0, 0, 0.7);
         }
 
         .mock-platforms-list.style-solid-neon .mock-platform-row {
@@ -1160,6 +1249,77 @@
             font-weight: 800;
             border: none;
             box-shadow: 0 0 10px var(--accent-cyan, #00f0ff);
+        }
+
+        /* 4. Holographic Glow Mockup */
+        .mock-platforms-list.style-holographic {
+            background: rgba(10, 12, 24, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(139, 92, 246, 0.35);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
+        }
+
+        .mock-platforms-list.style-holographic .mock-platform-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        .mock-platforms-list.style-holographic .mock-p-btn {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+            color: #ffffff;
+            border: 1px solid var(--accent-cyan, #00f0ff);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+        }
+
+        /* 5. Cyber Neon Outline Mockup */
+        .mock-platforms-list.style-neon-outline {
+            background: rgba(8, 10, 18, 0.88);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .mock-platforms-list.style-neon-outline .mock-platform-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .mock-platforms-list.style-neon-outline .mock-platform-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid var(--accent-cyan, #00f0ff);
+        }
+
+        .mock-platforms-list.style-neon-outline .mock-p-btn {
+            background: transparent;
+            color: var(--accent-cyan, #00f0ff);
+            border: 1.5px solid var(--accent-cyan, #00f0ff);
+            box-shadow: 0 0 8px rgba(0, 240, 255, 0.18);
+        }
+
+        /* 6. Velvet Luxury Dark Mockup */
+        .mock-platforms-list.style-velvet-dark {
+            background: rgba(6, 8, 14, 0.94);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85);
+        }
+
+        .mock-platforms-list.style-velvet-dark .mock-platform-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.95);
+            transition: all 0.2s ease;
+        }
+
+        .mock-platforms-list.style-velvet-dark .mock-platform-row:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-left: 3px solid var(--accent-cyan, #ffffff);
+        }
+
+        .mock-platforms-list.style-velvet-dark .mock-p-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.16);
         }
 
         .mock-footer {
@@ -1694,11 +1854,10 @@
                 <!-- TAB 2: 100% UI CUSTOMIZER ENGINE -->
                 <div class="tab-pane" id="tab-ui">
                     <div class="theme-presets-card">
-                        <label class="section-sub-label"><i class="fas fa-wand-magic"></i> Instant Visual Theme
-                            Preset</label>
+                        <label class="section-sub-label"><i class="fas fa-wand-magic-sparkles"></i> Instant Visual Theme Presets (12 Curated Styles)</label>
                         <div class="theme-presets-grid">
                             <button type="button" class="preset-btn active" data-preset="cyber-cyan">
-                                <span class="swatch cyan"></span> Cyber Cyan (Default)
+                                <span class="swatch cyan"></span> Cyber Cyan
                             </button>
                             <button type="button" class="preset-btn" data-preset="dark-phonk">
                                 <span class="swatch crimson"></span> Dark Phonk / Blood
@@ -1708,6 +1867,27 @@
                             </button>
                             <button type="button" class="preset-btn" data-preset="acid-emerald">
                                 <span class="swatch emerald"></span> Acid Emerald
+                            </button>
+                            <button type="button" class="preset-btn" data-preset="solar-amber">
+                                <span class="swatch amber"></span> Solar Amber / Gold
+                            </button>
+                            <button type="button" class="preset-btn" data-preset="magma-inferno">
+                                <span class="swatch orange"></span> Magma Blaze
+                            </button>
+                            <button type="button" class="preset-btn" data-preset="neon-sakura">
+                                <span class="swatch pink"></span> Vaporwave Pink
+                            </button>
+                            <button type="button" class="preset-btn" data-preset="electric-azure">
+                                <span class="swatch azure"></span> Electric Azure
+                            </button>
+                            <button type="button" class="preset-btn" data-preset="ice-glacier">
+                                <span class="swatch ice"></span> Glacier Frost
+                            </button>
+                            <button type="button" class="preset-btn" data-preset="nebula-magenta">
+                                <span class="swatch magenta"></span> Cosmic Nebula
+                            </button>
+                            <button type="button" class="preset-btn" data-preset="luxury-champagne">
+                                <span class="swatch gold"></span> Luxury Gold
                             </button>
                             <button type="button" class="preset-btn" data-preset="minimal-obsidian">
                                 <span class="swatch obsidian"></span> Minimal Obsidian
@@ -1751,11 +1931,12 @@
                         <div class="form-group span-2">
                             <label><i class="fas fa-shapes"></i> Streaming Platform Buttons Style</label>
                             <select id="ui-button-style">
-                                <option value="clean-light" selected>Light Minimalist (Standard Industry - White Card)
-                                </option>
-                                <option value="cyber-glass">Dark Cyber Glassmorphism (Translucent Dark)</option>
-                                <option value="solid-neon">Solid Neon Accent (High Vibrance)</option>
-                                <option value="holographic">Holographic Border Glow</option>
+                                <option value="cyber-glass" selected>Dark Cyber Glassmorphism (Translucent Dark)</option>
+                                <option value="solid-neon">Solid Neon Accent (High Vibrance & Glow)</option>
+                                <option value="neon-outline">Cyber Neon Outline (Minimal Glow)</option>
+                                <option value="holographic">Holographic Border Glow (Dynamic Gradient)</option>
+                                <option value="velvet-dark">Velvet Luxury Dark (Matte Stealth)</option>
+                                <option value="clean-light">Light Minimalist (Standard Industry - White Card)</option>
                             </select>
                         </div>
 
@@ -2189,11 +2370,18 @@ function showToast(msg, type = 'success') {
 
 // Preset Theme Defs
 const THEME_PRESETS = {
-    'cyber-cyan': { accent: '#00f0ff', cardBg: '#07090f', darkness: 0.12, glow: 0.35, buttonStyle: 'clean-light' },
-    'dark-phonk': { accent: '#ff0055', cardBg: '#080507', darkness: 0.08, glow: 0.45, buttonStyle: 'cyber-glass' },
-    'tokyo-violet': { accent: '#8b5cf6', cardBg: '#080612', darkness: 0.14, glow: 0.4, buttonStyle: 'cyber-glass' },
-    'acid-emerald': { accent: '#00ff8c', cardBg: '#050a08', darkness: 0.12, glow: 0.35, buttonStyle: 'solid-neon' },
-    'minimal-obsidian': { accent: '#ffffff', cardBg: '#09090b', darkness: 0.06, glow: 0.15, buttonStyle: 'clean-light' }
+    'cyber-cyan': { accent: '#00f0ff', cardBg: '#07090f', darkness: 0.12, glow: 0.35, buttonStyle: 'cyber-glass' },
+    'dark-phonk': { accent: '#ff0055', cardBg: '#0a0407', darkness: 0.08, glow: 0.45, buttonStyle: 'cyber-glass' },
+    'tokyo-violet': { accent: '#8b5cf6', cardBg: '#080614', darkness: 0.14, glow: 0.42, buttonStyle: 'cyber-glass' },
+    'acid-emerald': { accent: '#00ff8c', cardBg: '#040d08', darkness: 0.12, glow: 0.38, buttonStyle: 'solid-neon' },
+    'solar-amber': { accent: '#ffaa00', cardBg: '#0e0904', darkness: 0.12, glow: 0.45, buttonStyle: 'solid-neon' },
+    'magma-inferno': { accent: '#ff5500', cardBg: '#0d0502', darkness: 0.10, glow: 0.45, buttonStyle: 'cyber-glass' },
+    'neon-sakura': { accent: '#ff2a8d', cardBg: '#100511', darkness: 0.12, glow: 0.45, buttonStyle: 'holographic' },
+    'electric-azure': { accent: '#0099ff', cardBg: '#030914', darkness: 0.12, glow: 0.40, buttonStyle: 'cyber-glass' },
+    'ice-glacier': { accent: '#38bdf8', cardBg: '#050c14', darkness: 0.10, glow: 0.35, buttonStyle: 'neon-outline' },
+    'nebula-magenta': { accent: '#d946ef', cardBg: '#0e0414', darkness: 0.12, glow: 0.45, buttonStyle: 'holographic' },
+    'luxury-champagne': { accent: '#f59e0b', cardBg: '#0d0a06', darkness: 0.08, glow: 0.35, buttonStyle: 'clean-light' },
+    'minimal-obsidian': { accent: '#ffffff', cardBg: '#09090b', darkness: 0.06, glow: 0.18, buttonStyle: 'velvet-dark' }
 };
 
 // Studio Engine Startup
@@ -2420,6 +2608,8 @@ function updateMockupPreview() {
     const btnStyle = document.getElementById('ui-button-style')?.value || 'clean-light';
     const showGrid = document.getElementById('ui-show-grid')?.checked ?? true;
     const rgb = hexToRgb(accent);
+    document.documentElement.style.setProperty('--accent-cyan', accent);
+    document.documentElement.style.setProperty('--accent-rgb', rgb);
 
     // Update Text & Image in Mockup
     if (document.getElementById('mock-title')) document.getElementById('mock-title').textContent = title.toUpperCase();
