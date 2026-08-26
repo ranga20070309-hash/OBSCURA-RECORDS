@@ -1641,6 +1641,26 @@
                             <input type="url" id="smartlink-input-youtube"
                                 placeholder="https://www.youtube.com/watch?v=6w5b0wK3pQ0">
                         </div>
+
+                        <div class="form-group span-2">
+                            <label><i class="fas fa-calendar-days"></i> Release Date & Time (Pre-Save Auto-Switch)</label>
+                            <div class="schedule-input-row" style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+                                <input type="datetime-local" id="smartlink-input-release-date" style="flex: 1; min-width: 220px;">
+                                <button type="button" class="cyber-btn sm secondary" id="btn-schedule-clear" title="Clear release date and set as Out Now">
+                                    <i class="fas fa-times"></i> CLEAR (OUT NOW)
+                                </button>
+                            </div>
+                            <div class="schedule-quick-chips" style="display: flex; gap: 0.4rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                                <button type="button" class="quick-chip-btn" data-hours="24">+1 Day</button>
+                                <button type="button" class="quick-chip-btn" data-hours="48">+2 Days</button>
+                                <button type="button" class="quick-chip-btn" data-hours="72">+3 Days</button>
+                                <button type="button" class="quick-chip-btn" data-hours="168">+1 Week</button>
+                            </div>
+                            <small class="helper-text">
+                                <i class="fas fa-info-circle" style="color: #00f0ff;"></i> 
+                                If a future date & time is set, all store buttons will display <strong>"PRE-SAVE"</strong>. When that time arrives, buttons automatically switch to <strong>"PLAY / STREAM"</strong>. Leave empty if already released.
+                            </small>
+                        </div>
                     </div>
                 </div>
 
