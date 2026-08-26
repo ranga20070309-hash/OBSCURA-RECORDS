@@ -20,27 +20,27 @@
     },
     {
       "source": "/share",
-      "destination": "/share/index.html"
+      "destination": "/api/release"
     },
     {
       "source": "/share/(.*)",
-      "destination": "/share/index.html"
+      "destination": "/api/release"
     },
     {
       "source": "/transmit",
-      "destination": "/transmit/index.html"
+      "destination": "/api/release"
     },
     {
       "source": "/transmit/(.*)",
-      "destination": "/transmit/index.html"
+      "destination": "/api/release"
     },
     {
       "source": "/release",
-      "destination": "/release/index.html"
+      "destination": "/api/release"
     },
     {
       "source": "/release/(.*)",
-      "destination": "/release/index.html"
+      "destination": "/api/release"
     }
   ]
 }
