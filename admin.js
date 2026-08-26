@@ -3776,11 +3776,15 @@ function initSmartLinksEngine() {
                 tiktok: document.getElementById('smartlink-link-tiktok')?.value.trim() || ''
             };
 
+            const releaseDateInput = document.getElementById('smartlink-input-release-date');
+            const releaseDate = releaseDateInput ? releaseDateInput.value : (cachedSmartLinks[slug]?.releaseDate || '');
+
             const payload = {
                 title: title,
                 artist: artist || 'OBSCURA RECORD',
                 image: image || 'assets/OCR.png',
                 slug: slug,
+                releaseDate: releaseDate,
                 audioPreview: previewInput.value.trim() || '',
                 youtube: links.youtube || '',
                 links: links,
@@ -3822,6 +3826,8 @@ function initSmartLinksEngine() {
             imageInput.value = '';
             slugInput.value = '';
             previewInput.value = '';
+            const relInp = document.getElementById('smartlink-input-release-date');
+            if (relInp) relInp.value = '';
             if (slugPreviewText) slugPreviewText.textContent = 'release-slug';
             if (viewCurrentBtn) viewCurrentBtn.style.display = 'none';
 
@@ -3869,6 +3875,7 @@ window.editSmartLink = function (slugId) {
     const slugInput = document.getElementById('smartlink-input-slug');
     const previewInput = document.getElementById('smartlink-input-preview');
     const slugPreviewText = document.getElementById('slug-preview-text');
+    const releaseDateInput = document.getElementById('smartlink-input-release-date');
 
     if (titleInput) titleInput.value = item.title || '';
     if (artistInput) artistInput.value = item.artist || '';
@@ -3876,6 +3883,7 @@ window.editSmartLink = function (slugId) {
     if (slugInput) slugInput.value = slugId;
     if (slugPreviewText) slugPreviewText.textContent = slugId;
     if (previewInput) previewInput.value = item.audioPreview || '';
+    if (releaseDateInput) releaseDateInput.value = item.releaseDate || '';
 
     const links = item.links || item;
     const platformMap = {
