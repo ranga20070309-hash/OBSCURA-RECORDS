@@ -298,41 +298,73 @@ function updateMockupPreview() {
 
     // Dynamic Platform List in Mockup with Button Style Variants & Pre-Save Check
     const platformContainer = document.getElementById('mock-platforms-container');
-    platformContainer.className = `mock-platforms-list style-${btnStyle}`;
+    if (platformContainer) {
+        platformContainer.className = `mock-platforms-list style-${btnStyle}`;
 
-    const releaseDateVal = document.getElementById('smartlink-input-release-date')?.value;
-    const isPreSave = Boolean(releaseDateVal && new Date(releaseDateVal).getTime() > Date.now());
+        const releaseDateVal = document.getElementById('smartlink-input-release-date')?.value;
+        const isPreSave = Boolean(releaseDateVal && new Date(releaseDateVal).getTime() > Date.now());
 
-    const platforms = [
-        { id: 'link-spotify', name: 'Spotify', icon: 'fab fa-spotify', col: '#1DB954', action: isPreSave ? 'Pre-Save' : 'Play' },
-        { id: 'link-apple', name: 'Apple Music', icon: 'fab fa-apple', col: '#FA243C', action: isPreSave ? 'Pre-Save' : 'Play' },
-        { id: 'link-youtube', name: 'YouTube', icon: 'fab fa-youtube', col: '#FF0000', action: isPreSave ? 'Pre-Save' : 'Watch' },
-        { id: 'link-youtubemusic', name: 'YouTube Music', icon: 'fas fa-play-circle', col: '#FF0000', action: isPreSave ? 'Pre-Save' : 'Play' },
-        { id: 'link-amazon', name: 'Amazon Music', icon: 'fab fa-amazon', col: '#00A8E1', action: isPreSave ? 'Pre-Save' : 'Play' },
-        { id: 'link-tidal', name: 'Tidal', icon: 'fas fa-compact-disc', col: '#00f0ff', action: isPreSave ? 'Pre-Save' : 'Play' },
-        { id: 'link-deezer', name: 'Deezer', icon: 'fab fa-deezer', col: '#FF0092', action: isPreSave ? 'Pre-Save' : 'Play' },
-        { id: 'link-soundcloud', name: 'SoundCloud', icon: 'fab fa-soundcloud', col: '#FF5500', action: isPreSave ? 'Pre-Save' : 'Stream' }
-    ];
+        const platforms = [
+            { id: 'link-spotify', name: 'Spotify', icon: 'fab fa-spotify', col: '#1DB954', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-apple', name: 'Apple Music', icon: 'fab fa-apple', col: '#FA243C', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-itunes', name: 'iTunes Store', icon: 'fab fa-itunes', col: '#EA4CC0', action: isPreSave ? 'Pre-Save' : 'Download' },
+            { id: 'link-youtube', name: 'YouTube', icon: 'fab fa-youtube', col: '#FF0000', action: isPreSave ? 'Pre-Save' : 'Watch' },
+            { id: 'link-youtubemusic', name: 'YouTube Music', icon: 'fas fa-play-circle', col: '#FF0000', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-amazon', name: 'Amazon Music', icon: 'fab fa-amazon', col: '#00A8E1', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-tidal', name: 'TIDAL', icon: 'fas fa-compact-disc', col: '#00f0ff', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-deezer', name: 'Deezer', icon: 'fab fa-deezer', col: '#FF0092', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-soundcloud', name: 'SoundCloud', icon: 'fab fa-soundcloud', col: '#FF5500', action: isPreSave ? 'Pre-Save' : 'Stream' },
+            { id: 'link-beatport', name: 'Beatport', icon: 'fas fa-bolt', col: '#00FF95', action: isPreSave ? 'Pre-Save' : 'Buy' },
+            { id: 'link-boomplay', name: 'Boomplay', icon: 'fas fa-play', col: '#00E676', action: isPreSave ? 'Pre-Save' : 'Stream' },
+            { id: 'link-audiomack', name: 'Audiomack', icon: 'fas fa-music', col: '#FFAA00', action: isPreSave ? 'Pre-Save' : 'Stream' },
+            { id: 'link-pandora', name: 'Pandora', icon: 'fas fa-radio', col: '#005483', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-tiktok', name: 'TikTok', icon: 'fab fa-tiktok', col: '#00f2fe', action: isPreSave ? 'Pre-Save' : 'Use Sound' },
+            { id: 'link-sevendigital', name: '7digital', icon: 'fas fa-music', col: '#20B2AA', action: isPreSave ? 'Pre-Save' : 'Download' },
+            { id: 'link-alibaba', name: 'Alibaba Music', icon: 'fas fa-store', col: '#FF6A00', action: isPreSave ? 'Pre-Save' : 'Stream' },
+            { id: 'link-anghami', name: 'Anghami', icon: 'fas fa-play', col: '#75147C', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-audiblemagic', name: 'Audible Magic', icon: 'fas fa-shield-alt', col: '#9B51E0', action: isPreSave ? 'Pre-Save' : 'Verify' },
+            { id: 'link-awa', name: 'AWA', icon: 'fas fa-compact-disc', col: '#FA4870', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-bmat', name: 'BMAT', icon: 'fas fa-chart-simple', col: '#3B82F6', action: isPreSave ? 'Pre-Save' : 'Track' },
+            { id: 'link-claromusica', name: 'ClaroMusica', icon: 'fas fa-music', col: '#DA291C', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-facebook', name: 'Facebook Audio', icon: 'fab fa-facebook', col: '#1877F2', action: isPreSave ? 'Pre-Save' : 'Use Audio' },
+            { id: 'link-flo', name: 'FLO', icon: 'fas fa-wave-square', col: '#0045FF', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-iheart', name: 'iHeartRadio', icon: 'fas fa-heart', col: '#C6002B', action: isPreSave ? 'Pre-Save' : 'Listen' },
+            { id: 'link-jaxsta', name: 'Jaxsta', icon: 'fas fa-award', col: '#00f0ff', action: isPreSave ? 'Pre-Save' : 'Credits' },
+            { id: 'link-kanjian', name: 'Kanjian', icon: 'fas fa-eye', col: '#FF3366', action: isPreSave ? 'Pre-Save' : 'Stream' },
+            { id: 'link-kkbox', name: 'KKBox', icon: 'fas fa-box-open', col: '#00C8FF', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-netease', name: 'NetEase Cloud Music', icon: 'fas fa-cloud', col: '#E60026', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-peloton', name: 'Peloton', icon: 'fas fa-bicycle', col: '#DF1C25', action: isPreSave ? 'Pre-Save' : 'Ride' },
+            { id: 'link-qobuz', name: 'Qobuz', icon: 'fas fa-circle-play', col: '#0058A8', action: isPreSave ? 'Pre-Save' : 'Stream' },
+            { id: 'link-saavn', name: 'JioSaavn', icon: 'fas fa-compact-disc', col: '#2BC5B4', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-securycast', name: 'Securycast', icon: 'fas fa-shield-halved', col: '#10B981', action: isPreSave ? 'Pre-Save' : 'Broadcast' },
+            { id: 'link-slacker', name: 'Slacker / LiveOne', icon: 'fas fa-sliders', col: '#E02020', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-soundmouse', name: 'Soundmouse', icon: 'fas fa-computer-mouse', col: '#00BCD4', action: isPreSave ? 'Pre-Save' : 'Monitor' },
+            { id: 'link-tencent', name: 'Tencent / QQ Music', icon: 'fab fa-qq', col: '#12B7F5', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-trebel', name: 'Trebel', icon: 'fas fa-arrow-down', col: '#FF4500', action: isPreSave ? 'Pre-Save' : 'Download' },
+            { id: 'link-tunedglobal', name: 'Tuned Global', icon: 'fas fa-globe', col: '#4A90E2', action: isPreSave ? 'Pre-Save' : 'Stream' },
+            { id: 'link-yousee', name: 'YouSee / Telmore', icon: 'fas fa-tv', col: '#E30613', action: isPreSave ? 'Pre-Save' : 'Play' }
+        ];
 
-    let activePlatforms = platforms.filter(p => {
-        const val = document.getElementById(p.id)?.value?.trim();
-        return Boolean(val);
-    });
+        let activePlatforms = platforms.filter(p => {
+            const val = document.getElementById(p.id)?.value?.trim();
+            return Boolean(val);
+        });
 
-    if (!activePlatforms.length) {
-        activePlatforms = platforms.slice(0, 3); // Fallback sample
+        if (!activePlatforms.length) {
+            activePlatforms = platforms.slice(0, 3); // Fallback sample
+        }
+
+        platformContainer.innerHTML = '';
+        activePlatforms.forEach(p => {
+            const row = document.createElement('div');
+            row.className = 'mock-platform-row';
+            row.innerHTML = `
+                <div class="mock-p-left"><i class="${p.icon}" style="color:${p.col}; font-size:1.1rem;"></i> <span>${p.name}</span></div>
+                <span class="mock-p-btn">${p.action}</span>
+            `;
+            platformContainer.appendChild(row);
+        });
     }
-
-    platformContainer.innerHTML = '';
-    activePlatforms.forEach(p => {
-        const row = document.createElement('div');
-        row.className = 'mock-platform-row';
-        row.innerHTML = `
-            <div class="mock-p-left"><i class="${p.icon}" style="color:${p.col}; font-size:1.1rem;"></i> <span>${p.name}</span></div>
-            <span class="mock-p-btn">${p.action}</span>
-        `;
-        platformContainer.appendChild(row);
-    });
 }
 
 function hexToRgb(hex) {
@@ -668,149 +700,156 @@ function renderDirectory(query = '') {
     });
 }
 
+const PLATFORM_INPUT_KEYS = [
+    'spotify', 'apple', 'itunes', 'youtube', 'youtubemusic', 'amazon',
+    'tidal', 'deezer', 'soundcloud', 'beatport', 'boomplay', 'audiomack',
+    'pandora', 'tiktok', 'sevendigital', 'alibaba', 'anghami', 'audiblemagic',
+    'awa', 'bmat', 'claromusica', 'facebook', 'flo', 'iheart',
+    'jaxsta', 'kanjian', 'kkbox', 'netease', 'peloton', 'qobuz',
+    'saavn', 'securycast', 'slacker', 'soundmouse', 'tencent', 'trebel',
+    'tunedglobal', 'yousee'
+];
+
 // 7. Save / Publish Action
 function initActions() {
     const saveBtn = document.getElementById('btn-save-smartlink');
     const resetBtn = document.getElementById('btn-reset-smartlink-form');
     const liveBtn = document.getElementById('btn-open-live-preview');
 
-    saveBtn.addEventListener('click', () => {
-        const title = document.getElementById('smartlink-input-title').value.trim();
-        const artist = document.getElementById('smartlink-input-artist').value.trim();
-        const image = document.getElementById('smartlink-input-image').value.trim();
-        let slug = document.getElementById('smartlink-input-slug').value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const title = document.getElementById('smartlink-input-title')?.value.trim() || '';
+            const artist = document.getElementById('smartlink-input-artist')?.value.trim() || '';
+            const image = document.getElementById('smartlink-input-image')?.value.trim() || '';
+            let slug = document.getElementById('smartlink-input-slug')?.value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || '';
 
-        if (!title) {
-            showToast("PLEASE ENTER TRACK TITLE!", 'error');
-            document.getElementById('smartlink-input-title').focus();
-            return;
-        }
-
-        if (!slug) {
-            slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        }
-
-        const rawAudio = document.getElementById('smartlink-input-preview')?.value.trim() || '';
-        if (rawAudio && rawAudio.startsWith('data:') && rawAudio.length > 6 * 1024 * 1024) {
-            showToast("AUDIO PREVIEW IS TOO LARGE (>5MB)! Please upload a shorter MP3 snippet or paste a direct link.", "error");
-            return;
-        }
-
-        const links = {
-            spotify: document.getElementById('link-spotify')?.value.trim() || '',
-            apple: document.getElementById('link-apple')?.value.trim() || '',
-            youtube: document.getElementById('link-youtube')?.value.trim() || '',
-            youtubemusic: document.getElementById('link-youtubemusic')?.value.trim() || '',
-            amazon: document.getElementById('link-amazon')?.value.trim() || '',
-            tidal: document.getElementById('link-tidal')?.value.trim() || '',
-            deezer: document.getElementById('link-deezer')?.value.trim() || '',
-            soundcloud: document.getElementById('link-soundcloud')?.value.trim() || '',
-            beatport: document.getElementById('link-beatport')?.value.trim() || '',
-            boomplay: document.getElementById('link-boomplay')?.value.trim() || '',
-            audiomack: document.getElementById('link-audiomack')?.value.trim() || '',
-            pandora: document.getElementById('link-pandora')?.value.trim() || ''
-        };
-
-        const uiSettings = {
-            theme: activePreset,
-            accent: document.getElementById('ui-accent-color').value || '#00f0ff',
-            cardBg: document.getElementById('ui-card-bg-color').value || '#07090f',
-            darkness: parseFloat(document.getElementById('ui-bg-darkness').value || '0.12'),
-            borderGlow: parseFloat(document.getElementById('ui-border-glow').value || '0.35'),
-            buttonStyle: document.getElementById('ui-button-style').value || 'clean-light',
-            showQrDock: document.getElementById('ui-show-qr-dock').checked,
-            showGrid: document.getElementById('ui-show-grid').checked
-        };
-
-        const legalSettings = {
-            contactEmail: document.getElementById('smartlink-contact-email').value.trim() || 'artists@obscurarecord.com',
-            showConsent: document.getElementById('legal-show-consent').checked,
-            showFooter: document.getElementById('legal-show-footer').checked
-        };
-
-        const releaseDate = document.getElementById('smartlink-input-release-date')?.value || '';
-
-        const payload = {
-            title: title,
-            artist: artist,
-            image: image,
-            releaseDate: releaseDate,
-            audioPreview: rawAudio,
-            youtube: document.getElementById('smartlink-input-youtube').value.trim(),
-            links: links,
-            ui: uiSettings,
-            legal: legalSettings,
-            updatedAt: Date.now()
-        };
-
-        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PUBLISHING...';
-        saveBtn.disabled = true;
-
-        const saveToFirebase = async () => {
-            let isSaved = false;
-            let lastError = null;
-
-            // 1. Dispatch via Firebase SDK
-            try {
-                await db.ref(`smartLinks/${slug}`).set(payload);
-                isSaved = true;
-            } catch (sdkErr) {
-                console.warn("Firebase SDK save failed, falling back to direct REST:", sdkErr);
-                lastError = sdkErr;
+            if (!title) {
+                showToast("PLEASE ENTER TRACK TITLE!", 'error');
+                document.getElementById('smartlink-input-title')?.focus();
+                return;
             }
 
-            // 2. Direct REST PUT (for zero WebSocket dependency)
-            if (!isSaved) {
+            if (!slug) {
+                slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            }
+
+            const rawAudio = document.getElementById('smartlink-input-preview')?.value.trim() || '';
+            if (rawAudio && rawAudio.startsWith('data:') && rawAudio.length > 6 * 1024 * 1024) {
+                showToast("AUDIO PREVIEW IS TOO LARGE (>5MB)! Please upload a shorter MP3 snippet or paste a direct link.", "error");
+                return;
+            }
+
+            const links = {};
+            PLATFORM_INPUT_KEYS.forEach(key => {
+                const el = document.getElementById(`link-${key}`);
+                links[key] = el ? el.value.trim() : '';
+            });
+
+            const uiSettings = {
+                theme: activePreset,
+                accent: document.getElementById('ui-accent-color')?.value || '#00f0ff',
+                cardBg: document.getElementById('ui-card-bg-color')?.value || '#07090f',
+                darkness: parseFloat(document.getElementById('ui-bg-darkness')?.value || '0.12'),
+                borderGlow: parseFloat(document.getElementById('ui-border-glow')?.value || '0.35'),
+                buttonStyle: document.getElementById('ui-button-style')?.value || 'clean-light',
+                showQrDock: document.getElementById('ui-show-qr-dock')?.checked ?? true,
+                showGrid: document.getElementById('ui-show-grid')?.checked ?? true
+            };
+
+            const legalSettings = {
+                contactEmail: document.getElementById('smartlink-contact-email')?.value.trim() || 'artists@obscurarecord.com',
+                showConsent: document.getElementById('legal-show-consent')?.checked ?? true,
+                showFooter: document.getElementById('legal-show-footer')?.checked ?? true
+            };
+
+            const releaseDate = document.getElementById('smartlink-input-release-date')?.value || '';
+
+            const payload = {
+                title: title,
+                artist: artist,
+                image: image,
+                releaseDate: releaseDate,
+                audioPreview: rawAudio,
+                youtube: document.getElementById('smartlink-input-youtube')?.value.trim() || '',
+                links: links,
+                ui: uiSettings,
+                legal: legalSettings,
+                updatedAt: Date.now()
+            };
+
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PUBLISHING...';
+            saveBtn.disabled = true;
+
+            const saveToFirebase = async () => {
+                let isSaved = false;
+                let lastError = null;
+
+                // 1. Dispatch via Firebase SDK
                 try {
-                    const res = await fetch(`https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks/${encodeURIComponent(slug)}.json`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (res.ok) {
-                        isSaved = true;
-                    } else {
-                        const txt = await res.text();
-                        throw new Error(`HTTP ${res.status}: ${txt}`);
-                    }
-                } catch (restErr) {
-                    console.warn("REST direct save error:", restErr);
-                    lastError = restErr;
+                    await db.ref(`smartLinks/${slug}`).set(payload);
+                    isSaved = true;
+                } catch (sdkErr) {
+                    console.warn("Firebase SDK save failed, falling back to direct REST:", sdkErr);
+                    lastError = sdkErr;
                 }
-            }
 
-            if (!isSaved) {
-                throw new Error(lastError ? (lastError.message || String(lastError)) : "Could not reach database. Check internet connection.");
-            }
+                // 2. Direct REST PUT (for zero WebSocket dependency)
+                if (!isSaved) {
+                    try {
+                        const res = await fetch(`https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks/${encodeURIComponent(slug)}.json`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (res.ok) {
+                            isSaved = true;
+                        } else {
+                            const txt = await res.text();
+                            throw new Error(`HTTP ${res.status}: ${txt}`);
+                        }
+                    } catch (restErr) {
+                        console.warn("REST direct save error:", restErr);
+                        lastError = restErr;
+                    }
+                }
 
-            // Immediate local sync
-            cachedSmartLinks[slug] = payload;
-            currentEditingSlug = slug;
-            updateStatsAndRender(document.getElementById('smartlink-search-input')?.value || '');
-            showToast(`SMART LINK "${title}" PUBLISHED LIVE!`);
-        };
+                if (!isSaved) {
+                    throw new Error(lastError ? (lastError.message || String(lastError)) : "Could not reach database. Check internet connection.");
+                }
 
-        saveToFirebase().catch(err => {
-            showToast("PUBLISH ERROR: " + err.message, 'error');
-        }).finally(() => {
-            setSaveButtonText(currentEditingSlug ? 'UPDATE SMART LINK' : 'PUBLISH SMART LINK');
-            saveBtn.disabled = false;
+                // Immediate local sync
+                cachedSmartLinks[slug] = payload;
+                currentEditingSlug = slug;
+                updateStatsAndRender(document.getElementById('smartlink-search-input')?.value || '');
+                showToast(`SMART LINK "${title}" PUBLISHED LIVE!`);
+            };
+
+            saveToFirebase().catch(err => {
+                showToast("PUBLISH ERROR: " + err.message, 'error');
+            }).finally(() => {
+                setSaveButtonText(currentEditingSlug ? 'UPDATE SMART LINK' : 'PUBLISH SMART LINK');
+                saveBtn.disabled = false;
+            });
         });
-    });
+    }
 
-    resetBtn.addEventListener('click', () => {
-        resetForm();
-        showToast("FORM RESET TO DEFAULTS");
-    });
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            resetForm();
+            showToast("FORM RESET TO DEFAULTS");
+        });
+    }
 
-    liveBtn.addEventListener('click', () => {
-        const slug = document.getElementById('smartlink-input-slug').value.trim() || currentEditingSlug;
-        if (!slug) {
-            showToast("NO SMART LINK SLUG SPECIFIED!", 'error');
-            return;
-        }
-        window.open(`https://www.obscurarecord.com/release/?id=${slug}`, '_blank');
-    });
+    if (liveBtn) {
+        liveBtn.addEventListener('click', () => {
+            const slug = document.getElementById('smartlink-input-slug')?.value.trim() || currentEditingSlug;
+            if (!slug) {
+                showToast("NO SMART LINK SLUG SPECIFIED!", 'error');
+                return;
+            }
+            window.open(`https://www.obscurarecord.com/release/?id=${slug}`, '_blank');
+        });
+    }
 }
 
 function setSaveButtonText(text) {
@@ -821,12 +860,16 @@ function setSaveButtonText(text) {
 
 function resetForm() {
     currentEditingSlug = null;
-    document.getElementById('smartlink-form').reset();
+    if (document.getElementById('smartlink-form')) document.getElementById('smartlink-form').reset();
     if (document.getElementById('smartlink-input-release-date')) {
         document.getElementById('smartlink-input-release-date').value = '';
     }
+    PLATFORM_INPUT_KEYS.forEach(key => {
+        const el = document.getElementById(`link-${key}`);
+        if (el) el.value = '';
+    });
     setSaveButtonText('PUBLISH SMART LINK');
-    document.getElementById('slug-preview-text').textContent = 'release-slug';
+    if (document.getElementById('slug-preview-text')) document.getElementById('slug-preview-text').textContent = 'release-slug';
     activePreset = 'cyber-cyan';
     updateMockupPreview();
 }
@@ -837,31 +880,23 @@ window.loadForEdit = function(slug) {
     if (!data) return;
 
     currentEditingSlug = slug;
-    document.getElementById('smartlink-input-title').value = data.title || '';
-    document.getElementById('smartlink-input-artist').value = data.artist || '';
-    document.getElementById('smartlink-input-slug').value = slug;
-    document.getElementById('slug-preview-text').textContent = slug;
-    document.getElementById('smartlink-input-image').value = data.image || data.artwork || '';
-    document.getElementById('smartlink-input-preview').value = data.audioPreview || data.previewAudio || '';
-    document.getElementById('smartlink-input-youtube').value = data.youtube || '';
+    if (document.getElementById('smartlink-input-title')) document.getElementById('smartlink-input-title').value = data.title || '';
+    if (document.getElementById('smartlink-input-artist')) document.getElementById('smartlink-input-artist').value = data.artist || '';
+    if (document.getElementById('smartlink-input-slug')) document.getElementById('smartlink-input-slug').value = slug;
+    if (document.getElementById('slug-preview-text')) document.getElementById('slug-preview-text').textContent = slug;
+    if (document.getElementById('smartlink-input-image')) document.getElementById('smartlink-input-image').value = data.image || data.artwork || '';
+    if (document.getElementById('smartlink-input-preview')) document.getElementById('smartlink-input-preview').value = data.audioPreview || data.previewAudio || '';
+    if (document.getElementById('smartlink-input-youtube')) document.getElementById('smartlink-input-youtube').value = data.youtube || '';
     if (document.getElementById('smartlink-input-release-date')) {
         document.getElementById('smartlink-input-release-date').value = data.releaseDate || '';
     }
 
     // Platforms
     const l = data.links || {};
-    document.getElementById('link-spotify').value = l.spotify || '';
-    document.getElementById('link-apple').value = l.apple || '';
-    document.getElementById('link-youtube').value = l.youtube || '';
-    document.getElementById('link-youtubemusic').value = l.youtubemusic || '';
-    document.getElementById('link-amazon').value = l.amazon || '';
-    document.getElementById('link-tidal').value = l.tidal || '';
-    document.getElementById('link-deezer').value = l.deezer || '';
-    document.getElementById('link-soundcloud').value = l.soundcloud || '';
-    document.getElementById('link-beatport').value = l.beatport || '';
-    document.getElementById('link-boomplay').value = l.boomplay || '';
-    document.getElementById('link-audiomack').value = l.audiomack || '';
-    document.getElementById('link-pandora').value = l.pandora || '';
+    PLATFORM_INPUT_KEYS.forEach(key => {
+        const el = document.getElementById(`link-${key}`);
+        if (el) el.value = l[key] || '';
+    });
 
     // UI customizer values
     if (data.ui) {
