@@ -1763,7 +1763,7 @@
 
                 <!-- TAB 3: STREAMING PLATFORMS -->
                 <div class="tab-pane" id="tab-platforms">
-                    <p class="section-sub-desc">Enter the direct links for each music streaming service. Blank services
+                    <p class="section-sub-desc">Enter the direct links for each music streaming service & store. Blank services
                         are automatically hidden on the live page.</p>
                     <div class="platforms-inputs-grid">
                         <div class="form-group">
@@ -1773,6 +1773,10 @@
                         <div class="form-group">
                             <label><i class="fab fa-apple" style="color: #FA243C;"></i> Apple Music</label>
                             <input type="url" id="link-apple" placeholder="https://music.apple.com/album/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fab fa-itunes" style="color: #EA4CC0;"></i> iTunes Store</label>
+                            <input type="url" id="link-itunes" placeholder="https://itunes.apple.com/album/...">
                         </div>
                         <div class="form-group">
                             <label><i class="fab fa-youtube" style="color: #FF0000;"></i> YouTube</label>
@@ -1787,7 +1791,7 @@
                             <input type="url" id="link-amazon" placeholder="https://music.amazon.com/albums/...">
                         </div>
                         <div class="form-group">
-                            <label><i class="fas fa-compact-disc" style="color: #00f0ff;"></i> Tidal</label>
+                            <label><i class="fas fa-compact-disc" style="color: #00f0ff;"></i> TIDAL</label>
                             <input type="url" id="link-tidal" placeholder="https://tidal.com/browse/track/...">
                         </div>
                         <div class="form-group">
@@ -1799,7 +1803,7 @@
                             <input type="url" id="link-soundcloud" placeholder="https://soundcloud.com/...">
                         </div>
                         <div class="form-group">
-                            <label><i class="fas fa-bolt" style="color: #FF7700;"></i> Beatport</label>
+                            <label><i class="fas fa-bolt" style="color: #00FF95;"></i> Beatport</label>
                             <input type="url" id="link-beatport" placeholder="https://beatport.com/track/...">
                         </div>
                         <div class="form-group">
@@ -1807,12 +1811,112 @@
                             <input type="url" id="link-boomplay" placeholder="https://boomplay.com/...">
                         </div>
                         <div class="form-group">
-                            <label><i class="fas fa-music" style="color: #FF8F00;"></i> Audiomack</label>
+                            <label><i class="fas fa-music" style="color: #FFAA00;"></i> Audiomack</label>
                             <input type="url" id="link-audiomack" placeholder="https://audiomack.com/song/...">
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-radio" style="color: #005483;"></i> Pandora</label>
                             <input type="url" id="link-pandora" placeholder="https://pandora.com/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fab fa-tiktok" style="color: #00f2fe;"></i> TikTok</label>
+                            <input type="url" id="link-tiktok" placeholder="https://www.tiktok.com/music/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-music" style="color: #20B2AA;"></i> 7digital</label>
+                            <input type="url" id="link-sevendigital" placeholder="https://www.7digital.com/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-store" style="color: #FF6A00;"></i> Alibaba</label>
+                            <input type="url" id="link-alibaba" placeholder="https://www.alibabacloud.com/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-play" style="color: #75147C;"></i> Anghami</label>
+                            <input type="url" id="link-anghami" placeholder="https://play.anghami.com/song/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-shield-alt" style="color: #9B51E0;"></i> Audible Magic</label>
+                            <input type="url" id="link-audiblemagic" placeholder="https://www.audiblemagic.com/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-compact-disc" style="color: #FA4870;"></i> AWA</label>
+                            <input type="url" id="link-awa" placeholder="https://awa.fm/track/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-chart-simple" style="color: #3B82F6;"></i> BMAT</label>
+                            <input type="url" id="link-bmat" placeholder="https://www.bmat.com/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-music" style="color: #DA291C;"></i> ClaroMusica</label>
+                            <input type="url" id="link-claromusica" placeholder="https://www.claromusica.com/track/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fab fa-facebook" style="color: #1877F2;"></i> Facebook</label>
+                            <input type="url" id="link-facebook" placeholder="https://www.facebook.com/sound/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-wave-square" style="color: #0045FF;"></i> FLO</label>
+                            <input type="url" id="link-flo" placeholder="https://www.music-flo.com/detail/track/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-heart" style="color: #C6002B;"></i> iHeartRadio</label>
+                            <input type="url" id="link-iheart" placeholder="https://www.iheart.com/artist/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-award" style="color: #00f0ff;"></i> Jaxsta</label>
+                            <input type="url" id="link-jaxsta" placeholder="https://jaxsta.com/release/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-eye" style="color: #FF3366;"></i> Kanjian</label>
+                            <input type="url" id="link-kanjian" placeholder="https://www.kanjian.com/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-box-open" style="color: #00C8FF;"></i> KKBox</label>
+                            <input type="url" id="link-kkbox" placeholder="https://www.kkbox.com/song/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-cloud" style="color: #E60026;"></i> NetEase Cloud Music</label>
+                            <input type="url" id="link-netease" placeholder="https://music.163.com/#/song?id=...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-bicycle" style="color: #DF1C25;"></i> Peloton</label>
+                            <input type="url" id="link-peloton" placeholder="https://www.onepeloton.com/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-circle-play" style="color: #0058A8;"></i> Qobuz</label>
+                            <input type="url" id="link-qobuz" placeholder="https://www.qobuz.com/track/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-compact-disc" style="color: #2BC5B4;"></i> JioSaavn</label>
+                            <input type="url" id="link-saavn" placeholder="https://www.jiosaavn.com/song/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-shield-halved" style="color: #10B981;"></i> Securycast</label>
+                            <input type="url" id="link-securycast" placeholder="https://securycast.com/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-sliders" style="color: #E02020;"></i> Slacker / LiveOne</label>
+                            <input type="url" id="link-slacker" placeholder="https://www.liveone.com/song/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-computer-mouse" style="color: #00BCD4;"></i> Soundmouse</label>
+                            <input type="url" id="link-soundmouse" placeholder="https://www.soundmouse.com/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fab fa-qq" style="color: #12B7F5;"></i> Tencent / QQ Music</label>
+                            <input type="url" id="link-tencent" placeholder="https://y.qq.com/n/ryqq/songDetail/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-arrow-down" style="color: #FF4500;"></i> Trebel</label>
+                            <input type="url" id="link-trebel" placeholder="https://trebel.io/track/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-globe" style="color: #4A90E2;"></i> Tuned Global</label>
+                            <input type="url" id="link-tunedglobal" placeholder="https://www.tunedglobal.com/...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-tv" style="color: #E30613;"></i> YouSee / Telmore</label>
+                            <input type="url" id="link-yousee" placeholder="https://musik.yousee.dk/track/...">
                         </div>
                     </div>
                 </div>
@@ -2347,12 +2451,42 @@ function updateMockupPreview() {
         const platforms = [
             { id: 'link-spotify', name: 'Spotify', icon: 'fab fa-spotify', col: '#1DB954', action: isPreSave ? 'Pre-Save' : 'Play' },
             { id: 'link-apple', name: 'Apple Music', icon: 'fab fa-apple', col: '#FA243C', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-itunes', name: 'iTunes Store', icon: 'fab fa-itunes', col: '#EA4CC0', action: isPreSave ? 'Pre-Save' : 'Download' },
             { id: 'link-youtube', name: 'YouTube', icon: 'fab fa-youtube', col: '#FF0000', action: isPreSave ? 'Pre-Save' : 'Watch' },
             { id: 'link-youtubemusic', name: 'YouTube Music', icon: 'fas fa-play-circle', col: '#FF0000', action: isPreSave ? 'Pre-Save' : 'Play' },
             { id: 'link-amazon', name: 'Amazon Music', icon: 'fab fa-amazon', col: '#00A8E1', action: isPreSave ? 'Pre-Save' : 'Play' },
-            { id: 'link-tidal', name: 'Tidal', icon: 'fas fa-compact-disc', col: '#00f0ff', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-tidal', name: 'TIDAL', icon: 'fas fa-compact-disc', col: '#00f0ff', action: isPreSave ? 'Pre-Save' : 'Play' },
             { id: 'link-deezer', name: 'Deezer', icon: 'fab fa-deezer', col: '#FF0092', action: isPreSave ? 'Pre-Save' : 'Play' },
-            { id: 'link-soundcloud', name: 'SoundCloud', icon: 'fab fa-soundcloud', col: '#FF5500', action: isPreSave ? 'Pre-Save' : 'Stream' }
+            { id: 'link-soundcloud', name: 'SoundCloud', icon: 'fab fa-soundcloud', col: '#FF5500', action: isPreSave ? 'Pre-Save' : 'Stream' },
+            { id: 'link-beatport', name: 'Beatport', icon: 'fas fa-bolt', col: '#00FF95', action: isPreSave ? 'Pre-Save' : 'Buy' },
+            { id: 'link-boomplay', name: 'Boomplay', icon: 'fas fa-play', col: '#00E676', action: isPreSave ? 'Pre-Save' : 'Stream' },
+            { id: 'link-audiomack', name: 'Audiomack', icon: 'fas fa-music', col: '#FFAA00', action: isPreSave ? 'Pre-Save' : 'Stream' },
+            { id: 'link-pandora', name: 'Pandora', icon: 'fas fa-radio', col: '#005483', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-tiktok', name: 'TikTok', icon: 'fab fa-tiktok', col: '#00f2fe', action: isPreSave ? 'Pre-Save' : 'Use Sound' },
+            { id: 'link-sevendigital', name: '7digital', icon: 'fas fa-music', col: '#20B2AA', action: isPreSave ? 'Pre-Save' : 'Download' },
+            { id: 'link-alibaba', name: 'Alibaba Music', icon: 'fas fa-store', col: '#FF6A00', action: isPreSave ? 'Pre-Save' : 'Stream' },
+            { id: 'link-anghami', name: 'Anghami', icon: 'fas fa-play', col: '#75147C', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-audiblemagic', name: 'Audible Magic', icon: 'fas fa-shield-alt', col: '#9B51E0', action: isPreSave ? 'Pre-Save' : 'Verify' },
+            { id: 'link-awa', name: 'AWA', icon: 'fas fa-compact-disc', col: '#FA4870', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-bmat', name: 'BMAT', icon: 'fas fa-chart-simple', col: '#3B82F6', action: isPreSave ? 'Pre-Save' : 'Track' },
+            { id: 'link-claromusica', name: 'ClaroMusica', icon: 'fas fa-music', col: '#DA291C', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-facebook', name: 'Facebook Audio', icon: 'fab fa-facebook', col: '#1877F2', action: isPreSave ? 'Pre-Save' : 'Use Audio' },
+            { id: 'link-flo', name: 'FLO', icon: 'fas fa-wave-square', col: '#0045FF', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-iheart', name: 'iHeartRadio', icon: 'fas fa-heart', col: '#C6002B', action: isPreSave ? 'Pre-Save' : 'Listen' },
+            { id: 'link-jaxsta', name: 'Jaxsta', icon: 'fas fa-award', col: '#00f0ff', action: isPreSave ? 'Pre-Save' : 'Credits' },
+            { id: 'link-kanjian', name: 'Kanjian', icon: 'fas fa-eye', col: '#FF3366', action: isPreSave ? 'Pre-Save' : 'Stream' },
+            { id: 'link-kkbox', name: 'KKBox', icon: 'fas fa-box-open', col: '#00C8FF', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-netease', name: 'NetEase Cloud Music', icon: 'fas fa-cloud', col: '#E60026', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-peloton', name: 'Peloton', icon: 'fas fa-bicycle', col: '#DF1C25', action: isPreSave ? 'Pre-Save' : 'Ride' },
+            { id: 'link-qobuz', name: 'Qobuz', icon: 'fas fa-circle-play', col: '#0058A8', action: isPreSave ? 'Pre-Save' : 'Stream' },
+            { id: 'link-saavn', name: 'JioSaavn', icon: 'fas fa-compact-disc', col: '#2BC5B4', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-securycast', name: 'Securycast', icon: 'fas fa-shield-halved', col: '#10B981', action: isPreSave ? 'Pre-Save' : 'Broadcast' },
+            { id: 'link-slacker', name: 'Slacker / LiveOne', icon: 'fas fa-sliders', col: '#E02020', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-soundmouse', name: 'Soundmouse', icon: 'fas fa-computer-mouse', col: '#00BCD4', action: isPreSave ? 'Pre-Save' : 'Monitor' },
+            { id: 'link-tencent', name: 'Tencent / QQ Music', icon: 'fab fa-qq', col: '#12B7F5', action: isPreSave ? 'Pre-Save' : 'Play' },
+            { id: 'link-trebel', name: 'Trebel', icon: 'fas fa-arrow-down', col: '#FF4500', action: isPreSave ? 'Pre-Save' : 'Download' },
+            { id: 'link-tunedglobal', name: 'Tuned Global', icon: 'fas fa-globe', col: '#4A90E2', action: isPreSave ? 'Pre-Save' : 'Stream' },
+            { id: 'link-yousee', name: 'YouSee / Telmore', icon: 'fas fa-tv', col: '#E30613', action: isPreSave ? 'Pre-Save' : 'Play' }
         ];
 
         let activePlatforms = platforms.filter(p => {
@@ -2711,6 +2845,16 @@ function renderDirectory(query = '') {
     });
 }
 
+const PLATFORM_INPUT_KEYS = [
+    'spotify', 'apple', 'itunes', 'youtube', 'youtubemusic', 'amazon',
+    'tidal', 'deezer', 'soundcloud', 'beatport', 'boomplay', 'audiomack',
+    'pandora', 'tiktok', 'sevendigital', 'alibaba', 'anghami', 'audiblemagic',
+    'awa', 'bmat', 'claromusica', 'facebook', 'flo', 'iheart',
+    'jaxsta', 'kanjian', 'kkbox', 'netease', 'peloton', 'qobuz',
+    'saavn', 'securycast', 'slacker', 'soundmouse', 'tencent', 'trebel',
+    'tunedglobal', 'yousee'
+];
+
 // 7. Save / Publish Action
 function initActions() {
     const saveBtn = document.getElementById('btn-save-smartlink');
@@ -2740,20 +2884,11 @@ function initActions() {
                 return;
             }
 
-            const links = {
-                spotify: document.getElementById('link-spotify')?.value.trim() || '',
-                apple: document.getElementById('link-apple')?.value.trim() || '',
-                youtube: document.getElementById('link-youtube')?.value.trim() || '',
-                youtubemusic: document.getElementById('link-youtubemusic')?.value.trim() || '',
-                amazon: document.getElementById('link-amazon')?.value.trim() || '',
-                tidal: document.getElementById('link-tidal')?.value.trim() || '',
-                deezer: document.getElementById('link-deezer')?.value.trim() || '',
-                soundcloud: document.getElementById('link-soundcloud')?.value.trim() || '',
-                beatport: document.getElementById('link-beatport')?.value.trim() || '',
-                boomplay: document.getElementById('link-boomplay')?.value.trim() || '',
-                audiomack: document.getElementById('link-audiomack')?.value.trim() || '',
-                pandora: document.getElementById('link-pandora')?.value.trim() || ''
-            };
+            const links = {};
+            PLATFORM_INPUT_KEYS.forEach(key => {
+                const el = document.getElementById(`link-${key}`);
+                links[key] = el ? el.value.trim() : '';
+            });
 
             const uiSettings = {
                 theme: activePreset,
@@ -2874,6 +3009,10 @@ function resetForm() {
     if (document.getElementById('smartlink-input-release-date')) {
         document.getElementById('smartlink-input-release-date').value = '';
     }
+    PLATFORM_INPUT_KEYS.forEach(key => {
+        const el = document.getElementById(`link-${key}`);
+        if (el) el.value = '';
+    });
     setSaveButtonText('PUBLISH SMART LINK');
     if (document.getElementById('slug-preview-text')) document.getElementById('slug-preview-text').textContent = 'release-slug';
     activePreset = 'cyber-cyan';
@@ -2899,18 +3038,10 @@ window.loadForEdit = function(slug) {
 
     // Platforms
     const l = data.links || {};
-    if (document.getElementById('link-spotify')) document.getElementById('link-spotify').value = l.spotify || '';
-    if (document.getElementById('link-apple')) document.getElementById('link-apple').value = l.apple || '';
-    if (document.getElementById('link-youtube')) document.getElementById('link-youtube').value = l.youtube || '';
-    if (document.getElementById('link-youtubemusic')) document.getElementById('link-youtubemusic').value = l.youtubemusic || '';
-    if (document.getElementById('link-amazon')) document.getElementById('link-amazon').value = l.amazon || '';
-    if (document.getElementById('link-tidal')) document.getElementById('link-tidal').value = l.tidal || '';
-    if (document.getElementById('link-deezer')) document.getElementById('link-deezer').value = l.deezer || '';
-    if (document.getElementById('link-soundcloud')) document.getElementById('link-soundcloud').value = l.soundcloud || '';
-    if (document.getElementById('link-beatport')) document.getElementById('link-beatport').value = l.beatport || '';
-    if (document.getElementById('link-boomplay')) document.getElementById('link-boomplay').value = l.boomplay || '';
-    if (document.getElementById('link-audiomack')) document.getElementById('link-audiomack').value = l.audiomack || '';
-    if (document.getElementById('link-pandora')) document.getElementById('link-pandora').value = l.pandora || '';
+    PLATFORM_INPUT_KEYS.forEach(key => {
+        const el = document.getElementById(`link-${key}`);
+        if (el) el.value = l[key] || '';
+    });
 
     // UI customizer values
     if (data.ui) {
