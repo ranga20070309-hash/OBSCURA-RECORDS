@@ -2488,18 +2488,43 @@ function parseMusicTitle(raw, author = '') {
     };
 }
 
-// 5. Local File Upload Handlers (Base64)
+// 5. Local File Upload Handlers (Smart Compression & Size Validation)
 function initFileUploads() {
     const imgFileInp = document.getElementById('smartlink-file-image');
     if (imgFileInp) {
         imgFileInp.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
+                // Auto compress & resize image to max 1200x1200 JPEG to ensure ultra-fast load and small payload
                 const reader = new FileReader();
-                reader.onload = () => {
-                    if (document.getElementById('smartlink-input-image')) document.getElementById('smartlink-input-image').value = reader.result;
-                    updateMockupPreview();
-                    showToast("LOCAL ARTWORK LOADED!");
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let maxDim = 1200;
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > maxDim || h > maxDim) {
+                            if (w > h) {
+                                h = Math.round((h * maxDim) / w);
+                                w = maxDim;
+                            } else {
+                                w = Math.round((w * maxDim) / h);
+                                h = maxDim;
+                            }
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+                        if (document.getElementById('smartlink-input-image')) {
+                            document.getElementById('smartlink-input-image').value = compressedDataUrl;
+                        }
+                        updateMockupPreview();
+                        showToast("LOCAL ARTWORK OPTIMIZED & LOADED!");
+                    };
+                    img.src = event.target.result;
                 };
                 reader.readAsDataURL(file);
             }
@@ -2511,9 +2536,17 @@ function initFileUploads() {
         previewFileInp.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
+                // Check audio size (Max 4.5MB for database storage)
+                if (file.size > 4.5 * 1024 * 1024) {
+                    showToast(`AUDIO FILE TOO LARGE (${(file.size / (1024 * 1024)).toFixed(1)}MB)! Max upload is 4.5MB (use an MP3 preview snippet) or paste a YouTube / MP3 link.`, 'error');
+                    previewFileInp.value = '';
+                    return;
+                }
                 const reader = new FileReader();
                 reader.onload = () => {
-                    if (document.getElementById('smartlink-input-preview')) document.getElementById('smartlink-input-preview').value = reader.result;
+                    if (document.getElementById('smartlink-input-preview')) {
+                        document.getElementById('smartlink-input-preview').value = reader.result;
+                    }
                     showToast("LOCAL AUDIO PREVIEW LOADED!");
                 };
                 reader.readAsDataURL(file);
@@ -2701,6 +2734,12 @@ function initActions() {
                 slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
             }
 
+            const rawAudio = document.getElementById('smartlink-input-preview')?.value.trim() || '';
+            if (rawAudio && rawAudio.startsWith('data:') && rawAudio.length > 6 * 1024 * 1024) {
+                showToast("AUDIO PREVIEW IS TOO LARGE (>5MB)! Please upload a shorter MP3 snippet or paste a direct link.", "error");
+                return;
+            }
+
             const links = {
                 spotify: document.getElementById('link-spotify')?.value.trim() || '',
                 apple: document.getElementById('link-apple')?.value.trim() || '',
@@ -2740,7 +2779,7 @@ function initActions() {
                 artist: artist,
                 image: image,
                 releaseDate: releaseDate,
-                audioPreview: document.getElementById('smartlink-input-preview')?.value.trim() || '',
+                audioPreview: rawAudio,
                 youtube: document.getElementById('smartlink-input-youtube')?.value.trim() || '',
                 links: links,
                 ui: uiSettings,
