@@ -498,44 +498,42 @@ function updateStatsAndRender(query = '') {
 }
 
 function initDirectoryEngine() {
-    const listContainer = document.getElementById('smartlinks-directory-list');
     const searchInp = document.getElementById('smartlink-search-input');
 
-    // Instant REST Fetch (Immediate 0ms data load on load)
+    const handleData = (data) => {
+        if (data && typeof data === 'object') {
+            cachedSmartLinks = data;
+            updateStatsAndRender(searchInp ? searchInp.value : '');
+        } else {
+            cachedSmartLinks = {};
+            updateStatsAndRender(searchInp ? searchInp.value : '');
+        }
+    };
+
+    // 1. Instant REST Fetch
     fetch("https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks.json")
         .then(res => res.json())
-        .then(data => {
-            if (data && typeof data === 'object') {
-                cachedSmartLinks = data;
-                updateStatsAndRender(searchInp ? searchInp.value : '');
-            } else if (!data) {
-                cachedSmartLinks = {};
-                updateStatsAndRender(searchInp ? searchInp.value : '');
-            }
-        })
-        .catch(err => console.warn("Smartlinks REST fallback:", err));
+        .then(handleData)
+        .catch(err => console.warn("REST fetch fallback:", err));
 
-    // Realtime Listener
+    // 2. Immediate SDK once() query
+    try {
+        db.ref('smartLinks').once('value').then(snap => {
+            const val = snap.val();
+            if (val) handleData(val);
+        }).catch(() => {});
+    } catch(e) {}
+
+    // 3. Continuous Realtime listener
     try {
         db.ref('smartLinks').on('value', snap => {
             const val = snap.val();
-            cachedSmartLinks = (val && typeof val === 'object') ? val : {};
-            updateStatsAndRender(searchInp ? searchInp.value : '');
+            handleData(val);
         }, err => {
-            console.warn("RTDB listener error:", err);
-            // In case of RTDB listener delay/error, retry REST
-            fetch("https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks.json")
-                .then(res => res.json())
-                .then(data => {
-                    if (data && typeof data === 'object') {
-                        cachedSmartLinks = data;
-                        updateStatsAndRender(searchInp ? searchInp.value : '');
-                    }
-                })
-                .catch(() => {});
+            console.warn("RTDB listener notice:", err);
         });
     } catch(e) {
-        console.warn("RTDB listener subscription error:", e);
+        console.warn("RTDB subscription notice:", e);
     }
 
     if (searchInp) {
@@ -562,6 +560,7 @@ function renderDirectory(query = '') {
 
     const q = query.toLowerCase().trim();
     const filtered = entries.filter(([slug, item]) => {
+        if (!item || typeof item !== 'object') return false;
         if (!q) return true;
         return (item.title && item.title.toLowerCase().includes(q)) ||
                (item.artist && item.artist.toLowerCase().includes(q)) ||
@@ -575,6 +574,7 @@ function renderDirectory(query = '') {
 
     listContainer.innerHTML = '';
     filtered.forEach(([slug, item]) => {
+        if (!item || typeof item !== 'object') return;
         const card = document.createElement('div');
         card.className = 'dir-item-card';
 
