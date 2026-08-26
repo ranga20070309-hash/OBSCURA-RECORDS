@@ -42,11 +42,18 @@ function showToast(msg, type = 'success') {
 
 // Preset Theme Defs
 const THEME_PRESETS = {
-    'cyber-cyan': { accent: '#00f0ff', cardBg: '#07090f', darkness: 0.12, glow: 0.35, buttonStyle: 'clean-light' },
-    'dark-phonk': { accent: '#ff0055', cardBg: '#080507', darkness: 0.08, glow: 0.45, buttonStyle: 'cyber-glass' },
-    'tokyo-violet': { accent: '#8b5cf6', cardBg: '#080612', darkness: 0.14, glow: 0.4, buttonStyle: 'cyber-glass' },
-    'acid-emerald': { accent: '#00ff8c', cardBg: '#050a08', darkness: 0.12, glow: 0.35, buttonStyle: 'solid-neon' },
-    'minimal-obsidian': { accent: '#ffffff', cardBg: '#09090b', darkness: 0.06, glow: 0.15, buttonStyle: 'clean-light' }
+    'cyber-cyan': { accent: '#00f0ff', cardBg: '#07090f', darkness: 0.12, glow: 0.35, buttonStyle: 'cyber-glass' },
+    'dark-phonk': { accent: '#ff0055', cardBg: '#0a0407', darkness: 0.08, glow: 0.45, buttonStyle: 'cyber-glass' },
+    'tokyo-violet': { accent: '#8b5cf6', cardBg: '#080614', darkness: 0.14, glow: 0.42, buttonStyle: 'cyber-glass' },
+    'acid-emerald': { accent: '#00ff8c', cardBg: '#040d08', darkness: 0.12, glow: 0.38, buttonStyle: 'solid-neon' },
+    'solar-amber': { accent: '#ffaa00', cardBg: '#0e0904', darkness: 0.12, glow: 0.45, buttonStyle: 'solid-neon' },
+    'magma-inferno': { accent: '#ff5500', cardBg: '#0d0502', darkness: 0.10, glow: 0.45, buttonStyle: 'cyber-glass' },
+    'neon-sakura': { accent: '#ff2a8d', cardBg: '#100511', darkness: 0.12, glow: 0.45, buttonStyle: 'holographic' },
+    'electric-azure': { accent: '#0099ff', cardBg: '#030914', darkness: 0.12, glow: 0.40, buttonStyle: 'cyber-glass' },
+    'ice-glacier': { accent: '#38bdf8', cardBg: '#050c14', darkness: 0.10, glow: 0.35, buttonStyle: 'neon-outline' },
+    'nebula-magenta': { accent: '#d946ef', cardBg: '#0e0414', darkness: 0.12, glow: 0.45, buttonStyle: 'holographic' },
+    'luxury-champagne': { accent: '#f59e0b', cardBg: '#0d0a06', darkness: 0.08, glow: 0.35, buttonStyle: 'clean-light' },
+    'minimal-obsidian': { accent: '#ffffff', cardBg: '#09090b', darkness: 0.06, glow: 0.18, buttonStyle: 'velvet-dark' }
 };
 
 // Studio Engine Startup
@@ -254,6 +261,8 @@ function updateMockupPreview() {
     const btnStyle = document.getElementById('ui-button-style').value || 'clean-light';
     const showGrid = document.getElementById('ui-show-grid').checked;
     const rgb = hexToRgb(accent);
+    document.documentElement.style.setProperty('--accent-cyan', accent);
+    document.documentElement.style.setProperty('--accent-rgb', rgb);
 
     // Update Text & Image in Mockup
     document.getElementById('mock-title').textContent = title.toUpperCase();
