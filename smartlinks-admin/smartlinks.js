@@ -708,21 +708,41 @@ function initActions() {
         saveBtn.disabled = true;
 
         const saveToFirebase = async () => {
-            // Direct REST PUT (100% reliable, zero WebSocket latency)
+            let isSaved = false;
+            let lastError = null;
+
+            // 1. Dispatch via Firebase SDK
             try {
-                await fetch(`https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks/${encodeURIComponent(slug)}.json`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } catch (e) {
-                console.warn("REST direct save error:", e);
+                await db.ref(`smartLinks/${slug}`).set(payload);
+                isSaved = true;
+            } catch (sdkErr) {
+                console.warn("Firebase SDK save failed, falling back to direct REST:", sdkErr);
+                lastError = sdkErr;
             }
 
-            // Also dispatch via Firebase SDK if available
-            try {
-                db.ref(`smartLinks/${slug}`).set(payload).catch(() => {});
-            } catch (e) {}
+            // 2. Direct REST PUT (for zero WebSocket dependency)
+            if (!isSaved) {
+                try {
+                    const res = await fetch(`https://obscura-records-smart-links-default-rtdb.asia-southeast1.firebasedatabase.app/smartLinks/${encodeURIComponent(slug)}.json`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (res.ok) {
+                        isSaved = true;
+                    } else {
+                        const txt = await res.text();
+                        throw new Error(`HTTP ${res.status}: ${txt}`);
+                    }
+                } catch (restErr) {
+                    console.warn("REST direct save error:", restErr);
+                    lastError = restErr;
+                }
+            }
+
+            if (!isSaved) {
+                throw new Error(lastError ? (lastError.message || String(lastError)) : "Could not reach database. Check internet connection.");
+            }
 
             // Immediate local sync
             cachedSmartLinks[slug] = payload;
