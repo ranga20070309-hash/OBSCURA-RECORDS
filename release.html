@@ -1368,6 +1368,21 @@
             document.getElementById('track-title').textContent = title;
             document.getElementById('track-artist').textContent = displayArtist;
 
+            // Dynamically update Browser Tab Favicon
+            try {
+                let fav = document.querySelector('link[rel="icon"]');
+                if (fav) {
+                    fav.href = cover;
+                } else {
+                    const newFav = document.createElement('link');
+                    newFav.rel = 'icon';
+                    newFav.href = cover;
+                    document.head.appendChild(newFav);
+                }
+                let appleFav = document.querySelector('link[rel="apple-touch-icon"]');
+                if (appleFav) appleFav.href = cover;
+            } catch(e) {}
+
             // Dynamically update Open Graph & Twitter Social preview tags
             const ogImg = document.getElementById('og-image');
             if (ogImg) ogImg.setAttribute('content', cover);
