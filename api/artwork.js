@@ -31,7 +31,10 @@ function cleanSlug(text) {
 
 module.exports = async (req, res) => {
     try {
-        const parsedUrl = new URL(req.url, `https://${req.headers?.host || 'www.obscurarecord.com'}`);
+        const host = req.headers['x-forwarded-host'] || req.headers?.host || 'www.obscurarecord.com';
+        const proto = req.headers['x-forwarded-proto'] || 'https';
+        const parsedUrl = new URL(req.url, `${proto}://${host}`);
+
         let slug = (
             req.query?.id ||
             req.query?.track ||
@@ -50,7 +53,8 @@ module.exports = async (req, res) => {
         }
 
         if (!slug) {
-            res.setHeader('Location', '/assets/OCR.png');
+            res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=604800');
+            res.setHeader('Location', 'https://www.obscurarecord.com/assets/OCR.png');
             return res.status(302).end();
         }
 
@@ -127,19 +131,22 @@ module.exports = async (req, res) => {
 
                 res.setHeader('Content-Type', mimeType);
                 res.setHeader('Content-Length', imgBuffer.length);
-                res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400');
+                res.setHeader('Cache-Control', 'public, max-age=31536000, s-maxage=31536000, immutable');
                 return res.status(200).send(imgBuffer);
             }
         }
 
         if (rawCover && (rawCover.startsWith('http://') || rawCover.startsWith('https://'))) {
+            res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400');
             res.setHeader('Location', rawCover);
             return res.status(302).end();
         }
 
+        res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=604800');
         res.setHeader('Location', 'https://www.obscurarecord.com/assets/OCR.png');
         return res.status(302).end();
     } catch (e) {
+        res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=604800');
         res.setHeader('Location', 'https://www.obscurarecord.com/assets/OCR.png');
         return res.status(302).end();
     }
