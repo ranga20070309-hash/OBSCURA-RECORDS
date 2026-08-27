@@ -1848,6 +1848,27 @@
                                 If a future date & time is set, all store buttons will display <strong>"PRE-SAVE"</strong>. When that time arrives, buttons automatically switch to <strong>"PLAY / STREAM"</strong>. Leave empty if already released.
                             </small>
                         </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-sliders"></i> Release Status Mode</label>
+                            <select id="smartlink-input-status-mode">
+                                <option value="auto" selected>⚡ Auto-Switch (Pre-Save before date, Out Now after)</option>
+                                <option value="presave">⏳ Force Pre-Save Mode</option>
+                                <option value="outnow">🔥 Force Out Now / Streaming</option>
+                            </select>
+                            <small class="helper-text">Auto-detects based on Release Date or force specific mode.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-tag"></i> Custom Status Badge Text (Optional)</label>
+                            <input type="text" id="smartlink-input-custom-status" placeholder="e.g. EXCLUSIVE PREMIERE // OUT NOW">
+                            <small class="helper-text">Leave empty to use automatic live badge text.</small>
+                        </div>
+
+                        <div class="form-group span-2">
+                            <label><i class="fas fa-quote-left"></i> Custom Tagline / Instruction (Optional)</label>
+                            <input type="text" id="smartlink-input-custom-instruction" placeholder="e.g. Choose your preferred music service">
+                        </div>
                     </div>
                 </div>
 
@@ -2220,10 +2241,10 @@
                         <div class="mock-meta-box">
                             <h2 class="mock-title" id="mock-title">UNTITLED RELEASE</h2>
                             <div class="mock-artist" id="mock-artist">PROD By ARTIST</div>
-                            <div class="smartlink-expiry-tag">
-                                <i class="fas fa-clock"></i> This smart link will only be available 2 weeks after release
+                            <div class="smartlink-status-badge out-now" id="mock-status-badge">
+                                <i class="fas fa-bolt"></i> <span id="mock-status-text">OUT NOW // STREAMING EVERYWHERE</span>
                             </div>
-                            <div class="mock-prompt">CHOOSE YOUR PREFERRED MUSIC SERVICE</div>
+                            <div class="mock-prompt" id="mock-prompt">CHOOSE YOUR PREFERRED MUSIC SERVICE</div>
                         </div>
 
                         <div class="mock-platforms-list" id="mock-platforms-container">
