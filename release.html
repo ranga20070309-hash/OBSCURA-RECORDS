@@ -1232,16 +1232,16 @@
         // --- 4. EXTRACT SLUG/ID FROM URL ---
         function getReleaseId() {
             const params = new URLSearchParams(window.location.search);
-            if (params.get('id')) return params.get('id').trim();
-            if (params.get('track')) return params.get('track').trim();
-            if (params.get('release')) return params.get('release').trim();
-            if (params.get('slug')) return params.get('slug').trim();
+            let val = (params.get('id') || params.get('track') || params.get('release') || params.get('slug') || '').trim();
+            if (val) {
+                return val.split('?')[0].split('&')[0].split('#')[0].trim();
+            }
 
             const path = window.location.pathname.replace(/\/+$/, '');
             const segments = path.split('/');
             const last = segments[segments.length - 1];
             if (last && last !== 'release' && last !== 'index.html' && last !== '') {
-                return last;
+                return last.split('?')[0].split('&')[0].split('#')[0].trim();
             }
             return null;
         }
