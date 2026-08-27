@@ -61,7 +61,10 @@ module.exports = async (req, res) => {
             }
         }
 
-        let htmlPath = path.join(process.cwd(), 'release', 'index.html');
+        let htmlPath = path.join(process.cwd(), 'release_template.html');
+        if (!fs.existsSync(htmlPath)) {
+            htmlPath = path.join(process.cwd(), 'release', 'index.html');
+        }
         if (!fs.existsSync(htmlPath)) {
             htmlPath = path.join(process.cwd(), 'release.html');
         }
@@ -165,17 +168,19 @@ module.exports = async (req, res) => {
             const shortDesc = `Official Music Release: ${title} (${artist}) on Obscura Records LLC. Listen, pre-save, and stream on Spotify, Apple Music, YouTube and all digital platforms.`;
             const currentUrl = `https://www.obscurarecord.com/release/?id=${encodeURIComponent(normalizedSlug || slug)}`;
 
-            // Remove any existing duplicate social meta tags & title from HTML template
+            // Remove any existing duplicate social meta tags, favicons & title from HTML template
             html = html.replace(/<meta\s+property=["']og:[^"']*["'][^>]*>/gi, '');
             html = html.replace(/<meta\s+name=["']twitter:[^"']*["'][^>]*>/gi, '');
             html = html.replace(/<meta\s+name=["']description["'][^>]*>/gi, '');
-            html = html.replace(/<link\s+rel=["']image_src["'][^>]*>/gi, '');
+            html = html.replace(/<link\s+rel=["'](?:image_src|icon|shortcut icon|apple-touch-icon)["'][^>]*>/gi, '');
             html = html.replace(/<title[^>]*>.*?<\/title>/gi, '');
 
-            // Inject high-priority Open Graph, Twitter Card, and Schema tags at the very beginning of <head>
+            // Inject high-priority Favicons, Open Graph, Twitter Card, and Schema tags at the very beginning of <head>
             const metaBlock = `
     <title>${escapeHtml(cleanTitle)}</title>
     <meta name="description" content="${escapeHtml(shortDesc)}">
+    <link rel="icon" type="image/jpeg" href="${escapeHtml(cover)}">
+    <link rel="apple-touch-icon" href="${escapeHtml(cover)}">
     <link rel="image_src" href="${escapeHtml(cover)}">
     <meta property="og:site_name" content="OBSCURA RECORDS LLC">
     <meta property="og:title" content="${escapeHtml(cleanTitle)}">
