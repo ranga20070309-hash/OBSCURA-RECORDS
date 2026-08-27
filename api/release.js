@@ -56,6 +56,8 @@ module.exports = async (req, res) => {
                 if (candidate && !candidate.includes('.')) {
                     slug = candidate;
                 }
+            } else if (pathParts.length === 1 && pathParts[0] && !pathParts[0].includes('.')) {
+                slug = pathParts[0];
             }
         }
 
@@ -72,6 +74,7 @@ module.exports = async (req, res) => {
         }
 
         if (!slug) {
+            res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
             return res.status(200).send(html);
         }
@@ -144,48 +147,58 @@ module.exports = async (req, res) => {
         if (data) {
             const title = String(data.title || data.name || "OBSCURA RELEASE").trim();
             let artist = String(data.artist || data.producers || "OBSCURA RECORDS LLC").trim();
-            if (artist && !/^prod/i.test(artist)) {
+            if (artist && !/^prod/i.test(artist) && !/^by/i.test(artist) && !artist.toLowerCase().includes('obscura')) {
                 artist = `PROD By ${artist}`;
             }
 
-            let cover = String(data.image || data.artwork || data.cover || data.thumbnail || data.trackCover || "https://www.obscurarecord.com/assets/OCR.png").trim();
-            if (cover.startsWith('data:')) {
+            let cover = String(data.image || data.artwork || data.cover || data.thumbnail || data.trackCover || "").trim();
+            if (!cover || cover === "undefined" || cover === "null") {
+                cover = "https://www.obscurarecord.com/assets/OCR.png";
+            } else if (cover.startsWith('data:')) {
+                // If stored as base64 data, route through our dedicated binary artwork streamer
                 cover = `https://www.obscurarecord.com/api/artwork?id=${encodeURIComponent(normalizedSlug || slug)}`;
             } else if (!cover.startsWith('http://') && !cover.startsWith('https://')) {
                 cover = `https://www.obscurarecord.com/${cover.replace(/^\/+/, '')}`;
             }
 
             const cleanTitle = `${title} - ${artist} | OBSCURA RECORDS LLC`;
-            const shortDesc = `Official Music Release: ${title} (${artist}) on Obscura Records LLC. Listen and stream on all digital platforms.`;
+            const shortDesc = `Official Music Release: ${title} (${artist}) on Obscura Records LLC. Listen, pre-save, and stream on Spotify, Apple Music, YouTube and all digital platforms.`;
             const currentUrl = `https://www.obscurarecord.com/release/?id=${encodeURIComponent(normalizedSlug || slug)}`;
 
-            // Remove any existing duplicate social meta tags from HTML template
+            // Remove any existing duplicate social meta tags & title from HTML template
             html = html.replace(/<meta\s+property=["']og:[^"']*["'][^>]*>/gi, '');
             html = html.replace(/<meta\s+name=["']twitter:[^"']*["'][^>]*>/gi, '');
             html = html.replace(/<meta\s+name=["']description["'][^>]*>/gi, '');
+            html = html.replace(/<link\s+rel=["']image_src["'][^>]*>/gi, '');
             html = html.replace(/<title[^>]*>.*?<\/title>/gi, '');
 
-            // Inject single clean set of Open Graph & Twitter Card tags
-            const singleMetaBlock = `
+            // Inject high-priority Open Graph, Twitter Card, and Schema tags at the very beginning of <head>
+            const metaBlock = `
     <title>${escapeHtml(cleanTitle)}</title>
     <meta name="description" content="${escapeHtml(shortDesc)}">
+    <link rel="image_src" href="${escapeHtml(cover)}">
     <meta property="og:site_name" content="OBSCURA RECORDS LLC">
     <meta property="og:title" content="${escapeHtml(cleanTitle)}">
     <meta property="og:description" content="${escapeHtml(shortDesc)}">
     <meta property="og:image" content="${escapeHtml(cover)}">
     <meta property="og:image:secure_url" content="${escapeHtml(cover)}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="1200">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:alt" content="${escapeHtml(cleanTitle)}">
     <meta property="og:url" content="${escapeHtml(currentUrl)}">
     <meta property="og:type" content="music.song">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${escapeHtml(cleanTitle)}">
     <meta name="twitter:description" content="${escapeHtml(shortDesc)}">
     <meta name="twitter:image" content="${escapeHtml(cover)}">
+    <meta name="twitter:image:alt" content="${escapeHtml(cleanTitle)}">
     <meta name="theme-color" content="#00f0ff">`;
 
-            html = html.replace(/<head>/i, `<head>${singleMetaBlock}`);
+            html = html.replace(/<head>/i, `<head>${metaBlock}`);
         }
 
-        res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=300');
+        res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         return res.status(200).send(html);
     } catch (globalErr) {
