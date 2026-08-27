@@ -61,12 +61,12 @@ module.exports = async (req, res) => {
             }
         }
 
-        let htmlPath = path.join(process.cwd(), 'release_template.html');
+        let htmlPath = path.join(process.cwd(), 'release.html');
         if (!fs.existsSync(htmlPath)) {
-            htmlPath = path.join(process.cwd(), 'release', 'index.html');
+            htmlPath = path.join(process.cwd(), 'release_template.html');
         }
         if (!fs.existsSync(htmlPath)) {
-            htmlPath = path.join(process.cwd(), 'release.html');
+            htmlPath = path.join(process.cwd(), 'release', 'index.html');
         }
 
         let html = '';
