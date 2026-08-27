@@ -191,12 +191,21 @@ function initRealtimeMockupSync() {
 
     imageInp.addEventListener('input', updateMockupPreview);
 
-    // Release Date / Pre-Save Schedule inputs
+    // Release Date & Status Mode overrides
     const releaseDateInp = document.getElementById('smartlink-input-release-date');
     if (releaseDateInp) {
         releaseDateInp.addEventListener('input', updateMockupPreview);
         releaseDateInp.addEventListener('change', updateMockupPreview);
     }
+
+    const statusModeInp = document.getElementById('smartlink-input-status-mode');
+    if (statusModeInp) statusModeInp.addEventListener('change', updateMockupPreview);
+
+    const customStatusInp = document.getElementById('smartlink-input-custom-status');
+    if (customStatusInp) customStatusInp.addEventListener('input', updateMockupPreview);
+
+    const customInstructionInp = document.getElementById('smartlink-input-custom-instruction');
+    if (customInstructionInp) customInstructionInp.addEventListener('input', updateMockupPreview);
 
     const clearScheduleBtn = document.getElementById('btn-schedule-clear');
     if (clearScheduleBtn && releaseDateInp) {
@@ -305,13 +314,48 @@ function updateMockupPreview() {
         mockSideQr.style.boxShadow = `0 10px 30px rgba(0,0,0,0.8), 0 0 ${Math.round(glowNum * 35)}px rgba(${rgb}, ${glowNum * 0.6})`;
     }
 
-    // Dynamic Platform List in Mockup with Button Style Variants & Pre-Save Check
+    // Dynamic Status Badge & Platform List in Mockup
+    const releaseDateVal = document.getElementById('smartlink-input-release-date')?.value;
+    const statusModeVal = document.getElementById('smartlink-input-status-mode')?.value || 'auto';
+    const customStatusVal = document.getElementById('smartlink-input-custom-status')?.value?.trim();
+    const customInstructionVal = document.getElementById('smartlink-input-custom-instruction')?.value?.trim();
+
+    let isPreSave = false;
+    if (statusModeVal === 'presave') {
+        isPreSave = true;
+    } else if (statusModeVal === 'outnow') {
+        isPreSave = false;
+    } else {
+        isPreSave = Boolean(releaseDateVal && new Date(releaseDateVal).getTime() > Date.now());
+    }
+
+    const mockBadge = document.getElementById('mock-status-badge');
+    const mockPrompt = document.getElementById('mock-prompt');
+
+    if (mockBadge) {
+        if (customStatusVal) {
+            mockBadge.className = `smartlink-status-badge ${isPreSave ? 'pre-save' : 'out-now'}`;
+            mockBadge.innerHTML = `<i class="fas ${isPreSave ? 'fa-hourglass-half' : 'fa-bolt'}"></i> <span>${customStatusVal.toUpperCase()}</span>`;
+        } else if (isPreSave) {
+            mockBadge.className = 'smartlink-status-badge pre-save';
+            mockBadge.innerHTML = `<i class="fas fa-hourglass-half"></i> <span>PRE-SAVE // RELEASING SOON</span>`;
+        } else {
+            mockBadge.className = 'smartlink-status-badge out-now';
+            mockBadge.innerHTML = `<i class="fas fa-bolt"></i> <span>OUT NOW // STREAMING EVERYWHERE</span>`;
+        }
+    }
+
+    if (mockPrompt) {
+        if (customInstructionVal) {
+            mockPrompt.textContent = customInstructionVal.toUpperCase();
+        } else {
+            mockPrompt.textContent = isPreSave ? 'PRE-SAVE TO YOUR MUSIC LIBRARY' : 'CHOOSE YOUR PREFERRED MUSIC SERVICE';
+        }
+    }
+
     const platformContainer = document.getElementById('mock-platforms-container');
     if (platformContainer) {
         platformContainer.className = `mock-platforms-list style-${btnStyle}`;
-
-        const releaseDateVal = document.getElementById('smartlink-input-release-date')?.value;
-        const isPreSave = Boolean(releaseDateVal && new Date(releaseDateVal).getTime() > Date.now());
 
         const platforms = [
             { id: 'link-spotify', name: 'Spotify', icon: 'fab fa-spotify', col: '#1DB954', action: isPreSave ? 'Pre-Save' : 'Play' },
@@ -772,12 +816,18 @@ function initActions() {
             };
 
             const releaseDate = document.getElementById('smartlink-input-release-date')?.value || '';
+            const statusMode = document.getElementById('smartlink-input-status-mode')?.value || 'auto';
+            const customStatus = document.getElementById('smartlink-input-custom-status')?.value?.trim() || '';
+            const customInstruction = document.getElementById('smartlink-input-custom-instruction')?.value?.trim() || '';
 
             const payload = {
                 title: title,
                 artist: artist,
                 image: image,
                 releaseDate: releaseDate,
+                statusMode: statusMode,
+                customStatus: customStatus,
+                customInstruction: customInstruction,
                 audioPreview: rawAudio,
                 youtube: document.getElementById('smartlink-input-youtube')?.value.trim() || '',
                 links: links,
@@ -873,6 +923,9 @@ function resetForm() {
     if (document.getElementById('smartlink-input-release-date')) {
         document.getElementById('smartlink-input-release-date').value = '';
     }
+    if (document.getElementById('smartlink-input-status-mode')) document.getElementById('smartlink-input-status-mode').value = 'auto';
+    if (document.getElementById('smartlink-input-custom-status')) document.getElementById('smartlink-input-custom-status').value = '';
+    if (document.getElementById('smartlink-input-custom-instruction')) document.getElementById('smartlink-input-custom-instruction').value = '';
     PLATFORM_INPUT_KEYS.forEach(key => {
         const el = document.getElementById(`link-${key}`);
         if (el) el.value = '';
@@ -898,6 +951,15 @@ window.loadForEdit = function(slug) {
     if (document.getElementById('smartlink-input-youtube')) document.getElementById('smartlink-input-youtube').value = data.youtube || '';
     if (document.getElementById('smartlink-input-release-date')) {
         document.getElementById('smartlink-input-release-date').value = data.releaseDate || '';
+    }
+    if (document.getElementById('smartlink-input-status-mode')) {
+        document.getElementById('smartlink-input-status-mode').value = data.statusMode || 'auto';
+    }
+    if (document.getElementById('smartlink-input-custom-status')) {
+        document.getElementById('smartlink-input-custom-status').value = data.customStatus || '';
+    }
+    if (document.getElementById('smartlink-input-custom-instruction')) {
+        document.getElementById('smartlink-input-custom-instruction').value = data.customInstruction || '';
     }
 
     // Platforms
