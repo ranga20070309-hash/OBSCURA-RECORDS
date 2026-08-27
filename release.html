@@ -379,31 +379,51 @@
             letter-spacing: 0.03rem;
         }
 
-        .smartlink-expiry-tag {
+        .smartlink-status-badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.45rem;
-            background: rgba(255, 170, 0, 0.1);
-            border: 1px solid rgba(255, 170, 0, 0.3);
-            color: #ffaa00;
             font-family: var(--font-heading);
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.04rem;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.07rem;
             text-transform: uppercase;
-            padding: 0.35rem 0.8rem;
-            border-radius: 20px;
-            margin: 0 auto 0.65rem auto;
-            box-shadow: 0 0 10px rgba(255, 170, 0, 0.12);
+            padding: 0.38rem 0.95rem;
+            border-radius: 50px;
+            margin: 0 auto 0.7rem auto;
             text-align: center;
-            max-width: 92%;
+            max-width: 95%;
             line-height: 1.3;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        .smartlink-expiry-tag i {
+        .smartlink-status-badge.pre-save {
+            background: rgba(255, 170, 0, 0.12);
+            border: 1px solid rgba(255, 170, 0, 0.45);
             color: #ffaa00;
-            font-size: 0.72rem;
+            box-shadow: 0 0 16px rgba(255, 170, 0, 0.22);
+        }
+
+        .smartlink-status-badge.pre-save i {
+            color: #ffaa00;
+            animation: pulsePreSave 2s infinite ease-in-out;
+        }
+
+        .smartlink-status-badge.out-now {
+            background: rgba(0, 240, 255, 0.12);
+            border: 1px solid rgba(0, 240, 255, 0.45);
+            color: #00f0ff;
+            box-shadow: 0 0 16px rgba(0, 240, 255, 0.22);
+        }
+
+        .smartlink-status-badge.out-now i {
+            color: #00f0ff;
+        }
+
+        @keyframes pulsePreSave {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.92); }
         }
 
         .instruction-text {
@@ -986,10 +1006,10 @@
                 <div class="track-meta-header">
                     <h1 class="track-title" id="track-title">RELEASE TITLE</h1>
                     <div class="track-artist" id="track-artist">PROD By ARTIST</div>
-                    <div class="smartlink-expiry-tag">
-                        <i class="fas fa-clock"></i> This smart link will only be available 2 weeks after release
+                    <div class="smartlink-status-badge out-now" id="smartlink-status-badge">
+                        <i class="fas fa-bolt"></i> <span id="status-badge-text">OUT NOW // STREAMING EVERYWHERE</span>
                     </div>
-                    <div class="instruction-text">Choose your preferred music service</div>
+                    <div class="instruction-text" id="instruction-text">Choose your preferred music service</div>
                 </div>
 
                 <!-- Streaming Services Grid -->
@@ -1436,16 +1456,59 @@
             const targetReleaseTime = releaseDateVal ? new Date(releaseDateVal).getTime() : 0;
 
             function isCurrentlyPreSave() {
+                if (data.statusMode === 'presave') return true;
+                if (data.statusMode === 'outnow') return false;
                 return Boolean(targetReleaseTime && targetReleaseTime > Date.now());
             }
 
-            function updatePlatformButtonLabels() {
+            function formatCountdown(targetMs) {
+                const diff = targetMs - Date.now();
+                if (diff <= 0) return null;
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                if (days > 0) {
+                    return `${days}D ${String(hours).padStart(2, '0')}H ${String(mins).padStart(2, '0')}M ${String(secs).padStart(2, '0')}S`;
+                }
+                return `${String(hours).padStart(2, '0')}H ${String(mins).padStart(2, '0')}M ${String(secs).padStart(2, '0')}S`;
+            }
+
+            function updateSmartLinkStatus() {
                 const isPreSave = isCurrentlyPreSave();
-                const btnSpans = platformListEl.querySelectorAll('.platform-action-btn');
-                btnSpans.forEach(btn => {
-                    const normalAction = btn.getAttribute('data-normal-action') || 'Play';
-                    btn.textContent = isPreSave ? 'Pre-Save' : normalAction;
-                });
+                const badgeEl = document.getElementById('smartlink-status-badge');
+                const instructionEl = document.getElementById('instruction-text');
+
+                if (badgeEl) {
+                    if (data.customStatus && data.customStatus.trim().length > 0) {
+                        badgeEl.className = `smartlink-status-badge ${isPreSave ? 'pre-save' : 'out-now'}`;
+                        badgeEl.innerHTML = `<i class="fas ${isPreSave ? 'fa-hourglass-half' : 'fa-bolt'}"></i> <span id="status-badge-text">${data.customStatus.trim().toUpperCase()}</span>`;
+                    } else if (isPreSave) {
+                        badgeEl.className = 'smartlink-status-badge pre-save';
+                        const cd = formatCountdown(targetReleaseTime);
+                        badgeEl.innerHTML = `<i class="fas fa-hourglass-half"></i> <span id="status-badge-text">PRE-SAVE // DROPS IN ${cd || 'SOON'}</span>`;
+                    } else {
+                        badgeEl.className = 'smartlink-status-badge out-now';
+                        badgeEl.innerHTML = `<i class="fas fa-bolt"></i> <span id="status-badge-text">OUT NOW // STREAMING EVERYWHERE</span>`;
+                    }
+                }
+
+                if (instructionEl) {
+                    if (data.customInstruction && data.customInstruction.trim().length > 0) {
+                        instructionEl.textContent = data.customInstruction.trim();
+                    } else {
+                        instructionEl.textContent = isPreSave ? 'Pre-save to your music library' : 'Choose your preferred music service';
+                    }
+                }
+
+                // Update platform action buttons
+                if (platformListEl) {
+                    const btnSpans = platformListEl.querySelectorAll('.platform-action-btn');
+                    btnSpans.forEach(btn => {
+                        const normalAction = btn.getAttribute('data-normal-action') || 'Play';
+                        btn.textContent = isPreSave ? 'Pre-Save' : normalAction;
+                    });
+                }
             }
 
             // Build Platform Links List with Selected Button Style
@@ -1522,13 +1585,16 @@
                 });
             }
 
-            // Real-Time Background Monitor: auto-switch buttons the instant release time arrives
+            // Real-Time Countdown & Background Monitor
+            updateSmartLinkStatus();
             if (targetReleaseTime && targetReleaseTime > Date.now()) {
                 const releaseTimer = setInterval(() => {
                     if (Date.now() >= targetReleaseTime) {
                         clearInterval(releaseTimer);
-                        updatePlatformButtonLabels();
+                        updateSmartLinkStatus();
                         showToast("TRACK RELEASED! NOW STREAMING", "fas fa-bolt");
+                    } else {
+                        updateSmartLinkStatus();
                     }
                 }, 1000);
             }
