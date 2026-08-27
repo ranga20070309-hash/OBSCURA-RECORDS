@@ -65,9 +65,9 @@ module.exports = async (req, res) => {
             slug = slug.split('?')[0].split('&')[0].split('#')[0].trim();
         }
 
-        let htmlPath = path.join(process.cwd(), 'release.html');
+        let htmlPath = path.join(process.cwd(), 'release_template.html');
         if (!fs.existsSync(htmlPath)) {
-            htmlPath = path.join(process.cwd(), 'release_template.html');
+            htmlPath = path.join(process.cwd(), 'release.html');
         }
         if (!fs.existsSync(htmlPath)) {
             htmlPath = path.join(process.cwd(), 'release', 'index.html');
