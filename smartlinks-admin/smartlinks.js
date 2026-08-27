@@ -301,7 +301,7 @@ function updateMockupPreview() {
     mockCard.style.boxShadow = `0 25px 60px rgba(0,0,0,0.9), 0 0 ${Math.round(glowNum * 55)}px rgba(${rgb}, ${glowNum * 0.85}), inset 0 0 ${Math.round(glowNum * 18)}px rgba(${rgb}, ${glowNum * 0.25})`;
 
     // Update Mock Side QR
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`https://www.obscurarecord.com/release/?id=${slug}`)}&color=0-240-255&bgcolor=7-9-18`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`https://www.obscurarecord.com/release/${slug}`)}&color=0-240-255&bgcolor=7-9-18`;
     document.getElementById('mock-qr-img').src = qrUrl;
 
     const mockSideQr = document.getElementById('mock-side-qr');
@@ -701,7 +701,7 @@ function renderDirectory(query = '') {
         let artist = item.artist || 'OBSCURA RECORDS LLC';
         if (!/^prod/i.test(artist) && artist !== 'OBSCURA RECORDS LLC') artist = `PROD By ${artist}`;
 
-        const liveUrl = `https://www.obscurarecord.com/release/?id=${encodeURIComponent(slug)}`;
+        const liveUrl = `https://www.obscurarecord.com/release/${encodeURIComponent(slug)}`;
 
         let linkedCount = 0;
         if (item.links) {
@@ -906,7 +906,7 @@ function initActions() {
                 showToast("NO SMART LINK SLUG SPECIFIED!", 'error');
                 return;
             }
-            window.open(`https://www.obscurarecord.com/release/?id=${slug}`, '_blank');
+            window.open(`https://www.obscurarecord.com/release/${encodeURIComponent(slug)}`, '_blank');
         });
     }
 }
