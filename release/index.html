@@ -1477,10 +1477,9 @@
 
                     const isPreSave = isCurrentlyPreSave();
                     const initialAction = isPreSave ? 'Pre-Save' : cfg.action;
-                    const processedUrl = (isPreSave || url.includes('ffm.to') || url.includes('frontl.ink')) ? rewriteSmartPreSaveUrl(url) : url;
 
                     const row = document.createElement('a');
-                    row.href = processedUrl;
+                    row.href = url;
                     row.target = '_blank';
                     row.rel = 'noopener noreferrer';
                     row.className = 'platform-row';
@@ -1509,10 +1508,9 @@
                 fallbackPlatforms.forEach(p => {
                     const isPreSave = isCurrentlyPreSave();
                     const initialAction = isPreSave ? 'Pre-Save' : p.action;
-                    const processedUrl = (isPreSave || p.url.includes('ffm.to') || p.url.includes('frontl.ink')) ? rewriteSmartPreSaveUrl(p.url) : p.url;
 
                     const row = document.createElement('a');
-                    row.href = processedUrl;
+                    row.href = p.url;
                     row.target = '_blank';
                     row.className = 'platform-row';
                     row.setAttribute('data-original-url', p.url);
@@ -1568,91 +1566,11 @@
             }
         }
 
-        // --- SECURE & UNIVERSAL PRE-SAVE URL REWRITER ---
-        function safeBase64Decode(str) {
-            try {
-                return decodeURIComponent(escape(atob(str)));
-            } catch (e) {
-                try { return atob(str); } catch(err) { return null; }
-            }
-        }
+        // --- UNIVERSAL PRE-SAVE CONTROLLER ---
+        // Opens Frontlink / Feature.fm / Spotify pre-save links in an isolated popup
+        // so the user remains on OBSCURA RECORDS in the main window.
+        let activePreSavePopup = null;
 
-        function safeBase64Encode(str) {
-            try {
-                return btoa(unescape(encodeURIComponent(str)));
-            } catch (e) {
-                try { return btoa(str); } catch(err) { return str; }
-            }
-        }
-
-        function rewriteSmartPreSaveUrl(rawUrl) {
-            if (!rawUrl || typeof rawUrl !== 'string') return rawUrl;
-            const trimmed = rawUrl.trim();
-            if (trimmed.length < 5 || trimmed.startsWith('#') || trimmed.startsWith('javascript:')) return trimmed;
-
-            try {
-                const currentOrigin = window.location.origin || (window.location.protocol + '//' + window.location.host);
-                const currentPath = window.location.pathname;
-                const callbackUrl = `${currentOrigin}${currentPath}?status=presave_success`;
-
-                // 1. Check if URL is an api.ffm.to / ffm.to link with 'cd' parameter
-                if (trimmed.includes('ffm.to') || trimmed.includes('cd=')) {
-                    try {
-                        const urlObj = new URL(trimmed, window.location.href);
-                        if (urlObj.searchParams.has('cd')) {
-                            const cdDecodedStr = safeBase64Decode(urlObj.searchParams.get('cd'));
-                            if (cdDecodedStr) {
-                                const cdDecoded = JSON.parse(cdDecodedStr);
-                                if (cdDecoded && cdDecoded.destUrl) {
-                                    const destUrlObj = new URL(cdDecoded.destUrl);
-                                    if (destUrlObj.searchParams.has('state')) {
-                                        const stateDecodedStr = safeBase64Decode(destUrlObj.searchParams.get('state'));
-                                        if (stateDecodedStr) {
-                                            const stateDecoded = JSON.parse(stateDecodedStr);
-                                            stateDecoded.redirectUrl = callbackUrl;
-                                            destUrlObj.searchParams.set('state', safeBase64Encode(JSON.stringify(stateDecoded)));
-                                            return destUrlObj.toString();
-                                        }
-                                    }
-                                    return destUrlObj.toString();
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        console.warn("Pre-save CD rewrite fallback:", e);
-                    }
-                }
-
-                // 2. Direct Spotify / OAuth URL with 'state=' parameter
-                if (trimmed.includes('state=')) {
-                    try {
-                        const urlObj = new URL(trimmed, window.location.href);
-                        const stateParam = urlObj.searchParams.get('state');
-                        if (stateParam) {
-                            const stateDecodedStr = safeBase64Decode(stateParam);
-                            if (stateDecodedStr) {
-                                const stateDecoded = JSON.parse(stateDecodedStr);
-                                if (stateDecoded && typeof stateDecoded === 'object') {
-                                    stateDecoded.redirectUrl = callbackUrl;
-                                    urlObj.searchParams.set('state', safeBase64Encode(JSON.stringify(stateDecoded)));
-                                    return urlObj.toString();
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        console.warn("Pre-save state rewrite fallback:", e);
-                    }
-                }
-
-                // 3. Fallback: Standard link untouched
-                return trimmed;
-            } catch (err) {
-                console.error("Presave URL processor error:", err);
-                return rawUrl;
-            }
-        }
-
-        // Click Interceptor: Keeps user on OBSCURA RECORDS when clicking Pre-save links
         document.addEventListener('click', function (e) {
             const row = e.target.closest('.platform-row');
             if (!row) return;
@@ -1665,38 +1583,41 @@
 
             if (isPreSaveAction || isPreSaveDomain) {
                 e.preventDefault();
-                const targetUrl = rewriteSmartPreSaveUrl(href);
 
-                const width = 560;
-                const height = 720;
+                const width = 540;
+                const height = 700;
                 const left = Math.max(0, (window.innerWidth - width) / 2 + window.screenX);
                 const top = Math.max(0, (window.innerHeight - height) / 2 + window.screenY);
 
-                const popup = window.open(
-                    targetUrl,
-                    'OBSCURAPreSaveAuth',
-                    `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=no,resizable=yes`
-                );
+                if (activePreSavePopup && !activePreSavePopup.closed) {
+                    activePreSavePopup.focus();
+                } else {
+                    activePreSavePopup = window.open(
+                        href,
+                        'OBSCURAPreSaveAuth',
+                        `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=no,resizable=yes`
+                    );
+                }
 
-                if (popup) {
-                    showToast("CONNECTING PRE-SAVE... COMPLETE IN WINDOW", "fas fa-sync fa-spin");
+                if (activePreSavePopup) {
+                    showToast("PRE-SAVE OPENED IN WINDOW // COMPLETE TO SAVE", "fas fa-sync fa-spin");
                     const pollInterval = setInterval(() => {
                         try {
-                            if (!popup || popup.closed) {
+                            if (!activePreSavePopup || activePreSavePopup.closed) {
                                 clearInterval(pollInterval);
                                 showToast("RETURNED TO OBSCURA RECORDS", "fas fa-shield-alt");
                             }
                         } catch (err) {
                             clearInterval(pollInterval);
                         }
-                    }, 600);
+                    }, 500);
                 } else {
-                    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+                    window.open(href, '_blank', 'noopener,noreferrer');
                 }
             }
         });
 
-        // Automatically detect return from Pre-Save & show confirmation
+        // Automatically detect return from Pre-Save callbacks & display status
         (function handlePreSaveReturnStatus() {
             try {
                 const params = new URLSearchParams(window.location.search);
