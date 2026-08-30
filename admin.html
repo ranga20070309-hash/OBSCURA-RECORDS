@@ -673,6 +673,32 @@
                     <button class="cyber-btn primary" id="btn-add-upcoming"><i class="fas fa-plus-circle"></i> ADD UPCOMING TEASER</button>
                 </div>
 
+                <div class="cyber-card full-card" style="margin-bottom: 1.5rem;">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-heading card-icon"></i>
+                            <div>
+                                <h3>UPCOMING SECTION HEADERS & SUBTITLE</h3>
+                                <p>Customize the main title and description text displayed above the upcoming teasers.</p>
+                            </div>
+                        </div>
+                        <button type="button" class="cyber-btn primary" id="btn-save-upcoming-header">
+                            <i class="fas fa-save"></i> SAVE HEADERS
+                        </button>
+                    </div>
+                    <div class="card-body form-grid">
+                        <div class="input-group">
+                            <label>UPCOMING SECTION TITLE</label>
+                            <input type="text" id="upc_section_title" placeholder="UPCOMING <span class='accent'>RELEASES</span>">
+                            <small class="field-hint" style="color: var(--text-dim); font-size: 0.75rem; margin-top: 4px; display: block;">Supports HTML (e.g. &lt;span class='accent'&gt;RELEASES&lt;/span&gt;)</small>
+                        </div>
+                        <div class="input-group">
+                            <label>UPCOMING SECTION SUBTITLE / DESCRIPTION</label>
+                            <input type="text" id="upc_section_desc" placeholder="Intercepting future signals... decryption in progress.">
+                        </div>
+                    </div>
+                </div>
+
                 <div id="upcoming-editor-card" class="cyber-card editor-card" style="display: none;">
                     <div class="card-header">
                         <i class="fas fa-calendar-plus card-icon"></i>
