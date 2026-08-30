@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBSCURA // TIKTOK TRANSMISSION STUDIO</title>
+    <link rel="icon" href="../assets/cover.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Firebase App & Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <!-- GSAP Animation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <style>
+        :root {
+            --bg-deep: #040508;
+            --bg-card: rgba(10, 13, 20, 0.85);
+            --bg-glass: rgba(15, 20, 30, 0.7);
+            --tt-cyan: #00f2fe;
+            --tt-pink: #fe2c55;
+            --tt-glow: #25f4ee;
+            --green-glow: #00ff8c;
+            --text-main: #f0f4fc;
+            --text-dim: #94a3b8;
+            --border-card: rgba(0, 242, 254, 0.22);
+            --border-glow: rgba(254, 44, 85, 0.45);
+            --font-head: 'Orbitron', sans-serif;
+            --font-body: 'Rajdhani', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(254, 44, 85, 0.12) 0%, transparent 40%),
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+        }
+
+        /* --- CYBER GRID SCANLINE OVERLAY --- */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.4;
+        }
+
+        /* --- AUTH LOCK GATE --- */
+        #auth-gate {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(4, 5, 8, 0.96);
+            backdrop-filter: blur(25px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .auth-card {
+            background: rgba(12, 16, 24, 0.95);
+            border: 1px solid var(--border-card);
+            box-shadow: 0 0 50px rgba(0, 242, 254, 0.2), inset 0 0 30px rgba(254, 44, 85, 0.08);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+        }
+
+        .auth-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 242, 254, 0.15);
+            border: 1px solid var(--tt-cyan);
+            color: var(--tt-cyan);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.35rem 0.9rem;
+            border-radius: 30px;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .auth-title {
+            font-family: var(--font-head);
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+        }
+
+        .auth-title span {
+            background: linear-gradient(90deg, var(--tt-cyan), var(--tt-pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-sub {
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .passcode-input-wrap {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .passcode-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .passcode-input:focus {
+            border-color: var(--tt-cyan);
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.4);
+        }
+
+        .btn-cyber-primary {
+            width: 100%;
+            background: linear-gradient(135deg, var(--tt-cyan), var(--tt-pink));
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            font-family: var(--font-head);
+            font-size: 0.95rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.7rem;
+        }
+
+        .btn-cyber-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 35px rgba(254, 44, 85, 0.5);
+            background: linear-gradient(135deg, #25f4ee, #ff3b68);
+        }
+
+        .btn-cyber-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-error {
+            color: #fe2c55;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            margin-top: 1rem;
+            min-height: 1.2rem;
+        }
+
+        /* --- APP HEADER --- */
+        .app-header {
+            border-bottom: 1px solid var(--border-card);
+            background: rgba(8, 10, 15, 0.85);
+            backdrop-filter: blur(15px);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(0, 242, 254, 0.12);
+            border: 1px solid var(--tt-cyan);
+            color: var(--tt-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+        }
+
+        .brand-text h1 {
+            font-family: var(--font-head);
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            line-height: 1.1;
+        }
+
+        .brand-text h1 span {
+            color: var(--tt-cyan);
+        }
+
+        .brand-text p {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            letter-spacing: 1.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-main);
+            padding: 0.55rem 1rem;
+            border-radius: 8px;
+            font-family: var(--font-head);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-btn:hover {
+            border-color: var(--tt-cyan);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.25);
+            background: rgba(0, 242, 254, 0.08);
+        }
+
+        .header-btn.highlight {
+            border-color: rgba(255, 0, 51, 0.3);
+            color: #ff3366;
+        }
+
+        .header-btn.highlight:hover {
+            border-color: #ff0033;
+            background: rgba(255, 0, 51, 0.1);
+            box-shadow: 0 0 15px rgba(255, 0, 51, 0.3);
+        }
+
+        /* --- MAIN CONTAINER --- */
+        .app-main {
+            flex: 1;
+            max-width: 1280px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 2.2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .app-main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- CYBERPANEL GLASS CARDS --- */
+        .cyber-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .cyber-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--tt-cyan), var(--tt-pink), transparent);
+        }
+
+        .card-header {
+            padding: 1.5rem 1.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .card-header-icon {
+            font-size: 1.3rem;
+            color: var(--tt-cyan);
+        }
+
+        .card-header h2 {
+            font-family: var(--font-head);
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: #fff;
+        }
+
+        .card-header p {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-top: 0.15rem;
+        }
+
+        .card-body {
+            padding: 1.8rem;
+        }
+
+        /* --- QUICK AUTO-RESOLVE STRIP --- */
+        .auto-fetch-box {
+            background: rgba(0, 242, 254, 0.06);
+            border: 1px solid rgba(0, 242, 254, 0.25);
+            border-radius: 14px;
+            padding: 1.2rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .auto-fetch-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--tt-cyan);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .input-action-row {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .cyber-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 0.85rem 1.1rem;
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        .cyber-input:focus {
+            border-color: var(--tt-cyan);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+            background: rgba(0, 0, 0, 0.75);
+        }
+
+        .btn-action {
+            background: rgba(0, 242, 254, 0.15);
+            border: 1px solid var(--tt-cyan);
+            color: #fff;
+            border-radius: 10px;
+            padding: 0.85rem 1.3rem;
+            font-family: var(--font-head);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-action:hover {
+            background: var(--tt-cyan);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+        }
+
+        /* --- FORM FIELDS GRID --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+        }
+
+        .form-grid .full-width {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 640px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-grid .full-width {
+                grid-column: span 1;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .form-group label {
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .form-group label i {
+            color: var(--tt-cyan);
+        }
+
+        textarea.cyber-input {
+            resize: vertical;
+            min-height: 80px;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .thumb-preview-wrap {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        .thumb-preview-box {
+            width: 72px;
+            height: 48px;
+            border-radius: 8px;
+            background: #10141f;
+            border: 1px solid var(--border-card);
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+        }
+
+        /* --- LIVE PREVIEW BOX (MATCHING MAIN SITE) --- */
+        .preview-sticky-wrap {
+            position: sticky;
+            top: 6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .live-preview-card {
+            background: rgba(14, 18, 26, 0.9);
+            border: 1px solid rgba(0, 242, 254, 0.35);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 15px 45px rgba(0, 242, 254, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .prev-header {
+            padding: 1rem 1.3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .prev-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: var(--font-head);
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--tt-cyan);
+            letter-spacing: 1px;
+        }
+
+        .prev-live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--tt-cyan);
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--tt-cyan);
+            box-shadow: 0 0 10px var(--tt-cyan);
+            animation: pulse-glow-tt 1.5s infinite;
+        }
+
+        @keyframes pulse-glow-tt {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.5; }
+        }
+
+        .prev-media-box {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .prev-media-bg {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.5s ease;
+        }
+
+        .prev-media-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(10, 12, 18, 0.95), rgba(10, 12, 18, 0.2));
+        }
+
+        /* TikTok Animated Soundwave */
+        .tiktok-sound-wave {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 24px;
+            z-index: 10;
+        }
+
+        .tiktok-sound-wave span {
+            width: 4px;
+            background: var(--tt-cyan);
+            border-radius: 2px;
+            animation: tt-wave 1s ease-in-out infinite alternate;
+        }
+
+        .tiktok-sound-wave span:nth-child(1) { height: 40%; animation-delay: 0.1s; }
+        .tiktok-sound-wave span:nth-child(2) { height: 80%; animation-delay: 0.3s; background: var(--tt-pink); }
+        .tiktok-sound-wave span:nth-child(3) { height: 100%; animation-delay: 0.2s; }
+        .tiktok-sound-wave span:nth-child(4) { height: 60%; animation-delay: 0.4s; background: var(--tt-pink); }
+        .tiktok-sound-wave span:nth-child(5) { height: 30%; animation-delay: 0.15s; }
+
+        @keyframes tt-wave {
+            0% { transform: scaleY(0.3); }
+            100% { transform: scaleY(1.1); }
+        }
+
+        .prev-play-btn {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 54px; height: 54px;
+            border-radius: 50%;
+            background: rgba(0, 242, 254, 0.85);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.8);
+            border: 2px solid #fff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .prev-play-btn:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            background: var(--tt-pink);
+            color: #fff;
+            box-shadow: 0 0 30px rgba(254, 44, 85, 0.8);
+        }
+
+        .prev-content {
+            padding: 1.4rem;
+        }
+
+        .prev-tag {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--tt-cyan);
+            background: rgba(0, 242, 254, 0.12);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            padding: 0.25rem 0.65rem;
+            border-radius: 4px;
+            letter-spacing: 1.5px;
+            margin-bottom: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        .prev-title {
+            font-family: var(--font-head);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.35;
+            margin-bottom: 0.6rem;
+        }
+
+        .prev-desc {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+            margin-bottom: 1.2rem;
+        }
+
+        .prev-actions {
+            display: flex;
+            gap: 0.7rem;
+        }
+
+        .btn-prev-tt {
+            flex: 1;
+            background: var(--tt-cyan);
+            color: #000;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-family: var(--font-head);
+            font-size: 0.74rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-prev-follow {
+            background: rgba(254, 44, 85, 0.15);
+            border: 1px solid var(--tt-pink);
+            color: #fff;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-family: var(--font-head);
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        /* --- TOAST NOTIFICATIONS --- */
+        #toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .toast-msg {
+            background: rgba(14, 18, 26, 0.95);
+            border: 1px solid var(--tt-cyan);
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.4);
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.8rem 1.4rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            animation: slideInToast 0.3s ease;
+        }
+
+        @keyframes slideInToast {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* --- PASSCODE MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(15px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+
+    <!-- 1. SECURITY PASSCODE GATE -->
+    <div id="auth-gate">
+        <div class="auth-card">
+            <div class="auth-badge">
+                <i class="fas fa-shield-alt"></i> PROTECTED STUDIO DECK
+            </div>
+            <h2 class="auth-title">TIKTOK <span>STUDIO</span></h2>
+            <p class="auth-sub">Enter authorization passcode to manage official TikTok sounds, drops, and viral clips.</p>
+
+            <div class="passcode-input-wrap">
+                <input type="password" id="gate-passcode" class="passcode-input" placeholder="••••••••" autocomplete="off">
+            </div>
+
+            <button type="button" class="btn-cyber-primary" id="btn-unlock-gate">
+                <i class="fas fa-unlock-alt"></i> UNLOCK TRANSMISSION DECK
+            </button>
+
+            <div class="auth-error" id="gate-error-msg"></div>
+
+            <div style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem; display: flex; justify-content: space-between; font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-dim);">
+                <a href="../" style="color: var(--text-dim); text-decoration: none;"><i class="fas fa-arrow-left"></i> MAIN SITE</a>
+                <a href="../admin.html" style="color: var(--tt-cyan); text-decoration: none;"><i class="fas fa-shield-alt"></i> MASTER ADMIN</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. APPLICATION HEADER -->
+    <header class="app-header">
+        <a href="#" class="brand-logo">
+            <div class="brand-icon">
+                <i class="fab fa-tiktok"></i>
+            </div>
+            <div class="brand-text">
+                <h1>OBSCURA // <span>TIKTOK STUDIO</span></h1>
+                <p>TRANSMISSION DECK v2.4 • REALTIME ENGINE</p>
+            </div>
+        </a>
+
+        <div class="header-actions">
+            <a href="../youtube/" class="header-btn highlight" title="Switch to YouTube Studio">
+                <i class="fab fa-youtube"></i> <span>YOUTUBE STUDIO</span>
+            </a>
+            <button type="button" class="header-btn" id="btn-open-settings" title="Change Passcode">
+                <i class="fas fa-key"></i> <span>PASSCODE</span>
+            </button>
+            <a href="../" target="_blank" class="header-btn" title="View Public Portal">
+                <i class="fas fa-external-link-alt"></i> <span>LIVE SITE</span>
+            </a>
+            <button type="button" class="header-btn" id="btn-lock-session" style="color: var(--tt-pink);">
+                <i class="fas fa-lock"></i> <span>LOCK</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 3. MAIN STUDIO CONTROLS & LIVE PREVIEW -->
+    <main class="app-main">
+        <!-- LEFT: EDITING ENGINE -->
+        <div class="cyber-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <i class="fas fa-sliders-h card-header-icon"></i>
+                    <div>
+                        <h2>TIKTOK TRANSMISSION CONTROLS</h2>
+                        <p>Paste any TikTok video, sound, or profile link to auto-fill metadata instantly.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- SMART AUTO-FILL STRIP -->
+                <div class="auto-fetch-box">
+                    <div class="auto-fetch-label">
+                        <i class="fas fa-bolt"></i> SMART AUTO-RESOLVE TIKTOK DROP
+                    </div>
+                    <div class="input-action-row">
+                        <input type="text" id="quick-tt-input" class="cyber-input" placeholder="Paste TikTok Video / Profile URL (e.g. https://www.tiktok.com/@obscura.records/video/...)">
+                        <button type="button" class="btn-action" id="btn-auto-resolve">
+                            <i class="fas fa-magic"></i> AUTO FILL
+                        </button>
+                    </div>
+                </div>
+
+                <form id="tt-studio-form">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label><i class="fab fa-tiktok"></i> TIKTOK VIDEO / CLIP URL</label>
+                            <input type="text" id="tt_url" class="cyber-input" placeholder="https://www.tiktok.com/@obscura.records/video/..." required>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label><i class="fas fa-heading"></i> DROP TITLE / SOUND NAME</label>
+                            <input type="text" id="tt_title" class="cyber-input" placeholder="e.g. OBSCURA RECORDS (@OBSCURA.RECORDS)" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-tag"></i> CATEGORY BADGE / TAG</label>
+                            <input type="text" id="tt_tag" class="cyber-input" placeholder="e.g. OFFICIAL TIKTOK HUB">
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-user-plus"></i> PROFILE FOLLOW LINK</label>
+                            <input type="text" id="tt_follow_url" class="cyber-input" placeholder="https://www.tiktok.com/@obscura.records">
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label><i class="fas fa-image"></i> THUMBNAIL / COVER IMAGE URL</label>
+                            <div class="thumb-preview-wrap">
+                                <input type="text" id="tt_thumb" class="cyber-input" placeholder="https://... or assets/cover.png">
+                                <div id="thumb-preview-img" class="thumb-preview-box"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label><i class="fas fa-align-left"></i> TRANSMISSION DESCRIPTION</label>
+                            <textarea id="tt_desc" class="cyber-input" placeholder="Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok."></textarea>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem; display: flex; gap: 1rem; align-items: center;">
+                        <button type="submit" class="btn-cyber-primary" id="btn-save-tt" style="flex: 1;">
+                            <i class="fas fa-cloud-upload-alt"></i> SAVE & SYNC TIKTOK DROP LIVE
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- RIGHT: REALTIME LIVE PREVIEW -->
+        <div class="preview-sticky-wrap">
+            <div class="cyber-card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <i class="fas fa-eye card-header-icon" style="color: var(--tt-cyan);"></i>
+                        <div>
+                            <h2>LIVE MAIN SITE PREVIEW</h2>
+                            <p>Exact replica of how this card looks on the public home page.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="live-preview-card">
+                        <div class="prev-header">
+                            <div class="prev-badge">
+                                <i class="fab fa-tiktok"></i>
+                                <span>TIKTOK DROP</span>
+                            </div>
+                            <div class="prev-live-indicator">
+                                <span class="pulse-dot"></span>
+                                <span>NEW SIGNAL</span>
+                            </div>
+                        </div>
+
+                        <div class="prev-media-box">
+                            <div id="prev-bg" class="prev-media-bg" style="background-image: url('../assets/cover.png');"></div>
+                            <div class="prev-media-overlay"></div>
+                            
+                            <!-- TikTok 5-bar Soundwave -->
+                            <div class="tiktok-sound-wave">
+                                <span></span><span></span><span></span><span></span><span></span>
+                            </div>
+
+                            <a href="#" id="prev-play-btn" target="_blank" class="prev-play-btn">
+                                <i class="fab fa-tiktok"></i>
+                            </a>
+                        </div>
+
+                        <div class="prev-content">
+                            <span id="prev-tag" class="prev-tag">OFFICIAL TIKTOK HUB</span>
+                            <h3 id="prev-title" class="prev-title">OBSCURA RECORDS (@OBSCURA.RECORDS)</h3>
+                            <p id="prev-desc" class="prev-desc">Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.</p>
+
+                            <div class="prev-actions">
+                                <a href="#" id="prev-watch-btn" target="_blank" class="btn-prev-tt">
+                                    <i class="fab fa-tiktok"></i> <span>WATCH ON TIKTOK</span>
+                                </a>
+                                <a href="#" id="prev-follow-btn" target="_blank" class="btn-prev-follow">
+                                    <i class="fas fa-plus"></i> <span>FOLLOW</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 4. PASSCODE SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="auth-card" style="max-width: 480px;">
+            <div class="auth-badge" style="border-color: var(--tt-pink); color: var(--tt-pink); background: rgba(254, 44, 85, 0.1);">
+                <i class="fas fa-key"></i> SECURITY SETTINGS
+            </div>
+            <h2 class="auth-title">CHANGE <span>PASSCODE</span></h2>
+            <p class="auth-sub">Update the studio passcode required to access this TikTok management deck.</p>
+
+            <form id="form-change-passcode">
+                <div class="form-group" style="text-align: left; margin-bottom: 1rem;">
+                    <label>NEW STUDIO PASSCODE</label>
+                    <input type="text" id="new-studio-passcode" class="cyber-input" placeholder="e.g. OBSCURA_TT_2026" required style="font-family: var(--font-mono); letter-spacing: 2px;">
+                </div>
+
+                <div style="display: flex; gap: 0.8rem; margin-top: 1.5rem;">
+                    <button type="button" class="header-btn" id="btn-close-settings" style="flex: 1; justify-content: center;">CANCEL</button>
+                    <button type="submit" class="btn-cyber-primary" style="flex: 1.5;">SAVE PASSCODE</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST ALERTS CONTAINER -->
+    <div id="toast-container"></div>
+
+    <!-- STUDIO SCRIPT ENGINE -->
+    <script>
+        // --- FIREBASE INITIALIZATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHf_R1n2Qn-q4NHAjfJt6xD_TWIRjiN1o",
+            authDomain: "obscura-records.firebaseapp.com",
+            databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "obscura-records",
+            storageBucket: "obscura-records.firebasestorage.app",
+            messagingSenderId: "831882873428",
+            appId: "1:831882873428:web:3cf009875e160a9f8efbc1"
+        };
+
+        if (typeof firebase !== 'undefined') {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        // --- WEB AUDIO CYBER SYNTH SFX ---
+        let audioCtx = null;
+        function playCyberSFX(type = 'click') {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                if (type === 'unlock') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(520, now);
+                    osc.frequency.exponentialRampToValueAtTime(1040, now + 0.15);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(659.25, now);
+                    osc.frequency.setValueAtTime(987.77, now + 0.08);
+                    gain.gain.setValueAtTime(0.06, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.exponentialRampToValueAtTime(110, now + 0.2);
+                    gain.gain.setValueAtTime(0.06, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                }
+            } catch (e) {}
+        }
+
+        // --- TOAST ENGINE ---
+        function showToast(msg, isError = false) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            if (isError) toast.style.borderColor = '#fe2c55';
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}" style="color: ${isError ? '#fe2c55' : '#00ff8c'}"></i> ${msg}`;
+            container.appendChild(toast);
+            playCyberSFX(isError ? 'error' : 'success');
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // --- PASSCODE GATE LOGIC ---
+        let currentTtPasscode = "OBSCURA_TT_2026";
+        const DEFAULT_ROOT_KEY = "ORC ADMINS PASS 2026";
+
+        // Listen for live passcode in Firebase
+        db.ref('siteData/globals/tt_passcode').on('value', snap => {
+            if (snap.val()) currentTtPasscode = snap.val();
+        });
+
+        const authGate = document.getElementById('auth-gate');
+        const gatePassInput = document.getElementById('gate-passcode');
+        const gateBtn = document.getElementById('btn-unlock-gate');
+        const gateError = document.getElementById('gate-error-msg');
+
+        function checkSessionAuth() {
+            if (sessionStorage.getItem('obscura_tt_auth') === 'granted' || sessionStorage.getItem('rootAuth') === 'granted') {
+                authGate.style.display = 'none';
+            } else {
+                authGate.style.display = 'flex';
+            }
+        }
+        checkSessionAuth();
+
+        function attemptUnlock() {
+            const entered = gatePassInput.value.trim();
+            if (!entered) {
+                gateError.textContent = "ENTER PASSCODE";
+                return;
+            }
+
+            db.ref('siteData/globals/rootKey').once('value').then(rSnap => {
+                const liveRoot = rSnap.val() || DEFAULT_ROOT_KEY;
+                if (entered === currentTtPasscode || entered === liveRoot || entered === DEFAULT_ROOT_KEY) {
+                    sessionStorage.setItem('obscura_tt_auth', 'granted');
+                    playCyberSFX('unlock');
+                    gsap.to(authGate, {
+                        opacity: 0,
+                        scale: 0.95,
+                        duration: 0.35,
+                        onComplete: () => {
+                            authGate.style.display = 'none';
+                            showToast("TIKTOK STUDIO UNLOCKED");
+                        }
+                    });
+                } else {
+                    playCyberSFX('error');
+                    gateError.textContent = "INVALID PASSCODE • ACCESS DENIED";
+                    gsap.fromTo(gatePassInput, { x: -8 }, { x: 8, duration: 0.08, repeat: 4, yoyo: true });
+                }
+            });
+        }
+
+        gateBtn.addEventListener('click', attemptUnlock);
+        gatePassInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') attemptUnlock();
+        });
+
+        // Lock Session
+        document.getElementById('btn-lock-session').addEventListener('click', () => {
+            sessionStorage.removeItem('obscura_tt_auth');
+            authGate.style.opacity = '1';
+            authGate.style.transform = 'none';
+            authGate.style.display = 'flex';
+            gatePassInput.value = '';
+            gateError.textContent = '';
+            showToast("STUDIO LOCKED");
+        });
+
+        // --- FETCH TIKTOK METADATA PROXY ENGINE ---
+        async function fetchTikTokDetails(urlOrUsername) {
+            const raw = (urlOrUsername || 'obscura.records').trim();
+
+            async function fetchWithProxies(targetUrl) {
+                try {
+                    const res = await fetch(targetUrl);
+                    if (res.ok) return await res.json();
+                } catch (e) {}
+
+                try {
+                    const aoRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+                    if (aoRes.ok) {
+                        const aoData = await aoRes.json();
+                        if (aoData.contents) return JSON.parse(aoData.contents);
+                    }
+                } catch (e) {}
+
+                try {
+                    const cpRes = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`);
+                    if (cpRes.ok) return await cpRes.json();
+                } catch (e) {}
+
+                return null;
+            }
+
+            if (raw.includes('tiktok.com')) {
+                const oEmbedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(raw)}`;
+                const data = await fetchWithProxies(oEmbedUrl);
+                if (data && (data.thumbnail_url || data.title)) {
+                    const user = data.author_unique_id || (raw.includes('@') ? raw.split('@')[1].split('/')[0] : 'obscura.records');
+                    return {
+                        user: user,
+                        title: data.title || `LATEST TIKTOK DROP @${user.toUpperCase()}`,
+                        link: raw,
+                        thumb: data.thumbnail_url || 'assets/cover.png',
+                        followUrl: `https://www.tiktok.com/@${user}`,
+                        tag: raw.includes('/video/') ? 'LATEST TIKTOK VIDEO' : 'OFFICIAL TIKTOK HUB'
+                    };
+                }
+            }
+
+            const cleanUser = raw.replace(/^@/, '').trim();
+            const profileOEmbedUrl = `https://www.tiktok.com/oembed?url=https://www.tiktok.com/@${encodeURIComponent(cleanUser)}`;
+            const data = await fetchWithProxies(profileOEmbedUrl);
+            if (data && (data.thumbnail_url || data.author_name)) {
+                return {
+                    user: cleanUser,
+                    title: data.author_name ? `${data.author_name.toUpperCase()} (@${cleanUser.toUpperCase()})` : `OBSCURA RECORDS (@${cleanUser.toUpperCase()})`,
+                    link: `https://www.tiktok.com/@${cleanUser}`,
+                    thumb: data.thumbnail_url || 'assets/cover.png',
+                    followUrl: `https://www.tiktok.com/@${cleanUser}`,
+                    tag: 'OFFICIAL TIKTOK HUB'
+                };
+            }
+
+            return {
+                user: cleanUser,
+                title: `OBSCURA RECORDS (@${cleanUser.toUpperCase()})`,
+                link: `https://www.tiktok.com/@${cleanUser}`,
+                thumb: 'assets/cover.png',
+                followUrl: `https://www.tiktok.com/@${cleanUser}`,
+                tag: 'OFFICIAL TIKTOK HUB'
+            };
+        }
+
+        // --- FORM & PREVIEW ENGINE ---
+        const inputUrl = document.getElementById('tt_url');
+        const inputTitle = document.getElementById('tt_title');
+        const inputTag = document.getElementById('tt_tag');
+        const inputFollowUrl = document.getElementById('tt_follow_url');
+        const inputThumb = document.getElementById('tt_thumb');
+        const inputDesc = document.getElementById('tt_desc');
+
+        const prevBg = document.getElementById('prev-bg');
+        const prevTag = document.getElementById('prev-tag');
+        const prevTitle = document.getElementById('prev-title');
+        const prevDesc = document.getElementById('prev-desc');
+        const prevPlay = document.getElementById('prev-play-btn');
+        const prevWatch = document.getElementById('prev-watch-btn');
+        const prevFollow = document.getElementById('prev-follow-btn');
+        const thumbBox = document.getElementById('thumb-preview-img');
+
+        function updatePreview() {
+            const urlVal = inputUrl.value.trim() || 'https://www.tiktok.com/@obscura.records';
+            const titleVal = inputTitle.value.trim() || 'OBSCURA RECORDS (@OBSCURA.RECORDS)';
+            const tagVal = inputTag.value.trim() || 'OFFICIAL TIKTOK HUB';
+            let thumbVal = inputThumb.value.trim() || '../assets/cover.png';
+            if (thumbVal.startsWith('assets/')) thumbVal = '../' + thumbVal;
+            const descVal = inputDesc.value.trim() || 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.';
+            const followVal = inputFollowUrl.value.trim() || 'https://www.tiktok.com/@obscura.records';
+
+            prevTitle.textContent = titleVal;
+            prevTag.textContent = tagVal;
+            prevDesc.textContent = descVal;
+            prevBg.style.backgroundImage = `url("${thumbVal}")`;
+            thumbBox.style.backgroundImage = `url("${thumbVal}")`;
+
+            prevPlay.href = urlVal;
+            prevWatch.href = urlVal;
+            prevFollow.href = followVal;
+        }
+
+        [inputUrl, inputTitle, inputTag, inputFollowUrl, inputThumb, inputDesc].forEach(el => {
+            el.addEventListener('input', updatePreview);
+        });
+
+        // Quick Auto-Resolve trigger
+        async function runAutoResolve(url) {
+            if (!url) return;
+            showToast("FETCHING TIKTOK METADATA...");
+            const data = await fetchTikTokDetails(url);
+            if (data) {
+                inputUrl.value = data.link;
+                inputTitle.value = data.title;
+                inputThumb.value = data.thumb;
+                inputTag.value = data.tag || 'OFFICIAL TIKTOK HUB';
+                inputFollowUrl.value = data.followUrl || `https://www.tiktok.com/@${data.user}`;
+                if (!inputDesc.value) inputDesc.value = `Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.`;
+                updatePreview();
+                showToast("TIKTOK DETAILS LOADED!");
+            } else {
+                showToast("COULD NOT RESOLVE TIKTOK DATA", true);
+            }
+        }
+
+        document.getElementById('btn-auto-resolve').addEventListener('click', () => {
+            const val = document.getElementById('quick-tt-input').value.trim();
+            if (!val) {
+                showToast("PASTE A TIKTOK LINK FIRST", true);
+                return;
+            }
+            runAutoResolve(val);
+        });
+
+        document.getElementById('quick-tt-input').addEventListener('paste', (e) => {
+            setTimeout(() => {
+                const val = document.getElementById('quick-tt-input').value.trim();
+                if (val) runAutoResolve(val);
+            }, 100);
+        });
+
+        // --- LOAD DATA FROM FIREBASE ---
+        let currentTransmissionData = {};
+
+        db.ref('siteData/globals/latest_transmissions').on('value', snap => {
+            const d = snap.val() || {};
+            currentTransmissionData = d;
+
+            inputUrl.value = d.tt_url || d.ttUrl || 'https://www.tiktok.com/@obscura.records';
+            inputTitle.value = d.tt_title || d.ttTitle || 'OBSCURA RECORDS (@OBSCURA.RECORDS)';
+            inputTag.value = d.tt_tag || d.ttTag || 'OFFICIAL TIKTOK HUB';
+            inputThumb.value = d.tt_thumb || d.ttThumb || 'assets/cover.png';
+            inputDesc.value = d.tt_desc || d.ttDesc || 'Catch the newest sound clip, trending edits, and short-form sonic previews on TikTok.';
+            inputFollowUrl.value = d.tt_follow_url || d.ttFollowUrl || 'https://www.tiktok.com/@obscura.records';
+
+            updatePreview();
+        });
+
+        // --- SAVE TO FIREBASE & BROADCAST VERSION ---
+        document.getElementById('tt-studio-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const saveBtn = document.getElementById('btn-save-tt');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SYNCING LIVE...';
+
+            const payload = {
+                ...currentTransmissionData,
+                tt_url: inputUrl.value.trim(),
+                tt_title: inputTitle.value.trim(),
+                tt_tag: inputTag.value.trim(),
+                tt_thumb: inputThumb.value.trim(),
+                tt_desc: inputDesc.value.trim(),
+                tt_follow_url: inputFollowUrl.value.trim(),
+                updatedAt: Date.now()
+            };
+
+            try {
+                await db.ref('siteData/globals/latest_transmissions').set(payload);
+                await db.ref('bot_status/latest_transmissions').set(payload).catch(() => {});
+                
+                // Bump Version Node for Realtime Global Invalidation
+                const nextV = (parseFloat(localStorage.getItem('obscura_site_v') || '1.0') + 0.1).toFixed(1);
+                await db.ref('siteData/globals/v').set(nextV).catch(() => {});
+
+                showToast("TIKTOK DROP SAVED & SYNCED TO MAIN SITE!");
+            } catch (err) {
+                showToast("SAVE FAILED: " + err.message, true);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> SAVE & SYNC TIKTOK DROP LIVE';
+            }
+        });
+
+        // --- PASSCODE CHANGE MODAL ENGINE ---
+        const settingsModal = document.getElementById('settings-modal');
+        const openSettingsBtn = document.getElementById('btn-open-settings');
+        const closeSettingsBtn = document.getElementById('btn-close-settings');
+        const newPassInput = document.getElementById('new-studio-passcode');
+
+        openSettingsBtn.addEventListener('click', () => {
+            newPassInput.value = currentTtPasscode;
+            settingsModal.classList.add('active');
+        });
+
+        closeSettingsBtn.addEventListener('click', () => {
+            settingsModal.classList.remove('active');
+        });
+
+        document.getElementById('form-change-passcode').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPass = newPassInput.value.trim();
+            if (!newPass) return;
+
+            try {
+                await db.ref('siteData/globals/tt_passcode').set(newPass);
+                currentTtPasscode = newPass;
+                settingsModal.classList.remove('active');
+                showToast("TIKTOK PASSCODE UPDATED!");
+            } catch (err) {
+                showToast("ERROR UPDATING PASSCODE: " + err.message, true);
+            }
+        });
+    </script>
+</body>
+</html>

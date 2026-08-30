@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBSCURA // YOUTUBE TRANSMISSION STUDIO</title>
+    <link rel="icon" href="../assets/cover.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Firebase App & Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <!-- GSAP Animation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <style>
+        :root {
+            --bg-deep: #050608;
+            --bg-card: rgba(12, 14, 20, 0.82);
+            --bg-glass: rgba(18, 22, 32, 0.65);
+            --yt-red: #ff0033;
+            --yt-glow: #ff2255;
+            --yt-neon: #ff3366;
+            --cyan-accent: #00f0ff;
+            --green-glow: #00ff8c;
+            --text-main: #f0f4fc;
+            --text-dim: #94a3b8;
+            --border-card: rgba(255, 0, 51, 0.22);
+            --border-glow: rgba(255, 34, 85, 0.45);
+            --font-head: 'Orbitron', sans-serif;
+            --font-body: 'Rajdhani', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(255, 0, 51, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(0, 240, 255, 0.08) 0%, transparent 40%),
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+        }
+
+        /* --- CYBER GRID SCANLINE OVERLAY --- */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.4;
+        }
+
+        /* --- AUTH LOCK GATE --- */
+        #auth-gate {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 6, 10, 0.96);
+            backdrop-filter: blur(25px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .auth-card {
+            background: rgba(14, 17, 24, 0.95);
+            border: 1px solid var(--border-glow);
+            box-shadow: 0 0 50px rgba(255, 0, 51, 0.2), inset 0 0 30px rgba(255, 0, 51, 0.05);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+        }
+
+        .auth-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 0, 51, 0.15);
+            border: 1px solid var(--yt-red);
+            color: var(--yt-neon);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.35rem 0.9rem;
+            border-radius: 30px;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .auth-title {
+            font-family: var(--font-head);
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 20px rgba(255, 0, 51, 0.5);
+        }
+
+        .auth-title span {
+            color: var(--yt-red);
+        }
+
+        .auth-sub {
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .passcode-input-wrap {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .passcode-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 0, 51, 0.4);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .passcode-input:focus {
+            border-color: var(--yt-red);
+            box-shadow: 0 0 25px rgba(255, 0, 51, 0.4);
+        }
+
+        .btn-cyber-primary {
+            width: 100%;
+            background: linear-gradient(135deg, var(--yt-red), #990022);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            font-family: var(--font-head);
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 0 25px rgba(255, 0, 51, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.7rem;
+        }
+
+        .btn-cyber-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 35px rgba(255, 0, 51, 0.6);
+            background: linear-gradient(135deg, #ff1a4a, #b30027);
+        }
+
+        .btn-cyber-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-error {
+            color: #ff3366;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            margin-top: 1rem;
+            min-height: 1.2rem;
+        }
+
+        /* --- APP HEADER --- */
+        .app-header {
+            border-bottom: 1px solid var(--border-card);
+            background: rgba(8, 10, 15, 0.85);
+            backdrop-filter: blur(15px);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(255, 0, 51, 0.15);
+            border: 1px solid var(--yt-red);
+            color: var(--yt-red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 15px rgba(255, 0, 51, 0.3);
+        }
+
+        .brand-text h1 {
+            font-family: var(--font-head);
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            line-height: 1.1;
+        }
+
+        .brand-text h1 span {
+            color: var(--yt-red);
+        }
+
+        .brand-text p {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            letter-spacing: 1.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-main);
+            padding: 0.55rem 1rem;
+            border-radius: 8px;
+            font-family: var(--font-head);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-btn:hover {
+            border-color: var(--yt-red);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(255, 0, 51, 0.25);
+            background: rgba(255, 0, 51, 0.08);
+        }
+
+        .header-btn.highlight {
+            border-color: rgba(0, 240, 255, 0.3);
+            color: var(--cyan-accent);
+        }
+
+        .header-btn.highlight:hover {
+            border-color: var(--cyan-accent);
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+
+        /* --- MAIN CONTAINER --- */
+        .app-main {
+            flex: 1;
+            max-width: 1280px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 2.2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .app-main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- CYBERPANEL GLASS CARDS --- */
+        .cyber-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .cyber-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--yt-red), transparent);
+        }
+
+        .card-header {
+            padding: 1.5rem 1.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .card-header-icon {
+            font-size: 1.3rem;
+            color: var(--yt-red);
+        }
+
+        .card-header h2 {
+            font-family: var(--font-head);
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: #fff;
+        }
+
+        .card-header p {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-top: 0.15rem;
+        }
+
+        .card-body {
+            padding: 1.8rem;
+        }
+
+        /* --- QUICK AUTO-RESOLVE STRIP --- */
+        .auto-fetch-box {
+            background: rgba(255, 0, 51, 0.06);
+            border: 1px solid rgba(255, 0, 51, 0.25);
+            border-radius: 14px;
+            padding: 1.2rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .auto-fetch-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--yt-neon);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .input-action-row {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .cyber-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 0.85rem 1.1rem;
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        .cyber-input:focus {
+            border-color: var(--yt-red);
+            box-shadow: 0 0 15px rgba(255, 0, 51, 0.3);
+            background: rgba(0, 0, 0, 0.75);
+        }
+
+        .btn-action {
+            background: rgba(255, 0, 51, 0.18);
+            border: 1px solid var(--yt-red);
+            color: #fff;
+            border-radius: 10px;
+            padding: 0.85rem 1.3rem;
+            font-family: var(--font-head);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-action:hover {
+            background: var(--yt-red);
+            color: #000;
+            box-shadow: 0 0 20px rgba(255, 0, 51, 0.5);
+        }
+
+        /* --- FORM FIELDS GRID --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+        }
+
+        .form-grid .full-width {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 640px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-grid .full-width {
+                grid-column: span 1;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .form-group label {
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .form-group label i {
+            color: var(--yt-red);
+        }
+
+        textarea.cyber-input {
+            resize: vertical;
+            min-height: 80px;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .thumb-preview-wrap {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        .thumb-preview-box {
+            width: 72px;
+            height: 48px;
+            border-radius: 8px;
+            background: #10141f;
+            border: 1px solid var(--border-glow);
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0;
+            box-shadow: 0 0 15px rgba(255, 0, 51, 0.2);
+        }
+
+        /* --- LIVE PREVIEW BOX (MATCHING MAIN SITE) --- */
+        .preview-sticky-wrap {
+            position: sticky;
+            top: 6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .live-preview-card {
+            background: rgba(14, 18, 26, 0.9);
+            border: 1px solid rgba(255, 0, 51, 0.35);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 15px 45px rgba(255, 0, 51, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .prev-header {
+            padding: 1rem 1.3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .prev-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: var(--font-head);
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--yt-red);
+            letter-spacing: 1px;
+        }
+
+        .prev-live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: #ff3366;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--yt-red);
+            box-shadow: 0 0 10px var(--yt-red);
+            animation: pulse-glow 1.5s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.5; }
+        }
+
+        .prev-media-box {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .prev-media-bg {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.5s ease;
+        }
+
+        .prev-media-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(10, 12, 18, 0.95), rgba(10, 12, 18, 0.2));
+        }
+
+        .prev-play-btn {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 54px; height: 54px;
+            border-radius: 50%;
+            background: rgba(255, 0, 51, 0.85);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 30px rgba(255, 0, 51, 0.8);
+            border: 2px solid #fff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .prev-play-btn:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            background: #ff0033;
+        }
+
+        .prev-content {
+            padding: 1.4rem;
+        }
+
+        .prev-tag {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--yt-red);
+            background: rgba(255, 0, 51, 0.12);
+            border: 1px solid rgba(255, 0, 51, 0.3);
+            padding: 0.25rem 0.65rem;
+            border-radius: 4px;
+            letter-spacing: 1.5px;
+            margin-bottom: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        .prev-title {
+            font-family: var(--font-head);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.35;
+            margin-bottom: 0.6rem;
+        }
+
+        .prev-desc {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+            margin-bottom: 1.2rem;
+        }
+
+        .prev-actions {
+            display: flex;
+            gap: 0.7rem;
+        }
+
+        .btn-prev-yt {
+            flex: 1;
+            background: var(--yt-red);
+            color: #fff;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-family: var(--font-head);
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-prev-sub {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-family: var(--font-head);
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        /* --- TOAST NOTIFICATIONS --- */
+        #toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .toast-msg {
+            background: rgba(14, 18, 26, 0.95);
+            border: 1px solid var(--yt-red);
+            box-shadow: 0 0 25px rgba(255, 0, 51, 0.4);
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.8rem 1.4rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            animation: slideInToast 0.3s ease;
+        }
+
+        @keyframes slideInToast {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* --- PASSCODE MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(15px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+
+    <!-- 1. SECURITY PASSCODE GATE -->
+    <div id="auth-gate">
+        <div class="auth-card">
+            <div class="auth-badge">
+                <i class="fas fa-shield-alt"></i> PROTECTED STUDIO DECK
+            </div>
+            <h2 class="auth-title">YOUTUBE <span>STUDIO</span></h2>
+            <p class="auth-sub">Enter authorization passcode to manage official YouTube drops and broadcast links.</p>
+
+            <div class="passcode-input-wrap">
+                <input type="password" id="gate-passcode" class="passcode-input" placeholder="••••••••" autocomplete="off">
+            </div>
+
+            <button type="button" class="btn-cyber-primary" id="btn-unlock-gate">
+                <i class="fas fa-unlock-alt"></i> UNLOCK TRANSMISSION DECK
+            </button>
+
+            <div class="auth-error" id="gate-error-msg"></div>
+
+            <div style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem; display: flex; justify-content: space-between; font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-dim);">
+                <a href="../" style="color: var(--text-dim); text-decoration: none;"><i class="fas fa-arrow-left"></i> MAIN SITE</a>
+                <a href="../admin.html" style="color: var(--cyan-accent); text-decoration: none;"><i class="fas fa-shield-alt"></i> MASTER ADMIN</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. APPLICATION HEADER -->
+    <header class="app-header">
+        <a href="#" class="brand-logo">
+            <div class="brand-icon">
+                <i class="fab fa-youtube"></i>
+            </div>
+            <div class="brand-text">
+                <h1>OBSCURA // <span>YOUTUBE STUDIO</span></h1>
+                <p>TRANSMISSION DECK v2.4 • REALTIME ENGINE</p>
+            </div>
+        </a>
+
+        <div class="header-actions">
+            <a href="../tiktok/" class="header-btn highlight" title="Switch to TikTok Studio">
+                <i class="fab fa-tiktok"></i> <span>TIKTOK STUDIO</span>
+            </a>
+            <button type="button" class="header-btn" id="btn-open-settings" title="Change Passcode">
+                <i class="fas fa-key"></i> <span>PASSCODE</span>
+            </button>
+            <a href="../" target="_blank" class="header-btn" title="View Public Portal">
+                <i class="fas fa-external-link-alt"></i> <span>LIVE SITE</span>
+            </a>
+            <button type="button" class="header-btn" id="btn-lock-session" style="color: #ff3366;">
+                <i class="fas fa-lock"></i> <span>LOCK</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 3. MAIN STUDIO CONTROLS & LIVE PREVIEW -->
+    <main class="app-main">
+        <!-- LEFT: EDITING ENGINE -->
+        <div class="cyber-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <i class="fas fa-sliders-h card-header-icon"></i>
+                    <div>
+                        <h2>YOUTUBE TRANSMISSION CONTROLS</h2>
+                        <p>Paste any YouTube video or channel link to auto-fill metadata instantly.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- SMART AUTO-FILL STRIP -->
+                <div class="auto-fetch-box">
+                    <div class="auto-fetch-label">
+                        <i class="fas fa-bolt"></i> SMART AUTO-RESOLVE YOUTUBE DROP
+                    </div>
+                    <div class="input-action-row">
+                        <input type="text" id="quick-yt-input" class="cyber-input" placeholder="Paste YouTube Video URL (e.g. https://youtu.be/... or watch?v=...)">
+                        <button type="button" class="btn-action" id="btn-auto-resolve">
+                            <i class="fas fa-magic"></i> AUTO FILL
+                        </button>
+                    </div>
+                </div>
+
+                <form id="yt-studio-form">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label><i class="fab fa-youtube"></i> YOUTUBE VIDEO / BROADCAST URL</label>
+                            <input type="text" id="yt_url" class="cyber-input" placeholder="https://www.youtube.com/watch?v=..." required>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label><i class="fas fa-heading"></i> DROP TITLE / TRACK NAME</label>
+                            <input type="text" id="yt_title" class="cyber-input" placeholder="e.g. MONTAGEM ALMA GEMEA - NXPXLM" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-tag"></i> CATEGORY BADGE / TAG</label>
+                            <input type="text" id="yt_tag" class="cyber-input" placeholder="e.g. OFFICIAL MUSIC VIDEO">
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-bell"></i> CHANNEL SUBSCRIBE LINK</label>
+                            <input type="text" id="yt_sub_url" class="cyber-input" placeholder="https://www.youtube.com/@Obscurarecordss?sub_confirmation=1">
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label><i class="fas fa-image"></i> HD THUMBNAIL IMAGE URL</label>
+                            <div class="thumb-preview-wrap">
+                                <input type="text" id="yt_thumb" class="cyber-input" placeholder="https://i.ytimg.com/vi/.../hqdefault.jpg">
+                                <div id="thumb-preview-img" class="thumb-preview-box"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label><i class="fas fa-align-left"></i> TRANSMISSION DESCRIPTION</label>
+                            <textarea id="yt_desc" class="cyber-input" placeholder="Experience the newest track and soundwave visualizer drop from Obscura Records."></textarea>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem; display: flex; gap: 1rem; align-items: center;">
+                        <button type="submit" class="btn-cyber-primary" id="btn-save-yt" style="flex: 1;">
+                            <i class="fas fa-cloud-upload-alt"></i> SAVE & SYNC YOUTUBE DROP LIVE
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- RIGHT: REALTIME LIVE PREVIEW -->
+        <div class="preview-sticky-wrap">
+            <div class="cyber-card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <i class="fas fa-eye card-header-icon" style="color: var(--cyan-accent);"></i>
+                        <div>
+                            <h2>LIVE MAIN SITE PREVIEW</h2>
+                            <p>Exact replica of how this card looks on the public home page.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="live-preview-card">
+                        <div class="prev-header">
+                            <div class="prev-badge">
+                                <i class="fab fa-youtube"></i>
+                                <span>YOUTUBE DROP</span>
+                            </div>
+                            <div class="prev-live-indicator">
+                                <span class="pulse-dot"></span>
+                                <span>NEW SIGNAL</span>
+                            </div>
+                        </div>
+
+                        <div class="prev-media-box">
+                            <div id="prev-bg" class="prev-media-bg" style="background-image: url('https://i4.ytimg.com/vi/kyS1AFiPa9I/hqdefault.jpg');"></div>
+                            <div class="prev-media-overlay"></div>
+                            <a href="#" id="prev-play-btn" target="_blank" class="prev-play-btn">
+                                <i class="fas fa-play"></i>
+                            </a>
+                        </div>
+
+                        <div class="prev-content">
+                            <span id="prev-tag" class="prev-tag">OFFICIAL MUSIC VIDEO</span>
+                            <h3 id="prev-title" class="prev-title">MONTAGEM ALMA GEMEA - NXPXLM</h3>
+                            <p id="prev-desc" class="prev-desc">Experience the newest track and soundwave visualizer drop from Obscura Records.</p>
+
+                            <div class="prev-actions">
+                                <a href="#" id="prev-watch-btn" target="_blank" class="btn-prev-yt">
+                                    <i class="fab fa-youtube"></i> <span>WATCH</span>
+                                </a>
+                                <a href="#" id="prev-sub-btn" target="_blank" class="btn-prev-sub">
+                                    <i class="fas fa-bell"></i> <span>SUBSCRIBE</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 4. PASSCODE SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="auth-card" style="max-width: 480px;">
+            <div class="auth-badge" style="border-color: var(--cyan-accent); color: var(--cyan-accent); background: rgba(0, 240, 255, 0.1);">
+                <i class="fas fa-key"></i> SECURITY SETTINGS
+            </div>
+            <h2 class="auth-title">CHANGE <span>PASSCODE</span></h2>
+            <p class="auth-sub">Update the studio passcode required to access this YouTube management deck.</p>
+
+            <form id="form-change-passcode">
+                <div class="form-group" style="text-align: left; margin-bottom: 1rem;">
+                    <label>NEW STUDIO PASSCODE</label>
+                    <input type="text" id="new-studio-passcode" class="cyber-input" placeholder="e.g. OBSCURA_YT_2026" required style="font-family: var(--font-mono); letter-spacing: 2px;">
+                </div>
+
+                <div style="display: flex; gap: 0.8rem; margin-top: 1.5rem;">
+                    <button type="button" class="header-btn" id="btn-close-settings" style="flex: 1; justify-content: center;">CANCEL</button>
+                    <button type="submit" class="btn-cyber-primary" style="flex: 1.5;">SAVE PASSCODE</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST ALERTS CONTAINER -->
+    <div id="toast-container"></div>
+
+    <!-- STUDIO SCRIPT ENGINE -->
+    <script>
+        // --- FIREBASE INITIALIZATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHf_R1n2Qn-q4NHAjfJt6xD_TWIRjiN1o",
+            authDomain: "obscura-records.firebaseapp.com",
+            databaseURL: "https://obscura-records-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "obscura-records",
+            storageBucket: "obscura-records.firebasestorage.app",
+            messagingSenderId: "831882873428",
+            appId: "1:831882873428:web:3cf009875e160a9f8efbc1"
+        };
+
+        if (typeof firebase !== 'undefined') {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        // --- WEB AUDIO CYBER SYNTH SFX ---
+        let audioCtx = null;
+        function playCyberSFX(type = 'click') {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                if (type === 'unlock') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(587.33, now);
+                    osc.frequency.setValueAtTime(880, now + 0.08);
+                    gain.gain.setValueAtTime(0.06, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.exponentialRampToValueAtTime(110, now + 0.2);
+                    gain.gain.setValueAtTime(0.06, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                }
+            } catch (e) {}
+        }
+
+        // --- TOAST ENGINE ---
+        function showToast(msg, isError = false) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            if (isError) toast.style.borderColor = '#ff3366';
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}" style="color: ${isError ? '#ff3366' : '#00ff8c'}"></i> ${msg}`;
+            container.appendChild(toast);
+            playCyberSFX(isError ? 'error' : 'success');
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // --- PASSCODE GATE LOGIC ---
+        let currentYtPasscode = "OBSCURA_YT_2026";
+        const DEFAULT_ROOT_KEY = "ORC ADMINS PASS 2026";
+
+        // Listen for live passcode in Firebase
+        db.ref('siteData/globals/yt_passcode').on('value', snap => {
+            if (snap.val()) currentYtPasscode = snap.val();
+        });
+
+        const authGate = document.getElementById('auth-gate');
+        const gatePassInput = document.getElementById('gate-passcode');
+        const gateBtn = document.getElementById('btn-unlock-gate');
+        const gateError = document.getElementById('gate-error-msg');
+
+        function checkSessionAuth() {
+            if (sessionStorage.getItem('obscura_yt_auth') === 'granted' || sessionStorage.getItem('rootAuth') === 'granted') {
+                authGate.style.display = 'none';
+            } else {
+                authGate.style.display = 'flex';
+            }
+        }
+        checkSessionAuth();
+
+        function attemptUnlock() {
+            const entered = gatePassInput.value.trim();
+            if (!entered) {
+                gateError.textContent = "ENTER PASSCODE";
+                return;
+            }
+
+            db.ref('siteData/globals/rootKey').once('value').then(rSnap => {
+                const liveRoot = rSnap.val() || DEFAULT_ROOT_KEY;
+                if (entered === currentYtPasscode || entered === liveRoot || entered === DEFAULT_ROOT_KEY) {
+                    sessionStorage.setItem('obscura_yt_auth', 'granted');
+                    playCyberSFX('unlock');
+                    gsap.to(authGate, {
+                        opacity: 0,
+                        scale: 0.95,
+                        duration: 0.35,
+                        onComplete: () => {
+                            authGate.style.display = 'none';
+                            showToast("YOUTUBE STUDIO UNLOCKED");
+                        }
+                    });
+                } else {
+                    playCyberSFX('error');
+                    gateError.textContent = "INVALID PASSCODE • ACCESS DENIED";
+                    gsap.fromTo(gatePassInput, { x: -8 }, { x: 8, duration: 0.08, repeat: 4, yoyo: true });
+                }
+            });
+        }
+
+        gateBtn.addEventListener('click', attemptUnlock);
+        gatePassInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') attemptUnlock();
+        });
+
+        // Lock Session
+        document.getElementById('btn-lock-session').addEventListener('click', () => {
+            sessionStorage.removeItem('obscura_yt_auth');
+            authGate.style.opacity = '1';
+            authGate.style.transform = 'none';
+            authGate.style.display = 'flex';
+            gatePassInput.value = '';
+            gateError.textContent = '';
+            showToast("STUDIO LOCKED");
+        });
+
+        // --- EXTRACT YOUTUBE ID HELPER ---
+        function extractYouTubeId(url) {
+            if (!url) return null;
+            const clean = url.trim();
+            if (clean.length === 11 && !clean.includes('/') && !clean.includes('?')) return clean;
+            const match = clean.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+            return match ? match[1] : null;
+        }
+
+        // --- RESOLVE YOUTUBE METADATA LIVE ---
+        async function fetchYouTubeDetails(urlOrChannel) {
+            const raw = urlOrChannel.trim();
+            const vId = extractYouTubeId(raw);
+
+            if (vId) {
+                // Direct oEmbed for YouTube Video
+                try {
+                    const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vId}`);
+                    if (res.ok) {
+                        const d = await res.json();
+                        return {
+                            title: d.title || 'OBSCURA - LATEST DROP',
+                            link: `https://www.youtube.com/watch?v=${vId}`,
+                            thumb: `https://i.ytimg.com/vi/${vId}/hqdefault.jpg`,
+                            author: d.author_name || 'Obscura Records',
+                            authorUrl: d.author_url || 'https://www.youtube.com/@Obscurarecordss'
+                        };
+                    }
+                } catch (e) {}
+
+                return {
+                    title: 'OBSCURA - LATEST OFFICIAL DROP',
+                    link: `https://www.youtube.com/watch?v=${vId}`,
+                    thumb: `https://i.ytimg.com/vi/${vId}/hqdefault.jpg`,
+                    author: 'Obscura Records',
+                    authorUrl: 'https://www.youtube.com/@Obscurarecordss'
+                };
+            }
+
+            return null;
+        }
+
+        // --- FORM & PREVIEW ENGINE ---
+        const inputUrl = document.getElementById('yt_url');
+        const inputTitle = document.getElementById('yt_title');
+        const inputTag = document.getElementById('yt_tag');
+        const inputSubUrl = document.getElementById('yt_sub_url');
+        const inputThumb = document.getElementById('yt_thumb');
+        const inputDesc = document.getElementById('yt_desc');
+
+        const prevBg = document.getElementById('prev-bg');
+        const prevTag = document.getElementById('prev-tag');
+        const prevTitle = document.getElementById('prev-title');
+        const prevDesc = document.getElementById('prev-desc');
+        const prevPlay = document.getElementById('prev-play-btn');
+        const prevWatch = document.getElementById('prev-watch-btn');
+        const prevSub = document.getElementById('prev-sub-btn');
+        const thumbBox = document.getElementById('thumb-preview-img');
+
+        function updatePreview() {
+            const urlVal = inputUrl.value.trim() || 'https://www.youtube.com/watch?v=kyS1AFiPa9I';
+            const titleVal = inputTitle.value.trim() || 'MONTAGEM ALMA GEMEA - NXPXLM';
+            const tagVal = inputTag.value.trim() || 'OFFICIAL MUSIC VIDEO';
+            const thumbVal = inputThumb.value.trim() || 'https://i4.ytimg.com/vi/kyS1AFiPa9I/hqdefault.jpg';
+            const descVal = inputDesc.value.trim() || 'Experience the newest track and soundwave visualizer drop from Obscura Records.';
+            const subVal = inputSubUrl.value.trim() || 'https://www.youtube.com/@Obscurarecordss?sub_confirmation=1';
+
+            prevTitle.textContent = titleVal;
+            prevTag.textContent = tagVal;
+            prevDesc.textContent = descVal;
+            prevBg.style.backgroundImage = `url("${thumbVal}")`;
+            thumbBox.style.backgroundImage = `url("${thumbVal}")`;
+
+            prevPlay.href = urlVal;
+            prevWatch.href = urlVal;
+            prevSub.href = subVal;
+        }
+
+        [inputUrl, inputTitle, inputTag, inputSubUrl, inputThumb, inputDesc].forEach(el => {
+            el.addEventListener('input', updatePreview);
+        });
+
+        // Quick Auto-Resolve trigger
+        async function runAutoResolve(url) {
+            if (!url) return;
+            showToast("FETCHING YOUTUBE METADATA...");
+            const data = await fetchYouTubeDetails(url);
+            if (data) {
+                inputUrl.value = data.link;
+                inputTitle.value = data.title;
+                inputThumb.value = data.thumb;
+                if (!inputTag.value) inputTag.value = 'OFFICIAL MUSIC VIDEO';
+                if (!inputSubUrl.value) inputSubUrl.value = data.authorUrl ? `${data.authorUrl}?sub_confirmation=1` : 'https://www.youtube.com/@Obscurarecordss?sub_confirmation=1';
+                if (!inputDesc.value) inputDesc.value = `Experience the official release of ${data.title} from Obscura Records.`;
+                updatePreview();
+                showToast("YOUTUBE DETAILS LOADED!");
+            } else {
+                showToast("COULD NOT RESOLVE METADATA AUTO-FILL", true);
+            }
+        }
+
+        document.getElementById('btn-auto-resolve').addEventListener('click', () => {
+            const val = document.getElementById('quick-yt-input').value.trim();
+            if (!val) {
+                showToast("PASTE A YOUTUBE LINK FIRST", true);
+                return;
+            }
+            runAutoResolve(val);
+        });
+
+        document.getElementById('quick-yt-input').addEventListener('paste', (e) => {
+            setTimeout(() => {
+                const val = document.getElementById('quick-yt-input').value.trim();
+                if (val) runAutoResolve(val);
+            }, 100);
+        });
+
+        // Auto-extract thumbnail when pasting directly in the video URL field
+        inputUrl.addEventListener('change', (e) => {
+            const vId = extractYouTubeId(e.target.value.trim());
+            if (vId && (!inputThumb.value || inputThumb.value.includes('kyS1AFiPa9I') || inputThumb.value.includes('cover.png'))) {
+                inputThumb.value = `https://i.ytimg.com/vi/${vId}/hqdefault.jpg`;
+                updatePreview();
+            }
+        });
+
+        // --- LOAD DATA FROM FIREBASE ---
+        let currentTransmissionData = {};
+
+        db.ref('siteData/globals/latest_transmissions').on('value', snap => {
+            const d = snap.val() || {};
+            currentTransmissionData = d;
+
+            inputUrl.value = d.yt_url || d.ytUrl || 'https://www.youtube.com/watch?v=kyS1AFiPa9I';
+            inputTitle.value = d.yt_title || d.ytTitle || 'MONTAGEM ALMA GEMEA - NXPXLM';
+            inputTag.value = d.yt_tag || d.ytTag || 'OFFICIAL MUSIC VIDEO';
+            inputThumb.value = d.yt_thumb || d.ytThumb || 'https://i4.ytimg.com/vi/kyS1AFiPa9I/hqdefault.jpg';
+            inputDesc.value = d.yt_desc || d.ytDesc || 'Experience the newest track and soundwave visualizer drop from Obscura Records.';
+            inputSubUrl.value = d.yt_sub_url || d.ytSubUrl || 'https://www.youtube.com/@Obscurarecordss?sub_confirmation=1';
+
+            updatePreview();
+        });
+
+        // --- SAVE TO FIREBASE & BROADCAST VERSION ---
+        document.getElementById('yt-studio-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const saveBtn = document.getElementById('btn-save-yt');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SYNCING LIVE...';
+
+            const payload = {
+                ...currentTransmissionData,
+                yt_url: inputUrl.value.trim(),
+                yt_title: inputTitle.value.trim(),
+                yt_tag: inputTag.value.trim(),
+                yt_thumb: inputThumb.value.trim(),
+                yt_desc: inputDesc.value.trim(),
+                yt_sub_url: inputSubUrl.value.trim(),
+                updatedAt: Date.now()
+            };
+
+            try {
+                await db.ref('siteData/globals/latest_transmissions').set(payload);
+                await db.ref('bot_status/latest_transmissions').set(payload).catch(() => {});
+                
+                // Bump Version Node for Realtime Global Invalidation
+                const nextV = (parseFloat(localStorage.getItem('obscura_site_v') || '1.0') + 0.1).toFixed(1);
+                await db.ref('siteData/globals/v').set(nextV).catch(() => {});
+
+                showToast("YOUTUBE DROP SAVED & SYNCED TO MAIN SITE!");
+            } catch (err) {
+                showToast("SAVE FAILED: " + err.message, true);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> SAVE & SYNC YOUTUBE DROP LIVE';
+            }
+        });
+
+        // --- PASSCODE CHANGE MODAL ENGINE ---
+        const settingsModal = document.getElementById('settings-modal');
+        const openSettingsBtn = document.getElementById('btn-open-settings');
+        const closeSettingsBtn = document.getElementById('btn-close-settings');
+        const newPassInput = document.getElementById('new-studio-passcode');
+
+        openSettingsBtn.addEventListener('click', () => {
+            newPassInput.value = currentYtPasscode;
+            settingsModal.classList.add('active');
+        });
+
+        closeSettingsBtn.addEventListener('click', () => {
+            settingsModal.classList.remove('active');
+        });
+
+        document.getElementById('form-change-passcode').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPass = newPassInput.value.trim();
+            if (!newPass) return;
+
+            try {
+                await db.ref('siteData/globals/yt_passcode').set(newPass);
+                currentYtPasscode = newPass;
+                settingsModal.classList.remove('active');
+                showToast("YOUTUBE PASSCODE UPDATED!");
+            } catch (err) {
+                showToast("ERROR UPDATING PASSCODE: " + err.message, true);
+            }
+        });
+    </script>
+</body>
+</html>
