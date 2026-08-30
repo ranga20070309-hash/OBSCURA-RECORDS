@@ -1417,6 +1417,39 @@ function initUpcomingEngine() {
         renderUpcomingList();
     });
 
+    function isUpcomingItemActive(dateString) {
+        if (!dateString || typeof dateString !== 'string') return true;
+        const clean = dateString.trim().toUpperCase();
+        if (!clean || clean === 'COMING SOON' || clean === 'TBA' || clean === 'TBD' || clean === 'SOON') {
+            return true;
+        }
+
+        const parsedClean = clean.replace(/^COMING\s+/i, '').trim();
+        const releaseTime = Date.parse(parsedClean) || Date.parse(clean);
+        if (!isNaN(releaseTime)) {
+            const releaseDate = new Date(releaseTime);
+            const hasTime = /\d{1,2}:\d{2}/.test(clean);
+            if (!hasTime) {
+                releaseDate.setHours(23, 59, 59, 999);
+            }
+            return Date.now() <= releaseDate.getTime();
+        }
+
+        const monthYearMatch = parsedClean.match(/^(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\s+(\d{4})$/i);
+        if (monthYearMatch) {
+            const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+            const mStr = monthYearMatch[1].substring(0, 3).toUpperCase();
+            const mIdx = monthNames.indexOf(mStr);
+            const yNum = parseInt(monthYearMatch[2], 10);
+            if (mIdx !== -1 && yNum) {
+                const endOfMonth = new Date(yNum, mIdx + 1, 0, 23, 59, 59, 999);
+                return Date.now() <= endOfMonth.getTime();
+            }
+        }
+
+        return true;
+    }
+
     function renderUpcomingList() {
         if (!container) return;
         if (cachedUpcoming.length === 0) {
@@ -1424,14 +1457,21 @@ function initUpcomingEngine() {
             return;
         }
 
-        container.innerHTML = cachedUpcoming.map((upc, i) => `
-            <div class="admin-upcoming-card">
+        container.innerHTML = cachedUpcoming.map((upc, i) => {
+            const isActive = isUpcomingItemActive(upc.date);
+            const statusBadge = isActive
+                ? `<div class="rel-code" style="color: var(--accent-yellow); font-weight: 600;">[ ${upc.status || 'COMING SOON'} ]</div>`
+                : `<div class="rel-code" style="color: #ff0055; font-weight: 700; background: rgba(255,0,85,0.12); padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 2px;">[ EXPIRED / AUTO-HIDDEN ]</div>`;
+            const dateDisplay = upc.date ? `<div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 3px;"><i class="far fa-calendar-alt"></i> ${upc.date}</div>` : '';
+            return `
+            <div class="admin-upcoming-card" style="${isActive ? '' : 'opacity: 0.75; border-color: rgba(255,0,85,0.3);'}">
                 <div class="rel-card-top">
                     <img src="${upc.cover || upc.image || 'assets/cover.png'}" alt="Teaser" class="rel-thumb" onerror="this.onerror=null; this.src='assets/cover.png';">
                     <div class="rel-meta">
                         <h4>${upc.title || 'UNTITLED TEASER'}</h4>
                         <div class="rel-artist">${upc.artist || upc.producers || 'UNKNOWN'}</div>
-                        <div class="rel-code" style="color: var(--accent-yellow); font-weight: 600;">[ ${upc.status || 'COMING SOON'} ]</div>
+                        ${statusBadge}
+                        ${dateDisplay}
                     </div>
                 </div>
                 <div class="rel-card-actions">
@@ -1439,7 +1479,8 @@ function initUpcomingEngine() {
                     <button type="button" class="cyber-btn danger sm" onclick="deleteUpcoming(${i})">DELETE</button>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     if (btnSave) {
