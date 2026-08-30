@@ -448,6 +448,8 @@ function initGlobalsSync() {
             site_archiveDesc: data.archiveDesc || "",
             site_upcomingTitle: data.upcomingTitle || "UPCOMING <span class='accent'>RELEASES</span>",
             site_upcomingDesc: data.upcomingDesc || "FUTURE TRANSMISSIONS FROM THE VOID",
+            upc_section_title: data.upcomingTitle || "UPCOMING <span class='accent'>RELEASES</span>",
+            upc_section_desc: data.upcomingDesc || "FUTURE TRANSMISSIONS FROM THE VOID",
             site_staffTitle: data.staffTitle || "OBSCURA <span class='accent'>STAFF</span>",
             site_staffDesc: data.staffDesc || "",
             site_partnersTitle: data.partnersTitle || "LABEL <span class='accent'>PARTNERS</span>",
@@ -1364,6 +1366,27 @@ function initUpcomingEngine() {
     const btnClose = document.getElementById('close-upcoming-editor');
     const btnCancel = document.getElementById('btn-cancel-upcoming');
     const btnSave = document.getElementById('btn-save-upcoming');
+    const btnSaveHeader = document.getElementById('btn-save-upcoming-header');
+
+    if (btnSaveHeader) {
+        btnSaveHeader.addEventListener('click', () => {
+            const titleVal = document.getElementById('upc_section_title')?.value.trim() || "UPCOMING <span class='accent'>RELEASES</span>";
+            const descVal = document.getElementById('upc_section_desc')?.value.trim() || "FUTURE TRANSMISSIONS FROM THE VOID";
+
+            const siteTitleInput = document.getElementById('site_upcomingTitle');
+            if (siteTitleInput) siteTitleInput.value = titleVal;
+            const siteDescInput = document.getElementById('site_upcomingDesc');
+            if (siteDescInput) siteDescInput.value = descVal;
+
+            db.ref('siteData/globals').update({
+                upcomingTitle: titleVal,
+                upcomingDesc: descVal
+            }).then(() => {
+                bumpSiteVersion(`Updated Upcoming Section Headers`);
+                showToast("UPCOMING SECTION HEADERS SAVED SUCCESSFULLY!");
+            }).catch(err => showToast("ERROR: " + err.message, 'error'));
+        });
+    }
 
     if (btnAddNew && editorCard) {
         btnAddNew.addEventListener('click', () => {
