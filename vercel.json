@@ -19,6 +19,22 @@
       "destination": "/smartlinks-admin/index.html"
     },
     {
+      "source": "/youtube",
+      "destination": "/youtube/index.html"
+    },
+    {
+      "source": "/youtube/(.*)",
+      "destination": "/youtube/index.html"
+    },
+    {
+      "source": "/tiktok",
+      "destination": "/tiktok/index.html"
+    },
+    {
+      "source": "/tiktok/(.*)",
+      "destination": "/tiktok/index.html"
+    },
+    {
       "source": "/share",
       "destination": "/api/release"
     },
