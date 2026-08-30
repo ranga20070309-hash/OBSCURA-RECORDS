@@ -2480,29 +2480,47 @@ const initPortal = () => {
         const upcomingGrid = document.getElementById('upcoming-grid');
         let upcomingAutoScroll = null;
 
+        const checkUpcomingOverflow = () => {
+            const upcomingControls = document.querySelector('.upcoming-controls');
+            if (!upcomingGrid || !upcomingControls) return;
+            const cards = upcomingGrid.querySelectorAll('.upcoming-card');
+            if (cards.length > 4 || (upcomingGrid.scrollWidth > (upcomingGrid.clientWidth + 10))) {
+                upcomingControls.style.display = 'flex';
+            } else {
+                upcomingControls.style.display = 'none';
+            }
+        };
+
+        window.addEventListener('resize', checkUpcomingOverflow);
+
         function renderUpcoming(items) {
             if (!upcomingGrid) return;
             upcomingGrid.innerHTML = '';
 
+            const upcomingControls = document.querySelector('.upcoming-controls');
+
             if (!items || items.length === 0) {
                 upcomingGrid.innerHTML = '<p style="opacity:0.3; font-style:italic; grid-column: 1/-1; text-align:center;">All signals currently decrypted. New transmissions pending.</p>';
+                if (upcomingControls) upcomingControls.style.display = 'none';
                 return;
             }
 
-            items.forEach(item => {
+            items.forEach((item, idx) => {
                 const coverImg = item.cover || item.image || 'assets/cover.png';
-                const artistName = item.artist || item.producers || 'UNKNOWN';
+                const artistName = item.artist || item.producers || 'UNKNOWN ARTIST';
                 const statusTag = item.status || 'COMING SOON';
+                const title = item.title || 'FUTURE TRACK';
+                const trackId = item.id || `UPC-0${idx + 1}`;
                 const cardHtml = `
-                    <div class="release-card-large glass upcoming-card">
+                    <div class="upcoming-card release-card-large glass">
                         <div class="upcoming-status-badge">${statusTag}</div>
                         <div class="release-cover-large">
-                            <img src="${coverImg}" alt="${item.title || 'Teaser'}" onerror="this.src='assets/cover.png'">
+                            <img src="${coverImg}" alt="${title}" onerror="this.onerror=null; this.src='assets/cover.png';">
                         </div>
                         <div class="release-info-large">
-                            ${item.id ? `<span class="track-id">${item.id}</span>` : ''}
-                            <h4>${item.title || 'FUTURE TRACK'}</h4>
-                            <div class="producers-text">Produced by: <span>${artistName}</span></div>
+                            <span class="track-id">${trackId}</span>
+                            <h4>${title}</h4>
+                            <div class="producers-text">Artist: <span>${artistName}</span></div>
                             ${item.date ? `<div class="upcoming-date-badge"><i class="far fa-calendar-alt"></i> ${item.date}</div>` : ''}
                         </div>
                     </div>
@@ -2510,8 +2528,9 @@ const initPortal = () => {
                 upcomingGrid.insertAdjacentHTML('beforeend', cardHtml);
             });
 
-            // Smooth Initial state
+            // Smooth Initial state & check overflow
             setTimeout(() => {
+                checkUpcomingOverflow();
                 bindUpcomingControls();
                 startUpcomingAutoScroll();
             }, 100);
@@ -2520,48 +2539,58 @@ const initPortal = () => {
         function bindUpcomingControls() {
             const btnPrev = document.querySelector('.upcoming-prev');
             const btnNext = document.querySelector('.upcoming-next');
-            if (btnPrev && btnNext) {
-                btnPrev.onclick = () => {
-                    const grid = document.getElementById('upcoming-grid');
-                    if (grid) {
-                        gsap.to(grid, { scrollLeft: grid.scrollLeft - 400, duration: 0.5, ease: "power2.out" });
-                        if (upcomingAutoScroll) {
-                            clearInterval(upcomingAutoScroll);
-                            setTimeout(startUpcomingAutoScroll, 2000);
-                        }
-                    }
+            if (btnPrev && btnNext && upcomingGrid) {
+                btnPrev.onclick = (e) => {
+                    e.stopPropagation();
+                    const card = upcomingGrid.querySelector('.upcoming-card');
+                    const step = card ? (card.offsetWidth + 28) : 360;
+                    upcomingGrid.scrollBy({ left: -step, behavior: 'smooth' });
+                    resetUpcomingAutoScroll();
                 };
-                btnNext.onclick = () => {
-                    const grid = document.getElementById('upcoming-grid');
-                    if (grid) {
-                        gsap.to(grid, { scrollLeft: grid.scrollLeft + 400, duration: 0.5, ease: "power2.out" });
-                        if (upcomingAutoScroll) {
-                            clearInterval(upcomingAutoScroll);
-                            setTimeout(startUpcomingAutoScroll, 2000);
-                        }
-                    }
+                btnNext.onclick = (e) => {
+                    e.stopPropagation();
+                    const card = upcomingGrid.querySelector('.upcoming-card');
+                    const step = card ? (card.offsetWidth + 28) : 360;
+                    upcomingGrid.scrollBy({ left: step, behavior: 'smooth' });
+                    resetUpcomingAutoScroll();
                 };
             }
         }
 
         function startUpcomingAutoScroll() {
             if (upcomingAutoScroll) clearInterval(upcomingAutoScroll);
-            const grid = document.getElementById('upcoming-grid');
-            if (!grid) return;
+            if (!upcomingGrid) return;
 
-            if (grid.scrollWidth <= grid.clientWidth + 10) {
-                grid.style.justifyContent = 'center';
+            if (upcomingGrid.scrollWidth <= (upcomingGrid.clientWidth + 15)) {
+                upcomingGrid.style.justifyContent = 'center';
                 return;
             } else {
-                grid.style.justifyContent = 'flex-start';
+                upcomingGrid.style.justifyContent = 'flex-start';
             }
 
             upcomingAutoScroll = setInterval(() => {
-                grid.scrollLeft += 1;
-                if (grid.scrollLeft >= (grid.scrollWidth - grid.clientWidth - 1)) {
-                    grid.scrollLeft = 0;
+                if (!upcomingGrid) return;
+                let maxScroll = upcomingGrid.scrollWidth - upcomingGrid.clientWidth;
+                if (upcomingGrid.scrollLeft >= maxScroll - 10) {
+                    upcomingGrid.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    upcomingGrid.scrollBy({ left: 400, behavior: 'smooth' });
                 }
-            }, 30);
+            }, 6000);
+        }
+
+        function resetUpcomingAutoScroll() {
+            if (upcomingAutoScroll) clearInterval(upcomingAutoScroll);
+            setTimeout(startUpcomingAutoScroll, 10000);
+        }
+
+        if (upcomingGrid) {
+            upcomingGrid.addEventListener('mouseenter', () => {
+                if (upcomingAutoScroll) clearInterval(upcomingAutoScroll);
+            });
+            upcomingGrid.addEventListener('mouseleave', () => {
+                startUpcomingAutoScroll();
+            });
         }
 
         fetchWithCache('siteData/upcoming', (data) => {
