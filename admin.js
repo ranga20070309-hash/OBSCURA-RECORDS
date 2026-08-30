@@ -3248,6 +3248,17 @@ function initTransmissionsEngine() {
 
         const ttFollowUrl = document.getElementById('trans_tt_follow_url');
         if (ttFollowUrl && data.tt_follow_url) ttFollowUrl.value = data.tt_follow_url;
+
+        // Populate Standalone Studio Passcodes
+        db.ref('siteData/globals/yt_passcode').once('value').then(snap => {
+            const el = document.getElementById('trans_yt_passcode');
+            if (el) el.value = snap.val() || 'OBSCURA_YT_2026';
+        }).catch(() => {});
+
+        db.ref('siteData/globals/tt_passcode').once('value').then(snap => {
+            const el = document.getElementById('trans_tt_passcode');
+            if (el) el.value = snap.val() || 'OBSCURA_TT_2026';
+        }).catch(() => {});
     }
 
     async function handleIncomingBotTransmission(bData) {
@@ -3407,6 +3418,13 @@ function initTransmissionsEngine() {
                 } catch (e) { }
             }
 
+            const ytPasscodeVal = String(document.getElementById('trans_yt_passcode')?.value || 'OBSCURA_YT_2026').trim();
+            const ttPasscodeVal = String(document.getElementById('trans_tt_passcode')?.value || 'OBSCURA_TT_2026').trim();
+
+            // Save Passcodes directly to Firebase security nodes
+            db.ref('siteData/globals/yt_passcode').set(ytPasscodeVal).catch(() => {});
+            db.ref('siteData/globals/tt_passcode').set(ttPasscodeVal).catch(() => {});
+
             const payload = {
                 showTransmissions: String(document.getElementById('trans_showTransmissions')?.value || 'Visible'),
                 transTitle: String(document.getElementById('trans_title')?.value || 'LATEST <span class="accent">TRANSMISSIONS</span>'),
@@ -3441,7 +3459,7 @@ function initTransmissionsEngine() {
                 // Mirror to bot_status for webhooks / bots
                 db.ref('bot_status/latest_transmissions').set(payload).catch(() => { });
                 bumpSiteVersion("Updated Latest Media Feeds (YouTube & TikTok)");
-                showToast("MEDIA FEEDS SAVED & SYNCED!");
+                showToast("MEDIA FEEDS & PASSCODES SAVED!");
                 if (msgEl) {
                     msgEl.textContent = 'SAVED & SYNCED LIVE!';
                     msgEl.style.color = '#00ff8c';
