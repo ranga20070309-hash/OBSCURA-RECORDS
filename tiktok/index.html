@@ -411,7 +411,8 @@
             padding: 0.85rem 1.1rem;
             color: #fff;
             font-family: var(--font-mono);
-            font-size: 0.9rem;
+            font-size: 16px; /* 16px to prevent iOS Safari auto-zoom */
+            min-height: 48px;
             outline: none;
             transition: all 0.25s ease;
         }
@@ -428,6 +429,7 @@
             color: #fff;
             border-radius: 10px;
             padding: 0.85rem 1.3rem;
+            min-height: 48px;
             font-family: var(--font-head);
             font-size: 0.78rem;
             font-weight: 700;
@@ -437,6 +439,7 @@
             white-space: nowrap;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
         }
 
@@ -455,15 +458,6 @@
 
         .form-grid .full-width {
             grid-column: span 2;
-        }
-
-        @media (max-width: 640px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            .form-grid .full-width {
-                grid-column: span 1;
-            }
         }
 
         .form-group {
@@ -490,7 +484,7 @@
 
         textarea.cyber-input {
             resize: vertical;
-            min-height: 80px;
+            min-height: 90px;
             font-family: var(--font-body);
             font-size: 1rem;
             line-height: 1.5;
@@ -699,7 +693,8 @@
             background: var(--tt-cyan);
             color: #000;
             text-decoration: none;
-            padding: 0.75rem 1rem;
+            padding: 0.85rem 1rem;
+            min-height: 44px;
             border-radius: 8px;
             font-family: var(--font-head);
             font-size: 0.74rem;
@@ -716,7 +711,8 @@
             border: 1px solid var(--tt-pink);
             color: #fff;
             text-decoration: none;
-            padding: 0.75rem 1rem;
+            padding: 0.85rem 1rem;
+            min-height: 44px;
             border-radius: 8px;
             font-family: var(--font-head);
             font-size: 0.74rem;
@@ -726,6 +722,124 @@
             align-items: center;
             justify-content: center;
             gap: 0.4rem;
+        }
+
+        /* --- MOBILE SCREEN 100% OPTIMIZATION (TOUCH FIRST) --- */
+        @media (max-width: 768px) {
+            .app-header {
+                padding: 0.8rem 1rem;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.8rem;
+            }
+
+            .brand-logo {
+                justify-content: flex-start;
+            }
+
+            .brand-text h1 {
+                font-size: 1rem;
+            }
+
+            .header-actions {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 0.35rem;
+                width: 100%;
+            }
+
+            .header-btn {
+                padding: 0.55rem 0.3rem;
+                font-size: 0.64rem;
+                justify-content: center;
+                text-align: center;
+                border-radius: 8px;
+                gap: 0.25rem;
+                min-height: 38px;
+            }
+
+            .header-btn span {
+                font-size: 0.6rem;
+            }
+
+            .app-main {
+                padding: 1.2rem 0.9rem;
+                gap: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid .full-width {
+                grid-column: span 1;
+            }
+
+            .cyber-card {
+                border-radius: 16px;
+            }
+
+            .card-header {
+                padding: 1.1rem 1.2rem;
+            }
+
+            .card-header h2 {
+                font-size: 0.98rem;
+            }
+
+            .card-body {
+                padding: 1.2rem 1rem;
+            }
+
+            .input-action-row {
+                flex-direction: column;
+                gap: 0.6rem;
+            }
+
+            .btn-action {
+                width: 100%;
+                justify-content: center;
+                padding: 0.85rem;
+            }
+
+            .thumb-preview-wrap {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .thumb-preview-box {
+                width: 100%;
+                height: 120px;
+                border-radius: 10px;
+            }
+
+            .prev-actions {
+                flex-direction: column;
+                gap: 0.6rem;
+            }
+
+            .btn-prev-tt, .btn-prev-follow {
+                width: 100%;
+            }
+
+            .auth-card {
+                padding: 2rem 1.2rem;
+                border-radius: 16px;
+            }
+
+            .auth-title {
+                font-size: 1.35rem;
+            }
+
+            .passcode-input {
+                font-size: 1.1rem;
+                padding: 0.85rem;
+            }
+
+            .btn-cyber-primary {
+                min-height: 48px;
+                font-size: 0.85rem;
+            }
         }
 
         /* --- TOAST NOTIFICATIONS --- */
