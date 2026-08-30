@@ -2084,13 +2084,9 @@ const initPortal = () => {
                 }
 
                 // --- CATEGORY VISIBILITY OVERRIDE ---
-                const upcomingSection = document.getElementById('upcoming');
-                if (upcomingSection) {
-                    if (data.showUpcoming === 'Hidden') {
-                        upcomingSection.style.setProperty('display', 'none', 'important');
-                    } else {
-                        upcomingSection.style.setProperty('display', 'flex', 'important');
-                    }
+                window._siteShowUpcoming = data.showUpcoming || 'Visible';
+                if (typeof updateUpcomingVisibility === 'function') {
+                    updateUpcomingVisibility();
                 }
 
                 // POPULAR RELEASES VISIBILITY GATING
@@ -2479,6 +2475,56 @@ const initPortal = () => {
         // 3. Sync Upcoming Releases
         const upcomingGrid = document.getElementById('upcoming-grid');
         let upcomingAutoScroll = null;
+        let cachedRawUpcoming = [];
+
+        function isUpcomingItemActive(dateString) {
+            if (!dateString || typeof dateString !== 'string') return true;
+            const clean = dateString.trim().toUpperCase();
+            if (!clean || clean === 'COMING SOON' || clean === 'TBA' || clean === 'TBD' || clean === 'SOON') {
+                return true;
+            }
+
+            const parsedClean = clean.replace(/^COMING\s+/i, '').trim();
+
+            // Standard date parse (e.g. "SEPTEMBER 04, 2026", "2026-09-04", "09/04/2026", "SEP 4, 2026")
+            const releaseTime = Date.parse(parsedClean) || Date.parse(clean);
+            if (!isNaN(releaseTime)) {
+                const releaseDate = new Date(releaseTime);
+                const hasTime = /\d{1,2}:\d{2}/.test(clean);
+                if (!hasTime) {
+                    releaseDate.setHours(23, 59, 59, 999);
+                }
+                return Date.now() <= releaseDate.getTime();
+            }
+
+            // Month & Year parse (e.g. "MAY 2026")
+            const monthYearMatch = parsedClean.match(/^(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\s+(\d{4})$/i);
+            if (monthYearMatch) {
+                const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+                const mStr = monthYearMatch[1].substring(0, 3).toUpperCase();
+                const mIdx = monthNames.indexOf(mStr);
+                const yNum = parseInt(monthYearMatch[2], 10);
+                if (mIdx !== -1 && yNum) {
+                    const endOfMonth = new Date(yNum, mIdx + 1, 0, 23, 59, 59, 999);
+                    return Date.now() <= endOfMonth.getTime();
+                }
+            }
+
+            return true;
+        }
+
+        function updateUpcomingVisibility() {
+            const upcomingSection = document.getElementById('upcoming');
+            if (!upcomingSection) return;
+
+            const activeItems = (cachedRawUpcoming || []).filter(item => isUpcomingItemActive(item.date));
+
+            if (window._siteShowUpcoming === 'Hidden' || activeItems.length === 0) {
+                upcomingSection.style.setProperty('display', 'none', 'important');
+            } else {
+                upcomingSection.style.setProperty('display', 'block', 'important');
+            }
+        }
 
         const checkUpcomingOverflow = () => {
             const upcomingControls = document.querySelector('.upcoming-controls');
@@ -2494,18 +2540,29 @@ const initPortal = () => {
         window.addEventListener('resize', checkUpcomingOverflow);
 
         function renderUpcoming(items) {
+            cachedRawUpcoming = items || [];
             if (!upcomingGrid) return;
             upcomingGrid.innerHTML = '';
 
+            const upcomingSection = document.getElementById('upcoming');
             const upcomingControls = document.querySelector('.upcoming-controls');
 
-            if (!items || items.length === 0) {
-                upcomingGrid.innerHTML = '<p style="opacity:0.3; font-style:italic; grid-column: 1/-1; text-align:center;">All signals currently decrypted. New transmissions pending.</p>';
+            // Filter only active & future releases
+            const activeItems = (items || []).filter(item => isUpcomingItemActive(item.date));
+
+            if (activeItems.length === 0 || window._siteShowUpcoming === 'Hidden') {
+                if (upcomingSection) {
+                    upcomingSection.style.setProperty('display', 'none', 'important');
+                }
                 if (upcomingControls) upcomingControls.style.display = 'none';
                 return;
             }
 
-            items.forEach((item, idx) => {
+            if (upcomingSection && window._siteShowUpcoming !== 'Hidden') {
+                upcomingSection.style.setProperty('display', 'block', 'important');
+            }
+
+            activeItems.forEach((item, idx) => {
                 const coverImg = item.cover || item.image || 'assets/cover.png';
                 const artistName = item.artist || item.producers || 'UNKNOWN ARTIST';
                 const statusTag = item.status || 'COMING SOON';
@@ -2535,6 +2592,13 @@ const initPortal = () => {
                 startUpcomingAutoScroll();
             }, 100);
         }
+
+        // Periodic auto-check to auto-expire releases without needing page refresh
+        setInterval(() => {
+            if (cachedRawUpcoming && cachedRawUpcoming.length > 0) {
+                renderUpcoming(cachedRawUpcoming);
+            }
+        }, 60000);
 
         function bindUpcomingControls() {
             const btnPrev = document.querySelector('.upcoming-prev');
