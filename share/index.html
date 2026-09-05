@@ -461,6 +461,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.6rem;
             background: rgba(0, 0, 0, 0.45);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 14px;
@@ -480,6 +482,7 @@
 
         .speed-toggles {
             display: flex;
+            flex-wrap: wrap;
             gap: 0.4rem;
         }
 
@@ -1078,7 +1081,7 @@
                 <p class="track-producers" id="track-producers">PRODUCED BY <span>OBSCURA RECORD</span></p>
             </div>
 
-            <!-- Phonk Speed Switcher (1.0x Normal / 0.85x Slowed / 1.25x Speed Up) -->
+            <!-- Phonk Speed Switcher (1.0x Normal / 0.85x Slowed / 0.75x Ultra Slow / 1.25x Speed Up) -->
             <div class="deck-mode-bar">
                 <div class="deck-mode-label">
                     <i class="fas fa-tachometer-alt"></i> PLAYBACK MODE:
@@ -1086,6 +1089,7 @@
                 <div class="speed-toggles">
                     <button class="speed-chip active" data-speed="1.0">1.0x</button>
                     <button class="speed-chip" data-speed="0.85">SLOWED</button>
+                    <button class="speed-chip" data-speed="0.75">ULTRA SLOW</button>
                     <button class="speed-chip" data-speed="1.25">SPEED UP</button>
                 </div>
             </div>
