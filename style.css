@@ -6432,6 +6432,13 @@ textarea.real-input:focus {
     box-shadow: 0 0 10px rgba(183, 0, 255, 0.4);
 }
 
+.fp-speed-btn.ultra-slow {
+    color: #ff0055;
+    border-color: #ff0055;
+    background: rgba(255, 0, 85, 0.14);
+    box-shadow: 0 0 10px rgba(255, 0, 85, 0.4);
+}
+
 .fp-speed-btn.fast {
     color: #00ff8c;
     border-color: #00ff8c;
