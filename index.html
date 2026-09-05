@@ -1321,7 +1321,14 @@
                     <button id="fp-play-btn" class="fp-btn fp-play-btn" title="Play / Pause"><i class="fas fa-play"></i></button>
                     <button id="fp-next-btn" class="fp-btn" title="Next Track"><i class="fas fa-step-forward"></i></button>
                     <button id="fp-loop-btn" class="fp-btn fp-control-extra" title="Repeat Track"><i class="fas fa-redo-alt"></i></button>
-                    <button id="fp-speed-btn" class="fp-btn fp-speed-btn" title="Speed & Phonk Mode: Normal (1.0x) / Slowed (0.85x) / Ultra Slow (0.75x) / Speed Up (1.25x)"><span id="fp-speed-label">1.0x</span></button>
+                    <div class="fp-speed-container" id="fp-speed-container">
+                        <button id="fp-speed-btn" class="fp-btn fp-speed-btn" title="Speed & Phonk Mode: Normal (1.0x) / Slowed (0.85x) / Ultra Slow (0.75x) / Speed Up (1.25x)"><span id="fp-speed-label">1.0x</span></button>
+                        <button type="button" id="fp-speed-info-btn" class="fp-speed-info-icon" title="Notice on audio versions" aria-label="Audio speed notice"><i class="fas fa-info-circle"></i></button>
+                        <div id="fp-speed-popover" class="fp-speed-popover">
+                            <div class="fp-speed-popover-title"><i class="fas fa-headphones-alt"></i> AUDIO NOTICE</div>
+                            <p>This player just simulates speed. For the real <strong>Slowed &amp; Reverb</strong> or <strong>Sped Up</strong> tracks with full bass and studio mastering, check the given streaming links!</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="floating-player-progress-row">
                     <span id="fp-current-time" class="fp-time">0:00</span>
