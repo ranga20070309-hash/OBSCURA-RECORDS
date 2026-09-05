@@ -6446,6 +6446,102 @@ textarea.real-input:focus {
     box-shadow: 0 0 10px rgba(0, 255, 140, 0.4);
 }
 
+.fp-speed-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.fp-speed-info-icon {
+    background: rgba(0, 240, 255, 0.08);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    color: #00f0ff;
+    font-size: 0.7rem;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+    border-radius: 50%;
+}
+
+.fp-speed-info-icon:hover,
+.fp-speed-container:hover .fp-speed-info-icon,
+.fp-speed-container.show-popover .fp-speed-info-icon {
+    color: #fff;
+    background: rgba(0, 240, 255, 0.25);
+    border-color: #00f0ff;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+    transform: scale(1.1);
+}
+
+.fp-speed-popover {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    width: 250px;
+    background: rgba(10, 14, 26, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.85), 0 0 20px rgba(0, 240, 255, 0.15);
+    border-radius: 12px;
+    padding: 0.8rem 0.95rem;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+    text-align: left;
+}
+
+.fp-speed-popover::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: rgba(0, 240, 255, 0.3) transparent transparent transparent;
+}
+
+.fp-speed-container:hover .fp-speed-popover,
+.fp-speed-container.show-popover .fp-speed-popover {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+
+.fp-speed-popover-title {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #00f0ff;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.05rem;
+}
+
+.fp-speed-popover p {
+    font-size: 0.73rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+}
+
+.fp-speed-popover strong {
+    color: #00f0ff;
+}
+
 .fp-queue-btn.active {
     color: var(--accent-blue);
     text-shadow: 0 0 12px var(--accent-blue);
