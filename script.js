@@ -6,7 +6,7 @@ const sanitizeBrowserURL = () => {
             const cleanSearch = (window.location.search && !window.location.search.includes('preview=')) ? window.location.search : '';
             window.history.replaceState(null, document.title, cleanPath + cleanSearch);
         }
-    } catch (e) { }
+    } catch (e) {}
 };
 sanitizeBrowserURL();
 window.addEventListener('load', sanitizeBrowserURL);
@@ -63,7 +63,7 @@ function fetchWithCache(path, callback, fallbackData = null, revalidate = false)
                 callback(parsed);
                 if (!revalidate) return; // Keep cached version for static data
             }
-        } catch (e) { }
+        } catch (e) {}
     }
 
     if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
@@ -77,7 +77,7 @@ function fetchWithCache(path, callback, fallbackData = null, revalidate = false)
         if (val !== null && val !== undefined) {
             try {
                 localStorage.setItem(cacheKey, JSON.stringify(val));
-            } catch (e) { }
+            } catch (e) {}
             callback(val);
         } else if (!cached && fallbackData) {
             callback(fallbackData);
@@ -110,7 +110,7 @@ if (typeof firebase !== 'undefined') {
                 localStorage.setItem('obscura_site_v', latestV);
             }
         });
-    } catch (e) { }
+    } catch (e) {}
 }
 
 // --- CYBERPUNK UI SOUND SYNTHESIZER & SFX ENGINE ---
@@ -134,7 +134,7 @@ const unlockAudioContextOnGesture = () => {
     try {
         if (!sfxAudioCtx) sfxAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (sfxAudioCtx && sfxAudioCtx.state === 'suspended') sfxAudioCtx.resume();
-    } catch (e) { }
+    } catch (e) {}
     window.removeEventListener('click', unlockAudioContextOnGesture);
     window.removeEventListener('keydown', unlockAudioContextOnGesture);
     window.removeEventListener('touchstart', unlockAudioContextOnGesture);
@@ -156,7 +156,7 @@ const playCyberSFX = (type = 'click') => {
             sfxAudioCtx.resume();
         }
         const now = sfxAudioCtx.currentTime;
-
+        
         if (type === 'hover') {
             const osc = sfxAudioCtx.createOscillator();
             const gain = sfxAudioCtx.createGain();
@@ -249,7 +249,7 @@ const runIgnition = (forceReplay = false) => {
     if (typeTextEl) typeTextEl.innerHTML = '';
 
     // 1. Smooth Fade & Float In Logo
-    gsap.fromTo(".splash-logo",
+    gsap.fromTo(".splash-logo", 
         { opacity: 0, scale: 0.88, filter: "drop-shadow(0 0 0px #00f0ff)" },
         { opacity: 1, scale: 1, filter: "drop-shadow(0 0 25px rgba(0, 240, 255, 0.5))", duration: 0.55, ease: "power2.out" }
     );
@@ -286,6 +286,10 @@ const runIgnition = (forceReplay = false) => {
                         document.body.classList.remove('no-scroll');
                         document.documentElement.classList.remove('no-scroll');
                         entranceScreen.style.display = 'none';
+
+                        // Guarantee hero content is 100% visible and unconstrained
+                        gsap.set(".hero-content", { clearProps: "all", opacity: 1, y: 0, visibility: "visible" });
+                        gsap.set(".hero-content p", { clearProps: "all", opacity: 1, y: 0, visibility: "visible" });
 
                         if (!window.matchMedia("(hover: none) and (pointer: coarse)").matches && window.innerWidth > 1024) {
                             gsap.to(".cursor-glow", { opacity: 1, duration: 1.2 });
@@ -324,7 +328,11 @@ const runIgnition = (forceReplay = false) => {
 
                 // Main Site Nav & Hero Reveal
                 tl.to(".glass-nav", { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, "-=0.35");
-                tl.from(".hero-content", { y: 20, opacity: 0, duration: 0.7, ease: "power2.out" }, "-=0.4");
+                tl.fromTo(".hero-content", 
+                    { y: 25, opacity: 0 }, 
+                    { y: 0, opacity: 1, duration: 0.8, ease: "power2.out", clearProps: "transform,opacity" }, 
+                    "-=0.4"
+                );
             }, 320);
         }
     }, 45); // Snappy, natural typing speed (45ms/char)
@@ -336,6 +344,20 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 window.addEventListener('load', runIgnition);
 setTimeout(runIgnition, 250);
+
+// Safety Guarantee: Force Hero Content & Main Site Visible after 3s if any lag
+setTimeout(() => {
+    const heroContent = document.querySelector('.hero-content');
+    if (heroContent) {
+        heroContent.style.opacity = '1';
+        heroContent.style.visibility = 'visible';
+    }
+    const heroP = document.querySelector('.hero-content p');
+    if (heroP) {
+        heroP.style.opacity = '1';
+        heroP.style.visibility = 'visible';
+    }
+}, 3000);
 
 let pendingYTTrack = null;
 
@@ -556,7 +578,7 @@ function playYouTubeTrack(ytId, ytType, playBtn, row, coverImg) {
         try {
             ytPlayer.cueVideoById(ytId);
             ytPlayer.playVideo();
-        } catch (err) { }
+        } catch (err) {}
     }
     startUIPlayback(playBtn, row, coverImg);
     if (typeof handleScrollProximityAudio === 'function') handleScrollProximityAudio();
@@ -620,12 +642,12 @@ function stopPlayback(btn) {
         try {
             previewAudio.pause();
             previewAudio.currentTime = 0;
-        } catch (e) { }
+        } catch (e) {}
     }
     playbackStartOffset = -1;
 
     if (ytPlayer && ytPlayer.stopVideo) {
-        try { ytPlayer.stopVideo(); } catch (e) { }
+        try { ytPlayer.stopVideo(); } catch (e) {}
     }
 
     // Stop Sub-Bass Reactive Background Lighting
@@ -828,7 +850,29 @@ const initPortal = () => {
 
     // --- FAQ ACCORDION (DYNAMIC) ---
 
-    // --- MODAL SYSTEM (FAQ & PRIVACY) ---
+    // --- MODAL SYSTEM (FAQ, PRIVACY, DEMO, CONTACT, SUBMISSION) ---
+    function initMirrorEffect(input) {
+        if (input._hasMirrorInit) return;
+        input._hasMirrorInit = true;
+        const display = input.parentElement?.querySelector('.mirror-display');
+        if (!display) return;
+
+        input.addEventListener('input', () => {
+            const text = input.value;
+            display.innerHTML = '';
+
+            text.split('').forEach((char) => {
+                const span = document.createElement('span');
+                span.className = 'mirror-glyph';
+                span.textContent = char === ' ' ? '\u00A0' : char;
+                display.appendChild(span);
+            });
+        });
+    }
+
+    const mirrorInputs = document.querySelectorAll('.mirror-container .real-input');
+    mirrorInputs.forEach(input => initMirrorEffect(input));
+
     const setupModal = (triggerId, modalId) => {
         const trigger = document.getElementById(triggerId);
         const modal = document.getElementById(modalId);
@@ -837,74 +881,31 @@ const initPortal = () => {
         const closeBtn = modal.querySelector('.close-modal');
         const overlay = modal.querySelector('.modal-overlay');
 
-        trigger.addEventListener('click', () => {
+        trigger.addEventListener('click', (e) => {
+            e.preventDefault();
             playBleep(700, 'sine', 0.1);
             modal.classList.add('active');
             document.body.classList.add('no-scroll');
             document.documentElement.classList.add('no-scroll');
-
-            // --- SMOOTH "TYPE-SIGNAL" EFFECT FOR MODAL --
-            if (modal.id === 'submission-modal') {
-                const modalTitle = modal.querySelector('.section-title');
-                const modalDesc = modal.querySelector('.section-desc');
-
-                if (modalTitle) {
-                    const originalTitle = modalTitle.getAttribute('data-original') || modalTitle.textContent;
-                    if (!modalTitle.getAttribute('data-original')) modalTitle.setAttribute('data-original', originalTitle);
-                    modalTitle.textContent = "";
-                    typeSignal(modalTitle, originalTitle, 40);
-                }
-
-                if (modalDesc) {
-                    const originalDesc = modalDesc.getAttribute('data-original') || modalDesc.textContent;
-                    if (!modalDesc.getAttribute('data-original')) modalDesc.setAttribute('data-original', originalDesc);
-                    modalDesc.textContent = "";
-                    setTimeout(() => typeSignal(modalDesc, originalDesc, 15), 500);
-                }
-            }
         });
 
-        function typeSignal(element, text, speed) {
-            let i = 0;
-            const timer = setInterval(() => {
-                if (i < text.length) {
-                    element.textContent += text.charAt(i);
-                    i++;
-                } else {
-                    clearInterval(timer);
-                }
-            }, speed);
-        }
-
-        function initMirrorEffect(input) {
-            const display = input.parentElement.querySelector('.mirror-display');
-            if (!display) return;
-
-            input.addEventListener('input', () => {
-                const text = input.value;
-                display.innerHTML = '';
-
-                text.split('').forEach((char) => {
-                    const span = document.createElement('span');
-                    span.className = 'mirror-glyph';
-                    span.textContent = char === ' ' ? '\u00A0' : char;
-                    display.appendChild(span);
-                });
+        if (closeBtn && !closeBtn._hasCloseListener) {
+            closeBtn._hasCloseListener = true;
+            closeBtn.addEventListener('click', () => {
+                modal.classList.remove('active');
+                document.body.classList.remove('no-scroll');
+                document.documentElement.classList.remove('no-scroll');
             });
         }
 
-        const mirrorInputs = document.querySelectorAll('.mirror-container .real-input');
-        mirrorInputs.forEach(input => initMirrorEffect(input));
-
-        [closeBtn, overlay].forEach(btn => {
-            if (btn) {
-                btn.addEventListener('click', () => {
-                    modal.classList.remove('active');
-                    document.body.classList.remove('no-scroll');
-                    document.documentElement.classList.remove('no-scroll');
-                });
-            }
-        });
+        if (overlay && !overlay._hasOverlayListener) {
+            overlay._hasOverlayListener = true;
+            overlay.addEventListener('click', () => {
+                modal.classList.remove('active');
+                document.body.classList.remove('no-scroll');
+                document.documentElement.classList.remove('no-scroll');
+            });
+        }
     };
 
     setupModal('open-faq', 'faq-modal');
@@ -1440,15 +1441,15 @@ const initPortal = () => {
 
         // --- UNIFIED PROFILE DETAIL MODAL (WITH TOP BANNER & DISCORD SYNC) ---
         function openProfileModal(opts) {
-            const modal = document.getElementById('artist-modal');
-            const mBanner = document.getElementById('artist-modal-banner');
+            const modal      = document.getElementById('artist-modal');
+            const mBanner    = document.getElementById('artist-modal-banner');
             const mBannerImg = document.getElementById('artist-modal-banner-img');
-            const mName = document.getElementById('artist-modal-name');
-            const mStatus = document.getElementById('artist-modal-status');
-            const mBio = document.getElementById('artist-modal-bio');
-            const mImg = document.getElementById('artist-modal-img');
-            const mDecor = document.getElementById('artist-modal-decoration');
-            const mLinks = document.getElementById('artist-modal-links');
+            const mName      = document.getElementById('artist-modal-name');
+            const mStatus    = document.getElementById('artist-modal-status');
+            const mBio       = document.getElementById('artist-modal-bio');
+            const mImg       = document.getElementById('artist-modal-img');
+            const mDecor     = document.getElementById('artist-modal-decoration');
+            const mLinks     = document.getElementById('artist-modal-links');
             if (!modal) return;
 
             if (typeof playBleep === 'function') playBleep(700, 'sine', 0.1);
@@ -1578,10 +1579,10 @@ const initPortal = () => {
             gridEl.appendChild(item);
 
             // Apply data
-            const avatar = item.querySelector('.artist-img');
+            const avatar     = item.querySelector('.artist-img');
             const decoration = item.querySelector('.avatar-decoration');
-            const statusEl = item.querySelector('.status-indicator');
-            const nameEl = item.querySelector('.staff-name-text');
+            const statusEl   = item.querySelector('.status-indicator');
+            const nameEl     = item.querySelector('.staff-name-text');
 
             const applyData = (d) => {
                 if (!d) {
@@ -1682,11 +1683,11 @@ const initPortal = () => {
             `;
             gridEl.appendChild(item);
 
-            const bannerBg = item.querySelector('.partner-cyber-banner-bg');
-            const avatar = item.querySelector('.partner-cyber-avatar-img');
-            const nameEl = item.querySelector('.title-text');
-            const tagEl = item.querySelector('.tagline-text');
-            const bioEl = item.querySelector('.partner-cyber-bio');
+            const bannerBg  = item.querySelector('.partner-cyber-banner-bg');
+            const avatar    = item.querySelector('.partner-cyber-avatar-img');
+            const nameEl    = item.querySelector('.title-text');
+            const tagEl     = item.querySelector('.tagline-text');
+            const bioEl     = item.querySelector('.partner-cyber-bio');
             const socialsEl = item.querySelector('.partner-cyber-socials');
 
             const applyPartnerData = (d) => {
@@ -2012,7 +2013,7 @@ const initPortal = () => {
                 const maintenanceOverlay = document.getElementById('maintenance-overlay');
                 const mainSite = document.getElementById('main-site');
                 const entrance = document.getElementById('entrance-screen');
-
+                
                 // Retrieve root key from siteData globals or fallback to master passphrase
                 const activeRootKey = (data.security && data.security.rootKey) ? data.security.rootKey : "ORC ADMINS PASS 2026";
 
@@ -2026,7 +2027,7 @@ const initPortal = () => {
 
                 if (maintenanceOverlay) {
                     const isMaint = data.maintenanceMode === 'Enabled' || data.maintenanceMode === true || data.maintenanceMode === 'ON';
-
+                    
                     // Strictly check if session was initiated/authenticated from the Admin Panel
                     const isBypassed = (sessionStorage.getItem('adminBypass') === 'true' || sessionStorage.getItem('rootAuth') === 'granted');
 
@@ -2101,7 +2102,7 @@ const initPortal = () => {
                 const ghostSection = document.getElementById('ghost-production');
                 const navGhost = document.getElementById('nav-ghost');
                 const sideNavGhost = document.getElementById('side-nav-ghost');
-
+                
                 if (data.showGhostProduction === 'Hidden') {
                     if (ghostSection) ghostSection.style.setProperty('display', 'none', 'important');
                     if (navGhost) navGhost.style.setProperty('display', 'none', 'important');
@@ -2156,7 +2157,7 @@ const initPortal = () => {
                 } else {
                     firebase.database().ref('bot_status/latest_transmissions').once('value').then(bSnap => {
                         if (bSnap.exists()) applyTransmissionData(bSnap.val());
-                    }).catch(() => { });
+                    }).catch(() => {});
                 }
             }
         }, null, true);
@@ -2946,9 +2947,9 @@ const initKernelSecurity = () => {
     let lastIntrusionReportTime = 0;
 
     const isAdminSession = () => {
-        return sessionStorage.getItem('adminBypass') === 'true' ||
-            sessionStorage.getItem('rootAuth') === 'granted' ||
-            window.location.search.includes('preview=true');
+        return sessionStorage.getItem('adminBypass') === 'true' || 
+               sessionStorage.getItem('rootAuth') === 'granted' || 
+               window.location.search.includes('preview=true');
     };
 
     const reportIntrusion = async (type) => {
@@ -2972,7 +2973,7 @@ const initKernelSecurity = () => {
         if (isAdminSession()) return;
         const widthDiff = window.outerWidth - window.innerWidth > threshold;
         const heightDiff = window.outerHeight - window.innerHeight > threshold;
-
+        
         if ((widthDiff || heightDiff) && !devToolsOpen) {
             devToolsOpen = true;
             if (kmShield) {
@@ -3048,7 +3049,7 @@ const ObscuraTelemetry = (() => {
                 const res = await fetch(url, { signal: controller.signal });
                 clearTimeout(timeoutId);
                 if (res.ok) return await res.json();
-            } catch (e) { }
+            } catch (e) {}
             return null;
         };
 
@@ -3166,7 +3167,7 @@ function startFloatingPlayerProgressTracker() {
                         return;
                     }
                 }
-            } catch (e) { }
+            } catch (e) {}
         }
 
         updateFloatingPlayerProgress(elapsed, total);
@@ -3201,10 +3202,11 @@ function showCyberNotification(msg, icon = 'fas fa-check-circle') {
     }, 2800);
 }
 
-// Playback Speed & Phonk Audio Modes (1.0x Normal, 0.85x Slowed, 1.25x Speed Up)
+// Playback Speed & Phonk Audio Modes (1.0x Normal, 0.85x Slowed, 0.75x Ultra Slow, 1.25x Speed Up)
 const speedModes = [
     { speed: 1.0, label: '1.0x', modeClass: '' },
     { speed: 0.85, label: 'SLOWED', modeClass: 'slowed' },
+    { speed: 0.75, label: 'ULTRA SLOW', modeClass: 'ultra-slow' },
     { speed: 1.25, label: '1.25x', modeClass: 'fast' }
 ];
 let currentSpeedIndex = 0;
@@ -3216,7 +3218,7 @@ function applyPlaybackSpeed(speed) {
     if (ytPlayer && typeof ytPlayer.setPlaybackRate === 'function') {
         try {
             ytPlayer.setPlaybackRate(speed);
-        } catch (e) { }
+        } catch (e) {}
     }
 }
 
@@ -3694,7 +3696,7 @@ function applyProximityVolume(volFactor) {
     if (ytPlayer && ytPlayer.setVolume) {
         try {
             ytPlayer.setVolume(Math.round(finalVol * 100));
-        } catch (e) { }
+        } catch (e) {}
     }
 }
 
@@ -3722,7 +3724,7 @@ function runProximityLerpLoop() {
             try {
                 if (previewAudio && !previewAudio.paused) previewAudio.pause();
                 if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
-            } catch (e) { }
+            } catch (e) {}
         }
     }
 
@@ -3779,12 +3781,12 @@ function handleScrollProximityAudio() {
             isAudioAutoPausedByScroll = false;
             try {
                 if (previewAudio && previewAudio.src) {
-                    previewAudio.play().catch(() => { });
+                    previewAudio.play().catch(() => {});
                 }
                 if (ytPlayer && ytPlayer.playVideo) {
                     ytPlayer.playVideo();
                 }
-            } catch (e) { }
+            } catch (e) {}
         }
 
         if (fpBar && currentPlayingBtn && fpBar.classList.contains('hidden')) {
@@ -3804,7 +3806,7 @@ function initScrollProximityAudio() {
 function initGlobalSFXListeners() {
     // Hover SFX on interactive elements
     const hoverSelectors = '.nav-item, .cta-primary, .platform-link, .release-card-large, .popular-card, .artist-item, .cyber-btn, .close-modal, .menu-trigger, .fp-btn, .slider-nav-btn, .sfx-toggle-btn';
-
+    
     document.addEventListener('mouseover', (e) => {
         const target = e.target.closest(hoverSelectors);
         if (target && !target.dataset.sfxBound) {
@@ -3847,7 +3849,7 @@ try {
     if (liveNodesEl) {
         liveNodesEl.textContent = Math.floor(Math.random() * 4) + 6;
     }
-} catch (e) { }
+} catch (e) {}
 
 // PORTAL CORE INITIALIZED
 
