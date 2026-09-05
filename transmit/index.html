@@ -480,6 +480,103 @@
             gap: 0.4rem;
         }
 
+        .speed-info-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 0.35rem;
+        }
+
+        .speed-info-trigger {
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            color: var(--accent-cyan);
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 0.18rem 0.45rem;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            outline: none;
+            letter-spacing: 0.04rem;
+        }
+
+        .speed-info-trigger:hover,
+        .speed-info-wrapper:hover .speed-info-trigger,
+        .speed-info-wrapper.active .speed-info-trigger {
+            background: rgba(0, 240, 255, 0.2);
+            border-color: var(--accent-cyan);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .speed-info-popover {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 0;
+            width: 260px;
+            background: rgba(8, 12, 22, 0.96);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 240, 255, 0.15);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(6px);
+            transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+            text-align: left;
+        }
+
+        .speed-info-popover::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 14px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: rgba(0, 240, 255, 0.35) transparent transparent transparent;
+        }
+
+        .speed-info-wrapper:hover .speed-info-popover,
+        .speed-info-wrapper.active .speed-info-popover {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .speed-info-popover-title {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.05rem;
+        }
+
+        .speed-info-popover p {
+            font-size: 0.73rem;
+            line-height: 1.45;
+            color: rgba(255, 255, 255, 0.85);
+            margin: 0;
+        }
+
+        .speed-info-popover strong {
+            color: var(--accent-cyan);
+        }
+
         .speed-toggles {
             display: flex;
             flex-wrap: wrap;
@@ -1068,6 +1165,18 @@
             <div class="deck-mode-bar">
                 <div class="deck-mode-label">
                     <i class="fas fa-tachometer-alt"></i> PLAYBACK MODE:
+                    <div class="speed-info-wrapper" id="transmit-speed-info-wrapper">
+                        <button type="button" class="speed-info-trigger" id="transmit-speed-info-btn" title="Notice on audio versions" aria-label="Audio Notice">
+                            <i class="fas fa-info-circle"></i>
+                            <span>NOTE</span>
+                        </button>
+                        <div class="speed-info-popover">
+                            <div class="speed-info-popover-title">
+                                <i class="fas fa-headphones-alt"></i> AUDIO NOTICE
+                            </div>
+                            <p>This player just simulates speed. For the real <strong>Slowed &amp; Reverb</strong> or <strong>Sped Up</strong> tracks with full bass and studio mastering, check the given streaming links!</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="speed-toggles">
                     <button class="speed-chip active" data-speed="1.0">1.0x</button>
@@ -1597,6 +1706,20 @@
                 showToast(`MODE: ${btn.textContent} (${currentPlaybackRate}x)`, "fas fa-tachometer-alt");
             });
         });
+
+        const transmitSpeedInfoBtn = document.getElementById('transmit-speed-info-btn');
+        const transmitSpeedInfoWrapper = document.getElementById('transmit-speed-info-wrapper');
+        if (transmitSpeedInfoBtn && transmitSpeedInfoWrapper) {
+            transmitSpeedInfoBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                transmitSpeedInfoWrapper.classList.toggle('active');
+            });
+            document.addEventListener('click', (e) => {
+                if (!transmitSpeedInfoWrapper.contains(e.target)) {
+                    transmitSpeedInfoWrapper.classList.remove('active');
+                }
+            });
+        }
 
         // Copy Link
         document.getElementById('copy-deck-link-btn').addEventListener('click', () => {
