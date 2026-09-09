@@ -1166,7 +1166,8 @@
                 <div class="deck-mode-label">
                     <i class="fas fa-tachometer-alt"></i> PLAYBACK MODE:
                     <div class="speed-info-wrapper" id="transmit-speed-info-wrapper">
-                        <button type="button" class="speed-info-trigger" id="transmit-speed-info-btn" title="Notice on audio versions" aria-label="Audio Notice">
+                        <button type="button" class="speed-info-trigger" id="transmit-speed-info-btn"
+                            title="Notice on audio versions" aria-label="Audio Notice">
                             <i class="fas fa-info-circle"></i>
                             <span>NOTE</span>
                         </button>
@@ -1174,7 +1175,9 @@
                             <div class="speed-info-popover-title">
                                 <i class="fas fa-headphones-alt"></i> AUDIO NOTICE
                             </div>
-                            <p>This player just simulates speed. For the real <strong>Slowed &amp; Reverb</strong> or <strong>Sped Up</strong> tracks with full bass and studio mastering, check the given streaming links!</p>
+                            <p>This player just simulates speed. For the real <strong>Slowed &amp; Reverb</strong> or
+                                <strong>Sped Up</strong> tracks with full bass and studio mastering, check the given
+                                streaming links!</p>
                         </div>
                     </div>
                 </div>
@@ -1562,25 +1565,36 @@
                 initYT(currentYtId);
             }
 
-            // Platform Streaming Links
+            // Platform Streaming Links (Direct Streaming or Dedicated Status Portal)
             const spUrl = trackData.spotifyUrl || trackData.spotify || "";
             const appleUrl = trackData.appleUrl || trackData.apple || "";
             const ytUrl = trackData.youtubeUrl || trackData.youtube || trackData.youtubeAlbum || "";
             const soundcloudUrl = trackData.soundcloudUrl || trackData.soundcloud || "";
+
+            const buildFallbackUnavailableUrl = (service) => {
+                const p = new URLSearchParams();
+                p.set('service', service);
+                p.set('title', title);
+                p.set('artist', artist);
+                p.set('cover', cover.startsWith('../') ? cover.substring(3) : cover);
+                p.set('catalog', slug || 'TRANSMISSION');
+                return `../unavailable.html?${p.toString()}`;
+            };
 
             const chipSp = document.getElementById('chip-spotify');
             const chipApple = document.getElementById('chip-apple');
             const chipYt = document.getElementById('chip-youtube');
             const chipSc = document.getElementById('chip-soundcloud');
 
-            if (chipSp) chipSp.href = spUrl && spUrl.length > 5 ? spUrl : 'https://open.spotify.com/';
-            if (chipApple) chipApple.href = appleUrl && appleUrl.length > 5 ? appleUrl : 'https://music.apple.com/';
-            if (chipYt) chipYt.href = ytUrl && ytUrl.length > 5 ? ytUrl : 'https://youtube.com/';
+            if (chipSp) chipSp.href = spUrl && spUrl.length > 5 && !spUrl.includes('open.spotify.com/#') && spUrl !== 'https://open.spotify.com/' && spUrl !== 'https://open.spotify.com' ? spUrl : buildFallbackUnavailableUrl('spotify');
+            if (chipApple) chipApple.href = appleUrl && appleUrl.length > 5 && !appleUrl.includes('music.apple.com/#') && appleUrl !== 'https://music.apple.com/' && appleUrl !== 'https://music.apple.com' ? appleUrl : buildFallbackUnavailableUrl('apple');
+            if (chipYt) chipYt.href = ytUrl && ytUrl.length > 5 && ytUrl !== 'https://youtube.com/' && ytUrl !== 'https://youtube.com' ? ytUrl : buildFallbackUnavailableUrl('youtube');
             if (chipSc) {
-                if (soundcloudUrl && soundcloudUrl.length > 5) {
+                if (soundcloudUrl && soundcloudUrl.length > 5 && soundcloudUrl !== 'https://soundcloud.com/' && soundcloudUrl !== 'https://soundcloud.com') {
                     chipSc.href = soundcloudUrl;
                     chipSc.style.display = 'flex';
                 } else {
+                    chipSc.href = buildFallbackUnavailableUrl('soundcloud');
                     chipSc.style.display = 'none';
                 }
             }
