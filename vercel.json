@@ -11,6 +11,14 @@
       "destination": "/privacy.html"
     },
     {
+      "source": "/unavailable",
+      "destination": "/unavailable.html"
+    },
+    {
+      "source": "/unavailable/(.*)",
+      "destination": "/unavailable.html"
+    },
+    {
       "source": "/smartlinks-admin",
       "destination": "/smartlinks-admin/index.html"
     },
