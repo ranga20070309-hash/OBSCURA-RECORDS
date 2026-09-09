@@ -49,6 +49,21 @@ const API_BASE_URL = (window.location.hostname === "localhost" || window.locatio
 // --- INITIALIZE GSAP CONFIG (Silence Warnings) ---
 gsap.config({ nullTargetWarn: false });
 
+// --- DYNAMIC STREAMING LINK RESOLVER (Direct or Unavailable Status Portal) ---
+function getStreamingPlatformLink(service, url, title, artist, cover, catalog, type) {
+    if (url && typeof url === 'string' && url.trim() !== '' && url.trim() !== '#') {
+        return url.trim();
+    }
+    const params = new URLSearchParams();
+    params.set('service', service || 'streaming');
+    params.set('title', title || 'OBSCURA RELEASE');
+    params.set('artist', artist || 'OBSCURA ARTIST');
+    params.set('cover', cover || 'assets/cover.png');
+    if (catalog) params.set('catalog', catalog);
+    if (type) params.set('type', type);
+    return `unavailable.html?${params.toString()}`;
+}
+
 // --- ULTRA-EFFICIENT REAL-TIME SYNC & CACHE ENGINE (100% LIVE SYNC + ZERO BANDWIDTH) ---
 let currentLiveSiteVersion = localStorage.getItem('obscura_site_v') || null;
 
@@ -724,9 +739,9 @@ function loadPopular() {
                     <h4>${title}</h4>
                     <div class="producers-text">Artist: <span>${artist}</span></div>
                     <div class="release-actions">
-                        ${spotify && spotify !== '#' ? `<a href="${spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
-                        ${apple && apple !== '#' ? `<a href="${apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
-                        ${youtube && youtube !== '#' ? `<a href="${youtube}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
+                        <a href="${getStreamingPlatformLink('spotify', spotify, title, artist, cover, 'POPULAR HIT')}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>
+                        <a href="${getStreamingPlatformLink('apple', apple, title, artist, cover, 'POPULAR HIT')}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>
+                        <a href="${getStreamingPlatformLink('youtube', youtube, title, artist, cover, 'POPULAR HIT')}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>
                         ${soundcloud && soundcloud !== '#' ? `<a href="${soundcloud}" target="_blank" class="platform-link soundcloud" title="SoundCloud" onclick="event.stopPropagation()"><i class="fab fa-soundcloud"></i></a>` : ''}
                     </div>
                 </div>
@@ -2378,10 +2393,10 @@ const initPortal = () => {
                         <h4>${release.title || 'UNTITLED'}</h4>
                         <div class="producers-text">Produced by: <span>${artistName}</span></div>
                         <div class="release-actions">
-                            ${release.spotify && release.spotify !== '#' ? `<a href="${release.spotify}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>` : ''}
-                            ${release.apple && release.apple !== '#' ? `<a href="${release.apple}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>` : ''}
-                            ${youtubeUrl && youtubeUrl !== '#' ? `<a href="${youtubeUrl}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>` : ''}
-                            ${release.soundcloud && release.soundcloud !== '#' ? `<a href="${release.soundcloud}" target="_blank" class="platform-link soundcloud" title="SoundCloud" onclick="event.stopPropagation()"><i class="fab fa-soundcloud"></i></a>` : ''}
+                            <a href="${getStreamingPlatformLink('spotify', release.spotify || release.spotifyUrl, release.title, artistName, coverImg, cleanId, releaseType)}" target="_blank" class="platform-link spotify" title="Spotify" onclick="event.stopPropagation()"><i class="fab fa-spotify"></i></a>
+                            <a href="${getStreamingPlatformLink('apple', release.apple || release.appleUrl, release.title, artistName, coverImg, cleanId, releaseType)}" target="_blank" class="platform-link apple" title="Apple Music" onclick="event.stopPropagation()"><i class="fab fa-apple"></i></a>
+                            <a href="${getStreamingPlatformLink('youtube', youtubeUrl, release.title, artistName, coverImg, cleanId, releaseType)}" target="_blank" class="platform-link youtube" title="YouTube" onclick="event.stopPropagation()"><i class="fab fa-youtube"></i></a>
+                            ${(release.soundcloud || release.soundcloudUrl) && (release.soundcloud || release.soundcloudUrl) !== '#' ? `<a href="${release.soundcloud || release.soundcloudUrl}" target="_blank" class="platform-link soundcloud" title="SoundCloud" onclick="event.stopPropagation()"><i class="fab fa-soundcloud"></i></a>` : ''}
                         </div>
                     </div>
                 `;
@@ -3974,3 +3989,29 @@ function runBassReactiveLoop() {
 
     requestAnimationFrame(tick);
 }
+
+// --- GLOBAL STREAMING BUTTON CLICK HANDLER (Safely handles any unlinked or dynamic button) ---
+document.addEventListener('click', function(e) {
+    const link = e.target.closest('.platform-link');
+    if (!link) return;
+    const href = link.getAttribute('href');
+    if (!href || href === '#' || href === 'javascript:void(0)' || href === 'javascript:;' || href.trim() === '') {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        let service = 'streaming';
+        if (link.classList.contains('spotify')) service = 'spotify';
+        else if (link.classList.contains('apple')) service = 'apple';
+        else if (link.classList.contains('youtube')) service = 'youtube';
+        else if (link.classList.contains('soundcloud')) service = 'soundcloud';
+        
+        const card = link.closest('.release-card-large, .popular-card, .release-card, .hero-release-card, .artist-card');
+        const title = card ? (card.querySelector('h4, .release-title, .track-title, h3') ? card.querySelector('h4, .release-title, .track-title, h3').textContent.trim() : 'OBSCURA RELEASE') : 'OBSCURA RELEASE';
+        const artist = card ? (card.querySelector('.producers-text span, .release-artist, .artist-name') ? card.querySelector('.producers-text span, .release-artist, .artist-name').textContent.trim() : 'OBSCURA ARTIST') : 'OBSCURA ARTIST';
+        const img = card ? (card.querySelector('.release-cover-large img, .release-thumb img, img') ? card.querySelector('.release-cover-large img, .release-thumb img, img').src : 'assets/cover.png') : 'assets/cover.png';
+        const catalog = card ? (card.querySelector('.track-id') ? card.querySelector('.track-id').textContent.trim() : '') : '';
+        
+        const targetUrl = getStreamingPlatformLink(service, '', title, artist, img, catalog);
+        window.open(targetUrl, '_blank');
+    }
+});
