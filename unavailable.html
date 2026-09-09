@@ -19,7 +19,9 @@
     <!-- Google Fonts & Font Awesome -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -108,6 +110,7 @@
                 opacity: 0;
                 transform: translateY(20px) scale(0.98);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0) scale(1);
@@ -185,8 +188,17 @@
         }
 
         @keyframes blinkBeacon {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.3; transform: scale(0.7); }
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.3;
+                transform: scale(0.7);
+            }
         }
 
         /* Label Banner Header */
@@ -346,19 +358,61 @@
         }
 
         @keyframes eqAnim {
-            0%, 100% { height: 4px; }
-            50% { height: 22px; }
+
+            0%,
+            100% {
+                height: 4px;
+            }
+
+            50% {
+                height: 22px;
+            }
         }
 
-        .eq-stick:nth-child(1) { animation-delay: 0.1s; height: 6px; }
-        .eq-stick:nth-child(2) { animation-delay: 0.3s; height: 16px; }
-        .eq-stick:nth-child(3) { animation-delay: 0.5s; height: 10px; }
-        .eq-stick:nth-child(4) { animation-delay: 0.2s; height: 20px; }
-        .eq-stick:nth-child(5) { animation-delay: 0.6s; height: 12px; }
-        .eq-stick:nth-child(6) { animation-delay: 0.4s; height: 24px; }
-        .eq-stick:nth-child(7) { animation-delay: 0.7s; height: 14px; }
-        .eq-stick:nth-child(8) { animation-delay: 0.35s; height: 18px; }
-        .eq-stick:nth-child(9) { animation-delay: 0.55s; height: 8px; }
+        .eq-stick:nth-child(1) {
+            animation-delay: 0.1s;
+            height: 6px;
+        }
+
+        .eq-stick:nth-child(2) {
+            animation-delay: 0.3s;
+            height: 16px;
+        }
+
+        .eq-stick:nth-child(3) {
+            animation-delay: 0.5s;
+            height: 10px;
+        }
+
+        .eq-stick:nth-child(4) {
+            animation-delay: 0.2s;
+            height: 20px;
+        }
+
+        .eq-stick:nth-child(5) {
+            animation-delay: 0.6s;
+            height: 12px;
+        }
+
+        .eq-stick:nth-child(6) {
+            animation-delay: 0.4s;
+            height: 24px;
+        }
+
+        .eq-stick:nth-child(7) {
+            animation-delay: 0.7s;
+            height: 14px;
+        }
+
+        .eq-stick:nth-child(8) {
+            animation-delay: 0.35s;
+            height: 18px;
+        }
+
+        .eq-stick:nth-child(9) {
+            animation-delay: 0.55s;
+            height: 8px;
+        }
 
         /* Single Primary Button (Back to Main Site) */
         .btn-main-site {
@@ -444,7 +498,8 @@
         <div class="smart-link-card" id="smart-link-card">
             <!-- Artwork Section -->
             <div class="artwork-container">
-                <img src="assets/releases/cover_1.png" alt="Release Artwork" class="artwork-img" id="release-thumb" onerror="this.onerror=null; this.src='assets/cover.png';">
+                <img src="assets/releases/cover_1.png" alt="Release Artwork" class="artwork-img" id="release-thumb"
+                    onerror="this.onerror=null; this.src='assets/cover.png';">
                 <div class="artwork-overlay-gradient"></div>
                 <div class="status-pill-badge">
                     <span class="status-dot"></span>
@@ -454,7 +509,8 @@
 
             <!-- Label Banner -->
             <div class="label-banner">
-                <img src="assets/OCR.png" alt="Obscura Logo" class="label-logo-img" onerror="this.src='assets/cover.png'">
+                <img src="assets/OCR.png" alt="Obscura Logo" class="label-logo-img"
+                    onerror="this.src='assets/cover.png'">
                 <span class="label-name">OBSCURA <span>RECORDS</span></span>
             </div>
 
@@ -476,10 +532,12 @@
                 <!-- Notice Message Box -->
                 <div class="notice-box">
                     <p class="notice-text" id="notice-main-text">
-                        For this release, no <strong id="notice-service-name">Streaming</strong> link is available at this moment. When the link is available, it will auto add to this service link.
+                        For this release, no <strong id="notice-service-name">Streaming</strong> link is available at
+                        this moment. When the link is available, it will auto add to this service link.
                     </p>
                     <p class="notice-sub">
-                        <i class="fas fa-info-circle"></i> Official distribution pipeline is actively syncing metadata across global endpoints.
+                        <i class="fas fa-info-circle"></i> Official distribution pipeline is actively syncing metadata
+                        across global endpoints.
                     </p>
                 </div>
 
@@ -512,7 +570,7 @@
 
     <!-- Dynamic Theme & URL Cleaner Engine -->
     <script>
-        (function() {
+        (function () {
             // Service Presets
             const SERVICES = {
                 spotify: {
@@ -573,12 +631,27 @@
                 }
             };
 
+            // Check stored session data for refresh persistence
+            let savedTrack = {};
+            try {
+                savedTrack = JSON.parse(sessionStorage.getItem('obscura_pending_track') || localStorage.getItem('obscura_pending_track') || '{}');
+            } catch (e) {}
+
             // Parse URL Parameters
             const params = new URLSearchParams(window.location.search);
-            const serviceKey = (params.get('service') || params.get('s') || '').toLowerCase().trim();
-            const title = params.get('title') || params.get('t') || 'OBSCURA RELEASE';
-            const artist = params.get('artist') || params.get('a') || 'OBSCURA ARTIST';
-            const cover = params.get('cover') || params.get('c') || 'assets/releases/cover_1.png';
+            const serviceKey = (params.get('service') || params.get('s') || savedTrack.service || '').toLowerCase().trim();
+            const title = params.get('title') || params.get('t') || savedTrack.title || 'OBSCURA RELEASE';
+            const artist = params.get('artist') || params.get('a') || savedTrack.artist || 'OBSCURA ARTIST';
+            const cover = params.get('cover') || params.get('c') || savedTrack.cover || 'assets/releases/cover_1.png';
+
+            // If we have actual track metadata from URL, cache it in storage so page refresh retains artwork & titles forever
+            if (params.get('title') || params.get('cover') || params.get('artist') || params.get('service')) {
+                try {
+                    const currentPayload = { service: serviceKey, title, artist, cover };
+                    sessionStorage.setItem('obscura_pending_track', JSON.stringify(currentPayload));
+                    localStorage.setItem('obscura_pending_track', JSON.stringify(currentPayload));
+                } catch (e) {}
+            }
 
             const config = SERVICES[serviceKey] || SERVICES.default;
 
@@ -634,12 +707,12 @@
                 const cleanQuery = serviceKey ? `?service=${encodeURIComponent(serviceKey)}` : '';
                 const cleanUrl = window.location.pathname.replace(/\/+$/, '') + cleanQuery;
                 window.history.replaceState(null, document.title, cleanUrl);
-            } catch (e) {}
+            } catch (e) { }
 
             // Back button smooth return
             const btnMain = document.getElementById('btn-main-site');
             if (btnMain) {
-                btnMain.addEventListener('click', function(e) {
+                btnMain.addEventListener('click', function (e) {
                     if (document.referrer && document.referrer.includes(window.location.host)) {
                         e.preventDefault();
                         window.location.href = 'index.html';
