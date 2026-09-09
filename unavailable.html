@@ -4,22 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="page-title">OBSCURA RECORDS | Streaming Link Status</title>
+    <title id="page-title">OBSCURA RECORDS | Streaming Status</title>
     <link rel="icon" type="image/png" href="assets/OCR.png?v=61.0">
     <link rel="apple-touch-icon" href="assets/OCR_solid.png?v=61.0">
 
     <!-- Meta Tags -->
-    <meta name="description" content="Streaming service status for Obscura Records release.">
+    <meta name="description" content="Official Streaming Availability Status - Obscura Records LLC">
     <meta property="og:site_name" content="OBSCURA RECORDS LLC">
-    <meta property="og:title" id="og-title" content="OBSCURA RECORDS | Link Status">
-    <meta property="og:description" content="Streaming availability status for official Obscura Records release.">
+    <meta property="og:title" id="og-title" content="OBSCURA RECORDS | Streaming Status">
+    <meta property="og:description" content="Official music release streaming status on Obscura Records.">
     <meta property="og:image" content="https://www.obscurarecord.com/assets/OCR.png">
     <meta name="theme-color" content="#00f0ff">
 
     <!-- Google Fonts & Font Awesome -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -32,15 +32,15 @@
 
         :root {
             --bg-dark: #040508;
-            --card-bg: rgba(8, 10, 18, 0.92);
-            --card-border: rgba(0, 240, 255, 0.22);
+            --card-bg: rgba(7, 9, 15, 0.94);
+            --card-border: rgba(255, 255, 255, 0.08);
             --accent-cyan: #00f0ff;
             --accent-purple: #7000ff;
             --accent-service: #00f0ff;
-            --accent-service-glow: rgba(0, 240, 255, 0.25);
+            --accent-service-glow: rgba(0, 240, 255, 0.22);
             --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.7);
-            --text-muted: rgba(255, 255, 255, 0.45);
+            --text-secondary: rgba(255, 255, 255, 0.65);
+            --text-muted: rgba(255, 255, 255, 0.42);
             --font-main: 'Outfit', sans-serif;
             --font-heading: 'Space Grotesk', sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
@@ -56,18 +56,18 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 2rem 1.25rem;
+            padding: 2rem 1rem;
             position: relative;
             overflow-x: hidden;
         }
 
-        /* Ambient Dynamic Background Art */
+        /* Ambient Dynamic Background Art (Matches release.html) */
         .ambient-backdrop {
             position: fixed;
-            inset: -50px;
+            inset: -40px;
             background-size: cover;
             background-position: center;
-            filter: blur(80px) brightness(0.16) saturate(1.4);
+            filter: blur(65px) brightness(0.12) saturate(1.2);
             transform: scale(1.1);
             z-index: 1;
             pointer-events: none;
@@ -77,7 +77,7 @@
         .dark-vignette-overlay {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at 50% 40%, rgba(4, 5, 8, 0.4) 0%, rgba(3, 4, 7, 0.95) 85%);
+            background: radial-gradient(circle at 50% 35%, rgba(0, 0, 0, 0.3) 0%, rgba(3, 4, 7, 0.94) 80%);
             z-index: 2;
             pointer-events: none;
         }
@@ -86,48 +86,27 @@
             position: fixed;
             inset: 0;
             background-image:
-                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
-            background-size: 32px 32px;
+                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-size: 36px 36px;
             z-index: 2;
             pointer-events: none;
         }
 
-        /* Ambient Glow Spheres */
-        .glow-sphere-1 {
-            position: fixed;
-            top: 15%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, var(--accent-service-glow) 0%, transparent 70%);
-            z-index: 2;
-            pointer-events: none;
-            filter: blur(60px);
-            transition: background 0.6s ease;
-            animation: pulseGlow 5s infinite alternate ease-in-out;
-        }
-
-        @keyframes pulseGlow {
-            0% { transform: translateX(-50%) scale(0.9); opacity: 0.7; }
-            100% { transform: translateX(-50%) scale(1.15); opacity: 1; }
-        }
-
-        /* Main Container */
-        .status-wrapper {
+        /* Stage Container */
+        .smart-link-stage {
             position: relative;
-            z-index: 10;
             width: 100%;
-            max-width: 520px;
+            max-width: 418px;
             margin: 0 auto;
-            animation: cardFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            z-index: 10;
+            animation: cardFadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @keyframes cardFadeUp {
             from {
                 opacity: 0;
-                transform: translateY(35px) scale(0.96);
+                transform: translateY(20px) scale(0.98);
             }
             to {
                 opacity: 1;
@@ -135,67 +114,73 @@
             }
         }
 
-        /* Top Brand Header */
-        .brand-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.25rem;
-            padding: 0 0.5rem;
+        /* Obscura Smart Link Card */
+        .smart-link-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, 0.9),
+                0 0 35px var(--accent-service-glow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
         }
 
-        .brand-link {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
+        /* Top Release Artwork Container */
+        .artwork-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .artwork-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .artwork-overlay-gradient {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0) 40%, rgba(7, 9, 15, 0.98) 100%);
+            pointer-events: none;
+        }
+
+        .status-pill-badge {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            background: rgba(4, 5, 8, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
             color: #fff;
-            transition: opacity 0.3s ease;
-        }
-
-        .brand-link:hover {
-            opacity: 0.85;
-        }
-
-        .brand-logo {
-            width: 32px;
-            height: 32px;
-            object-fit: contain;
-            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.6));
-        }
-
-        .brand-text {
+            font-size: 0.68rem;
             font-family: var(--font-heading);
-            font-weight: 800;
-            font-size: 0.95rem;
-            letter-spacing: 0.12rem;
-            text-transform: uppercase;
-            background: linear-gradient(90deg, #ffffff, #00f0ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .system-pill {
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
             font-weight: 700;
-            letter-spacing: 0.08rem;
+            letter-spacing: 0.09rem;
             padding: 0.35rem 0.75rem;
-            border-radius: 100px;
-            background: rgba(0, 240, 255, 0.08);
-            border: 1px solid rgba(0, 240, 255, 0.3);
-            color: var(--accent-cyan);
+            border-radius: 20px;
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.45rem;
+            z-index: 4;
         }
 
-        .beacon-dot {
-            width: 7px;
-            height: 7px;
+        .status-dot {
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: var(--accent-service);
-            box-shadow: 0 0 10px var(--accent-service);
+            box-shadow: 0 0 8px var(--accent-service);
             animation: blinkBeacon 1.4s infinite ease-in-out;
         }
 
@@ -204,591 +189,414 @@
             50% { opacity: 0.3; transform: scale(0.7); }
         }
 
-        /* Glass Status Card */
-        .status-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            box-shadow:
-                0 30px 70px rgba(0, 0, 0, 0.9),
-                0 0 40px var(--accent-service-glow),
-                inset 0 1px 0 rgba(255, 255, 255, 0.12);
-            overflow: hidden;
-            position: relative;
-            transition: border-color 0.5s ease, box-shadow 0.5s ease;
-        }
-
-        /* Top Scanning Laser */
-        .cyber-laser-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent-service), transparent);
-            box-shadow: 0 0 12px var(--accent-service);
-            animation: scanLine 3s infinite ease-in-out;
-        }
-
-        @keyframes scanLine {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        /* Release Summary Bar */
-        .release-preview-bar {
+        /* Label Banner Header */
+        .label-banner {
             display: flex;
             align-items: center;
-            gap: 1.1rem;
-            padding: 1.4rem 1.6rem;
-            background: rgba(255, 255, 255, 0.02);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            position: relative;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.9rem 1rem 0.2rem 1rem;
+            text-align: center;
         }
 
-        .release-thumb-frame {
-            position: relative;
-            width: 64px;
-            height: 64px;
-            border-radius: 12px;
-            overflow: hidden;
-            flex-shrink: 0;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-            background: #000;
+        .label-logo-img {
+            height: 22px;
+            width: auto;
+            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.5));
         }
 
-        .release-thumb {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .release-meta {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .release-catalog-tag {
-            font-family: var(--font-mono);
-            font-size: 0.68rem;
-            font-weight: 700;
-            color: var(--accent-cyan);
-            letter-spacing: 0.08rem;
-            text-transform: uppercase;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            margin-bottom: 0.2rem;
-        }
-
-        .release-title {
+        .label-name {
             font-family: var(--font-heading);
-            font-size: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 0.18rem;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .label-name span {
+            color: var(--accent-cyan);
+        }
+
+        /* Track Meta Header */
+        .track-meta-header {
+            text-align: center;
+            padding: 0.2rem 1.4rem 1.1rem 1.4rem;
+        }
+
+        .track-title {
+            font-family: var(--font-heading);
+            font-size: 1.28rem;
             font-weight: 800;
             color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.04rem;
+            line-height: 1.25;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-artist {
+            font-size: 0.84rem;
+            color: var(--text-secondary);
             letter-spacing: 0.02rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            line-height: 1.25;
         }
 
-        .release-artist {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-top: 0.15rem;
-        }
-
-        .release-artist span {
+        .track-artist span {
             color: #fff;
             font-weight: 600;
         }
 
-        /* Card Body Content */
-        .status-body {
-            padding: 2.2rem 1.8rem 2rem;
-            text-align: center;
+        /* Content Section */
+        .status-content-area {
+            padding: 0.5rem 1.5rem 1.75rem;
             display: flex;
             flex-direction: column;
             align-items: center;
+            text-align: center;
         }
 
-        /* Service Hologram Icon Badge */
-        .service-badge-container {
+        /* Service Hologram Icon Box */
+        .service-icon-wrapper {
             position: relative;
-            margin-bottom: 1.5rem;
-        }
-
-        .service-halo {
-            position: absolute;
-            inset: -16px;
-            background: radial-gradient(circle, var(--accent-service-glow) 0%, transparent 70%);
-            border-radius: 50%;
-            animation: pulseHalo 3s infinite ease-in-out;
-            pointer-events: none;
-        }
-
-        @keyframes pulseHalo {
-            0%, 100% { transform: scale(0.9); opacity: 0.6; }
-            50% { transform: scale(1.2); opacity: 1; }
-        }
-
-        .service-icon-box {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            border-radius: 22px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.7) 100%);
-            border: 2px solid var(--accent-service);
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(5, 7, 12, 0.8) 100%);
+            border: 1.5px solid var(--accent-service);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.4rem;
+            font-size: 2.2rem;
             color: var(--accent-service);
+            margin: 0.25rem auto 1rem;
             box-shadow:
-                0 15px 35px rgba(0, 0, 0, 0.7),
-                0 0 30px var(--accent-service-glow),
-                inset 0 0 15px var(--accent-service-glow);
-            transition: all 0.5s ease;
+                0 12px 28px rgba(0, 0, 0, 0.7),
+                0 0 25px var(--accent-service-glow),
+                inset 0 0 12px var(--accent-service-glow);
         }
 
-        .service-status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 0.4rem 0.9rem;
-            border-radius: 100px;
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 0.09rem;
-            text-transform: uppercase;
-            color: var(--accent-service);
-            margin-bottom: 1.1rem;
-        }
-
-        .status-headline {
+        .service-headline {
             font-family: var(--font-heading);
-            font-size: 1.55rem;
+            font-size: 1.35rem;
             font-weight: 800;
             letter-spacing: 0.04rem;
             color: #ffffff;
-            margin-bottom: 1rem;
-            line-height: 1.25;
+            margin-bottom: 0.85rem;
             text-transform: uppercase;
+            line-height: 1.2;
         }
 
-        /* Highlighted Main Message Box */
-        .notice-message-box {
+        /* Notice Message Box */
+        .notice-box {
             background: rgba(0, 0, 0, 0.45);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-left: 3px solid var(--accent-service);
-            border-radius: 14px;
-            padding: 1.25rem 1.4rem;
-            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            padding: 1.1rem 1.2rem;
+            margin-bottom: 1.25rem;
             text-align: left;
-            position: relative;
-            overflow: hidden;
             width: 100%;
         }
 
-        .notice-main-text {
-            font-size: 0.98rem;
-            line-height: 1.6;
-            color: rgba(255, 255, 255, 0.92);
+        .notice-text {
+            font-size: 0.92rem;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.9);
             font-weight: 400;
         }
 
-        .notice-main-text strong {
+        .notice-text strong {
             color: var(--accent-service);
             font-weight: 700;
         }
 
-        .notice-sub-text {
-            font-size: 0.8rem;
+        .notice-sub {
+            font-size: 0.76rem;
             color: var(--text-muted);
-            line-height: 1.5;
-            margin-top: 0.65rem;
+            line-height: 1.45;
+            margin-top: 0.55rem;
             border-top: 1px solid rgba(255, 255, 255, 0.06);
-            padding-top: 0.65rem;
+            padding-top: 0.55rem;
         }
 
-        /* Animated Audio Waveform Radar */
-        .waveform-container {
+        /* Sleek Audio Equalizer Bar */
+        .equalizer-bar {
             width: 100%;
-            height: 38px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 4px;
-            margin-bottom: 1.75rem;
-            padding: 0 1rem;
+            margin-bottom: 1.35rem;
         }
 
-        .wave-bar {
+        .eq-stick {
             width: 3px;
             background: var(--accent-service);
-            border-radius: 3px;
-            opacity: 0.75;
-            box-shadow: 0 0 8px var(--accent-service);
-            animation: soundWave 1.4s infinite ease-in-out;
+            border-radius: 2px;
+            opacity: 0.8;
+            box-shadow: 0 0 6px var(--accent-service);
+            animation: eqAnim 1.4s infinite ease-in-out;
         }
 
-        @keyframes soundWave {
-            0%, 100% { height: 6px; }
-            50% { height: 32px; }
+        @keyframes eqAnim {
+            0%, 100% { height: 4px; }
+            50% { height: 22px; }
         }
 
-        /* Generate variations for wave bars */
-        .wave-bar:nth-child(1) { animation-delay: 0.1s; height: 10px; }
-        .wave-bar:nth-child(2) { animation-delay: 0.3s; height: 22px; }
-        .wave-bar:nth-child(3) { animation-delay: 0.5s; height: 14px; }
-        .wave-bar:nth-child(4) { animation-delay: 0.2s; height: 28px; }
-        .wave-bar:nth-child(5) { animation-delay: 0.6s; height: 18px; }
-        .wave-bar:nth-child(6) { animation-delay: 0.4s; height: 32px; }
-        .wave-bar:nth-child(7) { animation-delay: 0.7s; height: 16px; }
-        .wave-bar:nth-child(8) { animation-delay: 0.35s; height: 24px; }
-        .wave-bar:nth-child(9) { animation-delay: 0.55s; height: 12px; }
-        .wave-bar:nth-child(10) { animation-delay: 0.15s; height: 26px; }
-        .wave-bar:nth-child(11) { animation-delay: 0.45s; height: 20px; }
-        .wave-bar:nth-child(12) { animation-delay: 0.65s; height: 30px; }
-        .wave-bar:nth-child(13) { animation-delay: 0.25s; height: 14px; }
-        .wave-bar:nth-child(14) { animation-delay: 0.5s; height: 22px; }
-        .wave-bar:nth-child(15) { animation-delay: 0.1s; height: 8px; }
+        .eq-stick:nth-child(1) { animation-delay: 0.1s; height: 6px; }
+        .eq-stick:nth-child(2) { animation-delay: 0.3s; height: 16px; }
+        .eq-stick:nth-child(3) { animation-delay: 0.5s; height: 10px; }
+        .eq-stick:nth-child(4) { animation-delay: 0.2s; height: 20px; }
+        .eq-stick:nth-child(5) { animation-delay: 0.6s; height: 12px; }
+        .eq-stick:nth-child(6) { animation-delay: 0.4s; height: 24px; }
+        .eq-stick:nth-child(7) { animation-delay: 0.7s; height: 14px; }
+        .eq-stick:nth-child(8) { animation-delay: 0.35s; height: 18px; }
+        .eq-stick:nth-child(9) { animation-delay: 0.55s; height: 8px; }
 
-        /* Action Buttons */
-        .action-group {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .btn-primary-return {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            padding: 0.95rem 1.4rem;
-            background: linear-gradient(135deg, rgba(0, 240, 255, 0.18) 0%, rgba(112, 0, 255, 0.22) 100%);
-            border: 1px solid var(--accent-cyan);
-            border-radius: 14px;
-            color: #ffffff;
-            font-family: var(--font-heading);
-            font-size: 0.95rem;
-            font-weight: 700;
-            letter-spacing: 0.08rem;
-            text-transform: uppercase;
-            text-decoration: none;
-            cursor: pointer;
-            box-shadow: 0 10px 25px rgba(0, 240, 255, 0.18);
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        .btn-primary-return:hover {
-            transform: translateY(-2px);
-            background: linear-gradient(135deg, rgba(0, 240, 255, 0.32) 0%, rgba(112, 0, 255, 0.38) 100%);
-            box-shadow: 0 14px 35px rgba(0, 240, 255, 0.32);
-            border-color: #ffffff;
-        }
-
-        .btn-secondary-action {
+        /* Single Primary Button (Back to Main Site) */
+        .btn-main-site {
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.65rem;
-            padding: 0.85rem 1.25rem;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
-            color: var(--text-secondary);
+            padding: 0.92rem 1.4rem;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, rgba(112, 0, 255, 0.2) 100%);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 12px;
+            color: #ffffff;
             font-family: var(--font-heading);
-            font-size: 0.85rem;
-            font-weight: 600;
-            letter-spacing: 0.06rem;
+            font-size: 0.92rem;
+            font-weight: 700;
+            letter-spacing: 0.08rem;
             text-transform: uppercase;
             text-decoration: none;
             cursor: pointer;
-            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(0, 240, 255, 0.15);
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        .btn-secondary-action:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.25);
-            color: #ffffff;
+        .btn-main-site:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.3) 0%, rgba(112, 0, 255, 0.35) 100%);
+            box-shadow: 0 12px 30px rgba(0, 240, 255, 0.28);
+            border-color: #ffffff;
         }
 
-        /* Footer Info */
-        .status-footer {
-            margin-top: 1.5rem;
+        /* Clean Footer */
+        .footer-bar {
+            margin-top: 1.25rem;
             text-align: center;
             font-size: 0.72rem;
             color: var(--text-muted);
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
-        .status-footer a {
+        .footer-bar a {
             color: var(--accent-cyan);
             text-decoration: none;
+            transition: color 0.2s ease;
         }
 
-        .status-footer a:hover {
+        .footer-bar a:hover {
+            color: #fff;
             text-decoration: underline;
         }
 
-        /* Mobile tweaks */
         @media (max-width: 480px) {
             body {
                 padding: 1.25rem 0.85rem;
             }
 
-            .status-card {
+            .smart-link-card {
                 border-radius: 20px;
             }
 
-            .status-body {
-                padding: 1.8rem 1.25rem 1.6rem;
+            .status-content-area {
+                padding: 0.5rem 1.15rem 1.5rem;
             }
 
-            .release-preview-bar {
-                padding: 1.1rem 1.25rem;
+            .service-headline {
+                font-size: 1.2rem;
             }
 
-            .status-headline {
-                font-size: 1.35rem;
-            }
-
-            .notice-main-text {
-                font-size: 0.9rem;
+            .notice-text {
+                font-size: 0.86rem;
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- Dynamic Ambient Backgrounds -->
+    <!-- Ambient Background Art -->
     <div class="ambient-backdrop" id="ambient-backdrop" style="background-image: url('assets/cover.png');"></div>
     <div class="dark-vignette-overlay"></div>
     <div class="cyber-grid-overlay"></div>
-    <div class="glow-sphere-1" id="glow-sphere"></div>
 
-    <main class="status-wrapper">
-        <!-- Top Brand Header -->
-        <header class="brand-header">
-            <a href="index.html" class="brand-link" id="brand-home-link">
-                <img src="assets/OCR.png" alt="Obscura Logo" class="brand-logo" onerror="this.src='assets/cover.png'">
-                <span class="brand-text">OBSCURA RECORDS</span>
-            </a>
-            <div class="system-pill">
-                <span class="beacon-dot" id="beacon-dot"></span>
-                <span id="system-status-text">PIPELINE SYNC</span>
-            </div>
-        </header>
-
-        <!-- Main Status Card -->
-        <div class="status-card" id="status-card">
-            <div class="cyber-laser-bar" id="laser-bar"></div>
-
-            <!-- Release Summary Header -->
-            <div class="release-preview-bar">
-                <div class="release-thumb-frame">
-                    <img src="assets/releases/cover_1.png" alt="Artwork" class="release-thumb" id="release-thumb" onerror="this.onerror=null; this.src='assets/cover.png';">
-                </div>
-                <div class="release-meta">
-                    <div class="release-catalog-tag">
-                        <i class="fas fa-compact-disc"></i>
-                        <span id="release-catalog">OBSCURA RELEASE</span>
-                    </div>
-                    <h2 class="release-title" id="release-title">MUSIC RELEASE</h2>
-                    <div class="release-artist">Artist: <span id="release-artist">OBSCURA ARTIST</span></div>
+    <main class="smart-link-stage">
+        <div class="smart-link-card" id="smart-link-card">
+            <!-- Artwork Section -->
+            <div class="artwork-container">
+                <img src="assets/releases/cover_1.png" alt="Release Artwork" class="artwork-img" id="release-thumb" onerror="this.onerror=null; this.src='assets/cover.png';">
+                <div class="artwork-overlay-gradient"></div>
+                <div class="status-pill-badge">
+                    <span class="status-dot"></span>
+                    <span id="badge-service-name">PIPELINE SYNC</span>
                 </div>
             </div>
 
-            <!-- Body -->
-            <div class="status-body">
-                <!-- Service Icon Badge -->
-                <div class="service-badge-container">
-                    <div class="service-halo" id="service-halo"></div>
-                    <div class="service-icon-box" id="service-icon-box">
-                        <i class="fas fa-compact-disc" id="service-icon"></i>
-                    </div>
+            <!-- Label Banner -->
+            <div class="label-banner">
+                <img src="assets/OCR.png" alt="Obscura Logo" class="label-logo-img" onerror="this.src='assets/cover.png'">
+                <span class="label-name">OBSCURA <span>RECORDS</span></span>
+            </div>
+
+            <!-- Track Meta Header -->
+            <div class="track-meta-header">
+                <h1 class="track-title" id="release-title">OBSCURA RELEASE</h1>
+                <div class="track-artist">Artist: <span id="release-artist">OBSCURA ARTIST</span></div>
+            </div>
+
+            <!-- Main Body -->
+            <div class="status-content-area">
+                <!-- Service Icon -->
+                <div class="service-icon-wrapper" id="service-icon-box">
+                    <i class="fas fa-compact-disc" id="service-icon"></i>
                 </div>
 
-                <div class="service-status-pill" id="service-status-pill">
-                    <i class="fas fa-clock"></i> <span id="service-badge-name">STREAMING SERVICE STATUS</span>
-                </div>
+                <h2 class="service-headline" id="service-headline">LINK NOT AVAILABLE YET</h2>
 
-                <h1 class="status-headline" id="status-headline">LINK NOT AVAILABLE YET</h1>
-
-                <!-- Notice Message Box (Exact requested wording dynamically placed) -->
-                <div class="notice-message-box" id="notice-box">
-                    <p class="notice-main-text" id="notice-main-text">
-                        For this release, no <strong id="notice-service-name">Streaming</strong> streaming link is available at this moment. When the link is available, it will auto add to this service link.
+                <!-- Notice Message Box -->
+                <div class="notice-box">
+                    <p class="notice-text" id="notice-main-text">
+                        For this release, no <strong id="notice-service-name">Streaming</strong> link is available at this moment. When the link is available, it will auto add to this service link.
                     </p>
-                    <p class="notice-sub-text">
-                        <i class="fas fa-info-circle"></i> Our automated ingestion system is actively processing metadata across global distribution endpoints.
+                    <p class="notice-sub">
+                        <i class="fas fa-info-circle"></i> Official distribution pipeline is actively syncing metadata across global endpoints.
                     </p>
                 </div>
 
-                <!-- Animated Sound Waveform Radar -->
-                <div class="waveform-container" id="waveform-bars">
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
+                <!-- Equalizer -->
+                <div class="equalizer-bar">
+                    <div class="eq-stick"></div>
+                    <div class="eq-stick"></div>
+                    <div class="eq-stick"></div>
+                    <div class="eq-stick"></div>
+                    <div class="eq-stick"></div>
+                    <div class="eq-stick"></div>
+                    <div class="eq-stick"></div>
+                    <div class="eq-stick"></div>
+                    <div class="eq-stick"></div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="action-group">
-                    <a href="index.html#releases" class="btn-primary-return" id="btn-return">
-                        <i class="fas fa-arrow-left"></i> BACK TO RELEASES
-                    </a>
-                    <a href="index.html" class="btn-secondary-action">
-                        <i class="fas fa-compass"></i> EXPLORE OBSCURA RELEASES
-                    </a>
-                </div>
+                <!-- Single Action Button -->
+                <a href="index.html" class="btn-main-site" id="btn-main-site">
+                    <i class="fas fa-arrow-left"></i> BACK TO MAIN SITE
+                </a>
             </div>
         </div>
 
-        <!-- Footer Notice -->
-        <footer class="status-footer">
+        <!-- Footer -->
+        <footer class="footer-bar">
             <p>&copy; 2026 OBSCURA RECORDS LLC. ALL RIGHTS RESERVED.</p>
-            <p>Direct inquiries: <a href="mailto:contact@obscurarecord.com">contact@obscurarecord.com</a></p>
+            <p>Direct inquiries: <a href="mailto:artists@obscurarecord.com">artists@obscurarecord.com</a></p>
         </footer>
     </main>
 
-    <!-- Dynamic URL Parameter & Theme Engine -->
+    <!-- Dynamic Theme & URL Cleaner Engine -->
     <script>
         (function() {
             // Service Presets
-            const SERVICE_CONFIGS = {
+            const SERVICES = {
                 spotify: {
                     name: 'Spotify',
                     iconClass: 'fab fa-spotify',
                     accentColor: '#1ed760',
-                    glowColor: 'rgba(30, 215, 96, 0.28)',
-                    badgeText: 'SPOTIFY SYNC PENDING'
+                    glowColor: 'rgba(30, 215, 96, 0.22)',
+                    badgeText: 'SPOTIFY PENDING'
                 },
                 apple: {
                     name: 'Apple Music',
                     iconClass: 'fab fa-apple',
                     accentColor: '#fc3c44',
-                    glowColor: 'rgba(252, 60, 68, 0.28)',
-                    badgeText: 'APPLE MUSIC SYNC PENDING'
+                    glowColor: 'rgba(252, 60, 68, 0.22)',
+                    badgeText: 'APPLE MUSIC PENDING'
                 },
                 applemusic: {
                     name: 'Apple Music',
                     iconClass: 'fab fa-apple',
                     accentColor: '#fc3c44',
-                    glowColor: 'rgba(252, 60, 68, 0.28)',
-                    badgeText: 'APPLE MUSIC SYNC PENDING'
+                    glowColor: 'rgba(252, 60, 68, 0.22)',
+                    badgeText: 'APPLE MUSIC PENDING'
                 },
                 youtube: {
                     name: 'YouTube',
                     iconClass: 'fab fa-youtube',
                     accentColor: '#ff0000',
-                    glowColor: 'rgba(255, 0, 0, 0.28)',
-                    badgeText: 'YOUTUBE TRANSMISSION PENDING'
+                    glowColor: 'rgba(255, 0, 0, 0.22)',
+                    badgeText: 'YOUTUBE PENDING'
                 },
                 yt: {
                     name: 'YouTube',
                     iconClass: 'fab fa-youtube',
                     accentColor: '#ff0000',
-                    glowColor: 'rgba(255, 0, 0, 0.28)',
-                    badgeText: 'YOUTUBE TRANSMISSION PENDING'
+                    glowColor: 'rgba(255, 0, 0, 0.22)',
+                    badgeText: 'YOUTUBE PENDING'
                 },
                 soundcloud: {
                     name: 'SoundCloud',
                     iconClass: 'fab fa-soundcloud',
                     accentColor: '#ff5500',
-                    glowColor: 'rgba(255, 85, 0, 0.28)',
-                    badgeText: 'SOUNDCLOUD STREAM PENDING'
+                    glowColor: 'rgba(255, 85, 0, 0.22)',
+                    badgeText: 'SOUNDCLOUD PENDING'
                 },
                 deezer: {
                     name: 'Deezer',
                     iconClass: 'fab fa-deezer',
                     accentColor: '#a238ff',
-                    glowColor: 'rgba(162, 56, 255, 0.28)',
-                    badgeText: 'DEEZER SYNC PENDING'
-                },
-                tidal: {
-                    name: 'Tidal',
-                    iconClass: 'fas fa-gem',
-                    accentColor: '#00ffff',
-                    glowColor: 'rgba(0, 255, 255, 0.28)',
-                    badgeText: 'TIDAL STREAM PENDING'
-                },
-                beatport: {
-                    name: 'Beatport',
-                    iconClass: 'fas fa-headphones',
-                    accentColor: '#00ff7f',
-                    glowColor: 'rgba(0, 255, 127, 0.28)',
-                    badgeText: 'BEATPORT EXCLUSIVE PENDING'
+                    glowColor: 'rgba(162, 56, 255, 0.22)',
+                    badgeText: 'DEEZER PENDING'
                 },
                 default: {
                     name: 'Streaming',
                     iconClass: 'fas fa-compact-disc',
                     accentColor: '#00f0ff',
-                    glowColor: 'rgba(0, 240, 255, 0.25)',
-                    badgeText: 'STREAMING SYNC PENDING'
+                    glowColor: 'rgba(0, 240, 255, 0.2)',
+                    badgeText: 'STREAMING PENDING'
                 }
             };
 
-            // Parse URL Query Params
+            // Parse URL Parameters
             const params = new URLSearchParams(window.location.search);
-            const serviceKey = (params.get('service') || '').toLowerCase().trim();
-            const title = params.get('title') || 'OBSCURA RELEASE';
-            const artist = params.get('artist') || 'OBSCURA ARTIST';
-            const cover = params.get('cover') || 'assets/releases/cover_1.png';
-            const catalog = params.get('catalog') || params.get('id') || 'OBSCURA RECORD';
-            const releaseType = params.get('type') || '';
+            const serviceKey = (params.get('service') || params.get('s') || '').toLowerCase().trim();
+            const title = params.get('title') || params.get('t') || 'OBSCURA RELEASE';
+            const artist = params.get('artist') || params.get('a') || 'OBSCURA ARTIST';
+            const cover = params.get('cover') || params.get('c') || 'assets/releases/cover_1.png';
 
-            // Match Service Config
-            const config = SERVICE_CONFIGS[serviceKey] || SERVICE_CONFIGS.default;
+            const config = SERVICES[serviceKey] || SERVICES.default;
 
-            // Apply Theme CSS Variables
+            // Apply Theme Accent CSS
             document.documentElement.style.setProperty('--accent-service', config.accentColor);
             document.documentElement.style.setProperty('--accent-service-glow', config.glowColor);
 
-            // Update DOM Elements
-            const pageTitle = document.getElementById('page-title');
-            if (pageTitle) pageTitle.textContent = `${title} | ${config.name} Unavailable - OBSCURA`;
+            // Populate Metadata
+            document.title = `${title} | ${config.name} Status - OBSCURA`;
 
             const ogTitle = document.getElementById('og-title');
-            if (ogTitle) ogTitle.textContent = `${title} - ${config.name} Status | OBSCURA RECORDS`;
+            if (ogTitle) ogTitle.textContent = `${title} | ${config.name} - OBSCURA RECORDS`;
 
             const relTitle = document.getElementById('release-title');
             if (relTitle) relTitle.textContent = title;
 
             const relArtist = document.getElementById('release-artist');
             if (relArtist) relArtist.textContent = artist;
-
-            const relCatalog = document.getElementById('release-catalog');
-            if (relCatalog) {
-                relCatalog.textContent = releaseType ? `${catalog} // ${releaseType}` : catalog;
-            }
 
             const relThumb = document.getElementById('release-thumb');
             if (relThumb) {
@@ -806,17 +614,12 @@
                 serviceIcon.className = config.iconClass;
             }
 
-            const serviceBadge = document.getElementById('service-badge-name');
-            if (serviceBadge) {
-                serviceBadge.textContent = config.badgeText;
+            const badgeName = document.getElementById('badge-service-name');
+            if (badgeName) {
+                badgeName.textContent = config.badgeText;
             }
 
-            const noticeServiceName = document.getElementById('notice-service-name');
-            if (noticeServiceName) {
-                noticeServiceName.textContent = config.name;
-            }
-
-            const headline = document.getElementById('status-headline');
+            const headline = document.getElementById('service-headline');
             if (headline) {
                 headline.innerHTML = `<span style="color: ${config.accentColor}">${config.name.toUpperCase()}</span> LINK PENDING`;
             }
@@ -826,15 +629,22 @@
                 noticeMain.innerHTML = `For this release, no <strong>${config.name}</strong> streaming link is available at this moment. When the link is available, it will auto add to this service link.`;
             }
 
-            // Return button smart handling
-            const btnReturn = document.getElementById('btn-return');
-            if (btnReturn) {
-                if (document.referrer && document.referrer.includes(window.location.host)) {
-                    btnReturn.addEventListener('click', function(e) {
+            // CLEAN BROWSER URL (Instantly replaces ugly long query params with a clean, short URL)
+            try {
+                const cleanQuery = serviceKey ? `?service=${encodeURIComponent(serviceKey)}` : '';
+                const cleanUrl = window.location.pathname.replace(/\/+$/, '') + cleanQuery;
+                window.history.replaceState(null, document.title, cleanUrl);
+            } catch (e) {}
+
+            // Back button smooth return
+            const btnMain = document.getElementById('btn-main-site');
+            if (btnMain) {
+                btnMain.addEventListener('click', function(e) {
+                    if (document.referrer && document.referrer.includes(window.location.host)) {
                         e.preventDefault();
-                        window.history.back();
-                    });
-                }
+                        window.location.href = 'index.html';
+                    }
+                });
             }
         })();
     </script>
