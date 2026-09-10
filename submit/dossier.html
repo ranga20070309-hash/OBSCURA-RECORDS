@@ -624,6 +624,10 @@
                         <td id="tableRealName" class="val-col">-</td>
                     </tr>
                     <tr>
+                        <td class="label-col">Origin / Residence:</td>
+                        <td id="tableLocation" class="val-col" style="color: #38bdf8;">-</td>
+                    </tr>
+                    <tr>
                         <td class="label-col">Contact Email:</td>
                         <td class="val-col">
                             <a id="tableEmail" href="#">-</a>
@@ -636,8 +640,18 @@
                         </td>
                     </tr>
                     <tr>
+                        <td class="label-col">Apple Music Page:</td>
+                        <td class="val-col">
+                            <a id="tableApple" href="#" target="_blank">-</a>
+                        </td>
+                    </tr>
+                    <tr>
                         <td class="label-col">Primary Genre:</td>
                         <td id="tableGenre" class="val-col">-</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Release Language:</td>
+                        <td id="tableLanguage" class="val-col" style="color: #a78bfa;">-</td>
                     </tr>
                     <tr>
                         <td class="label-col">Requested Release Date:</td>
@@ -799,6 +813,9 @@
             document.getElementById('tableArtist').textContent = sub.mainArtist || 'N/A';
             document.getElementById('tableRealName').textContent = sub.realName || 'N/A';
             
+            const locText = [sub.city, sub.country].filter(Boolean).join(', ') || 'Not specified';
+            document.getElementById('tableLocation').textContent = locText;
+
             const emailEl = document.getElementById('tableEmail');
             if (sub.email) {
                 emailEl.textContent = sub.email;
@@ -818,7 +835,17 @@
                 spotifyEl.removeAttribute('href');
             }
 
+            const appleEl = document.getElementById('tableApple');
+            if (sub.mainArtistApple) {
+                appleEl.textContent = sub.mainArtistApple;
+                appleEl.href = sub.mainArtistApple;
+            } else {
+                appleEl.textContent = 'Not provided';
+                appleEl.removeAttribute('href');
+            }
+
             document.getElementById('tableGenre').textContent = sub.genre || 'N/A';
+            document.getElementById('tableLanguage').textContent = sub.language || 'English';
             document.getElementById('tableDate').textContent = sub.releaseDate || 'Flexible';
             
             const dateStr = sub.submittedAt ? new Date(sub.submittedAt).toUTCString() : 'Recently Submitted';
@@ -836,6 +863,7 @@
                                 <th>Real Name</th>
                                 <th>Role</th>
                                 <th>Spotify</th>
+                                <th>Apple Music</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -846,7 +874,10 @@
                                     <td style="color: #cbd5e1;">${c.realName || 'N/A'}</td>
                                     <td><span class="role-pill">${c.role || 'Featured'}</span></td>
                                     <td>
-                                        ${c.spotifyLink ? `<a href="${c.spotifyLink}" target="_blank" style="color: #38bdf8; text-decoration: underline;">Profile &rarr;</a>` : '<span style="color: #64748b;">None</span>'}
+                                        ${c.spotifyLink ? `<a href="${c.spotifyLink}" target="_blank" style="color: #38bdf8; text-decoration: underline;">Spotify &rarr;</a>` : '<span style="color: #64748b;">None</span>'}
+                                    </td>
+                                    <td>
+                                        ${c.appleLink ? `<a href="${c.appleLink}" target="_blank" style="color: #fa586a; text-decoration: underline;">Apple &rarr;</a>` : '<span style="color: #64748b;">None</span>'}
                                     </td>
                                 </tr>
                             `).join('')}
