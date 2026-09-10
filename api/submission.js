@@ -196,7 +196,34 @@ module.exports = async (req, res) => {
         }
 
         const logoImgSrc = verifiedLogoPath ? 'cid:ocr_logo' : 'https://obscurarecord.com/assets/OCR.png';
-        const dossierUrl = `https://obscurarecord.com/dossier?id=${encodeURIComponent(subId)}`;
+        const dossierUrl = `https://obscurarecord.com/submit/dossier.html?id=${encodeURIComponent(subId)}`;
+        const adminPortalUrl = `https://obscurarecord.com/submit/admin.html`;
+
+        const collabHtml = cleanCollaborators.length > 0 
+            ? `
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed #1e2638;">
+                <div style="font-size: 11px; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;">Collaborator Credits:</div>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 12px; color: #cbd5e1;">
+                    ${cleanCollaborators.map((c, i) => `
+                        <tr>
+                            <td style="padding: 3px 0; color: #38bdf8; font-weight: 600;">${i + 1}. ${c.artistName}</td>
+                            <td style="padding: 3px 6px; color: #94a3b8;">(${c.role})</td>
+                            <td style="padding: 3px 0; text-align: right;">
+                                ${c.spotifyLink ? `<a href="${c.spotifyLink}" target="_blank" style="color: #38bdf8; font-size: 11px; text-decoration: none; margin-right: 6px;">Spotify &rarr;</a>` : ''}
+                                ${c.appleLink ? `<a href="${c.appleLink}" target="_blank" style="color: #fa586a; font-size: 11px; text-decoration: none;">Apple &rarr;</a>` : ''}
+                            </td>
+                        </tr>
+                    `).join('')}
+                </table>
+            </div>`
+            : '';
+
+        const notesHtml = (cleanNotes && cleanNotes !== 'None provided.') 
+            ? `
+            <div style="margin-top: 14px; padding: 10px 14px; background-color: #07090f; border-left: 3px solid #38bdf8; border-radius: 4px; font-size: 12px; color: #94a3b8; font-style: italic;">
+                "${cleanNotes}"
+            </div>`
+            : '';
 
         // Streamlined, High-Class Executive Dark Notification Email for A&R Admin
         const adminEmailHtml = `
@@ -207,29 +234,29 @@ module.exports = async (req, res) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>New Track Submission - OBSCURA REC LLC</title>
             </head>
-            <body style="margin: 0; padding: 28px 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #05060a; color: #f8fafc;">
-                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; background-color: #0c0f18; border-radius: 14px; overflow: hidden; border: 1px solid #1c2336; box-shadow: 0 16px 48px rgba(0,0,0,0.7);">
+            <body style="margin: 0; padding: 24px 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #05060a; color: #f8fafc;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; background-color: #0c0f18; border-radius: 12px; overflow: hidden; border: 1px solid #1c2336; box-shadow: 0 12px 36px rgba(0,0,0,0.6);">
                     
                     <!-- Header Banner -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #090c15 0%, #0d1221 100%); padding: 24px 28px; border-bottom: 2px solid #00f0ff;">
+                        <td style="background: linear-gradient(135deg, #090c15 0%, #0d1221 100%); padding: 20px 24px; border-bottom: 2px solid #00f0ff;">
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
                                     <td style="vertical-align: middle;">
                                         <table border="0" cellpadding="0" cellspacing="0">
                                             <tr>
-                                                <td style="vertical-align: middle; padding-right: 14px;">
-                                                    <img src="${logoImgSrc}" width="44" height="44" style="border-radius: 50%; border: 2px solid #00f0ff; display: block; box-shadow: 0 0 12px rgba(0,240,255,0.4);" alt="OCR">
+                                                <td style="vertical-align: middle; padding-right: 12px;">
+                                                    <img src="${logoImgSrc}" width="40" height="40" style="border-radius: 50%; border: 1.5px solid #00f0ff; display: block;" alt="OCR">
                                                 </td>
                                                 <td style="vertical-align: middle;">
-                                                    <div style="color: #ffffff; font-size: 19px; font-weight: 800; letter-spacing: 1.2px; line-height: 1.2;">OBSCURA REC LLC</div>
-                                                    <div style="color: #00f0ff; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px;">A&amp;R TRACK SUBMISSION ALERT</div>
+                                                    <div style="color: #ffffff; font-size: 17px; font-weight: 800; letter-spacing: 1px; line-height: 1.2;">OBSCURA REC LLC</div>
+                                                    <div style="color: #00f0ff; font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; margin-top: 2px;">A&amp;R TRACK SUBMISSION ALERT</div>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
                                     <td style="text-align: right; vertical-align: middle;">
-                                        <div style="display: inline-block; background: #07090e; border: 1px solid #1e293b; color: #94a3b8; padding: 6px 12px; border-radius: 6px; font-size: 11.5px; font-family: monospace; font-weight: 700;">
+                                        <div style="display: inline-block; background: #07090e; border: 1px solid #1e293b; color: #94a3b8; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-family: monospace; font-weight: 700;">
                                             ID: <strong style="color: #38bdf8;">${subId}</strong>
                                         </div>
                                     </td>
@@ -240,19 +267,19 @@ module.exports = async (req, res) => {
 
                     <!-- Body Content -->
                     <tr>
-                        <td style="padding: 26px 28px;">
+                        <td style="padding: 22px 24px;">
 
                             <!-- Single-Use Code Status Badge -->
-                            <div style="background-color: #051e15; border: 1px solid #059669; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px;">
+                            <div style="background-color: #051a13; border: 1px solid #059669; border-radius: 6px; padding: 10px 14px; margin-bottom: 18px;">
                                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                     <tr>
                                         <td>
-                                            <span style="color: #34d399; font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px;">
+                                            <span style="color: #34d399; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px;">
                                                 &#10003; ACCEPTANCE CODE VERIFIED &amp; CONSUMED
                                             </span>
                                         </td>
                                         <td style="text-align: right;">
-                                            <span style="font-family: monospace; font-size: 13px; font-weight: 700; color: #a7f3d0; background: #064e3b; border: 1px solid #059669; padding: 3px 8px; border-radius: 4px;">
+                                            <span style="font-family: monospace; font-size: 12px; font-weight: 700; color: #a7f3d0; background: #064e3b; border: 1px solid #059669; padding: 2px 7px; border-radius: 4px;">
                                                 ${cleanCode}
                                             </span>
                                         </td>
@@ -261,89 +288,94 @@ module.exports = async (req, res) => {
                             </div>
 
                             <!-- Track Summary Card -->
-                            <div style="background: linear-gradient(135deg, #0e1422 0%, #0b0f19 100%); border: 1px solid #1e283d; border-left: 4px solid #00f0ff; border-radius: 8px; padding: 20px 22px; margin-bottom: 22px;">
-                                <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 1.5px; color: #64748b; margin-bottom: 4px;">SUBMITTED TRACK</div>
-                                <div style="font-size: 24px; font-weight: 800; color: #ffffff; line-height: 1.25;">"${cleanSongTitle}"</div>
-                                <div style="font-size: 15px; color: #94a3b8; margin-top: 6px;">
-                                    by <strong style="color: #00f0ff; font-size: 16px;">${cleanMainArtist}</strong> (<span style="color: #cbd5e1;">${cleanRealName}</span>)
+                            <div style="background: linear-gradient(135deg, #0e1422 0%, #0b0f19 100%); border: 1px solid #1e283d; border-left: 3px solid #00f0ff; border-radius: 6px; padding: 16px 18px; margin-bottom: 18px;">
+                                <div style="font-size: 10.5px; text-transform: uppercase; font-weight: 700; letter-spacing: 1.2px; color: #64748b; margin-bottom: 3px;">SUBMITTED TRACK</div>
+                                <div style="font-size: 21px; font-weight: 800; color: #ffffff; line-height: 1.2;">"${cleanSongTitle}"</div>
+                                <div style="font-size: 14px; color: #94a3b8; margin-top: 5px;">
+                                    by <strong style="color: #00f0ff; font-size: 15px;">${cleanMainArtist}</strong> (<span style="color: #cbd5e1;">${cleanRealName}</span>)
                                 </div>
-                                <div style="font-size: 12.5px; color: #64748b; margin-top: 4px;">
+                                <div style="font-size: 12px; color: #64748b; margin-top: 3px;">
                                     📍 ${cleanCity}, ${cleanCountry}
                                 </div>
-                                <div style="margin-top: 14px;">
-                                    <span style="display: inline-block; background-color: #2e1065; color: #c084fc; font-weight: 700; font-size: 11.5px; padding: 4px 10px; border-radius: 4px; border: 1px solid #581c87; margin-right: 6px;">
+                                <div style="margin-top: 12px;">
+                                    <span style="display: inline-block; background-color: #2e1065; color: #c084fc; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 4px; border: 1px solid #581c87; margin-right: 5px;">
                                         🎵 ${cleanGenre}
                                     </span>
-                                    <span style="display: inline-block; background-color: #0c4a6e; color: #38bdf8; font-weight: 700; font-size: 11.5px; padding: 4px 10px; border-radius: 4px; border: 1px solid #0369a1; margin-right: 6px;">
+                                    <span style="display: inline-block; background-color: #0c4a6e; color: #38bdf8; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 4px; border: 1px solid #0369a1; margin-right: 5px;">
                                         🌐 ${cleanLanguage}
                                     </span>
-                                    <span style="display: inline-block; background-color: #451a03; color: #fde047; font-weight: 700; font-size: 11.5px; padding: 4px 10px; border-radius: 4px; border: 1px solid #854d0e;">
+                                    <span style="display: inline-block; background-color: #451a03; color: #fde047; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 4px; border: 1px solid #854d0e;">
                                         📅 Target: ${cleanReleaseDate}
                                     </span>
                                 </div>
                             </div>
 
-                            <!-- Primary Dossier Action Callout -->
-                            <div style="background: linear-gradient(135deg, #091324 0%, #060c18 100%); border: 1px solid #0284c7; border-radius: 10px; padding: 24px 20px; text-align: center; margin-bottom: 20px;">
-                                <div style="color: #38bdf8; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
-                                    FULL EXECUTIVE A&amp;R RELEASE DOSSIER GENERATED
+                            <!-- Clean Action Buttons (Compact & Sleek) -->
+                            <div style="background-color: #090d17; border: 1px solid #1c263c; border-radius: 6px; padding: 14px 16px; margin-bottom: 18px;">
+                                <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 1px; margin-bottom: 10px;">
+                                    Quick Executive Actions:
                                 </div>
-                                <div style="color: #cbd5e1; font-size: 13.5px; line-height: 1.5; margin-bottom: 18px;">
-                                    Master audio metadata, high-res artwork, collaborator split sheets, artist notes, and A&amp;R review controls are hosted on the secure submission portal:
-                                </div>
-                                
-                                <!-- Primary View Dossier Button -->
-                                <a href="${dossierUrl}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%); color: #020617; text-decoration: none; font-weight: 800; font-size: 14.5px; padding: 13px 30px; border-radius: 6px; letter-spacing: 0.5px; box-shadow: 0 4px 16px rgba(0,240,255,0.4); margin-bottom: 10px;">
-                                    📄 VIEW FULL SUBMISSION DOSSIER &rarr;
-                                </a>
-
-                                <!-- Secondary Google Drive Link -->
-                                <div>
-                                    <a href="${cleanDriveLink}" target="_blank" style="display: inline-block; background-color: #1e293b; color: #38bdf8; border: 1px solid #0369a1; text-decoration: none; font-size: 12.5px; font-weight: 700; padding: 9px 20px; border-radius: 6px; margin-top: 6px;">
-                                        📂 Direct Google Drive Master Assets &rarr;
-                                    </a>
-                                </div>
-
-                                <div style="font-size: 11.5px; color: #64748b; margin-top: 14px; word-break: break-all;">
-                                    Dossier Web URL: <a href="${dossierUrl}" target="_blank" style="color: #00f0ff; text-decoration: underline;">${dossierUrl}</a>
-                                </div>
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td>
+                                            <a href="${dossierUrl}" target="_blank" style="display: inline-block; background-color: rgba(0, 240, 255, 0.1); color: #00f0ff; border: 1px solid rgba(0, 240, 255, 0.45); text-decoration: none; font-size: 12px; font-weight: 700; padding: 7px 15px; border-radius: 5px; margin-right: 8px; margin-bottom: 6px;">
+                                                &#128196; Open Dossier &rarr;
+                                            </a>
+                                            <a href="${cleanDriveLink}" target="_blank" style="display: inline-block; background-color: rgba(56, 189, 248, 0.08); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); text-decoration: none; font-size: 12px; font-weight: 700; padding: 7px 15px; border-radius: 5px; margin-right: 8px; margin-bottom: 6px;">
+                                                &#128194; Google Drive &rarr;
+                                            </a>
+                                            <a href="${adminPortalUrl}" target="_blank" style="display: inline-block; background-color: rgba(253, 224, 71, 0.08); color: #fde047; border: 1px solid rgba(253, 224, 71, 0.35); text-decoration: none; font-size: 12px; font-weight: 700; padding: 7px 15px; border-radius: 5px; margin-bottom: 6px;">
+                                                &#128273; Admin Portal &rarr;
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
                             </div>
 
-                            <!-- Quick Submitter Info -->
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0b0f19; border: 1px solid #1e2638; border-radius: 6px; margin-bottom: 20px; font-size: 13px;">
+                            <!-- Structured Release Details Table -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0b0f19; border: 1px solid #1e2638; border-radius: 6px; margin-bottom: 18px; font-size: 12.5px;">
                                 <tr>
-                                    <td style="padding: 10px 14px; color: #94a3b8; width: 35%; border-bottom: 1px solid #161d2d;">Artist Email:</td>
-                                    <td style="padding: 10px 14px; border-bottom: 1px solid #161d2d;">
+                                    <td style="padding: 9px 14px; color: #94a3b8; width: 35%; border-bottom: 1px solid #161d2d;">Artist Email:</td>
+                                    <td style="padding: 9px 14px; border-bottom: 1px solid #161d2d;">
                                         <a href="mailto:${cleanEmail}" style="color: #38bdf8; text-decoration: none; font-weight: 600;">${cleanEmail}</a>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 10px 14px; color: #94a3b8; border-bottom: 1px solid #161d2d;">Location:</td>
-                                    <td style="padding: 10px 14px; color: #cbd5e1; border-bottom: 1px solid #161d2d;">
+                                    <td style="padding: 9px 14px; color: #94a3b8; border-bottom: 1px solid #161d2d;">Location:</td>
+                                    <td style="padding: 9px 14px; color: #cbd5e1; border-bottom: 1px solid #161d2d;">
                                         ${cleanCity}, ${cleanCountry}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 10px 14px; color: #94a3b8; border-bottom: 1px solid #161d2d;">Spotify Profile:</td>
-                                    <td style="padding: 10px 14px; border-bottom: 1px solid #161d2d;">
+                                    <td style="padding: 9px 14px; color: #94a3b8; border-bottom: 1px solid #161d2d;">Spotify Profile:</td>
+                                    <td style="padding: 9px 14px; border-bottom: 1px solid #161d2d;">
                                         ${cleanMainArtistSpotify ? `<a href="${cleanMainArtistSpotify}" target="_blank" style="color: #38bdf8; text-decoration: underline;">${cleanMainArtistSpotify}</a>` : '<span style="color: #64748b;">Not provided</span>'}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 10px 14px; color: #94a3b8;">Apple Music:</td>
-                                    <td style="padding: 10px 14px;">
+                                    <td style="padding: 9px 14px; color: #94a3b8; border-bottom: 1px solid #161d2d;">Apple Music:</td>
+                                    <td style="padding: 9px 14px; border-bottom: 1px solid #161d2d;">
                                         ${cleanMainArtistApple ? `<a href="${cleanMainArtistApple}" target="_blank" style="color: #fa586a; text-decoration: underline;">${cleanMainArtistApple}</a>` : '<span style="color: #64748b;">Not provided</span>'}
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td style="padding: 9px 14px; color: #94a3b8;">Dossier Link:</td>
+                                    <td style="padding: 9px 14px; word-break: break-all;">
+                                        <a href="${dossierUrl}" target="_blank" style="color: #00f0ff; text-decoration: underline; font-family: monospace; font-size: 11.5px;">${dossierUrl}</a>
+                                    </td>
+                                </tr>
                             </table>
+
+                            ${collabHtml}
+                            ${notesHtml}
 
                         </td>
                     </tr>
 
                     <!-- Footer -->
                     <tr>
-                        <td style="background-color: #07090e; padding: 20px 28px; border-top: 1px solid #1c2336; text-align: center;">
-                            <div style="color: #64748b; font-size: 11.5px; line-height: 1.5; letter-spacing: 0.5px;">
+                        <td style="background-color: #07090e; padding: 18px 24px; border-top: 1px solid #1c2336; text-align: center;">
+                            <div style="color: #64748b; font-size: 11px; line-height: 1.5; letter-spacing: 0.5px;">
                                 CONFIDENTIAL &bull; OBSCURA REC LLC A&amp;R DIVISION<br>
                                 Automated Dispatch &bull; Submitted at: ${timestamp}
                             </div>
