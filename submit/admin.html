@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A&R Acceptance Code Generator | OBSCURA REC LLC</title>
+    <link rel="icon" type="image/png" href="../assets/OCR_circle.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #07080d;
+            --card-bg: #0e111a;
+            --card-border: #1c2233;
+            --accent-blue: #2563eb;
+            --accent-blue-hover: #1d4ed8;
+            --cyan: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --input-border: #232a3d;
+            --input-bg: #090b12;
+            --green: #10b981;
+            --red: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 15% 35%, rgba(56, 189, 248, 0.04) 0%, transparent 40%);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            padding: 30px 16px 80px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header-logo {
+            height: 56px;
+            width: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.2);
+            margin-bottom: 14px;
+            will-change: transform;
+            transform: translateZ(0);
+            display: inline-block;
+        }
+
+        .header-title {
+            font-family: 'Google Sans', 'Outfit', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.3px;
+            margin-bottom: 8px;
+        }
+
+        .header-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            max-width: 580px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Clean Executive Cards */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 24px 26px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header-bar {
+            border-top: 3px solid var(--accent-blue);
+        }
+
+        .card-title {
+            font-family: 'Google Sans', 'Outfit', sans-serif;
+            font-size: 17px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            color: var(--cyan);
+            font-size: 15px;
+        }
+
+        /* Forms */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 640px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+        }
+
+        .input {
+            width: 100%;
+            background: #0a0d15;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            color: #ffffff;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+        }
+
+        .input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) hue-rotate(150deg) brightness(1.2);
+            cursor: pointer;
+        }
+
+        .btn-generate {
+            background: var(--accent-blue);
+            border: none;
+            border-radius: 6px;
+            padding: 11px 22px;
+            color: #ffffff;
+            font-family: 'Google Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s, transform 0.15s;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-generate:hover {
+            background: var(--accent-blue-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Output Box */
+        .output-box {
+            display: none;
+            background: #101422;
+            border: 1px solid #232b40;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .code-display {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--cyan);
+            letter-spacing: 2px;
+            background: #080a11;
+            border: 1px solid #252d43;
+            padding: 12px 16px;
+            border-radius: 6px;
+            text-align: center;
+            margin: 12px 0 16px;
+        }
+
+        .btn-action-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-secondary {
+            background: #171c2b;
+            border: 1px solid #283147;
+            color: #e2e8f0;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #20273c;
+            border-color: #3b4663;
+        }
+
+        /* Filter & Table */
+        .table-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .search-input {
+            width: 260px;
+            background: rgba(8, 6, 20, 0.8);
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #ffffff;
+            outline: none;
+        }
+
+        .filter-select {
+            background: rgba(8, 6, 20, 0.8);
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #ffffff;
+            outline: none;
+        }
+
+        .codes-table-wrap {
+            overflow-x: auto;
+        }
+
+        .codes-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+        }
+
+        .codes-table th {
+            text-align: left;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .codes-table td {
+            padding: 12px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e2e8f0;
+        }
+
+        .code-cell {
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 600;
+            color: var(--cyan);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.active {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--green);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge.used {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-del {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .btn-del:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1e1b4b;
+            border: 1px solid var(--cyan);
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            display: none;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- Header -->
+        <header class="header">
+            <img src="../assets/OCR%20LOGO.gif" 
+                 alt="OBSCURA REC LLC" 
+                 class="header-logo" 
+                 loading="eager" 
+                 decoding="async" 
+                 onerror="if(!this.dataset.step){this.dataset.step='1';this.src='/assets/OCR%20LOGO.gif';}else if(this.dataset.step==='1'){this.dataset.step='2';this.src='../assets/OCR.png';}else if(this.dataset.step==='2'){this.dataset.step='3';this.src='/assets/OCR.png';}else{this.onerror=null;}">
+            <h1 class="header-title">A&amp;R Demo Acceptance Code Generator</h1>
+            <p class="header-subtitle">
+                Issue single-use whitelist authorization codes for accepted artists to securely submit their release assets.
+            </p>
+        </header>
+
+        <!-- Generator Card -->
+        <section class="card card-header-bar">
+            <h2 class="card-title">
+                <i class="fas fa-key"></i>
+                <span>Issue New Acceptance Code</span>
+            </h2>
+
+            <form id="codeGenForm">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="label">Main Artist Name (Stage Name) *</label>
+                        <input type="text" id="genArtist" class="input" placeholder="e.g. KAGE" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="label">Submitter / Artist Real Name *</label>
+                        <input type="text" id="genRealName" class="input" placeholder="e.g. Alex Mercer" required>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="label">Acceptance Date *</label>
+                        <input type="date" id="genDate" class="input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="label">Demo Working Title / Track Name (Optional)</label>
+                        <input type="text" id="genTrack" class="input" placeholder="e.g. Midnight Drift">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="label">Internal A&amp;R Notes (Optional)</label>
+                    <input type="text" id="genNotes" class="input" placeholder="e.g. Accepted via demo submission form">
+                </div>
+
+                <button type="submit" id="genBtn" class="btn-generate">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Generate Unique Acceptance Code</span>
+                </button>
+            </form>
+
+            <!-- Generated Output Container -->
+            <div id="outputBox" class="output-box">
+                <div style="font-size: 13px; color: #cbd5e1; font-weight: 500;">
+                    ✓ Successfully generated and registered in whitelist database:
+                </div>
+                <div id="displayCode" class="code-display">OBS-ACC-XXXX-XXXX</div>
+                <div class="btn-action-row">
+                    <button type="button" id="copyCodeBtn" class="btn-secondary">
+                        <i class="fas fa-copy"></i> Copy Code Only
+                    </button>
+                    <button type="button" id="copyEmailTextBtn" class="btn-secondary">
+                        <i class="fas fa-envelope-open-text"></i> Copy Artist Email Template
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Issued Codes Table -->
+        <section class="card">
+            <h2 class="card-title">
+                <i class="fas fa-list-check"></i>
+                <span>Issued Acceptance Codes</span>
+            </h2>
+
+            <div class="table-controls">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by artist, real name or code...">
+                <select id="statusFilter" class="filter-select">
+                    <option value="all">All Statuses</option>
+                    <option value="active">Active (Unused)</option>
+                    <option value="used">Used</option>
+                </select>
+            </div>
+
+            <div class="codes-table-wrap">
+                <table class="codes-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Artist Name</th>
+                            <th>Real Name</th>
+                            <th>Accepted Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="codesTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">
+                                Loading codes from database...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Received Submissions Archive Card -->
+        <section class="card" style="border-top: 6px solid #38bdf8;">
+            <h2 class="card-title" style="color: #38bdf8;">
+                <i class="fas fa-inbox"></i>
+                <span>Received Submissions Vault</span>
+            </h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                Every release submitted through the submission portal with a valid acceptance code is archived here in real time.
+            </p>
+
+            <div class="codes-table-wrap">
+                <table class="codes-table">
+                    <thead>
+                        <tr>
+                            <th>Song Title</th>
+                            <th>Artist &amp; Real Name</th>
+                            <th>Genre</th>
+                            <th>Requested Date</th>
+                            <th>Code Used</th>
+                            <th>Drive Assets</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">
+                                Loading submissions from database...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Firebase Setup for submission-code-and-mail-sys
+        const firebaseConfig = {
+            apiKey: "AIzaSyC34LDq2gv9hJf3lPkeUMiRpcXaNw-XJKw",
+            authDomain: "submission-code-and-mail-sys.firebaseapp.com",
+            databaseURL: "https://submission-code-and-mail-sys-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "submission-code-and-mail-sys",
+            storageBucket: "submission-code-and-mail-sys.firebasestorage.app",
+            messagingSenderId: "720066683261",
+            appId: "1:720066683261:web:e9d563a2fc26ed7083ec14",
+            measurementId: "G-9SNPKD9KNQ"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+        const codesRef = db.ref('accepted_codes');
+
+        // Elements
+        const codeGenForm = document.getElementById('codeGenForm');
+        const genArtist = document.getElementById('genArtist');
+        const genRealName = document.getElementById('genRealName');
+        const genDate = document.getElementById('genDate');
+        const genTrack = document.getElementById('genTrack');
+        const genNotes = document.getElementById('genNotes');
+        const outputBox = document.getElementById('outputBox');
+        const displayCode = document.getElementById('displayCode');
+        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        const copyEmailTextBtn = document.getElementById('copyEmailTextBtn');
+        const codesTableBody = document.getElementById('codesTableBody');
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const toast = document.getElementById('toast');
+
+        // Set default date to today
+        genDate.value = new Date().toISOString().split('T')[0];
+
+        let cachedCodes = {};
+        let lastGeneratedRecord = null;
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        // Generate unique 8-character random alphanumeric string
+        function generateUniqueCodeString() {
+            const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'; // non-confusing chars (no 0, 1, I, O)
+            let part1 = '';
+            let part2 = '';
+            for (let i = 0; i < 4; i++) {
+                part1 += chars.charAt(Math.floor(Math.random() * chars.length));
+                part2 += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return `OBS-ACC-${part1}-${part2}`;
+        }
+
+        // Code Generation
+        codeGenForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const artist = genArtist.value.trim();
+            const realName = genRealName.value.trim();
+            const acceptedDate = genDate.value;
+            const track = genTrack.value.trim();
+            const notes = genNotes.value.trim();
+
+            if (!artist || !realName || !acceptedDate) {
+                alert('Please provide Artist Name, Real Name, and Accepted Date.');
+                return;
+            }
+
+            const code = generateUniqueCodeString();
+
+            const codeRecord = {
+                code: code,
+                artistName: artist,
+                realName: realName,
+                acceptedDate: acceptedDate,
+                trackName: track || '',
+                notes: notes || '',
+                status: 'active',
+                createdAt: Date.now(),
+                usedAt: null,
+                submissionId: null
+            };
+
+            try {
+                await codesRef.child(code).set(codeRecord);
+                lastGeneratedRecord = codeRecord;
+
+                displayCode.textContent = code;
+                outputBox.style.display = 'block';
+                showToast(`✓ Acceptance Code created: ${code}`);
+
+                // Scroll to output
+                outputBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } catch (err) {
+                console.error('Error creating acceptance code:', err);
+                alert('Database error: ' + err.message);
+            }
+        });
+
+        // Copy Code
+        copyCodeBtn.addEventListener('click', () => {
+            if (!lastGeneratedRecord) return;
+            navigator.clipboard.writeText(lastGeneratedRecord.code);
+            showToast('✓ Code copied to clipboard!');
+        });
+
+        // Copy Artist Acceptance Email Template
+        copyEmailTextBtn.addEventListener('click', () => {
+            if (!lastGeneratedRecord) return;
+            const emailSnippet = `Hi ${lastGeneratedRecord.realName || lastGeneratedRecord.artistName},
+
+Congratulations! Your demo submission has been officially accepted for release review under OBSCURA REC LLC.
+
+To proceed with your release, please fill out our official track submission form using your dedicated single-use acceptance code:
+
+🔗 Track Submission Portal: https://obscurarecord.com/submit
+🔑 Acceptance Code: ${lastGeneratedRecord.code}
+👤 Registered Artist Name: ${lastGeneratedRecord.artistName}
+📅 Accepted Date: ${lastGeneratedRecord.acceptedDate}
+
+Please ensure you upload your Master Audio (.WAV) and High-Resolution Artwork (3000x3000px) to Google Drive, and set the sharing permissions to "Anyone with the link can view".
+
+Important: This code is strictly single-use and tied directly to your accepted track.
+
+Best regards,
+A&R Department
+OBSCURA REC LLC
+https://obscurarecord.com`;
+
+            navigator.clipboard.writeText(emailSnippet);
+            showToast('✓ Email template copied to clipboard!');
+        });
+
+        // Realtime Listener for Codes Table (Heavily Optimized - Latest 100)
+        codesRef.orderByChild('createdAt').limitToLast(100).on('value', (snap) => {
+            cachedCodes = snap.val() || {};
+            renderTable();
+        }, (err) => {
+            console.error('Firebase codes listener error:', err);
+            codesTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--red); padding: 24px;">
+                        Unable to connect to database: ${err.message}
+                    </td>
+                </tr>
+            `;
+        });
+
+        function renderTable() {
+            const query = (searchInput.value || '').toLowerCase().trim();
+            const filter = statusFilter.value;
+
+            const list = Object.values(cachedCodes).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+            const filtered = list.filter(item => {
+                if (filter !== 'all' && item.status !== filter) return false;
+                if (!query) return true;
+                return (
+                    (item.code || '').toLowerCase().includes(query) ||
+                    (item.artistName || '').toLowerCase().includes(query) ||
+                    (item.realName || '').toLowerCase().includes(query) ||
+                    (item.trackName || '').toLowerCase().includes(query)
+                );
+            });
+
+            if (filtered.length === 0) {
+                codesTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                            No acceptance codes match your search.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            codesTableBody.innerHTML = filtered.map(item => `
+                <tr>
+                    <td class="code-cell">${item.code}</td>
+                    <td><strong>${item.artistName}</strong></td>
+                    <td>${item.realName || '-'}</td>
+                    <td>${item.acceptedDate || '-'}</td>
+                    <td>
+                        <span class="badge ${item.status === 'used' ? 'used' : 'active'}">
+                            ${item.status === 'used' ? 'Used' : 'Active'}
+                        </span>
+                    </td>
+                    <td>
+                        <button type="button" class="btn-del" onclick="deleteCode('${item.code}')" title="Delete code">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        searchInput.addEventListener('input', renderTable);
+        statusFilter.addEventListener('change', renderTable);
+
+        window.deleteCode = function(code) {
+            if (confirm(`Permanently remove code ${code}? This artist will not be able to submit.`)) {
+                codesRef.child(code).remove()
+                    .then(() => showToast(`Deleted ${code}`))
+                    .catch(e => alert(e.message));
+            }
+        };
+
+        // Realtime Listener for Submissions Table (Heavily Optimized - Latest 60)
+        const submissionsRef = db.ref('submissions');
+        const subsTableBody = document.getElementById('subsTableBody');
+        submissionsRef.orderByChild('submittedAt').limitToLast(60).on('value', (snap) => {
+            const subs = snap.val() || {};
+            const list = Object.values(subs).sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
+
+            if (list.length === 0) {
+                subsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                            No submissions received yet. When an artist submits with their acceptance code, their track will appear here.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            subsTableBody.innerHTML = list.map(item => `
+                <tr>
+                    <td><strong style="color: #38bdf8;">${item.songTitle || 'Untitled'}</strong></td>
+                    <td><strong>${item.mainArtist}</strong> (${item.realName || 'N/A'})</td>
+                    <td><span style="color: #c084fc;">${item.genre || 'N/A'}</span></td>
+                    <td>📅 ${item.releaseDate || 'N/A'}</td>
+                    <td><span class="code-cell" style="font-size: 12px;">${item.acceptanceCode || '-'}</span></td>
+                    <td>
+                        <a href="${item.driveLink}" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.4); color: var(--cyan); text-decoration: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                            <i class="fab fa-google-drive"></i> Open Assets
+                        </a>
+                    </td>
+                </tr>
+            `).join('');
+        }, (err) => {
+            console.error('Firebase submissions listener error:', err);
+            subsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--red); padding: 24px;">
+                        Unable to connect to submissions vault: ${err.message}
+                    </td>
+                </tr>
+            `;
+        });
+    </script>
+</body>
+</html>

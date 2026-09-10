@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR LLC - Track submission</title>
+    <meta name="description" content="Submit your music to OBSCURA REC LLC.">
+    <link rel="icon" type="image/png" href="../assets/OCR_circle.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet" href="./submit.css">
+</head>
+<body>
+
+    <div class="form-container">
+        
+        <!-- Form Section -->
+        <form id="submissionForm" autocomplete="off">
+            
+            <!-- 1. Header Card -->
+            <div class="form-card header-card">
+                <div class="header-logo-container">
+                    <img src="../assets/OCR%20LOGO.gif" 
+                         alt="OBSCURA REC LLC" 
+                         class="header-logo-img" 
+                         loading="eager" 
+                         decoding="async" 
+                         onerror="if(!this.dataset.step){this.dataset.step='1';this.src='/assets/OCR%20LOGO.gif';}else if(this.dataset.step==='1'){this.dataset.step='2';this.src='../assets/OCR.png';}else if(this.dataset.step==='2'){this.dataset.step='3';this.src='/assets/OCR.png';}else{this.onerror=null;}">
+                    <span class="header-brand-name">OBSCURA REC LLC</span>
+                </div>
+                <h1 class="form-title">Track Submission</h1>
+                <p class="form-description">Please fill out this form to submit your track to OBSCURA REC LLC. Make sure all your details, collaborator credits, and Google Drive links are correct before submitting.</p>
+                <div class="required-notice">* Indicates required question</div>
+            </div>
+
+            <!-- 2. Acceptance Code Card (Required) -->
+            <div class="question-card" id="codeCard">
+                <div class="question-title">
+                    <span>Acceptance Code</span> <span class="req-star">*</span>
+                </div>
+                <div class="question-help">
+                    Enter the unique acceptance code provided in your official OBSCURA REC LLC demo acceptance email.
+                </div>
+                <div class="code-input-wrapper">
+                    <input type="text" id="acceptanceCode" class="g-input code-input" placeholder="e.g. OBS-ACC-XXXX-XXXX" autocomplete="off" required>
+                    <span id="codeCheckingSpinner" class="code-spinner" style="display: none;">
+                        <i class="fas fa-circle-notch fa-spin"></i> Checking...
+                    </span>
+                </div>
+
+                <!-- Verified Details Card -->
+                <div id="verifiedCodeCard" class="verified-code-box" style="display: none;">
+                    <div class="verified-header">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Acceptance Code Verified</span>
+                    </div>
+                    <div class="verified-details-grid">
+                        <div class="verified-item">
+                            <span class="verified-item-label">Approved Artist</span>
+                            <span id="verifiedArtist" class="verified-item-value">-</span>
+                        </div>
+                        <div class="verified-item">
+                            <span class="verified-item-label">Registered Real Name</span>
+                            <span id="verifiedRealName" class="verified-item-value">-</span>
+                        </div>
+                        <div class="verified-item">
+                            <span class="verified-item-label">Accepted Date</span>
+                            <span id="verifiedDate" class="verified-item-value">-</span>
+                        </div>
+                    </div>
+                    <p class="verified-note">
+                        Your demo submission has been verified in the OBSCURA REC LLC approved list. Please complete your track details below.
+                    </p>
+                </div>
+
+                <!-- Code Error Box -->
+                <div id="codeErrorBox" class="code-alert-box error" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>This code is not recognized by the demo accepted list. Please contact our team.</span>
+                </div>
+
+                <!-- Code Already Used Box -->
+                <div id="codeUsedBox" class="code-alert-box error" style="display: none;">
+                    <i class="fas fa-times-circle"></i>
+                    <span>This acceptance code has already been used for a submission. Please contact our team.</span>
+                </div>
+            </div>
+
+            <!-- 3. Submitter Real Name -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>Real Name</span> <span class="req-star">*</span>
+                </div>
+                <div class="question-help">Your legal full name (or the person submitting this track).</div>
+                <input type="text" id="realName" class="g-input" placeholder="Your answer" required>
+            </div>
+
+            <!-- 4. Main Artist Name -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>Main Artist</span> <span class="req-star">*</span>
+                </div>
+                <div class="question-help">Primary artist name as it should appear on streaming platforms.</div>
+                <input type="text" id="mainArtist" class="g-input" placeholder="Your answer" required>
+            </div>
+
+            <!-- 5. Main Artist Spotify Profile -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>Spotify Artist Profile</span> <span class="req-star">*</span>
+                </div>
+                <div class="question-help">Link to your Spotify artist page. (If you don't have a Spotify profile yet, please type "First Release").</div>
+                <input type="text" id="mainArtistSpotify" class="g-input" placeholder="Your answer" required>
+            </div>
+
+            <!-- 6. Song Name / Track Title -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>Song Name (Track Title)</span> <span class="req-star">*</span>
+                </div>
+                <div class="question-help">The official track title for this release.</div>
+                <input type="text" id="songTitle" class="g-input" placeholder="Your answer" required>
+            </div>
+
+            <!-- 5. Email Address -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>Email Address</span> <span class="req-star">*</span>
+                </div>
+                <div class="question-help">We will use this email to contact you about your submission.</div>
+                <input type="email" id="email" class="g-input" placeholder="Your answer" required>
+            </div>
+
+            <!-- 6. Primary Genre (Typed text, not dropdown) -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>Primary Genre</span> <span class="req-star">*</span>
+                </div>
+                <div class="question-help">Type the main genre or musical style of your track (e.g. Phonk, Drift, Electronic, Synthwave, Trap).</div>
+                <input type="text" id="genre" class="g-input" placeholder="Your answer" required>
+            </div>
+
+            <!-- 7. Requested Release Date -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>Requested Release Date</span> <span class="req-star">*</span>
+                </div>
+                <div class="question-help">The target date you would like this track to be released.</div>
+                <input type="date" id="releaseDate" class="g-input" required>
+                <div class="question-note">
+                    <i class="fas fa-info-circle"></i>
+                    <span><strong>Please note:</strong> While we cannot guarantee that the release will definitely come out on this exact date, our team will do our best to accommodate and schedule your song for the release date you have selected.</span>
+                </div>
+            </div>
+
+            <!-- 8. Google Drive Link -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>Song &amp; Artwork Link (Google Drive)</span> <span class="req-star">*</span>
+                </div>
+                <div class="question-help">
+                    Please upload your master audio (.WAV file) and artwork (.PNG or .JPG 3000x3000px) to a Google Drive folder. 
+                    <strong>Important:</strong> Make sure the folder link sharing permission is set to <strong>"Anyone with the link can view"</strong> so our team can access your files.
+                </div>
+                <input type="url" id="driveLink" class="g-input" placeholder="https://drive.google.com/drive/folders/..." required>
+            </div>
+
+            <!-- 9. Collaborators (Optional - Dynamic Add) -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>Collaborators</span>
+                </div>
+                <div class="question-help">
+                    If other artists contributed to this track, add them below. For each collaborator, please provide their artist name, real name, role (e.g. Vocals, Lyrics, Mixing, Producer), and Spotify link.
+                </div>
+
+                <div id="collaboratorsList">
+                    <!-- Dynamic Collaborator Cards will be placed here -->
+                </div>
+
+                <div id="noCollabsMsg" class="no-collabs-text">
+                    No collaborators added yet.
+                </div>
+
+                <button type="button" id="addCollabBtn" class="add-collab-btn">
+                    <i class="fas fa-plus"></i>
+                    <span>Add Collaborator</span>
+                </button>
+            </div>
+
+            <!-- 10. Additional Notes / Message -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>Additional Notes or Message</span>
+                </div>
+                <div class="question-help">Any extra details or background information you would like to share with our team.</div>
+                <textarea id="notes" class="g-textarea" placeholder="Your answer"></textarea>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" id="submitBtn" class="submit-btn">
+                    Submit
+                </button>
+                <button type="button" id="clearFormBtn" class="clear-btn">
+                    Clear form
+                </button>
+            </div>
+
+        </form>
+
+        <!-- Google Forms Style Confirmation Card -->
+        <div id="confirmationCard" class="confirmation-card">
+            <div class="header-logo-container" style="margin-bottom: 16px;">
+                <img src="../assets/OCR%20LOGO.gif" 
+                     alt="OBSCURA REC LLC" 
+                     class="header-logo-img" 
+                     style="height: 38px; width: 38px;" 
+                     loading="lazy" 
+                     decoding="async" 
+                     onerror="if(!this.dataset.step){this.dataset.step='1';this.src='/assets/OCR%20LOGO.gif';}else if(this.dataset.step==='1'){this.dataset.step='2';this.src='../assets/OCR.png';}else if(this.dataset.step==='2'){this.dataset.step='3';this.src='/assets/OCR.png';}else{this.onerror=null;}">
+            </div>
+            <h2 class="confirmation-title">OBSCURA REC LLC - Track Submission</h2>
+            <p class="confirmation-msg">Your submission has been recorded. Thank you for submitting your music to OBSCURA REC LLC. Our team will review your track and reach out within 2 to 3 weeks if it matches our upcoming catalog.</p>
+            <div class="confirmation-sub-id">
+                Submission ID: <span id="displaySubId">OBS-SUB-0000</span>
+            </div>
+            <div>
+                <span id="submitAnotherLink" class="submit-another-link">Submit another response</span>
+            </div>
+        </div>
+
+        <footer class="form-footer">
+            OBSCURA REC LLC &bull; Submission Portal
+        </footer>
+
+    </div>
+
+    <script src="./submit.js"></script>
+</body>
+</html>
