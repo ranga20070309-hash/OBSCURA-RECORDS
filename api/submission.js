@@ -3,16 +3,37 @@ const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
 
+const SUBMISSION_OFFICIAL_EMAIL = 'mail.obscurarecords@gmail.com';
 const TARGET_SUBMISSION_EMAIL = 'mail.obscurarecords@gmail.com';
 const FIREBASE_DB_URL = "https://submission-code-and-mail-sys-default-rtdb.asia-southeast1.firebasedatabase.app";
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+// Dedicated mailer configuration for Track Submission portal
+// Isolated completely from artists@obscurarecord.com (which is reserved exclusively for main site demos)
+function getSubmissionTransporter() {
+    let user = process.env.SUBMISSION_EMAIL_USER ? process.env.SUBMISSION_EMAIL_USER.trim() : '';
+    let pass = process.env.SUBMISSION_EMAIL_PASS ? process.env.SUBMISSION_EMAIL_PASS.trim() : '';
+
+    if (!user) {
+        // If EMAIL_USER is NOT artists@obscurarecord.com, allow it; otherwise strictly force mail.obscurarecords@gmail.com
+        if (process.env.EMAIL_USER && !process.env.EMAIL_USER.toLowerCase().includes('artists@obscurarecord.com')) {
+            user = process.env.EMAIL_USER.trim();
+        } else {
+            user = SUBMISSION_OFFICIAL_EMAIL;
+        }
     }
-});
+
+    if (!pass) {
+        pass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.trim() : '';
+    }
+
+    return nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: user,
+            pass: pass
+        }
+    });
+}
 
 function sanitize(str) {
     if (!str) return '';
@@ -455,10 +476,10 @@ module.exports = async (req, res) => {
             </html>
         `;
 
-        const senderAddress = process.env.EMAIL_USER || 'no-reply@obscurarecord.com';
+        const senderAddress = SUBMISSION_OFFICIAL_EMAIL;
 
         const adminMailOptions = {
-            from: `"OBSCURA A&R Submissions" <${senderAddress}>`,
+            from: `"OBSCURA A&R Operations" <${senderAddress}>`,
             replyTo: cleanEmail,
             to: TARGET_SUBMISSION_EMAIL,
             subject: `[SUBMISSION] ${cleanMainArtist} - "${cleanSongTitle}" (${subId})`,
@@ -475,6 +496,7 @@ module.exports = async (req, res) => {
 
         const artistMailOptions = {
             from: `"OBSCURA REC LLC" <${senderAddress}>`,
+            replyTo: senderAddress,
             to: cleanEmail,
             subject: `Release Materials Received [${subId}] - "${cleanSongTitle}" - OBSCURA REC LLC`,
             text: `Hi ${cleanRealName || cleanMainArtist},\n\nThank you for submitting your release materials for "${cleanSongTitle}" to OBSCURA REC LLC. Your submission (${subId}) has been successfully received.\n\nOur distribution team will inspect your master audio and artwork and will contact you directly with your release schedule and pre-save link.\n\nBest regards,\nOBSCURA REC LLC Distribution Team\nhttps://obscurarecord.com`,
@@ -483,6 +505,7 @@ module.exports = async (req, res) => {
         };
 
         // 5. Dispatch Emails (Settled)
+        const transporter = getSubmissionTransporter();
         await Promise.allSettled([
             transporter.sendMail(adminMailOptions),
             transporter.sendMail(artistMailOptions)
