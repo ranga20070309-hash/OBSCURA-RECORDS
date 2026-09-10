@@ -28,10 +28,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Client-side cache to eliminate redundant Firebase read requests
     const verificationCache = {};
 
-    // Restrict release date to today or later
+    // Restrict release date to minimum 4 days in advance
+    let minReleaseDateStr = '';
     if (releaseDateInput) {
-        const today = new Date().toISOString().split('T')[0];
-        releaseDateInput.min = today;
+        const minDateObj = new Date();
+        minDateObj.setDate(minDateObj.getDate() + 4);
+        const yyyy = minDateObj.getFullYear();
+        const mm = String(minDateObj.getMonth() + 1).padStart(2, '0');
+        const dd = String(minDateObj.getDate()).padStart(2, '0');
+        minReleaseDateStr = `${yyyy}-${mm}-${dd}`;
+        releaseDateInput.min = minReleaseDateStr;
     }
 
     // --- Acceptance Code Real-Time Verification (Heavily Optimized) ---
@@ -237,16 +243,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     <input type="text" class="collab-field-input collab-artist" placeholder="e.g. Ghostface" required>
                 </div>
                 <div class="collab-field">
-                    <label class="collab-field-label">Real Name</label>
+                    <label class="collab-field-label">Legal Real Name</label>
                     <input type="text" class="collab-field-input collab-realname" placeholder="e.g. Dennis Coles">
                 </div>
-                <div class="collab-field">
+                <div class="collab-field" style="grid-column: 1 / -1;">
                     <label class="collab-field-label">Contribution / Role</label>
-                    <input type="text" class="collab-field-input collab-role" placeholder="e.g. Vocals, Lyrics, Mixing, Producer">
+                    <input type="text" class="collab-field-input collab-role" placeholder="e.g. Featured Artist, Producer, Remixer, Vocals">
                 </div>
                 <div class="collab-field">
                     <label class="collab-field-label">Spotify Profile Link</label>
                     <input type="text" class="collab-field-input collab-spotify" placeholder="https://open.spotify.com/artist/...">
+                </div>
+                <div class="collab-field">
+                    <label class="collab-field-label">Apple Music Profile Link</label>
+                    <input type="text" class="collab-field-input collab-apple" placeholder="https://music.apple.com/artist/...">
                 </div>
             </div>
         `;
@@ -309,10 +319,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const acceptanceCode = (acceptanceCodeInput?.value || '').toUpperCase().trim();
             const realName = document.getElementById('realName').value.trim();
             const mainArtist = document.getElementById('mainArtist').value.trim();
-            const mainArtistSpotify = document.getElementById('mainArtistSpotify').value.trim();
-            const songTitle = document.getElementById('songTitle').value.trim();
             const email = document.getElementById('email').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const country = document.getElementById('country').value.trim();
+            const songTitle = document.getElementById('songTitle').value.trim();
             const genre = document.getElementById('genre').value.trim();
+            const language = document.getElementById('language').value.trim();
+            const mainArtistSpotify = document.getElementById('mainArtistSpotify').value.trim();
+            const mainArtistApple = document.getElementById('mainArtistApple').value.trim();
             const releaseDate = document.getElementById('releaseDate').value;
             const driveLink = document.getElementById('driveLink').value.trim();
             const notes = document.getElementById('notes').value.trim();
@@ -329,8 +343,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (!realName || !mainArtist || !songTitle || !email || !driveLink || !genre || !releaseDate) {
+            if (!realName || !mainArtist || !email || !city || !country || !songTitle || !genre || !language || !mainArtistSpotify || !releaseDate || !driveLink) {
                 alert('Please fill in all required questions marked with an asterisk (*).');
+                return;
+            }
+
+            if (minReleaseDateStr && releaseDate < minReleaseDateStr) {
+                alert(`Requested release date must be at least 4 days in advance (${minReleaseDateStr} or later) to allow digital store ingestion and delivery.`);
+                document.getElementById('releaseDate').focus();
                 return;
             }
 
@@ -348,13 +368,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const real = box.querySelector('.collab-realname')?.value.trim();
                 const role = box.querySelector('.collab-role')?.value.trim();
                 const spotify = box.querySelector('.collab-spotify')?.value.trim();
+                const apple = box.querySelector('.collab-apple')?.value.trim();
 
-                if (artist || real || role || spotify) {
+                if (artist || real || role || spotify || apple) {
                     collaborators.push({
                         artistName: artist || 'N/A',
                         realName: real || 'N/A',
                         role: role || 'Collaborator',
-                        spotifyLink: spotify || ''
+                        spotifyLink: spotify || '',
+                        appleLink: apple || ''
                     });
                 }
             });
@@ -378,9 +400,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     songTitle,
                     realName,
                     mainArtist,
-                    mainArtistSpotify,
                     email,
+                    city,
+                    country,
                     genre,
+                    language,
+                    mainArtistSpotify,
+                    mainArtistApple,
                     releaseDate,
                     driveLink,
                     collaborators,
