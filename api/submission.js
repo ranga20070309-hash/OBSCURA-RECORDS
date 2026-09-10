@@ -193,31 +193,8 @@ module.exports = async (req, res) => {
             console.error('[DATABASE UPDATE WARNING]: Failed to update database immediately:', dbErr.message);
         }
 
-        // 4. Setup Logo Attachment (Inline CID to guarantee image loads in all email clients without proxy blocking)
-        const possibleLogoPaths = [
-            path.join(__dirname, '../assets/OCR_circle.png'),
-            path.join(__dirname, '../assets/OCR.png'),
-            path.join(process.cwd(), 'assets/OCR_circle.png'),
-            path.join(process.cwd(), 'assets/OCR.png')
-        ];
-        let verifiedLogoPath = null;
-        for (const p of possibleLogoPaths) {
-            if (fs.existsSync(p)) {
-                verifiedLogoPath = p;
-                break;
-            }
-        }
-
-        const emailAttachments = [];
-        if (verifiedLogoPath) {
-            emailAttachments.push({
-                filename: 'ocr_emblem.png',
-                path: verifiedLogoPath,
-                cid: 'ocr_logo'
-            });
-        }
-
-        const logoImgSrc = verifiedLogoPath ? 'cid:ocr_logo' : 'https://obscurarecord.com/assets/OCR.png';
+        // 4. Setup Logo (Direct web hosted URL to ensure ZERO attachments and 100% clean inbox delivery)
+        const logoImgSrc = 'https://obscurarecord.com/assets/OCR.png';
         const dossierUrl = `https://obscurarecord.com/submit/dossier.html?id=${encodeURIComponent(subId)}`;
         const adminPortalUrl = `https://obscurarecord.com/submit/admin.html`;
 
@@ -486,7 +463,6 @@ module.exports = async (req, res) => {
             subject: `[SUBMISSION] ${cleanMainArtist} - "${cleanSongTitle}" (${subId})`,
             text: `NEW TRACK SUBMISSION RECEIVED - OBSCURA REC LLC\n-------------------------------------------------\nTrack Title: "${cleanSongTitle}"\nMain Artist: ${cleanMainArtist} (${cleanRealName})\nLocation: ${cleanCity}, ${cleanCountry}\nSubmission ID: ${subId}\nAcceptance Code: ${cleanCode} (VERIFIED & CONSUMED)\nPrimary Genre: ${cleanGenre}\nLanguage: ${cleanLanguage}\nTarget Release Date: ${cleanReleaseDate}\nArtist Contact Email: ${cleanEmail}\nSpotify Profile: ${cleanMainArtistSpotify || 'Not provided'}\nApple Music Profile: ${cleanMainArtistApple || 'Not provided'}\n\n📄 VIEW FULL RELEASE DOSSIER (Metadata, Audio, Split Sheet, Notes):\n${dossierUrl}\n\n📂 GOOGLE DRIVE MASTER ASSETS:\n${cleanDriveLink}\n\n-------------------------------------------------\nSubmitted at: ${timestamp}`,
             html: adminEmailHtml,
-            attachments: emailAttachments,
             headers: {
                 'Message-ID': `<submission-${subId}@obscurarecord.com>`,
                 'X-Priority': '1 (Highest)',
@@ -502,7 +478,9 @@ module.exports = async (req, res) => {
             subject: `Release Materials Received [${subId}] - "${cleanSongTitle}" - OBSCURA REC LLC`,
             text: `Hi ${cleanRealName || cleanMainArtist},\n\nThank you for submitting your release materials for "${cleanSongTitle}" to OBSCURA REC LLC. Your submission (${subId}) has been successfully received.\n\nOur distribution team will inspect your master audio and artwork and will contact you directly with your release schedule and pre-save link.\n\nBest regards,\nOBSCURA REC LLC Distribution Team\nhttps://obscurarecord.com`,
             html: artistReceiptHtml,
-            attachments: emailAttachments
+            headers: {
+                'Message-ID': `<receipt-${subId}@obscurarecord.com>`
+            }
         };
 
         // 5. Dispatch Emails (Settled with logging)
