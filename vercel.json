@@ -15,7 +15,7 @@
       "destination": "/submit/index.html"
     },
     {
-      "source": "/submit/(.*)",
+      "source": "/submit/",
       "destination": "/submit/index.html"
     },
     {
