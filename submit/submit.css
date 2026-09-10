@@ -35,6 +35,79 @@ body {
     line-height: 1.5;
 }
 
+/* ==========================================================================
+   Custom Cyberpunk Theme Scrollbar
+   ========================================================================== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #04020a;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(0, 240, 255, 0.6) 0%, rgba(157, 78, 221, 0.6) 100%);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+    transition: all 0.25s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #00f0ff 0%, #9d4edd 100%);
+    border-color: #00f0ff;
+    box-shadow: 0 0 14px rgba(0, 240, 255, 0.55), 0 0 22px rgba(157, 78, 221, 0.45);
+}
+
+::-webkit-scrollbar-corner {
+    background: #04020a;
+}
+
+html, body {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 240, 255, 0.5) #04020a;
+}
+
+/* Red Alert Scrollbar State (for expired / invalid code) */
+body.theme-alert-red::-webkit-scrollbar-track {
+    background: #0a0105;
+    border-left: 1px solid rgba(255, 45, 85, 0.15);
+}
+
+body.theme-alert-red::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(255, 45, 85, 0.7) 0%, rgba(159, 18, 57, 0.7) 100%);
+    border-color: rgba(255, 45, 85, 0.4);
+    box-shadow: 0 0 10px rgba(255, 45, 85, 0.35);
+}
+
+body.theme-alert-red::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff2d55 0%, #be123c 100%);
+    border-color: #ff2d55;
+    box-shadow: 0 0 16px rgba(255, 45, 85, 0.65);
+}
+
+body.theme-alert-red {
+    scrollbar-color: rgba(255, 45, 85, 0.6) #0a0105;
+}
+
+/* --- Realistic Water Simulation Canvas --- */
+.water-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 1;
+    display: block;
+    opacity: 0.52;
+    filter: contrast(1.05) saturate(0.85);
+    transition: opacity 0.8s ease;
+}
+
 .form-container {
     max-width: 680px;
     margin: 0 auto;
@@ -610,4 +683,408 @@ body {
     font-size: 16px;
     flex-shrink: 0;
 }
+
+/* --- Final Release Confirmation Card --- */
+.confirmation-toggle-card {
+    border-left: 4px solid var(--accent-purple);
+    background: linear-gradient(180deg, rgba(20, 15, 45, 0.72) 0%, rgba(12, 8, 26, 0.82) 100%);
+    transition: all 0.35s ease;
+}
+
+body.theme-alert-red .confirmation-toggle-card {
+    border-left-color: #ff3355 !important;
+    background: linear-gradient(180deg, rgba(38, 8, 16, 0.8) 0%, rgba(20, 5, 10, 0.85) 100%) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 51, 85, 0.2) !important;
+}
+
+.confirm-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.confirm-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #e2e8f0;
+    letter-spacing: 0.3px;
+}
+
+.confirm-badge i {
+    color: #00f0ff;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+body.theme-alert-red .confirm-badge i {
+    color: #ff3355 !important;
+}
+
+.confirm-card-desc {
+    font-size: 13.5px;
+    color: #94a3b8;
+    line-height: 1.55;
+    margin-bottom: 18px;
+}
+
+.confirm-checkbox-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    cursor: pointer;
+    user-select: none;
+    padding: 15px 16px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.confirm-checkbox-container:hover {
+    background: rgba(255, 255, 255, 0.065);
+    border-color: rgba(0, 240, 255, 0.35);
+}
+
+body.theme-alert-red .confirm-checkbox-container:hover {
+    border-color: rgba(255, 51, 85, 0.45);
+}
+
+.confirm-native-checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.confirm-custom-checkbox {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    background: rgba(10, 8, 22, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.confirm-custom-checkbox i {
+    font-size: 12px;
+    color: #ffffff;
+    opacity: 0;
+    transform: scale(0.4);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.confirm-native-checkbox:checked + .confirm-custom-checkbox {
+    background: linear-gradient(135deg, #00f0ff 0%, #7928ca 100%);
+    border-color: #00f0ff;
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.55);
+}
+
+body.theme-alert-red .confirm-native-checkbox:checked + .confirm-custom-checkbox {
+    background: linear-gradient(135deg, #ff3355 0%, #be123c 100%) !important;
+    border-color: #ff3355 !important;
+    box-shadow: 0 0 16px rgba(255, 51, 85, 0.55) !important;
+}
+
+.confirm-native-checkbox:checked + .confirm-custom-checkbox i {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.confirm-checkbox-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #cbd5e1;
+    line-height: 1.5;
+}
+
+.confirm-native-checkbox:checked ~ .confirm-checkbox-text {
+    color: #ffffff;
+}
+
+/* --- Validation Shake Animation --- */
+@keyframes inputErrorShake {
+    0%, 100% { transform: translateX(0); }
+    15%, 45%, 75% { transform: translateX(-8px); }
+    30%, 60%, 90% { transform: translateX(8px); }
+}
+
+.input-error-shake {
+    animation: inputErrorShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+    border-color: rgba(255, 51, 85, 0.85) !important;
+    box-shadow: 0 0 25px rgba(255, 51, 85, 0.4) !important;
+}
+
+/* --- Searchable Language Selector & Card Stacking Context --- */
+#languageQuestionCard {
+    position: relative;
+    z-index: 50;
+}
+
+#languageQuestionCard:focus-within,
+#languageQuestionCard.dropdown-open,
+.question-card:has(.lang-dropdown-panel:not([style*="display: none"])) {
+    position: relative;
+    z-index: 99999 !important;
+}
+
+.searchable-language-wrapper {
+    position: relative;
+    width: 100%;
+    margin-top: 6px;
+    z-index: 99999;
+}
+
+.lang-trigger-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 13px 16px;
+    background: rgba(14, 11, 28, 0.95);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    color: #e2e8f0;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+}
+
+.lang-trigger-box:hover {
+    border-color: rgba(0, 240, 255, 0.4);
+    background: rgba(20, 15, 38, 0.98);
+}
+
+body.theme-alert-red .lang-trigger-box:hover {
+    border-color: rgba(255, 51, 85, 0.5);
+}
+
+.lang-trigger-box:focus-visible, .lang-trigger-box.open {
+    outline: none;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
+}
+
+body.theme-alert-red .lang-trigger-box:focus-visible, body.theme-alert-red .lang-trigger-box.open {
+    border-color: #ff3355 !important;
+    box-shadow: 0 0 14px rgba(255, 51, 85, 0.35) !important;
+}
+
+.lang-trigger-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+    flex-grow: 1;
+}
+
+.lang-globe-icon {
+    color: var(--accent-cyan);
+    font-size: 15px;
+    flex-shrink: 0;
+    transition: color 0.3s ease;
+}
+
+body.theme-alert-red .lang-globe-icon {
+    color: #ff3355 !important;
+}
+
+.selected-lang-placeholder {
+    color: #64748b;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lang-trigger-box.has-value .selected-lang-placeholder {
+    color: #f8fafc;
+    font-weight: 500;
+}
+
+.lang-trigger-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.lang-search-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #94a3b8;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.lang-search-btn:hover {
+    background: rgba(0, 240, 255, 0.2);
+    color: #00f0ff;
+    border-color: rgba(0, 240, 255, 0.5);
+}
+
+body.theme-alert-red .lang-search-btn:hover {
+    background: rgba(255, 51, 85, 0.2) !important;
+    color: #ff3355 !important;
+    border-color: rgba(255, 51, 85, 0.5) !important;
+}
+
+.lang-chevron {
+    color: #64748b;
+    font-size: 12px;
+    transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.lang-trigger-box.open .lang-chevron {
+    transform: rotate(180deg);
+    color: var(--accent-cyan);
+}
+
+body.theme-alert-red .lang-trigger-box.open .lang-chevron {
+    color: #ff3355 !important;
+}
+
+/* Dropdown Panel - Floats above all subsequent cards */
+.lang-dropdown-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    background: #0d0a1f;
+    background: rgba(13, 10, 31, 0.99);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(0, 240, 255, 0.45);
+    border-radius: 10px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 35px rgba(0, 240, 255, 0.25);
+    z-index: 999999 !important;
+    padding: 14px;
+    animation: fadeIn 0.2s ease;
+}
+
+body.theme-alert-red .lang-dropdown-panel {
+    border-color: rgba(255, 51, 85, 0.55) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 35px rgba(255, 51, 85, 0.3) !important;
+}
+
+.lang-search-header {
+    margin-bottom: 12px;
+}
+
+.lang-search-input-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 9px 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lang-search-input-box:focus-within {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+}
+
+body.theme-alert-red .lang-search-input-box:focus-within {
+    border-color: #ff3355 !important;
+    box-shadow: 0 0 12px rgba(255, 51, 85, 0.35) !important;
+}
+
+.lang-search-icon {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.lang-search-input {
+    background: transparent;
+    border: none;
+    color: #f8fafc;
+    font-size: 13.5px;
+    width: 100%;
+    outline: none;
+}
+
+.lang-search-clear {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 2px 4px;
+    transition: color 0.2s ease;
+}
+
+.lang-search-clear:hover {
+    color: #f8fafc;
+}
+
+/* Scrollable Options List */
+.lang-options-list {
+    max-height: 240px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 240, 255, 0.3) transparent;
+    padding-right: 4px;
+}
+
+.lang-option-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    border-radius: 6px;
+    color: #cbd5e1;
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.lang-option-item:hover {
+    background: rgba(0, 240, 255, 0.12);
+    color: #ffffff;
+}
+
+body.theme-alert-red .lang-option-item:hover {
+    background: rgba(255, 51, 85, 0.15) !important;
+    color: #ffffff !important;
+}
+
+.lang-option-item.selected {
+    background: rgba(0, 240, 255, 0.22);
+    color: #00f0ff;
+    font-weight: 600;
+}
+
+body.theme-alert-red .lang-option-item.selected {
+    background: rgba(255, 51, 85, 0.25) !important;
+    color: #ff3355 !important;
+}
+
+.lang-native-select {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
 
