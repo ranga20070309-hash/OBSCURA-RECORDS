@@ -11,6 +11,14 @@
       "destination": "/submit/admin.html"
     },
     {
+      "source": "/dossier",
+      "destination": "/submit/dossier.html"
+    },
+    {
+      "source": "/submit/dossier",
+      "destination": "/submit/dossier.html"
+    },
+    {
       "source": "/submit",
       "destination": "/submit/index.html"
     },
