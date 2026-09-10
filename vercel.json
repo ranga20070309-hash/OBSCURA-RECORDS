@@ -3,6 +3,22 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/admin-codes",
+      "destination": "/submit/admin.html"
+    },
+    {
+      "source": "/submit/admin",
+      "destination": "/submit/admin.html"
+    },
+    {
+      "source": "/submit",
+      "destination": "/submit/index.html"
+    },
+    {
+      "source": "/submit/(.*)",
+      "destination": "/submit/index.html"
+    },
+    {
       "source": "/label-hub",
       "destination": "/label-hub.html"
     },
