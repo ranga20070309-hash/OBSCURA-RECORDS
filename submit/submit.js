@@ -1351,12 +1351,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (submissionSuccess) {
                     // Invalidate and update local cache so re-entering the code IMMEDIATELY shows Code Already Used!
-                    verificationCache[cleanCode] = {
-                        ...verifiedCodeData,
-                        status: 'used',
-                        usedAt: Date.now(),
-                        submissionId: finalSubId
-                    };
+                    if (acceptanceCode) {
+                        verificationCache[acceptanceCode] = {
+                            ...(verifiedCodeData || {}),
+                            status: 'used',
+                            usedAt: Date.now(),
+                            submissionId: finalSubId
+                        };
+                    }
 
                     if (displaySubId) displaySubId.textContent = finalSubId;
 
