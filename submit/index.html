@@ -22,19 +22,19 @@
         @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;600&family=Roboto:wght@300;400;500;700&display=swap');
 
         :root {
-            --bg-main: #050510;
-            --card-bg: #0d0a1f;
-            --card-border: rgba(255, 255, 255, 0.09);
+            --bg-main: #04020a;
+            --card-bg: rgba(13, 9, 28, 0.76);
+            --card-border: rgba(255, 255, 255, 0.08);
             --accent-cyan: #00f0ff;
-            --accent-purple: #b700ff;
-            --accent-magenta: #ff007f;
+            --accent-purple: #9d4edd;
+            --accent-magenta: #f72585;
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
             --text-muted: #64748b;
-            --required-star: #ff4d4f;
-            --input-border: rgba(255, 255, 255, 0.2);
+            --required-star: #ff4d6d;
+            --input-border: rgba(255, 255, 255, 0.16);
             --input-focus: #00f0ff;
-            --box-inner-bg: #14112b;
+            --box-inner-bg: rgba(20, 15, 42, 0.72);
         }
 
         * {
@@ -46,14 +46,72 @@
         body {
             background-color: var(--bg-main);
             background-image: 
-                radial-gradient(circle at 50% 0%, rgba(183, 0, 255, 0.12) 0%, transparent 50%),
-                radial-gradient(circle at 10% 30%, rgba(0, 240, 255, 0.06) 0%, transparent 40%),
-                radial-gradient(circle at 90% 70%, rgba(255, 0, 127, 0.05) 0%, transparent 50%);
+                radial-gradient(circle at 50% 0%, rgba(157, 78, 221, 0.14) 0%, transparent 55%),
+                radial-gradient(circle at 10% 30%, rgba(0, 240, 255, 0.07) 0%, transparent 45%),
+                radial-gradient(circle at 90% 70%, rgba(247, 37, 133, 0.06) 0%, transparent 50%);
             font-family: 'Outfit', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             color: var(--text-primary);
             min-height: 100vh;
             padding: 28px 16px 70px;
             line-height: 1.5;
+        }
+
+        /* ==========================================================================
+           Custom Cyberpunk Theme Scrollbar
+           ========================================================================== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #04020a;
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(0, 240, 255, 0.6) 0%, rgba(157, 78, 221, 0.6) 100%);
+            border-radius: 4px;
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+            transition: all 0.25s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #00f0ff 0%, #9d4edd 100%);
+            border-color: #00f0ff;
+            box-shadow: 0 0 14px rgba(0, 240, 255, 0.55), 0 0 22px rgba(157, 78, 221, 0.45);
+        }
+
+        ::-webkit-scrollbar-corner {
+            background: #04020a;
+        }
+
+        html, body {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 240, 255, 0.5) #04020a;
+        }
+
+        /* Red Alert Scrollbar State (for expired / invalid code) */
+        body.theme-alert-red::-webkit-scrollbar-track {
+            background: #0a0105;
+            border-left: 1px solid rgba(255, 45, 85, 0.15);
+        }
+
+        body.theme-alert-red::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(255, 45, 85, 0.7) 0%, rgba(159, 18, 57, 0.7) 100%);
+            border-color: rgba(255, 45, 85, 0.4);
+            box-shadow: 0 0 10px rgba(255, 45, 85, 0.35);
+        }
+
+        body.theme-alert-red::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #ff2d55 0%, #be123c 100%);
+            border-color: #ff2d55;
+            box-shadow: 0 0 16px rgba(255, 45, 85, 0.65);
+        }
+
+        body.theme-alert-red {
+            scrollbar-color: rgba(255, 45, 85, 0.6) #0a0105;
         }
 
         .form-container {
@@ -64,17 +122,20 @@
         /* Google Forms Style Header Card */
         .form-card {
             background-color: var(--card-bg);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
             border: 1px solid var(--card-border);
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 26px 26px;
             margin-bottom: 16px;
             position: relative;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.65), 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: border-color 0.4s ease, box-shadow 0.4s ease, background-color 0.4s ease;
         }
 
         .form-card.header-card {
             border-top: 8px solid var(--accent-purple);
-            background: linear-gradient(180deg, #110d29 0%, #0d0a1f 100%);
+            background: linear-gradient(180deg, rgba(18, 14, 44, 0.86) 0%, rgba(13, 9, 28, 0.8) 100%);
             padding-top: 24px;
         }
 
@@ -134,12 +195,14 @@
         /* Question Cards */
         .question-card {
             background-color: var(--card-bg);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
             border: 1px solid var(--card-border);
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 24px 24px;
             margin-bottom: 16px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
-            transition: border-color 0.2s, box-shadow 0.2s, padding-left 0.2s;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.08);
+            transition: border-color 0.3s, box-shadow 0.3s, padding-left 0.25s, background-color 0.4s;
         }
 
         .question-card:focus-within {
@@ -639,6 +702,610 @@
             flex-shrink: 0;
         }
 
+        /* --- Super Realistic Water Simulation Canvas --- */
+        .water-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+            display: block;
+            opacity: 0.52;
+            filter: contrast(1.05) saturate(0.85);
+            transition: opacity 0.8s ease;
+        }
+
+        /* --- Atmospheric Cinematic Rain Canvas --- */
+        .rain-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: block;
+        }
+
+        .rain-canvas.active {
+            opacity: 1;
+        }
+
+        /* --- Fluid Capacity / Readiness Badge --- */
+        .water-progress-badge {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(8, 6, 20, 0.82);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 240, 255, 0.28);
+            border-radius: 40px;
+            padding: 8px 18px 8px 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 240, 255, 0.14);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+        }
+
+        .water-progress-wave-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(183, 0, 255, 0.2) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+            animation: fluidIconPulse 3s ease-in-out infinite;
+            transition: all 0.4s;
+        }
+
+        @keyframes fluidIconPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(0, 240, 255, 0.25); }
+            50% { transform: scale(1.08); box-shadow: 0 0 20px rgba(0, 240, 255, 0.55); }
+        }
+
+        .water-progress-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .water-progress-label {
+            font-size: 9.5px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .water-progress-val {
+            font-size: 15px;
+            font-weight: 800;
+            font-family: 'Roboto Mono', monospace;
+            color: var(--accent-cyan);
+            line-height: 1.2;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+            transition: color 0.4s, text-shadow 0.4s;
+        }
+
+        @media (max-width: 600px) {
+            .water-progress-badge {
+                bottom: 12px;
+                right: 12px;
+                padding: 6px 14px 6px 8px;
+            }
+            .water-progress-wave-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+            .water-progress-label {
+                font-size: 8px;
+            }
+            .water-progress-val {
+                font-size: 13px;
+            }
+        }
+
+        /* --- Sophisticated Red Alert Emergency State --- */
+        body {
+            transition: background-color 0.6s ease, background-image 0.6s ease;
+        }
+
+        body.theme-alert-red {
+            --accent-cyan: #ff3355 !important;
+            --accent-purple: #e11d48 !important;
+            --accent-magenta: #be123c !important;
+            --input-focus: #ff3355 !important;
+            --card-border: rgba(255, 51, 85, 0.38) !important;
+            --required-star: #ff4d6d !important;
+            --box-inner-bg: rgba(28, 6, 12, 0.75) !important;
+            background-color: #070104 !important;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(225, 29, 72, 0.25) 0%, transparent 60%),
+                radial-gradient(circle at 10% 40%, rgba(190, 18, 60, 0.16) 0%, transparent 50%),
+                radial-gradient(circle at 90% 70%, rgba(159, 18, 57, 0.15) 0%, transparent 55%) !important;
+        }
+
+        body.theme-alert-red .form-card {
+            background-color: rgba(18, 5, 10, 0.8) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.75), 0 0 25px rgba(225, 29, 72, 0.18) !important;
+            border-color: rgba(255, 51, 85, 0.35) !important;
+        }
+
+        body.theme-alert-red .question-card {
+            background-color: rgba(18, 5, 10, 0.8) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(225, 29, 72, 0.15) !important;
+            border-color: rgba(255, 51, 85, 0.32) !important;
+        }
+
+        body.theme-alert-red .form-card.header-card {
+            border-top: 8px solid #ff3355 !important;
+            background: linear-gradient(180deg, rgba(38, 8, 16, 0.9) 0%, rgba(20, 5, 10, 0.84) 100%) !important;
+        }
+
+        body.theme-alert-red .header-brand-name {
+            color: #ff3355 !important;
+            text-shadow: 0 0 14px rgba(255, 51, 85, 0.65);
+        }
+
+        body.theme-alert-red .header-logo-img {
+            border-color: rgba(255, 51, 85, 0.6) !important;
+            box-shadow: 0 0 18px rgba(255, 51, 85, 0.5) !important;
+        }
+
+        body.theme-alert-red .submit-btn {
+            background: linear-gradient(135deg, #ff3355 0%, #be123c 100%) !important;
+            box-shadow: 0 4px 25px rgba(255, 51, 85, 0.45) !important;
+        }
+
+        body.theme-alert-red .g-input:focus {
+            border-bottom-color: #ff3355 !important;
+        }
+
+        body.theme-alert-red .g-textarea:focus {
+            border-color: #ff3355 !important;
+        }
+
+        body.theme-alert-red .water-progress-badge {
+            border-color: rgba(255, 51, 85, 0.4) !important;
+            background: rgba(22, 5, 10, 0.85) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 51, 85, 0.25) !important;
+        }
+
+        body.theme-alert-red .water-progress-val {
+            color: #ff3355 !important;
+            text-shadow: 0 0 12px rgba(255, 51, 85, 0.6) !important;
+        }
+
+        body.theme-alert-red .water-progress-wave-icon {
+            background: linear-gradient(135deg, rgba(255, 51, 85, 0.25) 0%, rgba(190, 18, 60, 0.25) 100%) !important;
+            border-color: rgba(255, 51, 85, 0.5) !important;
+            color: #ff3355 !important;
+            box-shadow: 0 0 14px rgba(255, 51, 85, 0.4) !important;
+        }
+
+        .form-container {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Final Release Confirmation Card --- */
+        .confirmation-toggle-card {
+            border-left: 4px solid var(--accent-purple);
+            background: linear-gradient(180deg, rgba(20, 15, 45, 0.72) 0%, rgba(12, 8, 26, 0.82) 100%);
+            transition: all 0.35s ease;
+        }
+
+        body.theme-alert-red .confirmation-toggle-card {
+            border-left-color: #ff3355 !important;
+            background: linear-gradient(180deg, rgba(38, 8, 16, 0.8) 0%, rgba(20, 5, 10, 0.85) 100%) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 51, 85, 0.2) !important;
+        }
+
+        .confirm-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .confirm-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #e2e8f0;
+            letter-spacing: 0.3px;
+        }
+
+        .confirm-badge i {
+            color: #00f0ff;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        body.theme-alert-red .confirm-badge i {
+            color: #ff3355 !important;
+        }
+
+        .confirm-card-desc {
+            font-size: 13.5px;
+            color: #94a3b8;
+            line-height: 1.55;
+            margin-bottom: 18px;
+        }
+
+        .confirm-checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            cursor: pointer;
+            user-select: none;
+            padding: 15px 16px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .confirm-checkbox-container:hover {
+            background: rgba(255, 255, 255, 0.065);
+            border-color: rgba(0, 240, 255, 0.35);
+        }
+
+        body.theme-alert-red .confirm-checkbox-container:hover {
+            border-color: rgba(255, 51, 85, 0.45);
+        }
+
+        .confirm-native-checkbox {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+        }
+
+        .confirm-custom-checkbox {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            background: rgba(10, 8, 22, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .confirm-custom-checkbox i {
+            font-size: 12px;
+            color: #ffffff;
+            opacity: 0;
+            transform: scale(0.4);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .confirm-native-checkbox:checked + .confirm-custom-checkbox {
+            background: linear-gradient(135deg, #00f0ff 0%, #7928ca 100%);
+            border-color: #00f0ff;
+            box-shadow: 0 0 16px rgba(0, 240, 255, 0.55);
+        }
+
+        body.theme-alert-red .confirm-native-checkbox:checked + .confirm-custom-checkbox {
+            background: linear-gradient(135deg, #ff3355 0%, #be123c 100%) !important;
+            border-color: #ff3355 !important;
+            box-shadow: 0 0 16px rgba(255, 51, 85, 0.55) !important;
+        }
+
+        .confirm-native-checkbox:checked + .confirm-custom-checkbox i {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .confirm-checkbox-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        .confirm-native-checkbox:checked ~ .confirm-checkbox-text {
+            color: #ffffff;
+        }
+
+        /* --- Validation Shake Animation --- */
+        @keyframes inputErrorShake {
+            0%, 100% { transform: translateX(0); }
+            15%, 45%, 75% { transform: translateX(-8px); }
+            30%, 60%, 90% { transform: translateX(8px); }
+        }
+
+        .input-error-shake {
+            animation: inputErrorShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+            border-color: rgba(255, 51, 85, 0.85) !important;
+            box-shadow: 0 0 25px rgba(255, 51, 85, 0.4) !important;
+        }
+
+        /* --- Searchable Language Selector & Card Stacking Context --- */
+        #languageQuestionCard {
+            position: relative;
+            z-index: 50;
+        }
+
+        #languageQuestionCard:focus-within,
+        #languageQuestionCard.dropdown-open,
+        .question-card:has(.lang-dropdown-panel:not([style*="display: none"])) {
+            position: relative;
+            z-index: 99999 !important;
+        }
+
+        .searchable-language-wrapper {
+            position: relative;
+            width: 100%;
+            margin-top: 6px;
+            z-index: 99999;
+        }
+
+        .lang-trigger-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 13px 16px;
+            background: rgba(14, 11, 28, 0.95);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: #e2e8f0;
+            cursor: pointer;
+            user-select: none;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+        }
+
+        .lang-trigger-box:hover {
+            border-color: rgba(0, 240, 255, 0.4);
+            background: rgba(20, 15, 38, 0.98);
+        }
+
+        body.theme-alert-red .lang-trigger-box:hover {
+            border-color: rgba(255, 51, 85, 0.5);
+        }
+
+        .lang-trigger-box:focus-visible, .lang-trigger-box.open {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
+        }
+
+        body.theme-alert-red .lang-trigger-box:focus-visible, body.theme-alert-red .lang-trigger-box.open {
+            border-color: #ff3355 !important;
+            box-shadow: 0 0 14px rgba(255, 51, 85, 0.35) !important;
+        }
+
+        .lang-trigger-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow: hidden;
+            flex-grow: 1;
+        }
+
+        .lang-globe-icon {
+            color: var(--accent-cyan);
+            font-size: 15px;
+            flex-shrink: 0;
+            transition: color 0.3s ease;
+        }
+
+        body.theme-alert-red .lang-globe-icon {
+            color: #ff3355 !important;
+        }
+
+        .selected-lang-placeholder {
+            color: #64748b;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lang-trigger-box.has-value .selected-lang-placeholder {
+            color: #f8fafc;
+            font-weight: 500;
+        }
+
+        .lang-trigger-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .lang-search-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #94a3b8;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .lang-search-btn:hover {
+            background: rgba(0, 240, 255, 0.2);
+            color: #00f0ff;
+            border-color: rgba(0, 240, 255, 0.5);
+        }
+
+        body.theme-alert-red .lang-search-btn:hover {
+            background: rgba(255, 51, 85, 0.2) !important;
+            color: #ff3355 !important;
+            border-color: rgba(255, 51, 85, 0.5) !important;
+        }
+
+        .lang-chevron {
+            color: #64748b;
+            font-size: 12px;
+            transition: transform 0.25s ease, color 0.25s ease;
+        }
+
+        .lang-trigger-box.open .lang-chevron {
+            transform: rotate(180deg);
+            color: var(--accent-cyan);
+        }
+
+        body.theme-alert-red .lang-trigger-box.open .lang-chevron {
+            color: #ff3355 !important;
+        }
+
+        /* Dropdown Panel - Floats above all subsequent cards */
+        .lang-dropdown-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            width: 100%;
+            background: #0d0a1f;
+            background: rgba(13, 10, 31, 0.99);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(0, 240, 255, 0.45);
+            border-radius: 10px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 35px rgba(0, 240, 255, 0.25);
+            z-index: 999999 !important;
+            padding: 14px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        body.theme-alert-red .lang-dropdown-panel {
+            border-color: rgba(255, 51, 85, 0.55) !important;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 35px rgba(255, 51, 85, 0.3) !important;
+        }
+
+        .lang-search-header {
+            margin-bottom: 12px;
+        }
+
+        .lang-search-input-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 9px 12px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .lang-search-input-box:focus-within {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+        }
+
+        body.theme-alert-red .lang-search-input-box:focus-within {
+            border-color: #ff3355 !important;
+            box-shadow: 0 0 12px rgba(255, 51, 85, 0.35) !important;
+        }
+
+        .lang-search-icon {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .lang-search-input {
+            background: transparent;
+            border: none;
+            color: #f8fafc;
+            font-size: 13.5px;
+            width: 100%;
+            outline: none;
+        }
+
+        .lang-search-clear {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 2px 4px;
+            transition: color 0.2s ease;
+        }
+
+        .lang-search-clear:hover {
+            color: #f8fafc;
+        }
+
+
+
+        /* Scrollable Options List */
+        .lang-options-list {
+            max-height: 240px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 240, 255, 0.3) transparent;
+            padding-right: 4px;
+        }
+
+        .lang-option-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            border-radius: 6px;
+            color: #cbd5e1;
+            font-size: 13.5px;
+            cursor: pointer;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .lang-option-item:hover {
+            background: rgba(0, 240, 255, 0.12);
+            color: #ffffff;
+        }
+
+        body.theme-alert-red .lang-option-item:hover {
+            background: rgba(255, 51, 85, 0.15) !important;
+            color: #ffffff !important;
+        }
+
+        .lang-option-item.selected {
+            background: rgba(0, 240, 255, 0.22);
+            color: #00f0ff;
+            font-weight: 600;
+        }
+
+        body.theme-alert-red .lang-option-item.selected {
+            background: rgba(255, 51, 85, 0.25) !important;
+            color: #ff3355 !important;
+        }
+
+        .lang-native-select {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
@@ -646,6 +1313,23 @@
     </style>
 </head>
 <body>
+
+    <!-- Super Realistic Liquid Simulation Canvas (Real-time Harmonic Fluid Engine) -->
+    <canvas id="waterCanvas" class="water-canvas"></canvas>
+
+    <!-- Ambient Cinematic Rain Canvas (Activates when water drains upon submission) -->
+    <canvas id="rainCanvas" class="rain-canvas"></canvas>
+
+    <!-- Floating Water Level Readiness Indicator -->
+    <div id="waterProgressBadge" class="water-progress-badge" title="Water fills up as you complete the required release details">
+        <div class="water-progress-wave-icon">
+            <i class="fas fa-water"></i>
+        </div>
+        <div class="water-progress-info">
+            <span class="water-progress-label">FORM HYDRATION</span>
+            <span id="waterProgressPercent" class="water-progress-val">22%</span>
+        </div>
+    </div>
 
     <div class="form-container">
         
@@ -758,7 +1442,7 @@
                     <span>City of Residence</span> <span class="req-star">*</span>
                 </div>
                 <div class="question-help">The city where you currently reside or work.</div>
-                <input type="text" id="city" class="g-input" placeholder="e.g. Colombo, London, Los Angeles, Tokyo" required>
+                <input type="text" id="city" class="g-input" placeholder="e.g. London, Los Angeles, Tokyo, Berlin, New York" required>
             </div>
 
             <!-- 7. Country of Residence -->
@@ -767,7 +1451,7 @@
                     <span>Country of Residence</span> <span class="req-star">*</span>
                 </div>
                 <div class="question-help">Your country of legal citizenship or primary residence.</div>
-                <input type="text" id="country" class="g-input" placeholder="e.g. Sri Lanka, United States, United Kingdom, Germany" required>
+                <input type="text" id="country" class="g-input" placeholder="e.g. United States, United Kingdom, Germany, Japan, France" required>
             </div>
 
             <!-- 8. Song Name / Track Title -->
@@ -788,28 +1472,50 @@
                 <input type="text" id="genre" class="g-input" placeholder="Your answer" required>
             </div>
 
-            <!-- 10. Release Language -->
-            <div class="question-card">
+            <!-- 10. Release Language (Searchable) -->
+            <div class="question-card" id="languageQuestionCard">
                 <div class="question-title">
                     <span>Release Language</span> <span class="req-star">*</span>
                 </div>
-                <div class="question-help">Primary language of the lyrics or vocal performance in this track. If no vocals, select "Instrumental / No Lyrics".</div>
-                <select id="language" class="g-input" style="background: rgba(14, 11, 28, 0.95); cursor: pointer;" required>
-                    <option value="" disabled selected>Select release language...</option>
-                    <option value="English">English</option>
-                    <option value="Instrumental / No Lyrics">Instrumental / No Lyrics</option>
-                    <option value="Spanish">Spanish</option>
-                    <option value="Russian">Russian</option>
-                    <option value="Portuguese">Portuguese</option>
-                    <option value="Japanese">Japanese</option>
-                    <option value="German">German</option>
-                    <option value="French">French</option>
-                    <option value="Italian">Italian</option>
-                    <option value="Korean">Korean</option>
-                    <option value="Hindi">Hindi</option>
-                    <option value="Sinhala">Sinhala</option>
-                    <option value="Other">Other</option>
-                </select>
+                <div class="question-help">Primary language of the lyrics or vocal performance. If no vocals, select "Instrumental / No Lyrics".</div>
+
+                <div class="searchable-language-wrapper" id="langSelectorWrapper">
+                    <div class="lang-trigger-box" id="langTriggerBox" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false">
+                        <div class="lang-trigger-content">
+                            <i class="fas fa-globe lang-globe-icon"></i>
+                            <span id="selectedLangDisplay" class="selected-lang-placeholder">Select or search release language...</span>
+                        </div>
+                        <div class="lang-trigger-actions">
+                            <button type="button" class="lang-search-btn" id="langSearchToggleBtn" title="Search all languages">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <i class="fas fa-chevron-down lang-chevron"></i>
+                        </div>
+                    </div>
+
+                    <!-- Dropdown Panel -->
+                    <div class="lang-dropdown-panel" id="langDropdownPanel" style="display: none;">
+                        <div class="lang-search-header">
+                            <div class="lang-search-input-box">
+                                <i class="fas fa-search lang-search-icon"></i>
+                                <input type="text" id="langSearchInput" class="lang-search-input" placeholder="Type to search all languages (e.g. Sinhala, English, Spanish)..." autocomplete="off">
+                                <button type="button" id="langSearchClearBtn" class="lang-search-clear" style="display: none;" title="Clear search">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Full Language Scrollable Options List -->
+                        <div class="lang-options-list" id="langOptionsList">
+                            <!-- Populated dynamically with full global catalog -->
+                        </div>
+                    </div>
+
+                    <!-- Native hidden select for form submission integrity & validation -->
+                    <select id="language" name="language" class="lang-native-select" required>
+                        <option value="" disabled selected>Select release language...</option>
+                    </select>
+                </div>
             </div>
 
             <!-- 11. Main Artist Spotify Profile -->
@@ -887,6 +1593,29 @@
                 <textarea id="notes" class="g-textarea" placeholder="Your answer"></textarea>
             </div>
 
+            <!-- 13. Final Release Submission Confirmation -->
+            <div class="form-card confirmation-toggle-card" id="confirmReviewCard">
+                <div class="confirm-card-header">
+                    <div class="confirm-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Final Submission Confirmation</span>
+                    </div>
+                    <span class="req-star" style="color: var(--required-star); font-size: 16px;">*</span>
+                </div>
+                <p class="confirm-card-desc">
+                    Please confirm that all submitted track information, collaborator credits, release date (minimum 4 days in advance), and Google Drive links (with view and download permissions enabled) are final and accurate.
+                </p>
+                <label class="confirm-checkbox-container" for="confirmAccuracyCheckbox">
+                    <input type="checkbox" id="confirmAccuracyCheckbox" class="confirm-native-checkbox" required>
+                    <span class="confirm-custom-checkbox">
+                        <i class="fas fa-check"></i>
+                    </span>
+                    <span class="confirm-checkbox-text">
+                        I confirm that all release details, artist credits, and audio/artwork files provided in this dossier are accurate, authorized, and finalized for digital release.
+                    </span>
+                </label>
+            </div>
+
             <!-- Form Actions -->
             <div class="form-actions">
                 <button type="submit" id="submitBtn" class="submit-btn">
@@ -950,6 +1679,12 @@
             const codeErrorBox = document.getElementById('codeErrorBox');
             const codeUsedBox = document.getElementById('codeUsedBox');
 
+            // Interactive Liquid & Rain Elements
+            const waterCanvas = document.getElementById('waterCanvas');
+            const waterCtx = waterCanvas ? waterCanvas.getContext('2d') : null;
+            const waterProgressPercent = document.getElementById('waterProgressPercent');
+            const rainCanvas = document.getElementById('rainCanvas');
+
             const FIREBASE_DB_URL = "https://submission-code-and-mail-sys-default-rtdb.asia-southeast1.firebasedatabase.app";
 
             let isCodeValid = false;
@@ -970,6 +1705,513 @@
                 releaseDateInput.min = minReleaseDateStr;
             }
 
+            // =========================================================================
+            // SUPER REALISTIC LIQUID SIMULATION & HARMONIC FLUID DYNAMICS (60 FPS)
+            // =========================================================================
+            // =========================================================================
+            // SUPER REALISTIC LIQUID SIMULATION & HARMONIC FLUID DYNAMICS (60 FPS)
+            // =========================================================================
+            let targetWaterPct = 22; // Baseline starting depth: 22% (clearly visible immediately)
+            let currentWaterPct = 22;
+            let waterSpringVelocity = 0;
+            let fluidTime = 0;
+            let isWaterDraining = false;
+
+            // 3D Refractive Micro-bubble particle system
+            let fluidBubbles = [];
+            const BUBBLE_COUNT = 45;
+
+            // Surface ripple pop rings for bursting bubbles
+            let popRings = [];
+
+            function resizeWaterCanvas() {
+                if (!waterCanvas) return;
+                waterCanvas.width = window.innerWidth;
+                waterCanvas.height = window.innerHeight;
+            }
+
+            function initFluidBubbles() {
+                fluidBubbles = [];
+                const w = waterCanvas ? waterCanvas.width : window.innerWidth;
+                const h = waterCanvas ? waterCanvas.height : window.innerHeight;
+                for (let i = 0; i < BUBBLE_COUNT; i++) {
+                    fluidBubbles.push({
+                        x: Math.random() * w,
+                        y: h - Math.random() * (h * 0.7),
+                        radius: 1.2 + Math.random() * 3.8,
+                        speedY: 0.7 + Math.random() * 1.5,
+                        wobble: Math.random() * Math.PI * 2,
+                        wobbleSpeed: 0.018 + Math.random() * 0.03,
+                        wobbleAmp: 0.7 + Math.random() * 1.4,
+                        opacity: 0.25 + Math.random() * 0.55
+                    });
+                }
+            }
+
+            // Render harmonic wave curve path across canvas width
+            function drawWavePath(ctx, W, baseY, amp1, freq1, amp2, freq2, amp3, freq3, phase, time) {
+                ctx.beginPath();
+                ctx.moveTo(0, baseY);
+                const step = 5;
+                for (let x = 0; x <= W; x += step) {
+                    const y = baseY 
+                        + Math.sin(x * freq1 + time * 1.6 + phase) * amp1
+                        + Math.cos(x * freq2 - time * 1.1 + phase * 1.4) * amp2
+                        + Math.sin(x * freq3 + time * 0.7 + phase * 0.7) * amp3;
+                    ctx.lineTo(x, y);
+                }
+                ctx.lineTo(W, waterCanvas.height);
+                ctx.lineTo(0, waterCanvas.height);
+                ctx.closePath();
+            }
+
+            function renderFluidFrame() {
+                if (!waterCanvas || !waterCtx) return;
+
+                const W = waterCanvas.width;
+                const H = waterCanvas.height;
+                waterCtx.clearRect(0, 0, W, H);
+
+                fluidTime += 0.022;
+
+                // --- 1. Damped Spring Physics for Liquid Level Movement ---
+                if (isWaterDraining) {
+                    currentWaterPct += (0 - currentWaterPct) * 0.055;
+                    if (currentWaterPct < 0.1) currentWaterPct = 0;
+                } else {
+                    const diff = targetWaterPct - currentWaterPct;
+                    waterSpringVelocity += diff * 0.035;
+                    waterSpringVelocity *= 0.85; // Damping
+                    currentWaterPct += waterSpringVelocity;
+                }
+
+                // Update floating badge percentage text
+                if (waterProgressPercent) {
+                    waterProgressPercent.textContent = `${Math.max(0, Math.round(currentWaterPct))}%`;
+                }
+
+                // If completely drained, keep loop alive but skip drawing fluid
+                if (currentWaterPct <= 0.2) {
+                    requestAnimationFrame(renderFluidFrame);
+                    return;
+                }
+
+                const isRed = document.body.classList.contains('theme-alert-red');
+                const fluidHeight = (currentWaterPct / 100) * H;
+                const baseY = H - fluidHeight;
+
+                // --- 2. Layer A: Deep Oceanic Background Wave ---
+                const bgGrad = waterCtx.createLinearGradient(0, baseY - 20, 0, H);
+                if (!isRed) {
+                    bgGrad.addColorStop(0, 'rgba(0, 110, 160, 0.16)');
+                    bgGrad.addColorStop(0.35, 'rgba(0, 70, 130, 0.22)');
+                    bgGrad.addColorStop(1, 'rgba(2, 6, 16, 0.90)');
+                } else {
+                    bgGrad.addColorStop(0, 'rgba(180, 20, 50, 0.20)');
+                    bgGrad.addColorStop(0.35, 'rgba(130, 12, 45, 0.26)');
+                    bgGrad.addColorStop(1, 'rgba(18, 2, 8, 0.92)');
+                }
+
+                drawWavePath(waterCtx, W, baseY + 6, 16, 0.0045, 10, 0.009, 5, 0.018, 0, fluidTime);
+                waterCtx.fillStyle = bgGrad;
+                waterCtx.fill();
+
+                // --- 3. Layer B: Volumetric Underwater Caustic Light Rays (God Rays) ---
+                waterCtx.save();
+                const rayCount = 6;
+                for (let r = 0; r < rayCount; r++) {
+                    const rayOffset = (r / rayCount) * W;
+                    const rayOsc = Math.sin(fluidTime * 0.85 + r * 1.4);
+                    const startX = rayOffset + rayOsc * 35;
+                    const endX = startX + 75 + rayOsc * 50;
+                    const rayAlpha = 0.012 + 0.010 * Math.sin(fluidTime * 1.2 + r * 2.1);
+
+                    const rayGrad = waterCtx.createLinearGradient(startX, baseY, endX, H);
+                    if (!isRed) {
+                        rayGrad.addColorStop(0, `rgba(0, 220, 240, ${rayAlpha * 1.2})`);
+                        rayGrad.addColorStop(0.55, `rgba(0, 150, 210, ${rayAlpha * 0.7})`);
+                        rayGrad.addColorStop(1, 'transparent');
+                    } else {
+                        rayGrad.addColorStop(0, `rgba(240, 50, 80, ${rayAlpha * 1.2})`);
+                        rayGrad.addColorStop(0.55, `rgba(190, 20, 55, ${rayAlpha * 0.7})`);
+                        rayGrad.addColorStop(1, 'transparent');
+                    }
+
+                    waterCtx.beginPath();
+                    waterCtx.moveTo(startX, baseY + 3);
+                    waterCtx.lineTo(startX + 32, baseY + 3);
+                    waterCtx.lineTo(endX + 70, H);
+                    waterCtx.lineTo(endX - 25, H);
+                    waterCtx.closePath();
+                    waterCtx.fillStyle = rayGrad;
+                    waterCtx.fill();
+                }
+                waterCtx.restore();
+
+                // --- 4. Layer C: Mid-Liquid Body Wave ---
+                const midGrad = waterCtx.createLinearGradient(0, baseY, 0, H);
+                if (!isRed) {
+                    midGrad.addColorStop(0, 'rgba(0, 140, 190, 0.18)');
+                    midGrad.addColorStop(0.45, 'rgba(0, 85, 145, 0.24)');
+                    midGrad.addColorStop(1, 'rgba(1, 8, 20, 0.92)');
+                } else {
+                    midGrad.addColorStop(0, 'rgba(190, 30, 60, 0.22)');
+                    midGrad.addColorStop(0.45, 'rgba(140, 14, 45, 0.28)');
+                    midGrad.addColorStop(1, 'rgba(20, 3, 8, 0.94)');
+                }
+
+                drawWavePath(waterCtx, W, baseY + 2, 12, 0.0065, 8, 0.013, 4, 0.026, 2.1, fluidTime);
+                waterCtx.fillStyle = midGrad;
+                waterCtx.fill();
+
+                // --- 5. Layer D: Foreground Fluid Surface Wave ---
+                const fgGrad = waterCtx.createLinearGradient(0, baseY - 5, 0, H);
+                if (!isRed) {
+                    fgGrad.addColorStop(0, 'rgba(0, 160, 210, 0.22)');
+                    fgGrad.addColorStop(0.3, 'rgba(0, 110, 170, 0.18)');
+                    fgGrad.addColorStop(1, 'rgba(1, 6, 16, 0.88)');
+                } else {
+                    fgGrad.addColorStop(0, 'rgba(210, 40, 70, 0.26)');
+                    fgGrad.addColorStop(0.3, 'rgba(160, 20, 50, 0.20)');
+                    fgGrad.addColorStop(1, 'rgba(16, 2, 7, 0.90)');
+                }
+
+                drawWavePath(waterCtx, W, baseY, 8, 0.0085, 5, 0.017, 3, 0.034, 4.3, fluidTime);
+                waterCtx.fillStyle = fgGrad;
+                waterCtx.fill();
+
+                // --- 6. Layer E: Specular Surface Crest Line (Glistening Caustic Waterline) ---
+                waterCtx.beginPath();
+                const lineStep = 4;
+                for (let x = 0; x <= W; x += lineStep) {
+                    const y = baseY 
+                        + Math.sin(x * 0.0085 + fluidTime * 1.6 + 4.3) * 8
+                        + Math.cos(x * 0.017 - fluidTime * 1.1 + 4.3 * 1.4) * 5
+                        + Math.sin(x * 0.034 + fluidTime * 0.7 + 4.3 * 0.7) * 3;
+                    if (x === 0) waterCtx.moveTo(x, y);
+                    else waterCtx.lineTo(x, y);
+                }
+
+                waterCtx.save();
+                waterCtx.lineWidth = 1.6;
+                if (!isRed) {
+                    waterCtx.strokeStyle = 'rgba(0, 200, 235, 0.55)';
+                    waterCtx.shadowColor = 'rgba(0, 180, 220, 0.40)';
+                    waterCtx.shadowBlur = 6;
+                } else {
+                    waterCtx.strokeStyle = 'rgba(230, 60, 90, 0.60)';
+                    waterCtx.shadowColor = 'rgba(220, 30, 60, 0.45)';
+                    waterCtx.shadowBlur = 6;
+                }
+                waterCtx.stroke();
+                waterCtx.restore();
+
+                // --- 7. Layer F: Specular Sparkle Glints Traveling on Wave Crest ---
+                const glintCount = 7;
+                for (let g = 0; g < glintCount; g++) {
+                    const gx = ((g + 0.5) / glintCount) * W + Math.sin(fluidTime * 0.9 + g * 2) * 45;
+                    const gy = baseY 
+                        + Math.sin(gx * 0.0085 + fluidTime * 1.6 + 4.3) * 8
+                        + Math.cos(gx * 0.017 - fluidTime * 1.1 + 4.3 * 1.4) * 5
+                        + Math.sin(gx * 0.034 + fluidTime * 0.7 + 4.3 * 0.7) * 3;
+                    const glintAlpha = Math.max(0, Math.sin(fluidTime * 2.5 + g * 1.8));
+                    if (glintAlpha > 0.15) {
+                        waterCtx.save();
+                        waterCtx.beginPath();
+                        waterCtx.arc(gx, gy, 1.2 + glintAlpha * 1.0, 0, Math.PI * 2);
+                        waterCtx.fillStyle = isRed ? `rgba(255, 180, 200, ${glintAlpha * 0.5})` : `rgba(200, 245, 255, ${glintAlpha * 0.5})`;
+                        waterCtx.shadowColor = isRed ? 'rgba(255, 51, 85, 0.5)' : 'rgba(0, 240, 255, 0.5)';
+                        waterCtx.shadowBlur = 6;
+                        waterCtx.fill();
+                        waterCtx.restore();
+                    }
+                }
+
+                // --- 8. Layer G: Surface Burst Ripple Rings ---
+                for (let i = popRings.length - 1; i >= 0; i--) {
+                    const pr = popRings[i];
+                    pr.radius += 0.45;
+                    pr.opacity -= 0.024;
+                    if (pr.opacity <= 0 || pr.radius >= pr.maxRadius) {
+                        popRings.splice(i, 1);
+                        continue;
+                    }
+                    waterCtx.beginPath();
+                    waterCtx.ellipse(pr.x, pr.y, pr.radius * 2, pr.radius * 0.65, 0, 0, Math.PI * 2);
+                    waterCtx.strokeStyle = isRed 
+                        ? `rgba(255, 120, 150, ${pr.opacity * 0.65})` 
+                        : `rgba(180, 240, 255, ${pr.opacity * 0.65})`;
+                    waterCtx.lineWidth = 1.1;
+                    waterCtx.stroke();
+                }
+
+                // --- 9. Layer H: Rising 3D Spherical Micro-Bubbles with Refraction ---
+                for (let i = 0; i < fluidBubbles.length; i++) {
+                    const b = fluidBubbles[i];
+                    b.wobble += b.wobbleSpeed;
+                    b.x += Math.sin(b.wobble) * b.wobbleAmp;
+                    b.y -= b.speedY;
+
+                    // When bubble reaches the water surface, burst into ripple ring
+                    if (b.y <= baseY) {
+                        if (Math.random() < 0.6) {
+                            popRings.push({
+                                x: b.x,
+                                y: baseY,
+                                radius: 1.5,
+                                maxRadius: 8 + Math.random() * 8,
+                                opacity: 0.45
+                            });
+                        }
+                        b.y = H + 8 + Math.random() * 25;
+                        b.x = Math.random() * W;
+                    }
+
+                    // Only draw if submerged
+                    if (b.y > baseY) {
+                        waterCtx.beginPath();
+                        waterCtx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+
+                        const bGrad = waterCtx.createRadialGradient(
+                            b.x - b.radius * 0.35, b.y - b.radius * 0.35, b.radius * 0.08,
+                            b.x, b.y, b.radius
+                        );
+                        if (!isRed) {
+                            bGrad.addColorStop(0, `rgba(255, 255, 255, ${b.opacity * 0.8})`);
+                            bGrad.addColorStop(0.35, `rgba(160, 220, 240, ${b.opacity * 0.45})`);
+                            bGrad.addColorStop(1, `rgba(0, 140, 200, ${b.opacity * 0.08})`);
+                        } else {
+                            bGrad.addColorStop(0, `rgba(255, 255, 255, ${b.opacity * 0.8})`);
+                            bGrad.addColorStop(0.35, `rgba(240, 150, 175, ${b.opacity * 0.45})`);
+                            bGrad.addColorStop(1, `rgba(180, 20, 50, ${b.opacity * 0.08})`);
+                        }
+                        waterCtx.fillStyle = bGrad;
+                        waterCtx.fill();
+                    }
+                }
+
+                // --- 10. Layer I: Full Submersion Ambient Wash (When 100% Filled) ---
+                if (currentWaterPct >= 96) {
+                    const submersionAlpha = Math.min(0.08, ((currentWaterPct - 96) / 4) * 0.08);
+                    waterCtx.fillStyle = isRed ? `rgba(180, 20, 50, ${submersionAlpha})` : `rgba(0, 130, 180, ${submersionAlpha})`;
+                    waterCtx.fillRect(0, 0, W, H);
+                }
+
+                requestAnimationFrame(renderFluidFrame);
+            }
+
+            resizeWaterCanvas();
+            initFluidBubbles();
+            renderFluidFrame();
+
+            function updateWaterLevel(draining = false) {
+                if (draining) {
+                    isWaterDraining = true;
+                    return;
+                }
+                isWaterDraining = false;
+
+                const requiredChecks = [
+                    isCodeValid,
+                    (document.getElementById('realName')?.value || '').trim().length > 1,
+                    (document.getElementById('mainArtist')?.value || '').trim().length > 1,
+                    (document.getElementById('email')?.value || '').trim().includes('@'),
+                    (document.getElementById('city')?.value || '').trim().length > 1,
+                    (document.getElementById('country')?.value || '').trim().length > 1,
+                    (document.getElementById('songTitle')?.value || '').trim().length > 1,
+                    (document.getElementById('genre')?.value || '').trim().length > 1,
+                    (document.getElementById('language')?.value || '').trim() !== '',
+                    (document.getElementById('mainArtistSpotify')?.value || '').trim().length > 4,
+                    (document.getElementById('releaseDate')?.value || '') >= (minReleaseDateStr || '1970-01-01'),
+                    (document.getElementById('driveLink')?.value || '').trim().length > 8
+                ];
+
+                let passedCount = 0;
+                requiredChecks.forEach(p => { if (p) passedCount++; });
+
+                const bonusChecks = [
+                    (document.getElementById('mainArtistApple')?.value || '').trim().length > 4,
+                    (collaboratorsList?.querySelectorAll('.collaborator-box').length || 0) > 0,
+                    (document.getElementById('notes')?.value || '').trim().length > 2
+                ];
+                let bonusCount = 0;
+                bonusChecks.forEach(b => { if (b) bonusCount++; });
+
+                // Form questions fill water progressively up to 90%
+                // Base hydration is 20% on load; questions add up to 70% (20% + 70% = 90%)
+                const questionsProgress = (passedCount / requiredChecks.length) * 70;
+                const formQuestionsPct = 20 + questionsProgress; // 20% -> 90%
+
+                // The final confirmation tick provides the remaining 10% hydration!
+                const confirmBox = document.getElementById('confirmAccuracyCheckbox');
+                const isConfirmed = confirmBox && confirmBox.checked;
+                const confirmBonus = isConfirmed ? 10 : 0;
+
+                // If all questions are passed (90%) AND the user checked the tick (+10%), it reaches full 100%!
+                let calculatedPct = formQuestionsPct + confirmBonus;
+                if (passedCount === requiredChecks.length && isConfirmed) {
+                    calculatedPct = 100;
+                }
+
+                targetWaterPct = Math.min(100, Math.round(calculatedPct));
+            }
+
+            // Initial baseline water level
+            updateWaterLevel();
+
+            // =========================================================================
+            // ATMOSPHERIC REALISTIC RAIN SYSTEM (3D PARALLAX & IMPACT SPLASHES)
+            // =========================================================================
+            let rainAnimationId = null;
+            let rainDrops = [];
+            let rainSplashes = [];
+
+            class RealisticRainDrop {
+                constructor(W, H) {
+                    this.reset(W, H, true);
+                }
+                reset(W, H, randomY = false) {
+                    this.layer = Math.random(); // 0 to 1 for depth
+                    this.x = Math.random() * (W + 120) - 60;
+                    this.y = randomY ? Math.random() * H : -30 - Math.random() * 50;
+
+                    if (this.layer < 0.4) {
+                        // Background drops (distant, faint, slower)
+                        this.speed = 14 + Math.random() * 6;
+                        this.length = 12 + Math.random() * 10;
+                        this.opacity = 0.12 + Math.random() * 0.2;
+                        this.width = 1.0;
+                    } else if (this.layer < 0.8) {
+                        // Midground drops
+                        this.speed = 20 + Math.random() * 8;
+                        this.length = 18 + Math.random() * 16;
+                        this.opacity = 0.25 + Math.random() * 0.25;
+                        this.width = 1.4;
+                    } else {
+                        // Foreground drops (fast, long, crisp)
+                        this.speed = 28 + Math.random() * 10;
+                        this.length = 26 + Math.random() * 22;
+                        this.opacity = 0.45 + Math.random() * 0.4;
+                        this.width = 1.8;
+                    }
+                    this.driftX = 1.6 + Math.random() * 0.8; // Wind sway
+                }
+                update(W, H) {
+                    this.y += this.speed;
+                    this.x += this.driftX;
+
+                    // Ground collision triggers splash
+                    if (this.y >= H - 12) {
+                        if (Math.random() < 0.45) {
+                            rainSplashes.push({
+                                x: this.x,
+                                y: H - 8 - Math.random() * 10,
+                                radiusX: 2,
+                                radiusY: 0.8,
+                                maxRadius: 6 + Math.random() * 10,
+                                alpha: 0.75,
+                                decay: 0.04 + Math.random() * 0.03
+                            });
+                        }
+                        this.reset(W, H, false);
+                    }
+                }
+                draw(ctx, isRed) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    ctx.lineTo(this.x + this.driftX * 1.5, this.y + this.length);
+                    ctx.strokeStyle = isRed
+                        ? `rgba(255, 75, 105, ${this.opacity})`
+                        : `rgba(180, 240, 255, ${this.opacity})`;
+                    ctx.lineWidth = this.width;
+                    ctx.stroke();
+                }
+            }
+
+            function startRain() {
+                if (!rainCanvas) return;
+                const rainCtx = rainCanvas.getContext('2d');
+                if (!rainCtx) return;
+
+                rainCanvas.width = window.innerWidth;
+                rainCanvas.height = window.innerHeight;
+                rainCanvas.classList.add('active');
+
+                rainDrops = [];
+                rainSplashes = [];
+                const count = 180;
+                for (let i = 0; i < count; i++) {
+                    rainDrops.push(new RealisticRainDrop(rainCanvas.width, rainCanvas.height));
+                }
+
+                function animateRainLoop() {
+                    rainCtx.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
+                    const isRed = document.body.classList.contains('theme-alert-red');
+                    const W = rainCanvas.width;
+                    const H = rainCanvas.height;
+
+                    // Draw raindrops
+                    for (let i = 0; i < rainDrops.length; i++) {
+                        rainDrops[i].update(W, H);
+                        rainDrops[i].draw(rainCtx, isRed);
+                    }
+
+                    // Draw splash ripples at ground
+                    for (let i = rainSplashes.length - 1; i >= 0; i--) {
+                        const s = rainSplashes[i];
+                        s.radiusX += 1.1;
+                        s.radiusY += 0.45;
+                        s.alpha -= s.decay;
+
+                        if (s.alpha <= 0) {
+                            rainSplashes.splice(i, 1);
+                            continue;
+                        }
+
+                        rainCtx.beginPath();
+                        rainCtx.ellipse(s.x, s.y, s.radiusX, s.radiusY, 0, 0, Math.PI * 2);
+                        rainCtx.strokeStyle = isRed
+                            ? `rgba(255, 90, 120, ${s.alpha * 0.5})`
+                            : `rgba(160, 235, 255, ${s.alpha * 0.6})`;
+                        rainCtx.lineWidth = 1.2;
+                        rainCtx.stroke();
+                    }
+
+                    // Soft ground atmospheric mist
+                    const mistGrad = rainCtx.createLinearGradient(0, H - 70, 0, H);
+                    if (!isRed) {
+                        mistGrad.addColorStop(0, 'transparent');
+                        mistGrad.addColorStop(1, 'rgba(0, 220, 255, 0.08)');
+                    } else {
+                        mistGrad.addColorStop(0, 'transparent');
+                        mistGrad.addColorStop(1, 'rgba(255, 45, 75, 0.09)');
+                    }
+                    rainCtx.fillStyle = mistGrad;
+                    rainCtx.fillRect(0, H - 70, W, 70);
+
+                    rainAnimationId = requestAnimationFrame(animateRainLoop);
+                }
+
+                cancelAnimationFrame(rainAnimationId);
+                animateRainLoop();
+            }
+
+            function stopRain() {
+                if (!rainCanvas) return;
+                rainCanvas.classList.remove('active');
+                cancelAnimationFrame(rainAnimationId);
+                const rainCtx = rainCanvas.getContext('2d');
+                if (rainCtx) rainCtx.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
+            }
+
+            window.addEventListener('resize', () => {
+                resizeWaterCanvas();
+                if (rainCanvas && rainCanvas.classList.contains('active')) {
+                    rainCanvas.width = window.innerWidth;
+                    rainCanvas.height = window.innerHeight;
+                }
+            });
+
             // --- Acceptance Code Real-Time Verification (Heavily Optimized) ---
             async function verifyAcceptanceCode(codeVal) {
                 const cleanCode = (codeVal || '').toUpperCase().trim();
@@ -977,21 +2219,12 @@
                 if (!cleanCode) {
                     isCodeValid = false;
                     verifiedCodeData = null;
+                    document.body.classList.remove('theme-alert-red');
                     verifiedCodeCard.style.display = 'none';
                     codeErrorBox.style.display = 'none';
                     codeUsedBox.style.display = 'none';
                     codeCheckingSpinner.style.display = 'none';
-                    return;
-                }
-
-                // Optimization: Do NOT query database until code is long enough to be an actual code
-                if (cleanCode.length < 10) {
-                    isCodeValid = false;
-                    verifiedCodeData = null;
-                    verifiedCodeCard.style.display = 'none';
-                    codeErrorBox.style.display = 'none';
-                    codeUsedBox.style.display = 'none';
-                    codeCheckingSpinner.style.display = 'none';
+                    updateWaterLevel();
                     return;
                 }
 
@@ -1019,31 +2252,43 @@
                     console.error('Code verification network error:', err);
                     codeCheckingSpinner.style.display = 'none';
                     isCodeValid = false;
+                    document.body.classList.add('theme-alert-red');
+                    if (codeErrorBox) {
+                        codeErrorBox.style.display = 'flex';
+                    }
+                    updateWaterLevel();
                 }
             }
 
             function handleVerificationResult(data) {
                 if (!data || data.notFound) {
-                    // Code not found in database
+                    // Code not found in database -> TRIGGER RED ALERT
                     isCodeValid = false;
                     verifiedCodeData = null;
+                    document.body.classList.add('theme-alert-red');
                     verifiedCodeCard.style.display = 'none';
                     codeUsedBox.style.display = 'none';
-                    codeErrorBox.style.display = 'flex';
+                    if (codeErrorBox) {
+                        const errSpan = codeErrorBox.querySelector('span');
+                        if (errSpan) errSpan.textContent = 'This acceptance code is not recognized by the demo accepted list. Please contact our team.';
+                        codeErrorBox.style.display = 'flex';
+                    }
+                    updateWaterLevel();
                     return;
                 }
 
                 if (data.status === 'used') {
-                    // Code has already been consumed
+                    // Code has already been consumed / expired -> TRIGGER RED ALERT
                     isCodeValid = false;
                     verifiedCodeData = data;
+                    document.body.classList.add('theme-alert-red');
                     codeErrorBox.style.display = 'none';
                     codeUsedBox.style.display = 'none';
 
                     // Show card in USED state (Red / Warning)
                     verifiedCodeCard.style.display = 'block';
-                    verifiedCodeCard.style.borderColor = 'rgba(239, 68, 68, 0.45)';
-                    verifiedCodeCard.style.background = 'rgba(239, 68, 68, 0.08)';
+                    verifiedCodeCard.style.borderColor = 'rgba(239, 68, 68, 0.55)';
+                    verifiedCodeCard.style.background = 'rgba(239, 68, 68, 0.1)';
 
                     const headerIcon = document.getElementById('verifiedHeaderIcon');
                     const headerText = document.getElementById('verifiedHeaderText');
@@ -1070,13 +2315,15 @@
                     if (verifiedNote) {
                         verifiedNote.innerHTML = '<span style="color: #fca5a5; font-weight: 500;">This unique single-use acceptance code has already been redeemed for a release submission and cannot be submitted again. If you believe this is an error, please contact our team.</span>';
                     }
+                    updateWaterLevel();
                     return;
                 }
 
                 if (data.status === 'active') {
-                    // Code is valid and active - READY TO USE!
+                    // Code is valid and active - READY TO USE! Reset from Red Alert to normal theme
                     isCodeValid = true;
                     verifiedCodeData = data;
+                    document.body.classList.remove('theme-alert-red');
                     codeErrorBox.style.display = 'none';
                     codeUsedBox.style.display = 'none';
 
@@ -1120,11 +2367,14 @@
                     if (mainArtistInput && !mainArtistInput.value && data.artistName) {
                         mainArtistInput.value = data.artistName;
                     }
+                    updateWaterLevel();
                 } else {
                     isCodeValid = false;
                     verifiedCodeData = null;
+                    document.body.classList.remove('theme-alert-red');
                     verifiedCodeCard.style.display = 'none';
                     codeUsedBox.style.display = 'none';
+                    updateWaterLevel();
                 }
             }
 
@@ -1142,6 +2392,320 @@
                 });
             }
 
+            // Real-time Water Filling on Form Changes
+            if (form) {
+                form.addEventListener('input', () => updateWaterLevel());
+                form.addEventListener('change', () => updateWaterLevel());
+            }
+
+            const confirmAccuracyCheckbox = document.getElementById('confirmAccuracyCheckbox');
+            if (confirmAccuracyCheckbox) {
+                confirmAccuracyCheckbox.addEventListener('click', () => updateWaterLevel());
+                confirmAccuracyCheckbox.addEventListener('change', () => updateWaterLevel());
+            }
+
+            // =========================================================================
+            // SEARCHABLE GLOBAL LANGUAGE SELECTOR (120+ LANGUAGES WITH REAL-TIME SEARCH)
+            // =========================================================================
+            const GLOBAL_LANGUAGES = [
+                "Instrumental / No Lyrics",
+                "English",
+                "Sinhala",
+                "Spanish",
+                "Japanese",
+                "Hindi",
+                "Korean",
+                "French",
+                "German",
+                "Portuguese",
+                "Italian",
+                "Russian",
+                "Chinese (Mandarin)",
+                "Chinese (Cantonese)",
+                "Arabic",
+                "Tamil",
+                "Bengali",
+                "Turkish",
+                "Dutch",
+                "Swedish",
+                "Polish",
+                "Indonesian",
+                "Tagalog / Filipino",
+                "Thai",
+                "Vietnamese",
+                "Ukrainian",
+                "Greek",
+                "Hebrew",
+                "Persian / Farsi",
+                "Urdu",
+                "Punjabi",
+                "Marathi",
+                "Telugu",
+                "Malayalam",
+                "Kannada",
+                "Gujarati",
+                "Nepali",
+                "Afrikaans",
+                "Albanian",
+                "Amharic",
+                "Armenian",
+                "Assamese",
+                "Azerbaijani",
+                "Basque",
+                "Belarusian",
+                "Bosnian",
+                "Bulgarian",
+                "Burmese",
+                "Catalan",
+                "Cebuano",
+                "Croatian",
+                "Czech",
+                "Danish",
+                "Esperanto",
+                "Estonian",
+                "Faroese",
+                "Fijian",
+                "Finnish",
+                "Galician",
+                "Georgian",
+                "Haitian Creole",
+                "Hausa",
+                "Hawaiian",
+                "Hmong",
+                "Hungarian",
+                "Icelandic",
+                "Igbo",
+                "Irish",
+                "Javanese",
+                "Kazakh",
+                "Khmer",
+                "Kurdish",
+                "Kyrgyz",
+                "Lao",
+                "Latin",
+                "Latvian",
+                "Lithuanian",
+                "Luxembourgish",
+                "Macedonian",
+                "Malagasy",
+                "Malay",
+                "Maltese",
+                "Maori",
+                "Mongolian",
+                "Norwegian",
+                "Odia",
+                "Pashto",
+                "Romanian",
+                "Samoan",
+                "Scottish Gaelic",
+                "Serbian",
+                "Shona",
+                "Sindhi",
+                "Slovak",
+                "Slovenian",
+                "Somali",
+                "Sundanese",
+                "Swahili",
+                "Tajik",
+                "Tibetan",
+                "Tigrinya",
+                "Tongan",
+                "Turkmen",
+                "Uzbek",
+                "Welsh",
+                "Xhosa",
+                "Yiddish",
+                "Yoruba",
+                "Zulu",
+                "Other / Not Listed"
+            ];
+
+            function initSearchableLanguageSelector() {
+                const wrapper = document.getElementById('langSelectorWrapper');
+                const triggerBox = document.getElementById('langTriggerBox');
+                const searchToggleBtn = document.getElementById('langSearchToggleBtn');
+                const dropdownPanel = document.getElementById('langDropdownPanel');
+                const searchInput = document.getElementById('langSearchInput');
+                const searchClearBtn = document.getElementById('langSearchClearBtn');
+                const optionsList = document.getElementById('langOptionsList');
+                const nativeSelect = document.getElementById('language');
+                const selectedDisplay = document.getElementById('selectedLangDisplay');
+
+                if (!wrapper || !triggerBox || !dropdownPanel || !optionsList || !nativeSelect) return;
+
+                // 1. Populate native hidden select options
+                nativeSelect.innerHTML = '<option value="" disabled selected>Select release language...</option>';
+                GLOBAL_LANGUAGES.forEach(lang => {
+                    const opt = document.createElement('option');
+                    opt.value = lang;
+                    opt.textContent = lang;
+                    nativeSelect.appendChild(opt);
+                });
+
+                // 2. Render options list in dropdown panel
+                function renderOptions(filterText = '') {
+                    const cleanFilter = filterText.toLowerCase().trim();
+                    optionsList.innerHTML = '';
+
+                    const filtered = GLOBAL_LANGUAGES.filter(lang => 
+                        lang.toLowerCase().includes(cleanFilter)
+                    );
+
+                    if (filtered.length === 0) {
+                        const emptyEl = document.createElement('div');
+                        emptyEl.style.padding = '16px 12px';
+                        emptyEl.style.textAlign = 'center';
+                        emptyEl.style.color = '#94a3b8';
+                        emptyEl.style.fontSize = '13px';
+                        emptyEl.innerHTML = `<i class="fas fa-search" style="opacity: 0.5; margin-right: 6px;"></i> No languages found matching "<strong>${filterText}</strong>"`;
+                        optionsList.appendChild(emptyEl);
+                        return;
+                    }
+
+                    filtered.forEach(lang => {
+                        const item = document.createElement('div');
+                        item.className = 'lang-option-item';
+                        if (nativeSelect.value === lang) {
+                            item.classList.add('selected');
+                        }
+
+                        if (cleanFilter) {
+                            const idx = lang.toLowerCase().indexOf(cleanFilter);
+                            const before = lang.substring(0, idx);
+                            const match = lang.substring(idx, idx + cleanFilter.length);
+                            const after = lang.substring(idx + cleanFilter.length);
+                            item.innerHTML = `<span>${before}<strong style="color: #00f0ff; text-decoration: underline;">${match}</strong>${after}</span>`;
+                        } else {
+                            item.innerHTML = `<span>${lang}</span>`;
+                        }
+
+                        if (nativeSelect.value === lang) {
+                            item.innerHTML += '<i class="fas fa-check" style="font-size: 11px;"></i>';
+                        }
+
+                        item.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            selectLanguage(lang);
+                        });
+
+                        optionsList.appendChild(item);
+                    });
+                }
+
+                function selectLanguage(lang) {
+                    nativeSelect.value = lang;
+                    if (selectedDisplay) {
+                        selectedDisplay.textContent = lang;
+                        selectedDisplay.classList.remove('selected-lang-placeholder');
+                    }
+                    triggerBox.classList.add('has-value');
+
+                    closeDropdown();
+
+                    // Fire input & change events on native select to trigger real-time water update & form validation
+                    nativeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                    nativeSelect.dispatchEvent(new Event('input', { bubbles: true }));
+                    updateWaterLevel();
+                }
+
+                function openDropdown() {
+                    dropdownPanel.style.display = 'block';
+                    triggerBox.classList.add('open');
+                    triggerBox.setAttribute('aria-expanded', 'true');
+                    const card = document.getElementById('languageQuestionCard');
+                    if (card) {
+                        card.classList.add('dropdown-open');
+                        card.style.zIndex = '99999';
+                    }
+                    renderOptions(searchInput.value);
+                    setTimeout(() => {
+                        searchInput.focus();
+                    }, 50);
+                }
+
+                function closeDropdown() {
+                    dropdownPanel.style.display = 'none';
+                    triggerBox.classList.remove('open');
+                    triggerBox.setAttribute('aria-expanded', 'false');
+                    const card = document.getElementById('languageQuestionCard');
+                    if (card) {
+                        card.classList.remove('dropdown-open');
+                        card.style.zIndex = '';
+                    }
+                }
+
+                function toggleDropdown(e) {
+                    if (e) e.stopPropagation();
+                    if (dropdownPanel.style.display === 'none' || dropdownPanel.style.display === '') {
+                        openDropdown();
+                    } else {
+                        closeDropdown();
+                    }
+                }
+
+                triggerBox.addEventListener('click', (e) => {
+                    toggleDropdown(e);
+                });
+
+                triggerBox.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleDropdown(e);
+                    } else if (e.key === 'Escape') {
+                        closeDropdown();
+                    }
+                });
+
+                if (searchToggleBtn) {
+                    searchToggleBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        openDropdown();
+                    });
+                }
+
+                // Search Input filtering
+                searchInput.addEventListener('input', () => {
+                    const val = searchInput.value;
+                    searchClearBtn.style.display = val.length > 0 ? 'block' : 'none';
+                    renderOptions(val);
+                });
+
+                searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        closeDropdown();
+                        triggerBox.focus();
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const firstItem = optionsList.querySelector('.lang-option-item');
+                        if (firstItem) {
+                            firstItem.click();
+                        }
+                    }
+                });
+
+                // Clear search button
+                searchClearBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    searchInput.value = '';
+                    searchClearBtn.style.display = 'none';
+                    renderOptions('');
+                    searchInput.focus();
+                });
+
+                // Close when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!wrapper.contains(e.target)) {
+                        closeDropdown();
+                    }
+                });
+
+                // Initial render of options
+                renderOptions('');
+            }
+
+            // Initialize Searchable Language Selector
+            initSearchableLanguageSelector();
+
             // --- Dynamic Collaborators Logic ---
             function updateCollabsVisibility() {
                 const boxes = collaboratorsList.querySelectorAll('.collaborator-box');
@@ -1155,6 +2719,7 @@
                     const numEl = box.querySelector('.collab-number');
                     if (numEl) numEl.textContent = `Collaborator ${i + 1}`;
                 });
+                updateWaterLevel();
             }
 
             function addCollaborator() {
@@ -1215,11 +2780,19 @@
                         form.reset();
                         collaboratorsList.innerHTML = '';
                         updateCollabsVisibility();
+                        const selectedDisplay = document.getElementById('selectedLangDisplay');
+                        if (selectedDisplay) {
+                            selectedDisplay.textContent = 'Select or search release language...';
+                            selectedDisplay.classList.add('selected-lang-placeholder');
+                        }
+                        document.getElementById('langTriggerBox')?.classList.remove('has-value');
                         isCodeValid = false;
                         verifiedCodeData = null;
+                        document.body.classList.remove('theme-alert-red');
                         verifiedCodeCard.style.display = 'none';
                         codeErrorBox.style.display = 'none';
                         codeUsedBox.style.display = 'none';
+                        updateWaterLevel();
                     }
                 });
             }
@@ -1227,9 +2800,17 @@
             // --- Submit Another Response Link ---
             if (submitAnotherLink) {
                 submitAnotherLink.addEventListener('click', () => {
+                    stopRain();
+                    document.body.classList.remove('theme-alert-red');
                     form.reset();
                     collaboratorsList.innerHTML = '';
                     updateCollabsVisibility();
+                    const selectedDisplay = document.getElementById('selectedLangDisplay');
+                    if (selectedDisplay) {
+                        selectedDisplay.textContent = 'Select or search release language...';
+                        selectedDisplay.classList.add('selected-lang-placeholder');
+                    }
+                    document.getElementById('langTriggerBox')?.classList.remove('has-value');
                     isCodeValid = false;
                     verifiedCodeData = null;
                     verifiedCodeCard.style.display = 'none';
@@ -1237,6 +2818,7 @@
                     codeUsedBox.style.display = 'none';
                     confirmationCard.classList.remove('active');
                     form.style.display = 'block';
+                    updateWaterLevel();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
             }
@@ -1261,15 +2843,36 @@
                     const driveLink = document.getElementById('driveLink').value.trim();
                     const notes = document.getElementById('notes').value.trim();
 
+                    const codeCard = document.getElementById('codeCard') || (acceptanceCodeInput ? acceptanceCodeInput.closest('.form-card') : null);
+
                     if (!acceptanceCode) {
-                        alert('Please enter your unique Acceptance Code.');
-                        acceptanceCodeInput.focus();
+                        document.body.classList.add('theme-alert-red');
+                        if (codeErrorBox) {
+                            const errSpan = codeErrorBox.querySelector('span');
+                            if (errSpan) errSpan.textContent = 'An Acceptance Code is strictly required to submit your dossier.';
+                            codeErrorBox.style.display = 'flex';
+                        }
+                        if (codeCard) {
+                            codeCard.classList.remove('input-error-shake');
+                            void codeCard.offsetWidth;
+                            codeCard.classList.add('input-error-shake');
+                            codeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                        acceptanceCodeInput?.focus();
+                        alert('Submission blocked: Please enter your unique Acceptance Code provided in your official OBSCURA REC LLC acceptance email.');
                         return;
                     }
 
                     if (!isCodeValid) {
-                        alert('Your Acceptance Code is not verified. Please check the code or contact our team.');
-                        acceptanceCodeInput.focus();
+                        document.body.classList.add('theme-alert-red');
+                        if (codeCard) {
+                            codeCard.classList.remove('input-error-shake');
+                            void codeCard.offsetWidth;
+                            codeCard.classList.add('input-error-shake');
+                            codeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                        acceptanceCodeInput?.focus();
+                        alert('Submission blocked: Your Acceptance Code has not been verified or has already been used. A valid, active acceptance code is required.');
                         return;
                     }
 
@@ -1288,6 +2891,20 @@
                     if (!driveLink.toLowerCase().includes('drive.google.com')) {
                         const proceed = confirm('Your audio & artwork link does not appear to be a Google Drive link. Do you want to submit anyway?');
                         if (!proceed) return;
+                    }
+
+                    // Final Release Confirmation Checkbox
+                    const confirmCheckbox = document.getElementById('confirmAccuracyCheckbox');
+                    const confirmCard = document.getElementById('confirmReviewCard');
+                    if (!confirmCheckbox || !confirmCheckbox.checked) {
+                        if (confirmCard) {
+                            confirmCard.classList.remove('input-error-shake');
+                            void confirmCard.offsetWidth;
+                            confirmCard.classList.add('input-error-shake');
+                            confirmCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                        alert('Please check the Final Submission Confirmation box to confirm that your release details are accurate before submitting.');
+                        return;
                     }
 
                     // Collect collaborators
@@ -1395,7 +3012,22 @@
                         }
 
                         if (submissionSuccess) {
+                            // Invalidate and update local cache so re-entering the code IMMEDIATELY shows Code Already Used!
+                            verificationCache[cleanCode] = {
+                                ...verifiedCodeData,
+                                status: 'used',
+                                usedAt: Date.now(),
+                                submissionId: finalSubId
+                            };
+
                             if (displaySubId) displaySubId.textContent = finalSubId;
+
+                            // 1. Smoothly drain water down to 0%
+                            updateWaterLevel(true);
+
+                            // 2. Start ambient cyber rain over the screen
+                            startRain();
+
                             form.style.display = 'none';
                             confirmationCard.classList.add('active');
                             window.scrollTo({ top: 0, behavior: 'smooth' });
