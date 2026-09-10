@@ -338,17 +338,25 @@
         }
 
         .btn-del {
-            background: none;
-            border: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.35);
             color: #ef4444;
             cursor: pointer;
-            padding: 4px 8px;
+            padding: 5px 9px;
             border-radius: 4px;
             font-size: 12px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
 
         .btn-del:hover {
-            background: rgba(239, 68, 68, 0.15);
+            background: rgba(239, 68, 68, 0.25);
+            border-color: #ef4444;
+            color: #ffffff;
+            transform: scale(1.05);
         }
 
         .toast {
@@ -501,7 +509,7 @@
                             <th>Genre</th>
                             <th>Requested Date</th>
                             <th>Code Used</th>
-                            <th>Drive Assets</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="subsTableBody">
@@ -678,7 +686,10 @@ https://obscurarecord.com`;
             const query = (searchInput.value || '').toLowerCase().trim();
             const filter = statusFilter.value;
 
-            const list = Object.values(cachedCodes).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            const list = Object.entries(cachedCodes).map(([key, val]) => ({
+                ...val,
+                code: val.code || key
+            })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
             const filtered = list.filter(item => {
                 if (filter !== 'all' && item.status !== filter) return false;
@@ -726,10 +737,15 @@ https://obscurarecord.com`;
         statusFilter.addEventListener('change', renderTable);
 
         window.deleteCode = function(code) {
+            if (!code) return;
             if (confirm(`Permanently remove code ${code}? This artist will not be able to submit.`)) {
                 codesRef.child(code).remove()
-                    .then(() => showToast(`Deleted ${code}`))
-                    .catch(e => alert(e.message));
+                    .then(() => {
+                        delete cachedCodes[code];
+                        renderTable();
+                        showToast(`Deleted ${code}`);
+                    })
+                    .catch(e => alert('Error deleting code: ' + e.message));
             }
         };
 
@@ -738,7 +754,10 @@ https://obscurarecord.com`;
         const subsTableBody = document.getElementById('subsTableBody');
         submissionsRef.orderByChild('submittedAt').limitToLast(60).on('value', (snap) => {
             const subs = snap.val() || {};
-            const list = Object.values(subs).sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
+            const list = Object.entries(subs).map(([key, val]) => ({
+                ...val,
+                submissionId: val.submissionId || key
+            })).sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
 
             if (list.length === 0) {
                 subsTableBody.innerHTML = `
@@ -759,13 +778,16 @@ https://obscurarecord.com`;
                     <td>📅 ${item.releaseDate || 'N/A'}</td>
                     <td><span class="code-cell" style="font-size: 12px;">${item.acceptanceCode || '-'}</span></td>
                     <td>
-                        <div style="display: inline-flex; gap: 6px; flex-wrap: wrap;">
+                        <div style="display: inline-flex; gap: 6px; flex-wrap: wrap; align-items: center;">
                             <a href="./dossier.html?id=${encodeURIComponent(item.submissionId || '')}" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.5); color: #c084fc; text-decoration: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;">
                                 <i class="fas fa-file-alt"></i> Dossier
                             </a>
                             <a href="${item.driveLink}" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.4); color: var(--cyan); text-decoration: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;">
                                 <i class="fab fa-google-drive"></i> Open Assets
                             </a>
+                            <button type="button" class="btn-del" onclick="deleteSubmission('${item.submissionId}')" title="Delete submission record from vault">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -780,6 +802,15 @@ https://obscurarecord.com`;
                 </tr>
             `;
         });
+
+        window.deleteSubmission = function(subId) {
+            if (!subId) return;
+            if (confirm(`Permanently remove submission ${subId}? This will remove the release record from the vault.`)) {
+                submissionsRef.child(subId).remove()
+                    .then(() => showToast(`Deleted submission ${subId}`))
+                    .catch(e => alert('Error deleting submission: ' + e.message));
+            }
+        };
     </script>
 </body>
 </html>
