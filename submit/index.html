@@ -730,29 +730,47 @@
                 <div class="question-title">
                     <span>Real Name</span> <span class="req-star">*</span>
                 </div>
-                <div class="question-help">Your legal full name (or the person submitting this track).</div>
+                <div class="question-help">Your legal full name (as shown on official government ID).</div>
                 <input type="text" id="realName" class="g-input" placeholder="Your answer" required>
             </div>
 
             <!-- 4. Main Artist Name -->
             <div class="question-card">
                 <div class="question-title">
-                    <span>Main Artist</span> <span class="req-star">*</span>
+                    <span>Main Artist Name</span> <span class="req-star">*</span>
                 </div>
-                <div class="question-help">Primary artist name as it should appear on streaming platforms.</div>
+                <div class="question-help">Primary artist name exactly as it should appear on streaming platforms.</div>
                 <input type="text" id="mainArtist" class="g-input" placeholder="Your answer" required>
             </div>
 
-            <!-- 5. Main Artist Spotify Profile -->
+            <!-- 5. Email Address -->
             <div class="question-card">
                 <div class="question-title">
-                    <span>Spotify Artist Profile</span> <span class="req-star">*</span>
+                    <span>Email Address</span> <span class="req-star">*</span>
                 </div>
-                <div class="question-help">Link to your Spotify artist page. (If you don't have a Spotify profile yet, please type "First Release").</div>
-                <input type="text" id="mainArtistSpotify" class="g-input" placeholder="Your answer" required>
+                <div class="question-help">We will use this email to deliver your release confirmation, pre-save link, and distribution updates.</div>
+                <input type="email" id="email" class="g-input" placeholder="Your answer" required>
             </div>
 
-            <!-- 6. Song Name / Track Title -->
+            <!-- 6. City of Residence -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>City of Residence</span> <span class="req-star">*</span>
+                </div>
+                <div class="question-help">The city where you currently reside or work.</div>
+                <input type="text" id="city" class="g-input" placeholder="e.g. Colombo, London, Los Angeles, Tokyo" required>
+            </div>
+
+            <!-- 7. Country of Residence -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>Country of Residence</span> <span class="req-star">*</span>
+                </div>
+                <div class="question-help">Your country of legal citizenship or primary residence.</div>
+                <input type="text" id="country" class="g-input" placeholder="e.g. Sri Lanka, United States, United Kingdom, Germany" required>
+            </div>
+
+            <!-- 8. Song Name / Track Title -->
             <div class="question-card">
                 <div class="question-title">
                     <span>Song Name (Track Title)</span> <span class="req-star">*</span>
@@ -761,30 +779,63 @@
                 <input type="text" id="songTitle" class="g-input" placeholder="Your answer" required>
             </div>
 
-            <!-- 7. Email Address -->
-            <div class="question-card">
-                <div class="question-title">
-                    <span>Email Address</span> <span class="req-star">*</span>
-                </div>
-                <div class="question-help">We will use this email to contact you about your submission.</div>
-                <input type="email" id="email" class="g-input" placeholder="Your answer" required>
-            </div>
-
-            <!-- 8. Primary Genre -->
+            <!-- 9. Primary Genre -->
             <div class="question-card">
                 <div class="question-title">
                     <span>Primary Genre</span> <span class="req-star">*</span>
                 </div>
-                <div class="question-help">Type the main genre or musical style of your track (e.g. Phonk, Drift, Electronic, Synthwave, Trap).</div>
+                <div class="question-help">Select or type the primary genre or style of your track (e.g. Phonk, Drift, Electronic, Synthwave, Trap).</div>
                 <input type="text" id="genre" class="g-input" placeholder="Your answer" required>
             </div>
 
-            <!-- 9. Requested Release Date -->
+            <!-- 10. Release Language -->
             <div class="question-card">
                 <div class="question-title">
-                    <span>Requested Release Date</span> <span class="req-star">*</span>
+                    <span>Release Language</span> <span class="req-star">*</span>
                 </div>
-                <div class="question-help">The target date you would like this track to be released.</div>
+                <div class="question-help">Primary language of the lyrics or vocal performance in this track. If no vocals, select "Instrumental / No Lyrics".</div>
+                <select id="language" class="g-input" style="background: rgba(14, 11, 28, 0.95); cursor: pointer;" required>
+                    <option value="" disabled selected>Select release language...</option>
+                    <option value="English">English</option>
+                    <option value="Instrumental / No Lyrics">Instrumental / No Lyrics</option>
+                    <option value="Spanish">Spanish</option>
+                    <option value="Russian">Russian</option>
+                    <option value="Portuguese">Portuguese</option>
+                    <option value="Japanese">Japanese</option>
+                    <option value="German">German</option>
+                    <option value="French">French</option>
+                    <option value="Italian">Italian</option>
+                    <option value="Korean">Korean</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Sinhala">Sinhala</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <!-- 11. Main Artist Spotify Profile -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>Spotify Artist Profile</span> <span class="req-star">*</span>
+                </div>
+                <div class="question-help">Link to your official Spotify artist profile. (If this is your debut release, please type "First Release").</div>
+                <input type="text" id="mainArtistSpotify" class="g-input" placeholder="https://open.spotify.com/artist/..." required>
+            </div>
+
+            <!-- 12. Main Artist Apple Music Profile -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>Apple Music Artist Profile</span>
+                </div>
+                <div class="question-help">Link to your official Apple Music artist profile. (If you don't have one yet, type "First Release" or leave blank).</div>
+                <input type="text" id="mainArtistApple" class="g-input" placeholder="https://music.apple.com/artist/...">
+            </div>
+
+            <!-- 13. Requested Release Date -->
+            <div class="question-card">
+                <div class="question-title">
+                    <span>Requested Release Date (Minimum 4 Days in Advance)</span> <span class="req-star">*</span>
+                </div>
+                <div class="question-help">Target date for digital release. Digital distribution requires a <strong>minimum lead time of 4 days</strong> for quality assurance, audio ingestion, and streaming store delivery.</div>
                 <input type="date" id="releaseDate" class="g-input" required>
                 <div class="question-note">
                     <i class="fas fa-info-circle"></i>
@@ -792,25 +843,25 @@
                 </div>
             </div>
 
-            <!-- 10. Google Drive Link -->
+            <!-- 14. Google Drive Link -->
             <div class="question-card">
                 <div class="question-title">
-                    <span>Song &amp; Artwork Link (Google Drive)</span> <span class="req-star">*</span>
+                    <span>Songs &amp; Cover Art via Google Drive (With View Access)</span> <span class="req-star">*</span>
                 </div>
                 <div class="question-help">
-                    Please upload your master audio (.WAV file) and artwork (.PNG or .JPG 3000x3000px) to a Google Drive folder. 
-                    <strong>Important:</strong> Make sure the folder link sharing permission is set to <strong>"Anyone with the link can view"</strong> so our team can access your files.
+                    Please upload your lossless Master Audio (<strong>.WAV file</strong>) and High-Resolution Cover Artwork (<strong>3000x3000px .PNG/.JPG</strong>) to a single Google Drive folder. 
+                    <br><strong>Important:</strong> Ensure the Google Drive folder link sharing permission is set to <strong>"Anyone with the link can view"</strong> so our production team can access your master files.
                 </div>
                 <input type="url" id="driveLink" class="g-input" placeholder="https://drive.google.com/drive/folders/..." required>
             </div>
 
-            <!-- 11. Collaborators (Optional - Dynamic Add) -->
+            <!-- 15. Collaborators (Optional - Dynamic Add) -->
             <div class="question-card">
                 <div class="question-title">
-                    <span>Collaborators</span>
+                    <span>Collaborators &amp; Featured Artists</span>
                 </div>
                 <div class="question-help">
-                    If other artists contributed to this track, add them below. For each collaborator, please provide their artist name, real name, role (e.g. Vocals, Lyrics, Mixing, Producer), and Spotify link.
+                    If other artists or producers contributed to this track, add them below. Provide their stage name, legal real name, contribution/role, and their Spotify and Apple Music links.
                 </div>
 
                 <div id="collaboratorsList">
@@ -864,11 +915,6 @@
             <div class="confirmation-sub-id">
                 Submission ID: <span id="displaySubId">OBS-SUB-0000</span>
             </div>
-            <div style="margin: 18px 0 14px;">
-                <a id="viewDossierBtn" href="#" target="_blank" class="submit-btn" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: auto; padding: 10px 24px; font-size: 13.5px;">
-                    📄 View Submission Dossier &rarr;
-                </a>
-            </div>
             <div>
                 <span id="submitAnotherLink" class="submit-another-link">Submit another response</span>
             </div>
@@ -912,10 +958,16 @@
             // Client-side cache to eliminate redundant Firebase read requests
             const verificationCache = {};
 
-            // Restrict release date to today or later
+            // Restrict release date to minimum 4 days in advance
+            let minReleaseDateStr = '';
             if (releaseDateInput) {
-                const today = new Date().toISOString().split('T')[0];
-                releaseDateInput.min = today;
+                const minDateObj = new Date();
+                minDateObj.setDate(minDateObj.getDate() + 4);
+                const yyyy = minDateObj.getFullYear();
+                const mm = String(minDateObj.getMonth() + 1).padStart(2, '0');
+                const dd = String(minDateObj.getDate()).padStart(2, '0');
+                minReleaseDateStr = `${yyyy}-${mm}-${dd}`;
+                releaseDateInput.min = minReleaseDateStr;
             }
 
             // --- Acceptance Code Real-Time Verification (Heavily Optimized) ---
@@ -1121,16 +1173,20 @@
                             <input type="text" class="collab-field-input collab-artist" placeholder="e.g. Ghostface" required>
                         </div>
                         <div class="collab-field">
-                            <label class="collab-field-label">Real Name</label>
+                            <label class="collab-field-label">Legal Real Name</label>
                             <input type="text" class="collab-field-input collab-realname" placeholder="e.g. Dennis Coles">
                         </div>
-                        <div class="collab-field">
+                        <div class="collab-field" style="grid-column: 1 / -1;">
                             <label class="collab-field-label">Contribution / Role</label>
-                            <input type="text" class="collab-field-input collab-role" placeholder="e.g. Vocals, Lyrics, Mixing, Producer">
+                            <input type="text" class="collab-field-input collab-role" placeholder="e.g. Featured Artist, Producer, Remixer, Vocals">
                         </div>
                         <div class="collab-field">
                             <label class="collab-field-label">Spotify Profile Link</label>
                             <input type="text" class="collab-field-input collab-spotify" placeholder="https://open.spotify.com/artist/...">
+                        </div>
+                        <div class="collab-field">
+                            <label class="collab-field-label">Apple Music Profile Link</label>
+                            <input type="text" class="collab-field-input collab-apple" placeholder="https://music.apple.com/artist/...">
                         </div>
                     </div>
                 `;
@@ -1193,10 +1249,14 @@
                     const acceptanceCode = (acceptanceCodeInput?.value || '').toUpperCase().trim();
                     const realName = document.getElementById('realName').value.trim();
                     const mainArtist = document.getElementById('mainArtist').value.trim();
-                    const mainArtistSpotify = document.getElementById('mainArtistSpotify').value.trim();
-                    const songTitle = document.getElementById('songTitle').value.trim();
                     const email = document.getElementById('email').value.trim();
+                    const city = document.getElementById('city').value.trim();
+                    const country = document.getElementById('country').value.trim();
+                    const songTitle = document.getElementById('songTitle').value.trim();
                     const genre = document.getElementById('genre').value.trim();
+                    const language = document.getElementById('language').value.trim();
+                    const mainArtistSpotify = document.getElementById('mainArtistSpotify').value.trim();
+                    const mainArtistApple = document.getElementById('mainArtistApple').value.trim();
                     const releaseDate = document.getElementById('releaseDate').value;
                     const driveLink = document.getElementById('driveLink').value.trim();
                     const notes = document.getElementById('notes').value.trim();
@@ -1213,8 +1273,14 @@
                         return;
                     }
 
-                    if (!realName || !mainArtist || !songTitle || !email || !driveLink || !genre || !releaseDate) {
+                    if (!realName || !mainArtist || !email || !city || !country || !songTitle || !genre || !language || !mainArtistSpotify || !releaseDate || !driveLink) {
                         alert('Please fill in all required questions marked with an asterisk (*).');
+                        return;
+                    }
+
+                    if (minReleaseDateStr && releaseDate < minReleaseDateStr) {
+                        alert(`Requested release date must be at least 4 days in advance (${minReleaseDateStr} or later) to allow digital store ingestion and delivery.`);
+                        document.getElementById('releaseDate').focus();
                         return;
                     }
 
@@ -1232,13 +1298,15 @@
                         const real = box.querySelector('.collab-realname')?.value.trim();
                         const role = box.querySelector('.collab-role')?.value.trim();
                         const spotify = box.querySelector('.collab-spotify')?.value.trim();
+                        const apple = box.querySelector('.collab-apple')?.value.trim();
 
-                        if (artist || real || role || spotify) {
+                        if (artist || real || role || spotify || apple) {
                             collaborators.push({
                                 artistName: artist || 'N/A',
                                 realName: real || 'N/A',
                                 role: role || 'Collaborator',
-                                spotifyLink: spotify || ''
+                                spotifyLink: spotify || '',
+                                appleLink: apple || ''
                             });
                         }
                     });
@@ -1262,9 +1330,13 @@
                             songTitle,
                             realName,
                             mainArtist,
-                            mainArtistSpotify,
                             email,
+                            city,
+                            country,
                             genre,
+                            language,
+                            mainArtistSpotify,
+                            mainArtistApple,
                             releaseDate,
                             driveLink,
                             collaborators,
@@ -1324,10 +1396,6 @@
 
                         if (submissionSuccess) {
                             if (displaySubId) displaySubId.textContent = finalSubId;
-                            const viewDossierBtn = document.getElementById('viewDossierBtn');
-                            if (viewDossierBtn) {
-                                viewDossierBtn.href = `./dossier.html?id=${encodeURIComponent(finalSubId)}`;
-                            }
                             form.style.display = 'none';
                             confirmationCard.classList.add('active');
                             window.scrollTo({ top: 0, behavior: 'smooth' });
