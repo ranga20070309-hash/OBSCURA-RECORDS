@@ -58,8 +58,12 @@ module.exports = async (req, res) => {
         realName,
         mainArtist,
         mainArtistSpotify,
+        mainArtistApple,
         email,
+        city,
+        country,
         genre,
+        language,
         releaseDate,
         driveLink,
         collaborators,
@@ -97,7 +101,7 @@ module.exports = async (req, res) => {
         }
 
         // 2. Field Validation
-        if (!realName || !mainArtist || !email || !driveLink || !songTitle) {
+        if (!realName || !mainArtist || !email || !city || !country || !songTitle || !genre || !language || !driveLink) {
             return res.status(400).json({ error: 'Please fill in all required submission fields.' });
         }
 
@@ -105,8 +109,12 @@ module.exports = async (req, res) => {
         const cleanRealName = sanitize(realName);
         const cleanMainArtist = sanitize(mainArtist);
         const cleanMainArtistSpotify = (mainArtistSpotify || '').trim();
+        const cleanMainArtistApple = (mainArtistApple || '').trim();
         const cleanEmail = email.trim();
+        const cleanCity = sanitize(city) || 'Not specified';
+        const cleanCountry = sanitize(country) || 'Not specified';
         const cleanGenre = sanitize(genre) || 'Not specified';
+        const cleanLanguage = sanitize(language) || 'English';
         const cleanReleaseDate = sanitize(releaseDate) || 'Flexible / To Be Decided';
         const cleanDriveLink = driveLink.trim();
         const cleanNotes = sanitize(notes) || 'None provided.';
@@ -116,12 +124,13 @@ module.exports = async (req, res) => {
         // Sanitize collaborators
         const cleanCollaborators = Array.isArray(collaborators)
             ? collaborators
-                .filter(c => c && (c.artistName || c.realName || c.role || c.spotifyLink))
+                .filter(c => c && (c.artistName || c.realName || c.role || c.spotifyLink || c.appleLink))
                 .map(c => ({
                     artistName: sanitize(c.artistName) || 'N/A',
                     realName: sanitize(c.realName) || 'N/A',
                     role: sanitize(c.role) || 'Featured / Collaborator',
-                    spotifyLink: (c.spotifyLink || '').trim()
+                    spotifyLink: (c.spotifyLink || '').trim(),
+                    appleLink: (c.appleLink || '').trim()
                 }))
             : [];
 
@@ -144,7 +153,12 @@ module.exports = async (req, res) => {
                 mainArtist: cleanMainArtist,
                 realName: cleanRealName,
                 email: cleanEmail,
+                city: cleanCity,
+                country: cleanCountry,
                 genre: cleanGenre,
+                language: cleanLanguage,
+                mainArtistSpotify: cleanMainArtistSpotify,
+                mainArtistApple: cleanMainArtistApple,
                 releaseDate: cleanReleaseDate,
                 driveLink: cleanDriveLink,
                 collaborators: cleanCollaborators,
@@ -253,9 +267,15 @@ module.exports = async (req, res) => {
                                 <div style="font-size: 15px; color: #94a3b8; margin-top: 6px;">
                                     by <strong style="color: #00f0ff; font-size: 16px;">${cleanMainArtist}</strong> (<span style="color: #cbd5e1;">${cleanRealName}</span>)
                                 </div>
+                                <div style="font-size: 12.5px; color: #64748b; margin-top: 4px;">
+                                    📍 ${cleanCity}, ${cleanCountry}
+                                </div>
                                 <div style="margin-top: 14px;">
                                     <span style="display: inline-block; background-color: #2e1065; color: #c084fc; font-weight: 700; font-size: 11.5px; padding: 4px 10px; border-radius: 4px; border: 1px solid #581c87; margin-right: 6px;">
                                         🎵 ${cleanGenre}
+                                    </span>
+                                    <span style="display: inline-block; background-color: #0c4a6e; color: #38bdf8; font-weight: 700; font-size: 11.5px; padding: 4px 10px; border-radius: 4px; border: 1px solid #0369a1; margin-right: 6px;">
+                                        🌐 ${cleanLanguage}
                                     </span>
                                     <span style="display: inline-block; background-color: #451a03; color: #fde047; font-weight: 700; font-size: 11.5px; padding: 4px 10px; border-radius: 4px; border: 1px solid #854d0e;">
                                         📅 Target: ${cleanReleaseDate}
@@ -298,9 +318,21 @@ module.exports = async (req, res) => {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 10px 14px; color: #94a3b8;">Spotify Profile:</td>
-                                    <td style="padding: 10px 14px;">
+                                    <td style="padding: 10px 14px; color: #94a3b8; border-bottom: 1px solid #161d2d;">Location:</td>
+                                    <td style="padding: 10px 14px; color: #cbd5e1; border-bottom: 1px solid #161d2d;">
+                                        ${cleanCity}, ${cleanCountry}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 14px; color: #94a3b8; border-bottom: 1px solid #161d2d;">Spotify Profile:</td>
+                                    <td style="padding: 10px 14px; border-bottom: 1px solid #161d2d;">
                                         ${cleanMainArtistSpotify ? `<a href="${cleanMainArtistSpotify}" target="_blank" style="color: #38bdf8; text-decoration: underline;">${cleanMainArtistSpotify}</a>` : '<span style="color: #64748b;">Not provided</span>'}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 14px; color: #94a3b8;">Apple Music:</td>
+                                    <td style="padding: 10px 14px;">
+                                        ${cleanMainArtistApple ? `<a href="${cleanMainArtistApple}" target="_blank" style="color: #fa586a; text-decoration: underline;">${cleanMainArtistApple}</a>` : '<span style="color: #64748b;">Not provided</span>'}
                                     </td>
                                 </tr>
                             </table>
@@ -323,7 +355,7 @@ module.exports = async (req, res) => {
             </html>
         `;
 
-        // Streamlined Artist Confirmation Email with Dossier Link
+        // Streamlined Artist Confirmation Email (No dossier link - Confidential to A&R Admin)
         const artistReceiptHtml = `
             <!DOCTYPE html>
             <html lang="en">
@@ -364,18 +396,14 @@ module.exports = async (req, res) => {
                                 <div style="margin-bottom: 6px; font-size: 13px; color: #94a3b8;">
                                     Main Artist: <strong style="color: #ffffff;">${cleanMainArtist}</strong>
                                 </div>
-                                <div style="font-size: 13px; color: #94a3b8;">
+                                <div style="margin-bottom: 6px; font-size: 13px; color: #94a3b8;">
                                     Target Release Date: <strong style="color: #fde047;">${cleanReleaseDate}</strong>
                                 </div>
-                            </div>
-
-                            <!-- Artist Dossier Action Button -->
-                            <div style="text-align: center; margin: 24px 0 20px;">
-                                <a href="${dossierUrl}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%); color: #020617; text-decoration: none; font-weight: 800; font-size: 14px; padding: 12px 28px; border-radius: 6px; letter-spacing: 0.5px; box-shadow: 0 4px 16px rgba(0,240,255,0.3);">
-                                    📄 VIEW YOUR SUBMISSION DOSSIER &rarr;
-                                </a>
-                                <div style="font-size: 11.5px; color: #64748b; margin-top: 10px;">
-                                    Link: <a href="${dossierUrl}" target="_blank" style="color: #00f0ff; text-decoration: underline;">${dossierUrl}</a>
+                                <div style="margin-bottom: 6px; font-size: 13px; color: #94a3b8;">
+                                    Language: <strong style="color: #38bdf8;">${cleanLanguage}</strong>
+                                </div>
+                                <div style="font-size: 13px; color: #94a3b8;">
+                                    Origin: <strong style="color: #cbd5e1;">${cleanCity}, ${cleanCountry}</strong>
                                 </div>
                             </div>
 
@@ -402,7 +430,7 @@ module.exports = async (req, res) => {
             replyTo: cleanEmail,
             to: TARGET_SUBMISSION_EMAIL,
             subject: `[SUBMISSION] ${cleanMainArtist} - "${cleanSongTitle}" (${subId})`,
-            text: `NEW TRACK SUBMISSION RECEIVED - OBSCURA REC LLC\n-------------------------------------------------\nTrack Title: "${cleanSongTitle}"\nMain Artist: ${cleanMainArtist} (${cleanRealName})\nSubmission ID: ${subId}\nAcceptance Code: ${cleanCode} (VERIFIED & CONSUMED)\nPrimary Genre: ${cleanGenre}\nTarget Release Date: ${cleanReleaseDate}\nArtist Contact Email: ${cleanEmail}\n\n📄 VIEW FULL RELEASE DOSSIER (Metadata, Audio, Split Sheet, Notes):\n${dossierUrl}\n\n📂 GOOGLE DRIVE MASTER ASSETS:\n${cleanDriveLink}\n\n-------------------------------------------------\nSubmitted at: ${timestamp}`,
+            text: `NEW TRACK SUBMISSION RECEIVED - OBSCURA REC LLC\n-------------------------------------------------\nTrack Title: "${cleanSongTitle}"\nMain Artist: ${cleanMainArtist} (${cleanRealName})\nLocation: ${cleanCity}, ${cleanCountry}\nSubmission ID: ${subId}\nAcceptance Code: ${cleanCode} (VERIFIED & CONSUMED)\nPrimary Genre: ${cleanGenre}\nLanguage: ${cleanLanguage}\nTarget Release Date: ${cleanReleaseDate}\nArtist Contact Email: ${cleanEmail}\nSpotify Profile: ${cleanMainArtistSpotify || 'Not provided'}\nApple Music Profile: ${cleanMainArtistApple || 'Not provided'}\n\n📄 VIEW FULL RELEASE DOSSIER (Metadata, Audio, Split Sheet, Notes):\n${dossierUrl}\n\n📂 GOOGLE DRIVE MASTER ASSETS:\n${cleanDriveLink}\n\n-------------------------------------------------\nSubmitted at: ${timestamp}`,
             html: adminEmailHtml,
             attachments: emailAttachments,
             headers: {
@@ -417,7 +445,7 @@ module.exports = async (req, res) => {
             from: `"OBSCURA REC LLC" <${senderAddress}>`,
             to: cleanEmail,
             subject: `Release Materials Received [${subId}] - "${cleanSongTitle}" - OBSCURA REC LLC`,
-            text: `Hi ${cleanRealName || cleanMainArtist},\n\nThank you for submitting your release materials for "${cleanSongTitle}" to OBSCURA REC LLC. Your submission (${subId}) has been successfully received.\n\n📄 VIEW YOUR SUBMISSION DOSSIER:\n${dossierUrl}\n\nOur distribution team will inspect your master audio and artwork and will contact you directly with your release schedule and pre-save link.\n\nBest regards,\nOBSCURA REC LLC Distribution Team\nhttps://obscurarecord.com`,
+            text: `Hi ${cleanRealName || cleanMainArtist},\n\nThank you for submitting your release materials for "${cleanSongTitle}" to OBSCURA REC LLC. Your submission (${subId}) has been successfully received.\n\nOur distribution team will inspect your master audio and artwork and will contact you directly with your release schedule and pre-save link.\n\nBest regards,\nOBSCURA REC LLC Distribution Team\nhttps://obscurarecord.com`,
             html: artistReceiptHtml,
             attachments: emailAttachments
         };
