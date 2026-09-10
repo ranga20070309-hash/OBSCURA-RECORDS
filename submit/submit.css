@@ -517,8 +517,8 @@ body {
 
 .verified-details-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
     background: rgba(6, 4, 16, 0.6);
     padding: 12px 14px;
     border-radius: 6px;
@@ -528,9 +528,37 @@ body {
 
 @media (max-width: 600px) {
     .verified-details-grid {
-        grid-template-columns: 1fr;
-        gap: 8px;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
     }
+}
+
+.verified-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: fit-content;
+    margin-top: 1px;
+}
+
+.verified-status-badge.active {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.45);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+}
+
+.verified-status-badge.used {
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
 }
 
 .verified-item {
