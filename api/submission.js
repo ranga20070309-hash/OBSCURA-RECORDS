@@ -1,5 +1,7 @@
 const nodemailer = require('nodemailer');
 const axios = require('axios');
+const path = require('path');
+const fs = require('fs');
 
 const TARGET_SUBMISSION_EMAIL = 'mail.obscurarecords@gmail.com';
 const FIREBASE_DB_URL = "https://submission-code-and-mail-sys-default-rtdb.asia-southeast1.firebasedatabase.app";
@@ -123,315 +125,8 @@ module.exports = async (req, res) => {
                 }))
             : [];
 
-        // Collaborators HTML
-        let collaboratorsHtml = '';
-        if (cleanCollaborators.length > 0) {
-            collaboratorsHtml = `
-                <table style="width: 100%; border-collapse: collapse; margin-top: 10px; background-color: #f8fafc; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0;">
-                    <thead>
-                        <tr style="background-color: #f1f5f9; color: #334155; font-size: 12px; font-weight: 700; text-transform: uppercase;">
-                            <th style="padding: 10px 12px; text-align: left; border-bottom: 1px solid #cbd5e1;">#</th>
-                            <th style="padding: 10px 12px; text-align: left; border-bottom: 1px solid #cbd5e1;">Artist Name</th>
-                            <th style="padding: 10px 12px; text-align: left; border-bottom: 1px solid #cbd5e1;">Real Name</th>
-                            <th style="padding: 10px 12px; text-align: left; border-bottom: 1px solid #cbd5e1;">Role</th>
-                            <th style="padding: 10px 12px; text-align: left; border-bottom: 1px solid #cbd5e1;">Spotify Link</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${cleanCollaborators.map((c, i) => `
-                            <tr style="border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #1e293b;">
-                                <td style="padding: 10px 12px; font-weight: bold; color: #64748b;">${i + 1}</td>
-                                <td style="padding: 10px 12px; font-weight: 600;">${c.artistName}</td>
-                                <td style="padding: 10px 12px;">${c.realName}</td>
-                                <td style="padding: 10px 12px; color: #7c3aed; font-weight: 600;">${c.role}</td>
-                                <td style="padding: 10px 12px;">
-                                    ${c.spotifyLink ? `<a href="${c.spotifyLink}" target="_blank" style="color: #0284c7; text-decoration: underline; font-weight: 500;">View Profile</a>` : '<span style="color: #94a3b8;">None</span>'}
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        } else {
-            collaboratorsHtml = `
-                <div style="padding: 12px 14px; background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; color: #64748b; font-size: 13px;">
-                    No additional collaborators (Solo track).
-                </div>
-            `;
-        }
-
-        // Admin Email HTML (Premium High-Contrast A&R Dossier)
-        const adminEmailHtml = `
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="utf-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>New Track Submission - OBSCURA REC LLC</title>
-            </head>
-            <body style="margin: 0; padding: 24px 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0b0f19; color: #1e293b;">
-                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 680px; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #1e293b; box-shadow: 0 10px 30px rgba(0,0,0,0.35);">
-                    
-                    <!-- Header Banner -->
-                    <tr>
-                        <td style="background: #090d16; padding: 26px 30px; border-bottom: 3px solid #0284c7;">
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                <tr>
-                                    <td style="vertical-align: middle;">
-                                        <table border="0" cellpadding="0" cellspacing="0">
-                                            <tr>
-                                                <td style="vertical-align: middle; padding-right: 14px;">
-                                                    <img src="https://obscurarecord.com/assets/OCR_circle.png" width="46" height="46" style="border-radius: 50%; border: 1.5px solid #38bdf8; display: block;" alt="OCR">
-                                                </td>
-                                                <td style="vertical-align: middle;">
-                                                    <div style="color: #ffffff; font-size: 19px; font-weight: 800; letter-spacing: 0.8px; line-height: 1.2;">OBSCURA REC LLC</div>
-                                                    <div style="color: #38bdf8; font-size: 11.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-top: 3px;">A&amp;R TRACK SUBMISSION DOSSIER</div>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                    <td style="text-align: right; vertical-align: middle;">
-                                        <div style="display: inline-block; background: #0f172a; border: 1px solid #334155; color: #94a3b8; padding: 6px 12px; border-radius: 6px; font-size: 11.5px; font-family: monospace; font-weight: 600;">
-                                            ID: <strong style="color: #38bdf8;">${subId}</strong>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-
-                    <!-- Body Content -->
-                    <tr>
-                        <td style="padding: 28px 30px;">
-
-                            <!-- Verified Acceptance Code Card -->
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; margin-bottom: 22px;">
-                                <tr>
-                                    <td style="padding: 14px 18px;">
-                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                            <tr>
-                                                <td>
-                                                    <span style="color: #15803d; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
-                                                        &#10003; VERIFIED DEMO ACCEPTANCE CODE
-                                                    </span>
-                                                </td>
-                                                <td style="text-align: right;">
-                                                    <span style="font-family: monospace; font-size: 14px; font-weight: 700; color: #166534; background: #dcfce7; border: 1px solid #86efac; padding: 4px 10px; border-radius: 4px; letter-spacing: 1px;">
-                                                        ${cleanCode}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="2" style="padding-top: 8px; font-size: 12.5px; color: #166534;">
-                                                    Assigned to: <strong>${codeRecord.artistName || cleanMainArtist}</strong> (${codeRecord.realName || cleanRealName}) &bull; Accepted: <strong>${codeRecord.acceptedDate || 'Recently Approved'}</strong>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                            </table>
-
-                            <!-- Hero Song Card -->
-                            <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0; border-left: 4px solid #0284c7; border-radius: 8px; padding: 18px 20px; margin-bottom: 24px;">
-                                <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; color: #64748b; margin-bottom: 4px;">RELEASE TITLE</div>
-                                <div style="font-size: 22px; font-weight: 800; color: #0f172a; line-height: 1.3;">"${cleanSongTitle}"</div>
-                                <div style="font-size: 14px; color: #334155; margin-top: 4px;">
-                                    by <strong style="color: #0284c7; font-size: 15px;">${cleanMainArtist}</strong>
-                                </div>
-                            </div>
-
-                            <!-- Core Track Metadata Table -->
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 24px; overflow: hidden;">
-                                <tr>
-                                    <td colspan="2" style="background-color: #f8fafc; padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #475569;">
-                                        Release Details &amp; Submitter Info
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 18px; color: #64748b; font-size: 13.5px; width: 38%; border-bottom: 1px solid #f1f5f9;">Main Artist:</td>
-                                    <td style="padding: 10px 18px; color: #0f172a; font-size: 14px; font-weight: 700; border-bottom: 1px solid #f1f5f9;">${cleanMainArtist}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 18px; color: #64748b; font-size: 13.5px; border-bottom: 1px solid #f1f5f9;">Legal Real Name:</td>
-                                    <td style="padding: 10px 18px; color: #0f172a; font-size: 14px; font-weight: 600; border-bottom: 1px solid #f1f5f9;">${cleanRealName}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 18px; color: #64748b; font-size: 13.5px; border-bottom: 1px solid #f1f5f9;">Primary Genre:</td>
-                                    <td style="padding: 10px 18px; border-bottom: 1px solid #f1f5f9;">
-                                        <span style="display: inline-block; background-color: #f3e8ff; color: #7e22ce; font-weight: 700; font-size: 12px; padding: 3px 10px; border-radius: 4px;">
-                                            ${cleanGenre}
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 18px; color: #64748b; font-size: 13.5px; border-bottom: 1px solid #f1f5f9;">Requested Release Date:</td>
-                                    <td style="padding: 10px 18px; border-bottom: 1px solid #f1f5f9;">
-                                        <span style="display: inline-block; background-color: #fef9c3; color: #a16207; font-weight: 700; font-size: 12px; padding: 3px 10px; border-radius: 4px;">
-                                            📅 ${cleanReleaseDate}
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 18px; color: #64748b; font-size: 13.5px; border-bottom: 1px solid #f1f5f9;">Main Spotify Profile:</td>
-                                    <td style="padding: 10px 18px; font-size: 13.5px; border-bottom: 1px solid #f1f5f9;">
-                                        ${cleanMainArtistSpotify ? `<a href="${cleanMainArtistSpotify}" target="_blank" style="color: #0284c7; text-decoration: underline; font-weight: 600;">${cleanMainArtistSpotify}</a>` : '<span style="color: #94a3b8; font-style: italic;">Not provided</span>'}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 18px; color: #64748b; font-size: 13.5px;">Submitter Contact Email:</td>
-                                    <td style="padding: 10px 18px; font-size: 14px; font-weight: 600;">
-                                        <a href="mailto:${cleanEmail}" style="color: #0f172a; text-decoration: none;">${cleanEmail}</a>
-                                    </td>
-                                </tr>
-                            </table>
-
-                            <!-- Master Audio & Artwork Google Drive Box -->
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f0f7ff; border: 1px solid #bae6fd; border-radius: 8px; margin-bottom: 24px;">
-                                <tr>
-                                    <td style="padding: 22px; text-align: center;">
-                                        <div style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #0369a1; margin-bottom: 6px;">
-                                            MASTER AUDIO (.WAV) &amp; HIGH-RES ARTWORK (3000x3000px)
-                                        </div>
-                                        <div style="font-size: 13.5px; color: #334155; margin-bottom: 14px;">
-                                            Google Drive folder containing official lossless assets for this release:
-                                        </div>
-                                        <a href="${cleanDriveLink}" target="_blank" style="display: inline-block; background-color: #0284c7; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 28px; border-radius: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);">
-                                            OPEN IN GOOGLE DRIVE &rarr;
-                                        </a>
-                                        <div style="margin-top: 12px; font-size: 11.5px; color: #64748b; word-break: break-all;">
-                                            <a href="${cleanDriveLink}" target="_blank" style="color: #0284c7; text-decoration: underline;">${cleanDriveLink}</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
-
-                            <!-- Collaborators Section -->
-                            <div style="margin-bottom: 24px;">
-                                <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #475569; margin-bottom: 8px;">
-                                    Collaborators &amp; Featured Artists (${cleanCollaborators.length})
-                                </div>
-                                ${collaboratorsHtml}
-                            </div>
-
-                            <!-- Artist Notes / Message -->
-                            <div style="margin-bottom: 26px;">
-                                <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #475569; margin-bottom: 8px;">
-                                    Artist Notes &amp; Remarks
-                                </div>
-                                <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #38bdf8; border-radius: 6px; padding: 14px 18px; font-size: 13.5px; color: #334155; line-height: 1.6; white-space: pre-wrap;">
-${cleanNotes || '<span style="color: #94a3b8; font-style: italic;">No additional notes provided by artist.</span>'}
-                                </div>
-                            </div>
-
-                            <!-- Quick Action Bar -->
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 24px;">
-                                <tr>
-                                    <td style="text-align: center;">
-                                        <a href="mailto:${cleanEmail}?subject=Re: OBSCURA REC LLC Submission [${subId}] - ${cleanMainArtist} - ${cleanSongTitle}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 6px; margin: 4px 6px;">
-                                            &#9993; Reply to Submitter (${cleanEmail})
-                                        </a>
-                                        <a href="https://obscurarecord.com/admin-codes" target="_blank" style="display: inline-block; background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; text-decoration: none; font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 6px; margin: 4px 6px;">
-                                            &#9881; Open Admin Codes Vault
-                                        </a>
-                                    </td>
-                                </tr>
-                            </table>
-
-                        </td>
-                    </tr>
-
-                    <!-- Footer -->
-                    <tr>
-                        <td style="background-color: #090d16; padding: 18px 24px; text-align: center; border-top: 1px solid #1e293b;">
-                            <div style="font-size: 12px; font-weight: 600; color: #94a3b8; letter-spacing: 0.5px;">
-                                OBSCURA REC LLC &bull; Automated A&amp;R Submission Engine
-                            </div>
-                            <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
-                                Confidential release material &bull; Dispatched to <a href="mailto:${TARGET_SUBMISSION_EMAIL}" style="color: #38bdf8; text-decoration: none;">${TARGET_SUBMISSION_EMAIL}</a>
-                            </div>
-                        </td>
-                    </tr>
-
-                </table>
-            </body>
-            </html>
-        `;
-
-        // Artist Confirmation Email
-        const artistReceiptHtml = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <title>Track Submission Received - OBSCURA REC LLC</title>
-            </head>
-            <body style="margin: 0; padding: 25px 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; color: #1e293b;">
-                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
-                    <tr>
-                        <td style="background-color: #0f172a; padding: 26px 30px; text-align: left;">
-                            <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 700;">OBSCURA REC LLC</h1>
-                            <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 13px;">Track Submission Received</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 30px; font-size: 14.5px; line-height: 1.6; color: #334155;">
-                            <p style="margin-top: 0; color: #0f172a; font-size: 16px;">Hi <strong>${cleanRealName || cleanMainArtist}</strong>,</p>
-                            <p>Thank you for submitting your release, <strong>"${cleanSongTitle}"</strong> by <strong>${cleanMainArtist}</strong>, to OBSCURA REC LLC. Your submission has been securely received and recorded.</p>
-                            
-                            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 20px 0;">
-                                <p style="margin: 0 0 6px 0; font-size: 13px; color: #64748b;"><strong>Submission ID:</strong> ${subId}</p>
-                                <p style="margin: 0 0 6px 0; font-size: 13px; color: #64748b;"><strong>Track Title:</strong> ${cleanSongTitle}</p>
-                                <p style="margin: 0 0 6px 0; font-size: 13px; color: #64748b;"><strong>Main Artist:</strong> ${cleanMainArtist}</p>
-                                <p style="margin: 0 0 6px 0; font-size: 13px; color: #64748b;"><strong>Genre:</strong> ${cleanGenre}</p>
-                                <p style="margin: 0; font-size: 13px; color: #64748b;"><strong>Requested Release Date:</strong> ${cleanReleaseDate}</p>
-                            </div>
-
-                            <p>Our team will prepare and review your Google Drive master assets and metadata. We will contact you directly within <strong>2 to 3 weeks</strong>.</p>
-                            
-                            <p style="margin-top: 24px; color: #64748b; font-size: 13px;">
-                                Best regards,<br>
-                                <strong style="color: #0f172a;">A&amp;R Department &bull; OBSCURA REC LLC</strong><br>
-                                <a href="https://obscurarecord.com" style="color: #2563eb; text-decoration: none;">obscurarecord.com</a>
-                            </p>
-                        </td>
-                    </tr>
-                </table>
-            </body>
-            </html>
-        `;
-
-        const senderAddress = process.env.EMAIL_USER || 'no-reply@obscurarecord.com';
-
-        const adminMailOptions = {
-            from: `"Obscura Submissions" <${senderAddress}>`,
-            replyTo: cleanEmail,
-            to: TARGET_SUBMISSION_EMAIL,
-            subject: `[SUBMISSION] ${cleanMainArtist} - "${cleanSongTitle}" (${subId})`,
-            text: `NEW TRACK SUBMISSION\nID: ${subId}\nAcceptance Code: ${cleanCode}\nSong Name: ${cleanSongTitle}\nMain Artist: ${cleanMainArtist}\nReal Name: ${cleanRealName}\nSpotify: ${cleanMainArtistSpotify}\nEmail: ${cleanEmail}\nGenre: ${cleanGenre}\nRequested Release Date: ${cleanReleaseDate}\n\nGoogle Drive Link:\n${cleanDriveLink}\n\nCollaborators:\n${cleanCollaborators.map(c => `- ${c.artistName} (${c.realName}) [Role: ${c.role}]: ${c.spotifyLink}`).join('\n')}\n\nNotes:\n${cleanNotes}`,
-            html: adminEmailHtml,
-            headers: {
-                'Message-ID': `<submission-${subId}@obscurarecord.com>`,
-                'X-Priority': '1 (Highest)',
-                'X-MSMail-Priority': 'High',
-                'Importance': 'High'
-            }
-        };
-
-        const artistMailOptions = {
-            from: `"OBSCURA REC LLC" <${senderAddress}>`,
-            to: cleanEmail,
-            subject: `Submission Received [${subId}] - "${cleanSongTitle}" - OBSCURA REC LLC`,
-            text: `Hi ${cleanRealName || cleanMainArtist},\n\nThank you for submitting your release "${cleanSongTitle}" to OBSCURA REC LLC. Your submission (${subId}) has been received.\n\nBest regards,\nOBSCURA REC LLC A&R Team`,
-            html: artistReceiptHtml
-        };
-
-        // 3. Dispatch Emails
-        await Promise.allSettled([
-            transporter.sendMail(adminMailOptions),
-            transporter.sendMail(artistMailOptions)
-        ]);
-
-        // 4. Mark Acceptance Code as "used" in Firebase RTDB and save submission archive
+        // 3. Mark Acceptance Code as "used" & Archive Submission in Firebase RTDB FIRST
+        // Doing this before email dispatch guarantees database state is updated immediately!
         try {
             await axios.patch(codeLookupUrl, {
                 status: 'used',
@@ -442,7 +137,6 @@ ${cleanNotes || '<span style="color: #94a3b8; font-style: italic;">No additional
             });
             console.log(`[CODE CONSUMED] ${cleanCode} marked as USED for submission ${subId}`);
 
-            // Save full record in new Firebase database submissions table
             await axios.put(`${FIREBASE_DB_URL}/submissions/${encodeURIComponent(subId)}.json`, {
                 submissionId: subId,
                 acceptanceCode: cleanCode,
@@ -460,8 +154,279 @@ ${cleanNotes || '<span style="color: #94a3b8; font-style: italic;">No additional
             });
             console.log(`[SUBMISSION ARCHIVED] ${subId} saved to database`);
         } catch (dbErr) {
-            console.error('[DATABASE UPDATE WARNING]: Failed to update database:', dbErr.message);
+            console.error('[DATABASE UPDATE WARNING]: Failed to update database immediately:', dbErr.message);
         }
+
+        // 4. Setup Logo Attachment (Inline CID to guarantee image loads in all email clients without proxy blocking)
+        const possibleLogoPaths = [
+            path.join(__dirname, '../assets/OCR_circle.png'),
+            path.join(__dirname, '../assets/OCR.png'),
+            path.join(process.cwd(), 'assets/OCR_circle.png'),
+            path.join(process.cwd(), 'assets/OCR.png')
+        ];
+        let verifiedLogoPath = null;
+        for (const p of possibleLogoPaths) {
+            if (fs.existsSync(p)) {
+                verifiedLogoPath = p;
+                break;
+            }
+        }
+
+        const emailAttachments = [];
+        if (verifiedLogoPath) {
+            emailAttachments.push({
+                filename: 'ocr_emblem.png',
+                path: verifiedLogoPath,
+                cid: 'ocr_logo'
+            });
+        }
+
+        const logoImgSrc = verifiedLogoPath ? 'cid:ocr_logo' : 'https://obscurarecord.com/assets/OCR.png';
+        const dossierUrl = `https://obscurarecord.com/dossier?id=${encodeURIComponent(subId)}`;
+
+        // Streamlined, High-Class Executive Dark Notification Email for A&R Admin
+        const adminEmailHtml = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>New Track Submission - OBSCURA REC LLC</title>
+            </head>
+            <body style="margin: 0; padding: 28px 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #05060a; color: #f8fafc;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; background-color: #0c0f18; border-radius: 14px; overflow: hidden; border: 1px solid #1c2336; box-shadow: 0 16px 48px rgba(0,0,0,0.7);">
+                    
+                    <!-- Header Banner -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #090c15 0%, #0d1221 100%); padding: 24px 28px; border-bottom: 2px solid #00f0ff;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td style="vertical-align: middle;">
+                                        <table border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="vertical-align: middle; padding-right: 14px;">
+                                                    <img src="${logoImgSrc}" width="44" height="44" style="border-radius: 50%; border: 2px solid #00f0ff; display: block; box-shadow: 0 0 12px rgba(0,240,255,0.4);" alt="OCR">
+                                                </td>
+                                                <td style="vertical-align: middle;">
+                                                    <div style="color: #ffffff; font-size: 19px; font-weight: 800; letter-spacing: 1.2px; line-height: 1.2;">OBSCURA REC LLC</div>
+                                                    <div style="color: #00f0ff; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px;">A&amp;R TRACK SUBMISSION ALERT</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="text-align: right; vertical-align: middle;">
+                                        <div style="display: inline-block; background: #07090e; border: 1px solid #1e293b; color: #94a3b8; padding: 6px 12px; border-radius: 6px; font-size: 11.5px; font-family: monospace; font-weight: 700;">
+                                            ID: <strong style="color: #38bdf8;">${subId}</strong>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td style="padding: 26px 28px;">
+
+                            <!-- Single-Use Code Status Badge -->
+                            <div style="background-color: #051e15; border: 1px solid #059669; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td>
+                                            <span style="color: #34d399; font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px;">
+                                                &#10003; ACCEPTANCE CODE VERIFIED &amp; CONSUMED
+                                            </span>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <span style="font-family: monospace; font-size: 13px; font-weight: 700; color: #a7f3d0; background: #064e3b; border: 1px solid #059669; padding: 3px 8px; border-radius: 4px;">
+                                                ${cleanCode}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Track Summary Card -->
+                            <div style="background: linear-gradient(135deg, #0e1422 0%, #0b0f19 100%); border: 1px solid #1e283d; border-left: 4px solid #00f0ff; border-radius: 8px; padding: 20px 22px; margin-bottom: 22px;">
+                                <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 1.5px; color: #64748b; margin-bottom: 4px;">SUBMITTED TRACK</div>
+                                <div style="font-size: 24px; font-weight: 800; color: #ffffff; line-height: 1.25;">"${cleanSongTitle}"</div>
+                                <div style="font-size: 15px; color: #94a3b8; margin-top: 6px;">
+                                    by <strong style="color: #00f0ff; font-size: 16px;">${cleanMainArtist}</strong> (<span style="color: #cbd5e1;">${cleanRealName}</span>)
+                                </div>
+                                <div style="margin-top: 14px;">
+                                    <span style="display: inline-block; background-color: #2e1065; color: #c084fc; font-weight: 700; font-size: 11.5px; padding: 4px 10px; border-radius: 4px; border: 1px solid #581c87; margin-right: 6px;">
+                                        🎵 ${cleanGenre}
+                                    </span>
+                                    <span style="display: inline-block; background-color: #451a03; color: #fde047; font-weight: 700; font-size: 11.5px; padding: 4px 10px; border-radius: 4px; border: 1px solid #854d0e;">
+                                        📅 Target: ${cleanReleaseDate}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Primary Dossier Action Callout -->
+                            <div style="background: linear-gradient(135deg, #091324 0%, #060c18 100%); border: 1px solid #0284c7; border-radius: 10px; padding: 24px 20px; text-align: center; margin-bottom: 20px;">
+                                <div style="color: #38bdf8; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                                    FULL EXECUTIVE A&amp;R RELEASE DOSSIER GENERATED
+                                </div>
+                                <div style="color: #cbd5e1; font-size: 13.5px; line-height: 1.5; margin-bottom: 18px;">
+                                    Master audio metadata, high-res artwork, collaborator split sheets, artist notes, and A&amp;R review controls are hosted on the secure submission portal:
+                                </div>
+                                
+                                <!-- Primary View Dossier Button -->
+                                <a href="${dossierUrl}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%); color: #020617; text-decoration: none; font-weight: 800; font-size: 14.5px; padding: 13px 30px; border-radius: 6px; letter-spacing: 0.5px; box-shadow: 0 4px 16px rgba(0,240,255,0.4); margin-bottom: 10px;">
+                                    📄 VIEW FULL SUBMISSION DOSSIER &rarr;
+                                </a>
+
+                                <!-- Secondary Google Drive Link -->
+                                <div>
+                                    <a href="${cleanDriveLink}" target="_blank" style="display: inline-block; background-color: #1e293b; color: #38bdf8; border: 1px solid #0369a1; text-decoration: none; font-size: 12.5px; font-weight: 700; padding: 9px 20px; border-radius: 6px; margin-top: 6px;">
+                                        📂 Direct Google Drive Master Assets &rarr;
+                                    </a>
+                                </div>
+
+                                <div style="font-size: 11.5px; color: #64748b; margin-top: 14px; word-break: break-all;">
+                                    Dossier Web URL: <a href="${dossierUrl}" target="_blank" style="color: #00f0ff; text-decoration: underline;">${dossierUrl}</a>
+                                </div>
+                            </div>
+
+                            <!-- Quick Submitter Info -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0b0f19; border: 1px solid #1e2638; border-radius: 6px; margin-bottom: 20px; font-size: 13px;">
+                                <tr>
+                                    <td style="padding: 10px 14px; color: #94a3b8; width: 35%; border-bottom: 1px solid #161d2d;">Artist Email:</td>
+                                    <td style="padding: 10px 14px; border-bottom: 1px solid #161d2d;">
+                                        <a href="mailto:${cleanEmail}" style="color: #38bdf8; text-decoration: none; font-weight: 600;">${cleanEmail}</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 14px; color: #94a3b8;">Spotify Profile:</td>
+                                    <td style="padding: 10px 14px;">
+                                        ${cleanMainArtistSpotify ? `<a href="${cleanMainArtistSpotify}" target="_blank" style="color: #38bdf8; text-decoration: underline;">${cleanMainArtistSpotify}</a>` : '<span style="color: #64748b;">Not provided</span>'}
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #07090e; padding: 20px 28px; border-top: 1px solid #1c2336; text-align: center;">
+                            <div style="color: #64748b; font-size: 11.5px; line-height: 1.5; letter-spacing: 0.5px;">
+                                CONFIDENTIAL &bull; OBSCURA REC LLC A&amp;R DIVISION<br>
+                                Automated Dispatch &bull; Submitted at: ${timestamp}
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </body>
+            </html>
+        `;
+
+        // Streamlined Artist Confirmation Email with Dossier Link
+        const artistReceiptHtml = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Track Submission Received - OBSCURA REC LLC</title>
+            </head>
+            <body style="margin: 0; padding: 28px 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #06070c; color: #f8fafc;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; background-color: #0d1019; border-radius: 12px; overflow: hidden; border: 1px solid #1e273a; box-shadow: 0 12px 36px rgba(0,0,0,0.6);">
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #090c15 0%, #0e1424 100%); padding: 24px 28px; border-bottom: 2px solid #00f0ff;">
+                            <table border="0" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="vertical-align: middle; padding-right: 14px;">
+                                        <img src="${logoImgSrc}" width="42" height="42" style="border-radius: 50%; border: 2px solid #00f0ff; display: block;" alt="OCR">
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <div style="color: #ffffff; font-size: 19px; font-weight: 800; letter-spacing: 1px;">OBSCURA REC LLC</div>
+                                        <div style="color: #00f0ff; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Official Submission Confirmation</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 26px 28px; font-size: 14px; line-height: 1.6; color: #cbd5e1;">
+                            <p style="margin-top: 0; color: #ffffff; font-size: 16px;">Hi <strong>${cleanRealName || cleanMainArtist}</strong>,</p>
+                            <p>Thank you for submitting your release materials for <strong>"${cleanSongTitle}"</strong> to <strong>OBSCURA REC LLC</strong>. Your master audio, cover artwork, and release metadata have been successfully recorded and archived.</p>
+                            
+                            <div style="background-color: #080b13; border: 1px solid #1e273a; border-left: 3px solid #00f0ff; border-radius: 8px; padding: 16px 18px; margin: 20px 0;">
+                                <div style="margin-bottom: 6px; font-size: 12.5px; color: #94a3b8;">
+                                    Submission ID: <strong style="color: #00f0ff; font-family: monospace;">${subId}</strong>
+                                </div>
+                                <div style="margin-bottom: 6px; font-size: 13px; color: #94a3b8;">
+                                    Track Title: <strong style="color: #ffffff;">"${cleanSongTitle}"</strong>
+                                </div>
+                                <div style="margin-bottom: 6px; font-size: 13px; color: #94a3b8;">
+                                    Main Artist: <strong style="color: #ffffff;">${cleanMainArtist}</strong>
+                                </div>
+                                <div style="font-size: 13px; color: #94a3b8;">
+                                    Target Release Date: <strong style="color: #fde047;">${cleanReleaseDate}</strong>
+                                </div>
+                            </div>
+
+                            <!-- Artist Dossier Action Button -->
+                            <div style="text-align: center; margin: 24px 0 20px;">
+                                <a href="${dossierUrl}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%); color: #020617; text-decoration: none; font-weight: 800; font-size: 14px; padding: 12px 28px; border-radius: 6px; letter-spacing: 0.5px; box-shadow: 0 4px 16px rgba(0,240,255,0.3);">
+                                    📄 VIEW YOUR SUBMISSION DOSSIER &rarr;
+                                </a>
+                                <div style="font-size: 11.5px; color: #64748b; margin-top: 10px;">
+                                    Link: <a href="${dossierUrl}" target="_blank" style="color: #00f0ff; text-decoration: underline;">${dossierUrl}</a>
+                                </div>
+                            </div>
+
+                            <p style="color: #94a3b8; font-size: 13px; margin-top: 20px;">
+                                Our production and distribution team will verify your master audio (.WAV) and artwork dimensions. We will contact you directly at <strong style="color: #ffffff;">${cleanEmail}</strong> with your release date confirmation, delivery schedule, and pre-save link.
+                            </p>
+                            
+                            <div style="margin-top: 26px; padding-top: 18px; border-top: 1px solid #1e273a; color: #64748b; font-size: 12px;">
+                                Best regards,<br>
+                                <strong style="color: #ffffff; font-size: 13px;">Distribution &amp; A&amp;R Operations &bull; OBSCURA REC LLC</strong><br>
+                                <a href="https://obscurarecord.com" style="color: #00f0ff; text-decoration: none;">obscurarecord.com</a>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+        `;
+
+        const senderAddress = process.env.EMAIL_USER || 'no-reply@obscurarecord.com';
+
+        const adminMailOptions = {
+            from: `"OBSCURA A&R Submissions" <${senderAddress}>`,
+            replyTo: cleanEmail,
+            to: TARGET_SUBMISSION_EMAIL,
+            subject: `[SUBMISSION] ${cleanMainArtist} - "${cleanSongTitle}" (${subId})`,
+            text: `NEW TRACK SUBMISSION RECEIVED - OBSCURA REC LLC\n-------------------------------------------------\nTrack Title: "${cleanSongTitle}"\nMain Artist: ${cleanMainArtist} (${cleanRealName})\nSubmission ID: ${subId}\nAcceptance Code: ${cleanCode} (VERIFIED & CONSUMED)\nPrimary Genre: ${cleanGenre}\nTarget Release Date: ${cleanReleaseDate}\nArtist Contact Email: ${cleanEmail}\n\n📄 VIEW FULL RELEASE DOSSIER (Metadata, Audio, Split Sheet, Notes):\n${dossierUrl}\n\n📂 GOOGLE DRIVE MASTER ASSETS:\n${cleanDriveLink}\n\n-------------------------------------------------\nSubmitted at: ${timestamp}`,
+            html: adminEmailHtml,
+            attachments: emailAttachments,
+            headers: {
+                'Message-ID': `<submission-${subId}@obscurarecord.com>`,
+                'X-Priority': '1 (Highest)',
+                'X-MSMail-Priority': 'High',
+                'Importance': 'High'
+            }
+        };
+
+        const artistMailOptions = {
+            from: `"OBSCURA REC LLC" <${senderAddress}>`,
+            to: cleanEmail,
+            subject: `Release Materials Received [${subId}] - "${cleanSongTitle}" - OBSCURA REC LLC`,
+            text: `Hi ${cleanRealName || cleanMainArtist},\n\nThank you for submitting your release materials for "${cleanSongTitle}" to OBSCURA REC LLC. Your submission (${subId}) has been successfully received.\n\n📄 VIEW YOUR SUBMISSION DOSSIER:\n${dossierUrl}\n\nOur distribution team will inspect your master audio and artwork and will contact you directly with your release schedule and pre-save link.\n\nBest regards,\nOBSCURA REC LLC Distribution Team\nhttps://obscurarecord.com`,
+            html: artistReceiptHtml,
+            attachments: emailAttachments
+        };
+
+        // 5. Dispatch Emails (Settled)
+        await Promise.allSettled([
+            transporter.sendMail(adminMailOptions),
+            transporter.sendMail(artistMailOptions)
+        ]);
 
         return res.status(200).json({
             success: true,
