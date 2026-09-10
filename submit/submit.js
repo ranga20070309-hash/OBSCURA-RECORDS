@@ -100,26 +100,82 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.status === 'used') {
             // Code has already been consumed
             isCodeValid = false;
-            verifiedCodeData = null;
-            verifiedCodeCard.style.display = 'none';
+            verifiedCodeData = data;
             codeErrorBox.style.display = 'none';
-            codeUsedBox.style.display = 'flex';
+            codeUsedBox.style.display = 'none';
+
+            // Show card in USED state (Red / Warning)
+            verifiedCodeCard.style.display = 'block';
+            verifiedCodeCard.style.borderColor = 'rgba(239, 68, 68, 0.45)';
+            verifiedCodeCard.style.background = 'rgba(239, 68, 68, 0.08)';
+
+            const headerIcon = document.getElementById('verifiedHeaderIcon');
+            const headerText = document.getElementById('verifiedHeaderText');
+            const statusBadge = document.getElementById('verifiedStatusBadge');
+            const verifiedNote = document.getElementById('verifiedNote');
+
+            if (headerIcon) {
+                headerIcon.className = 'fas fa-times-circle';
+                headerIcon.style.color = '#ef4444';
+            }
+            if (headerText) {
+                headerText.textContent = 'Acceptance Code Already Used';
+                headerText.style.color = '#ef4444';
+            }
+            if (statusBadge) {
+                statusBadge.className = 'verified-status-badge used';
+                statusBadge.textContent = '● Code Already Used';
+            }
+
+            verifiedArtist.textContent = data.artistName || 'N/A';
+            verifiedRealName.textContent = data.realName || 'N/A';
+            verifiedDate.textContent = data.acceptedDate || 'N/A';
+
+            if (verifiedNote) {
+                verifiedNote.innerHTML = '<span style="color: #fca5a5; font-weight: 500;">This unique single-use acceptance code has already been redeemed for a release submission and cannot be submitted again. If you believe this is an error, please contact our team.</span>';
+            }
             return;
         }
 
         if (data.status === 'active') {
-            // Code is valid and active!
+            // Code is valid and active - READY TO USE!
             isCodeValid = true;
             verifiedCodeData = data;
             codeErrorBox.style.display = 'none';
             codeUsedBox.style.display = 'none';
 
+            // Show card in ACTIVE state (Cyan / Emerald)
+            verifiedCodeCard.style.display = 'block';
+            verifiedCodeCard.style.borderColor = 'rgba(0, 240, 255, 0.35)';
+            verifiedCodeCard.style.background = 'rgba(0, 240, 255, 0.05)';
+
+            const headerIcon = document.getElementById('verifiedHeaderIcon');
+            const headerText = document.getElementById('verifiedHeaderText');
+            const statusBadge = document.getElementById('verifiedStatusBadge');
+            const verifiedNote = document.getElementById('verifiedNote');
+
+            if (headerIcon) {
+                headerIcon.className = 'fas fa-check-circle';
+                headerIcon.style.color = '#34d399';
+            }
+            if (headerText) {
+                headerText.textContent = 'Acceptance Code Verified';
+                headerText.style.color = '#34d399';
+            }
+            if (statusBadge) {
+                statusBadge.className = 'verified-status-badge active';
+                statusBadge.textContent = '● Ready to Use';
+            }
+
             verifiedArtist.textContent = data.artistName || 'N/A';
             verifiedRealName.textContent = data.realName || 'N/A';
             verifiedDate.textContent = data.acceptedDate || 'Recently Approved';
-            verifiedCodeCard.style.display = 'block';
 
-            // Automatically assist the artist by pre-filling or syncing fields if empty
+            if (verifiedNote) {
+                verifiedNote.innerHTML = 'Your demo submission has been verified in the OBSCURA REC LLC approved list. Please complete your track details below.';
+            }
+
+            // Automatically pre-fill fields if empty
             const realNameInput = document.getElementById('realName');
             const mainArtistInput = document.getElementById('mainArtist');
             if (realNameInput && !realNameInput.value && data.realName) {
@@ -384,6 +440,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (submissionSuccess) {
+                    // Invalidate and update local cache so re-entering the code IMMEDIATELY shows Code Already Used!
+                    verificationCache[cleanCode] = {
+                        ...verifiedCodeData,
+                        status: 'used',
+                        usedAt: Date.now(),
+                        submissionId: finalSubId
+                    };
+
                     if (displaySubId) displaySubId.textContent = finalSubId;
                     form.style.display = 'none';
                     confirmationCard.classList.add('active');
