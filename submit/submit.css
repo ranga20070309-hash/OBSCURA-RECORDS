@@ -590,20 +590,13 @@ body.theme-alert-red {
 
 .verified-details-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 10px;
     background: rgba(6, 4, 16, 0.6);
     padding: 12px 14px;
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.06);
     margin-bottom: 10px;
-}
-
-@media (max-width: 600px) {
-    .verified-details-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
 }
 
 .verified-status-badge {

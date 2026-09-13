@@ -440,6 +440,12 @@
                     ✓ Successfully generated and registered in whitelist database:
                 </div>
                 <div id="displayCode" class="code-display">OBS-ACC-XXXX-XXXX</div>
+                <div id="displayMetaBox" style="margin-bottom: 15px; background: rgba(0, 240, 255, 0.06); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 6px; padding: 10px 14px; font-size: 13px; display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;">
+                    <div><span style="color: var(--text-muted);">Artist:</span> <strong id="outArtist" style="color: #fff;">-</strong></div>
+                    <div><span style="color: var(--text-muted);">Real Name:</span> <strong id="outRealName" style="color: #fff;">-</strong></div>
+                    <div><span style="color: var(--text-muted);">Track:</span> <strong id="outTrack" style="color: #38bdf8;">-</strong></div>
+                    <div><span style="color: var(--text-muted);">Date:</span> <strong id="outDate" style="color: #a7f3d0;">-</strong></div>
+                </div>
                 <div class="btn-action-row">
                     <button type="button" id="copyCodeBtn" class="btn-secondary">
                         <i class="fas fa-copy"></i> Copy Code Only
@@ -474,6 +480,7 @@
                             <th>Code</th>
                             <th>Artist Name</th>
                             <th>Real Name</th>
+                            <th>Track Title / Demo</th>
                             <th>Accepted Date</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -481,7 +488,7 @@
                     </thead>
                     <tbody id="codesTableBody">
                         <tr>
-                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">
+                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">
                                 Loading codes from database...
                             </td>
                         </tr>
@@ -622,6 +629,15 @@
                 lastGeneratedRecord = codeRecord;
 
                 displayCode.textContent = code;
+                const outArtistEl = document.getElementById('outArtist');
+                const outRealNameEl = document.getElementById('outRealName');
+                const outTrackEl = document.getElementById('outTrack');
+                const outDateEl = document.getElementById('outDate');
+                if (outArtistEl) outArtistEl.textContent = artist;
+                if (outRealNameEl) outRealNameEl.textContent = realName;
+                if (outTrackEl) outTrackEl.textContent = track || 'To Be Announced';
+                if (outDateEl) outDateEl.textContent = acceptedDate;
+
                 outputBox.style.display = 'block';
                 showToast(`✓ Acceptance Code created: ${code}`);
 
@@ -652,6 +668,8 @@ To proceed with your release, please fill out our official track submission form
 🔗 Track Submission Portal: https://obscurarecord.com/submit
 🔑 Acceptance Code: ${lastGeneratedRecord.code}
 👤 Registered Artist Name: ${lastGeneratedRecord.artistName}
+📄 Legal Real Name: ${lastGeneratedRecord.realName}
+🎵 Approved Track Title: ${lastGeneratedRecord.trackName || 'To Be Announced'}
 📅 Accepted Date: ${lastGeneratedRecord.acceptedDate}
 
 Please ensure you upload your Master Audio (.WAV) and High-Resolution Artwork (3000x3000px) to Google Drive, and set the sharing permissions to "Anyone with the link can view".
@@ -675,7 +693,7 @@ https://obscurarecord.com`;
             console.error('Firebase codes listener error:', err);
             codesTableBody.innerHTML = `
                 <tr>
-                    <td colspan="6" style="text-align: center; color: var(--red); padding: 24px;">
+                    <td colspan="7" style="text-align: center; color: var(--red); padding: 24px;">
                         Unable to connect to database: ${err.message}
                     </td>
                 </tr>
@@ -705,7 +723,7 @@ https://obscurarecord.com`;
             if (filtered.length === 0) {
                 codesTableBody.innerHTML = `
                     <tr>
-                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">
                             No acceptance codes match your search.
                         </td>
                     </tr>
@@ -718,6 +736,7 @@ https://obscurarecord.com`;
                     <td class="code-cell">${item.code}</td>
                     <td><strong>${item.artistName}</strong></td>
                     <td>${item.realName || '-'}</td>
+                    <td><span style="color: #38bdf8; font-weight: 500;">${item.trackName || '-'}</span></td>
                     <td>${item.acceptedDate || '-'}</td>
                     <td>
                         <span class="badge ${item.status === 'used' ? 'used' : 'active'}">

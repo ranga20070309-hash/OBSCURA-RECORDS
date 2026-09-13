@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const verifiedCodeCard = document.getElementById('verifiedCodeCard');
     const verifiedArtist = document.getElementById('verifiedArtist');
     const verifiedRealName = document.getElementById('verifiedRealName');
+    const verifiedTrack = document.getElementById('verifiedTrack');
     const verifiedDate = document.getElementById('verifiedDate');
     const codeErrorBox = document.getElementById('codeErrorBox');
     const codeUsedBox = document.getElementById('codeUsedBox');
@@ -648,6 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             verifiedArtist.textContent = data.artistName || 'N/A';
             verifiedRealName.textContent = data.realName || 'N/A';
+            if (verifiedTrack) verifiedTrack.textContent = data.trackName || 'To Be Announced';
             verifiedDate.textContent = data.acceptedDate || 'N/A';
 
             if (verifiedNote) {
@@ -690,6 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             verifiedArtist.textContent = data.artistName || 'N/A';
             verifiedRealName.textContent = data.realName || 'N/A';
+            if (verifiedTrack) verifiedTrack.textContent = data.trackName || 'To Be Announced';
             verifiedDate.textContent = data.acceptedDate || 'Recently Approved';
 
             if (verifiedNote) {
@@ -699,11 +702,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // Automatically pre-fill fields if empty
             const realNameInput = document.getElementById('realName');
             const mainArtistInput = document.getElementById('mainArtist');
-            if (realNameInput && !realNameInput.value && data.realName) {
+            const songTitleInput = document.getElementById('songTitle');
+            if (realNameInput && (!realNameInput.value || !realNameInput.value.trim()) && data.realName) {
                 realNameInput.value = data.realName;
             }
-            if (mainArtistInput && !mainArtistInput.value && data.artistName) {
+            if (mainArtistInput && (!mainArtistInput.value || !mainArtistInput.value.trim()) && data.artistName) {
                 mainArtistInput.value = data.artistName;
+            }
+            if (songTitleInput && (!songTitleInput.value || !songTitleInput.value.trim()) && data.trackName && data.trackName !== 'To Be Announced') {
+                songTitleInput.value = data.trackName;
             }
             updateWaterLevel();
         } else {
