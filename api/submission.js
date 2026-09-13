@@ -125,7 +125,7 @@ module.exports = async (req, res) => {
         // 2. Field Validation
         const cleanSongTitle = sanitize(songTitle);
         const cleanMainArtist = sanitize(mainArtist);
-        const cleanRealName = sanitize(realName) || cleanMainArtist;
+        const cleanRealName = sanitize(realName) || '';
 
         if (!cleanMainArtist || !email || !city || !country || !cleanSongTitle || !genre || !language || !driveLink) {
             return res.status(400).json({ error: 'Please fill in all required submission fields.' });
@@ -291,7 +291,7 @@ module.exports = async (req, res) => {
                                 <div style="font-size: 10.5px; text-transform: uppercase; font-weight: 700; letter-spacing: 1.2px; color: #64748b; margin-bottom: 3px;">SUBMITTED TRACK</div>
                                 <div style="font-size: 21px; font-weight: 800; color: #ffffff; line-height: 1.2;">"${cleanSongTitle}"</div>
                                 <div style="font-size: 14px; color: #94a3b8; margin-top: 5px;">
-                                    by <strong style="color: #00f0ff; font-size: 15px;">${cleanMainArtist}</strong> (<span style="color: #cbd5e1;">${cleanRealName}</span>)
+                                    by <strong style="color: #00f0ff; font-size: 15px;">${cleanMainArtist}</strong>${cleanRealName ? ` (<span style="color: #cbd5e1;">${cleanRealName}</span>)` : ''}
                                 </div>
                                 <div style="font-size: 12px; color: #64748b; margin-top: 3px;">
                                     📍 ${cleanCity}, ${cleanCountry}
@@ -461,7 +461,7 @@ module.exports = async (req, res) => {
             replyTo: cleanEmail,
             to: TARGET_SUBMISSION_EMAIL,
             subject: `[SUBMISSION] ${cleanMainArtist} - "${cleanSongTitle}" (${subId})`,
-            text: `NEW TRACK SUBMISSION RECEIVED - OBSCURA REC LLC\n-------------------------------------------------\nTrack Title: "${cleanSongTitle}"\nMain Artist: ${cleanMainArtist} (${cleanRealName})\nLocation: ${cleanCity}, ${cleanCountry}\nSubmission ID: ${subId}\nAcceptance Code: ${cleanCode} (VERIFIED & CONSUMED)\nPrimary Genre: ${cleanGenre}\nLanguage: ${cleanLanguage}\nTarget Release Date: ${cleanReleaseDate}\nArtist Contact Email: ${cleanEmail}\nSpotify Profile: ${cleanMainArtistSpotify || 'Not provided'}\nApple Music Profile: ${cleanMainArtistApple || 'Not provided'}\n\n📄 VIEW FULL RELEASE DOSSIER (Metadata, Audio, Split Sheet, Notes):\n${dossierUrl}\n\n📂 GOOGLE DRIVE MASTER ASSETS:\n${cleanDriveLink}\n\n-------------------------------------------------\nSubmitted at: ${timestamp}`,
+            text: `NEW TRACK SUBMISSION RECEIVED - OBSCURA REC LLC\n-------------------------------------------------\nTrack Title: "${cleanSongTitle}"\nMain Artist: ${cleanMainArtist}${cleanRealName ? ` (${cleanRealName})` : ''}\nLocation: ${cleanCity}, ${cleanCountry}\nSubmission ID: ${subId}\nAcceptance Code: ${cleanCode} (VERIFIED & CONSUMED)\nPrimary Genre: ${cleanGenre}\nLanguage: ${cleanLanguage}\nTarget Release Date: ${cleanReleaseDate}\nArtist Contact Email: ${cleanEmail}\nSpotify Profile: ${cleanMainArtistSpotify || 'Not provided'}\nApple Music Profile: ${cleanMainArtistApple || 'Not provided'}\n\n📄 VIEW FULL RELEASE DOSSIER (Metadata, Audio, Split Sheet, Notes):\n${dossierUrl}\n\n📂 GOOGLE DRIVE MASTER ASSETS:\n${cleanDriveLink}\n\n-------------------------------------------------\nSubmitted at: ${timestamp}`,
             html: adminEmailHtml,
             headers: {
                 'Message-ID': `<submission-${subId}@obscurarecord.com>`,
