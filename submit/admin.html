@@ -635,7 +635,11 @@
                 const outTrackEl = document.getElementById('outTrack');
                 const outDateEl = document.getElementById('outDate');
                 if (outArtistEl) outArtistEl.textContent = artist;
-                if (outRealNameEl) outRealNameEl.textContent = realName || '-';
+                if (outRealNameEl) {
+                    outRealNameEl.textContent = realName || 'Artist Did Not Provide Real Name';
+                    outRealNameEl.style.fontStyle = realName ? 'normal' : 'italic';
+                    outRealNameEl.style.color = realName ? '#ffffff' : '#64748b';
+                }
                 if (outTrackEl) outTrackEl.textContent = track || 'To Be Announced';
                 if (outDateEl) outDateEl.textContent = acceptedDate;
 
@@ -669,7 +673,7 @@ To proceed with your release, please fill out our official track submission form
 🔗 Track Submission Portal: https://obscurarecord.com/submit
 🔑 Acceptance Code: ${lastGeneratedRecord.code}
 👤 Registered Artist Name: ${lastGeneratedRecord.artistName}
-📄 Legal Real Name: ${lastGeneratedRecord.realName || '-'}
+📄 Legal Real Name: ${lastGeneratedRecord.realName || 'Artist Did Not Provide Real Name'}
 🎵 Approved Track Title: ${lastGeneratedRecord.trackName || 'To Be Announced'}
 📅 Accepted Date: ${lastGeneratedRecord.acceptedDate}
 

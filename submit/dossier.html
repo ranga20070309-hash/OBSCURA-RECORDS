@@ -815,7 +815,12 @@
 
             // Metadata Table
             document.getElementById('tableArtist').textContent = sub.mainArtist || 'N/A';
-            document.getElementById('tableRealName').textContent = sub.realName || '-';
+            const tableRealNameEl = document.getElementById('tableRealName');
+            if (tableRealNameEl) {
+                tableRealNameEl.textContent = sub.realName || 'Artist Did Not Provide Real Name';
+                tableRealNameEl.style.fontStyle = sub.realName ? 'normal' : 'italic';
+                tableRealNameEl.style.color = sub.realName ? '#ffffff' : '#64748b';
+            }
             
             const locText = [sub.city, sub.country].filter(Boolean).join(', ') || 'Not specified';
             document.getElementById('tableLocation').textContent = locText;

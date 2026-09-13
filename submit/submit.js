@@ -745,7 +745,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             verifiedArtist.textContent = data.artistName || 'N/A';
-            verifiedRealName.textContent = data.realName || '-';
+            if (data.realName) {
+                verifiedRealName.textContent = data.realName;
+                verifiedRealName.style.color = '#ffffff';
+                verifiedRealName.style.fontStyle = 'normal';
+                verifiedRealName.style.fontSize = '';
+            } else {
+                verifiedRealName.textContent = 'Artist Did Not Provide Real Name';
+                verifiedRealName.style.color = '#64748b';
+                verifiedRealName.style.fontStyle = 'italic';
+                verifiedRealName.style.fontSize = '13px';
+            }
             if (verifiedTrack) verifiedTrack.textContent = data.trackName || 'To Be Announced';
             verifiedDate.textContent = data.acceptedDate || 'N/A';
 
@@ -788,7 +798,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             verifiedArtist.textContent = data.artistName || 'N/A';
-            verifiedRealName.textContent = data.realName || '-';
+            if (data.realName) {
+                verifiedRealName.textContent = data.realName;
+                verifiedRealName.style.color = '#ffffff';
+                verifiedRealName.style.fontStyle = 'normal';
+                verifiedRealName.style.fontSize = '';
+            } else {
+                verifiedRealName.textContent = 'Artist Did Not Provide Real Name';
+                verifiedRealName.style.color = '#64748b';
+                verifiedRealName.style.fontStyle = 'italic';
+                verifiedRealName.style.fontSize = '13px';
+            }
             if (verifiedTrack) verifiedTrack.textContent = data.trackName || 'To Be Announced';
             verifiedDate.textContent = data.acceptedDate || 'Recently Approved';
 
