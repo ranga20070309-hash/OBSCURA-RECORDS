@@ -1085,15 +1085,45 @@ const initPortal = () => {
 
         // --- DEMO SUBMISSION HANDLER ---
         let isSubmittingDemo = false;
+
+        // Hard block any subsequent clicks on the submit button directly
+        if (submitBtn) {
+            submitBtn.addEventListener('click', (e) => {
+                if (isSubmittingDemo) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    return false;
+                }
+            }, true);
+        }
+
+        // Hard block Enter key submits while in-flight
+        subForm.addEventListener('keydown', (e) => {
+            if (isSubmittingDemo && e.key === 'Enter') {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        }, true);
+
         subForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (isSubmittingDemo) return;
+            if (isSubmittingDemo) {
+                e.stopImmediatePropagation();
+                return false;
+            }
             
-            const btn = subForm.querySelector('button[type="submit"]') || subForm.querySelector('.cta-primary-small') || subForm.querySelector('button');
+            const btn = submitBtn || subForm.querySelector('button[type="submit"]') || subForm.querySelector('.cta-primary-small') || subForm.querySelector('button');
             const originalBtnText = btn.textContent;
+            
+            // STRICT SINGLE-TAP LOCK: Freeze form and button immediately on tap
             isSubmittingDemo = true;
-            btn.textContent = "VERIFYING SECURITY...";
             btn.disabled = true;
+            btn.style.pointerEvents = 'none';
+            btn.style.cursor = 'not-allowed';
+            btn.style.opacity = '0.5';
+            btn.textContent = "VERIFYING SECURITY...";
+            subForm.style.pointerEvents = 'none';
 
             try {
                 // Bypass reCAPTCHA on local file transmission to prevent protocol blockers
@@ -1120,19 +1150,48 @@ const initPortal = () => {
                 const genreVal = genreInput?.value?.trim() || "";
                 const linkVal = linkInput?.value?.trim() || "";
                 const messageVal = messageInput?.value?.trim() || "";
-
-                if (!artistVal || !nameVal || !emailVal || !linkVal || linkVal === '#' || emailVal.length < 5) {
-                    alert("TRANSMISSION BLOCKED: Please fill in all required fields (Name, Artist Name, Valid Email, Demo Streaming Link).");
-                    btn.textContent = originalBtnText;
-                    btn.disabled = false;
-                    isSubmittingDemo = false;
-                    return;
-                }
-
                 // Dynamic Multi-Link Collection Logic
                 const spotifyLinks = Array.from(subForm.querySelectorAll('input[name="spotify[]"]'))
                     .map(input => input.value.trim())
                     .filter(val => val !== "");
+
+                const unlockForm = (msg) => {
+                    alert(msg);
+                    btn.textContent = originalBtnText;
+                    btn.disabled = false;
+                    btn.style.pointerEvents = 'auto';
+                    btn.style.cursor = 'pointer';
+                    btn.style.opacity = '1';
+                    subForm.style.pointerEvents = 'auto';
+                    isSubmittingDemo = false;
+                    updateSubmitLock();
+                };
+
+                // STRICT FIELD VALIDATION: All boxes are REQUIRED except Message/Bio
+                if (!nameVal || nameVal.length < 2) {
+                    unlockForm("TRANSMISSION BLOCKED: Please enter your Real Name.");
+                    return;
+                }
+                if (!artistVal || artistVal.length < 2) {
+                    unlockForm("TRANSMISSION BLOCKED: Please enter your Artist Name.");
+                    return;
+                }
+                if (!emailVal || emailVal.length < 5 || !emailVal.includes('@')) {
+                    unlockForm("TRANSMISSION BLOCKED: Please enter a valid Email Address.");
+                    return;
+                }
+                if (!genreVal || genreVal.length < 2) {
+                    unlockForm("TRANSMISSION BLOCKED: Please enter your Primary Genre.");
+                    return;
+                }
+                if (spotifyLinks.length === 0 || !spotifyLinks[0] || spotifyLinks[0].length < 5) {
+                    unlockForm("TRANSMISSION BLOCKED: Please provide at least one Artist Profile / Social Link.");
+                    return;
+                }
+                if (!linkVal || linkVal === '#' || linkVal.length < 5) {
+                    unlockForm("TRANSMISSION BLOCKED: Please provide your private Demo Streaming Link.");
+                    return;
+                }
 
                 // Formatted for Firebase (Plain string)
                 const spotifyData = spotifyLinks.length > 0 ? spotifyLinks.join(' | ') : "N/A";
@@ -1225,6 +1284,10 @@ const initPortal = () => {
                         }
 
                         subForm.querySelectorAll('.mirror-display').forEach(d => d.innerHTML = '');
+                        subForm.style.pointerEvents = 'auto';
+                        btn.style.pointerEvents = 'auto';
+                        btn.style.cursor = 'pointer';
+                        btn.style.opacity = '1';
                         btn.textContent = originalBtnText;
                         btn.disabled = false;
                         isSubmittingDemo = false;
@@ -1235,9 +1298,14 @@ const initPortal = () => {
             } catch (err) {
                 console.error("System Failure:", err);
                 alert("TRANSMISSION ERROR: " + err.message);
+                subForm.style.pointerEvents = 'auto';
+                btn.style.pointerEvents = 'auto';
+                btn.style.cursor = 'pointer';
+                btn.style.opacity = '1';
                 btn.textContent = originalBtnText;
                 btn.disabled = false;
                 isSubmittingDemo = false;
+                updateSubmitLock();
             }
         });
     }
@@ -1245,15 +1313,46 @@ const initPortal = () => {
     // --- CONTACT FORM HANDLER ---
     if (contactForm) {
         let isSubmittingContact = false;
+        const contactSubmitBtn = contactForm.querySelector('button[type="submit"]') || contactForm.querySelector('button');
+
+        // Hard block any subsequent clicks on the contact submit button directly
+        if (contactSubmitBtn) {
+            contactSubmitBtn.addEventListener('click', (e) => {
+                if (isSubmittingContact) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    return false;
+                }
+            }, true);
+        }
+
+        // Hard block Enter key submits while in-flight
+        contactForm.addEventListener('keydown', (e) => {
+            if (isSubmittingContact && e.key === 'Enter') {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        }, true);
+
         contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (isSubmittingContact) return;
+            if (isSubmittingContact) {
+                e.stopImmediatePropagation();
+                return false;
+            }
 
-            const btn = contactForm.querySelector('button[type="submit"]') || contactForm.querySelector('button');
+            const btn = contactSubmitBtn;
             const originalBtnText = btn.innerHTML;
+
+            // STRICT SINGLE-TAP LOCK: Freeze form and button immediately on tap
             isSubmittingContact = true;
-            btn.innerHTML = "TRANSMITTING...";
             btn.disabled = true;
+            btn.style.pointerEvents = 'none';
+            btn.style.cursor = 'not-allowed';
+            btn.style.opacity = '0.5';
+            btn.innerHTML = "TRANSMITTING...";
+            contactForm.style.pointerEvents = 'none';
 
             try {
                 if (typeof grecaptcha === 'undefined') throw new Error("Security Engine Offline.");
@@ -1268,6 +1367,10 @@ const initPortal = () => {
                     alert("TRANSMISSION BLOCKED: Please fill in all required contact fields.");
                     btn.innerHTML = originalBtnText;
                     btn.disabled = false;
+                    btn.style.pointerEvents = 'auto';
+                    btn.style.cursor = 'pointer';
+                    btn.style.opacity = '1';
+                    contactForm.style.pointerEvents = 'auto';
                     isSubmittingContact = false;
                     return;
                 }
@@ -1322,6 +1425,10 @@ const initPortal = () => {
                         contactForm.style.display = 'block';
                         if (contactStatus) contactStatus.style.display = 'none';
                         contactForm.reset();
+                        contactForm.style.pointerEvents = 'auto';
+                        btn.style.pointerEvents = 'auto';
+                        btn.style.cursor = 'pointer';
+                        btn.style.opacity = '1';
                         btn.innerHTML = originalBtnText;
                         btn.disabled = false;
                         isSubmittingContact = false;
@@ -1331,6 +1438,10 @@ const initPortal = () => {
             } catch (err) {
                 console.error("Contact System Failure:", err);
                 alert("TRANSMISSION ERROR: " + err.message);
+                contactForm.style.pointerEvents = 'auto';
+                btn.style.pointerEvents = 'auto';
+                btn.style.cursor = 'pointer';
+                btn.style.opacity = '1';
                 btn.innerHTML = originalBtnText;
                 btn.disabled = false;
                 isSubmittingContact = false;
