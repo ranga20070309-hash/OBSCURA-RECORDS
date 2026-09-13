@@ -581,94 +581,165 @@
         }
 
         .verified-code-box {
-            background: rgba(0, 240, 255, 0.05);
-            border: 1px solid rgba(0, 240, 255, 0.35);
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 14px;
-            animation: fadeIn 0.3s ease;
+            background: transparent !important;
+            border: none !important;
+            border-top: 1px dashed rgba(0, 240, 255, 0.22) !important;
+            border-radius: 0 !important;
+            padding: 8px 0 2px 0;
+            margin-top: 8px;
+            animation: fadeIn 0.2s ease;
+            box-shadow: none !important;
         }
 
         .verified-header {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 8px;
             color: #34d399;
             font-weight: 600;
-            font-size: 13.5px;
-            margin-bottom: 12px;
+            font-size: 12.5px;
+            margin-bottom: 3px;
+            padding-bottom: 0;
+            border-bottom: none;
         }
 
-        .verified-details-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        .verified-header-left {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .verified-security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #38bdf8;
+            font-size: 9.5px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            padding: 0;
+            margin-bottom: 5px;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            opacity: 0.85;
+        }
+
+        .verified-security-badge i {
+            color: #00f0ff;
+            font-size: 9.5px;
+        }
+
+        .verified-details-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-bottom: 2px;
+        }
+
+        .verified-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             gap: 10px;
-            background: rgba(6, 4, 16, 0.6);
-            padding: 12px 14px;
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            margin-bottom: 10px;
+            padding: 3px 0;
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            background: transparent !important;
+            border-radius: 0;
+        }
+
+        .verified-row:last-child {
+            border-bottom: none;
+        }
+
+        .verified-row:hover {
+            background: rgba(255, 255, 255, 0.015);
+        }
+
+        .verified-row-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            flex-shrink: 0;
+        }
+
+        .verified-row-label i {
+            font-size: 9.5px;
+            color: var(--accent-cyan);
+            opacity: 0.75;
+            width: 12px;
+            text-align: center;
+        }
+
+        .verified-row-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #f1f5f9;
+            text-align: right;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+
+        .verified-row-value.highlight-cyan {
+            color: #00f0ff;
+        }
+
+        .verified-row-value.highlight-emerald {
+            color: #34d399;
+        }
+
+        @media (max-width: 480px) {
+            .verified-row {
+                flex-direction: row;
+                justify-content: space-between;
+                gap: 8px;
+                padding: 3px 0;
+            }
+            .verified-row-value {
+                text-align: right;
+                font-size: 11.5px;
+            }
         }
 
         .verified-status-badge {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            font-size: 11px;
+            gap: 4px;
+            font-size: 9.5px;
             font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 4px;
+            padding: 1px 6px;
+            border-radius: 3px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
             width: fit-content;
-            margin-top: 1px;
         }
 
         .verified-status-badge.active {
-            background: rgba(16, 185, 129, 0.15);
+            background: rgba(16, 185, 129, 0.12);
             color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.45);
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.35);
         }
 
         .verified-status-badge.used {
-            background: rgba(239, 68, 68, 0.18);
+            background: rgba(239, 68, 68, 0.15);
             color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.5);
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
-        }
-
-        @media (max-width: 600px) {
-            .verified-details-grid {
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
-        }
-
-        .verified-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .verified-item-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 2px;
-        }
-
-        .verified-item-value {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--accent-cyan);
+            border: 1px solid rgba(239, 68, 68, 0.4);
         }
 
         .verified-note {
-            font-size: 12px;
-            color: var(--text-secondary);
-            line-height: 1.5;
+            font-size: 10.5px;
+            color: #64748b;
+            line-height: 1.3;
             margin: 0;
+            padding-top: 3px;
         }
 
         .code-alert-box {
@@ -1363,31 +1434,52 @@
                 <!-- Verified Details Card -->
                 <div id="verifiedCodeCard" class="verified-code-box" style="display: none;">
                     <div class="verified-header" id="verifiedHeader">
-                        <i class="fas fa-check-circle" id="verifiedHeaderIcon"></i>
-                        <span id="verifiedHeaderText">Acceptance Code Verified</span>
+                        <div class="verified-header-left">
+                            <i class="fas fa-check-circle" id="verifiedHeaderIcon"></i>
+                            <span id="verifiedHeaderText">Acceptance Code Verified</span>
+                        </div>
+                        <span id="verifiedStatusBadge" class="verified-status-badge active">● Ready to Use</span>
                     </div>
-                    <div class="verified-details-grid">
-                        <div class="verified-item">
-                            <span class="verified-item-label">Approved Artist</span>
-                            <span id="verifiedArtist" class="verified-item-value">-</span>
+
+                    <div class="verified-security-badge">
+                        <i class="fas fa-shield-halved"></i>
+                        <span>Auto Generated by OBSCURA RECORD A&amp;R Security</span>
+                    </div>
+
+                    <div class="verified-details-list">
+                        <div class="verified-row">
+                            <div class="verified-row-label">
+                                <i class="fas fa-user-astronaut"></i>
+                                <span>Approved Artist</span>
+                            </div>
+                            <div class="verified-row-value highlight-cyan" id="verifiedArtist">-</div>
                         </div>
-                        <div class="verified-item">
-                            <span class="verified-item-label">Registered Real Name</span>
-                            <span id="verifiedRealName" class="verified-item-value">-</span>
+
+                        <div class="verified-row">
+                            <div class="verified-row-label">
+                                <i class="fas fa-compact-disc"></i>
+                                <span>Approved Track</span>
+                            </div>
+                            <div class="verified-row-value highlight-emerald" id="verifiedTrack">-</div>
                         </div>
-                        <div class="verified-item">
-                            <span class="verified-item-label">Approved Track / Demo</span>
-                            <span id="verifiedTrack" class="verified-item-value">-</span>
+
+                        <div class="verified-row">
+                            <div class="verified-row-label">
+                                <i class="fas fa-id-card"></i>
+                                <span>Legal Real Name</span>
+                            </div>
+                            <div class="verified-row-value" id="verifiedRealName">-</div>
                         </div>
-                        <div class="verified-item">
-                            <span class="verified-item-label">Accepted Date</span>
-                            <span id="verifiedDate" class="verified-item-value">-</span>
-                        </div>
-                        <div class="verified-item">
-                            <span class="verified-item-label">Status</span>
-                            <span id="verifiedStatusBadge" class="verified-status-badge active">● Ready to Use</span>
+
+                        <div class="verified-row">
+                            <div class="verified-row-label">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>Accepted Date</span>
+                            </div>
+                            <div class="verified-row-value" id="verifiedDate">-</div>
                         </div>
                     </div>
+
                     <p class="verified-note" id="verifiedNote">
                         Your demo submission has been verified in the OBSCURA REC LLC approved list. Please complete your track details below.
                     </p>
@@ -2285,8 +2377,8 @@
 
                     // Show card in USED state (Red / Warning)
                     verifiedCodeCard.style.display = 'block';
-                    verifiedCodeCard.style.borderColor = 'rgba(239, 68, 68, 0.55)';
-                    verifiedCodeCard.style.background = 'rgba(239, 68, 68, 0.1)';
+                    verifiedCodeCard.style.borderColor = 'transparent';
+                    verifiedCodeCard.style.background = 'transparent';
 
                     const headerIcon = document.getElementById('verifiedHeaderIcon');
                     const headerText = document.getElementById('verifiedHeaderText');
@@ -2312,7 +2404,8 @@
                     verifiedDate.textContent = data.acceptedDate || 'N/A';
 
                     if (verifiedNote) {
-                        verifiedNote.innerHTML = '<span style="color: #fca5a5; font-weight: 500;">This unique single-use acceptance code has already been redeemed for a release submission and cannot be submitted again. If you believe this is an error, please contact our team.</span>';
+                        verifiedNote.style.display = 'block';
+                        verifiedNote.innerHTML = '<span style="color: #fca5a5; font-size: 11px;">This unique single-use acceptance code has already been used and cannot be submitted again.</span>';
                     }
                     updateWaterLevel();
                     return;
@@ -2328,8 +2421,8 @@
 
                     // Show card in ACTIVE state (Cyan / Emerald)
                     verifiedCodeCard.style.display = 'block';
-                    verifiedCodeCard.style.borderColor = 'rgba(0, 240, 255, 0.35)';
-                    verifiedCodeCard.style.background = 'rgba(0, 240, 255, 0.05)';
+                    verifiedCodeCard.style.borderColor = 'transparent';
+                    verifiedCodeCard.style.background = 'transparent';
 
                     const headerIcon = document.getElementById('verifiedHeaderIcon');
                     const headerText = document.getElementById('verifiedHeaderText');
@@ -2355,7 +2448,8 @@
                     verifiedDate.textContent = data.acceptedDate || 'Recently Approved';
 
                     if (verifiedNote) {
-                        verifiedNote.innerHTML = 'Your demo submission has been verified in the OBSCURA REC LLC approved list. Please complete your track details below.';
+                        verifiedNote.style.display = 'none';
+                        verifiedNote.innerHTML = '';
                     }
 
                     // Automatically pre-fill fields if empty
