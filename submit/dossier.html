@@ -576,7 +576,7 @@
                 </div>
                 <div class="code-subline">
                     Approved for: <strong id="displayArtistName" style="color: #ffffff;">-</strong> 
-                    (<span id="displayRealName" style="color: #94a3b8;">-</span>) &bull; 
+                    <span id="displayRealNameWrap">(<span id="displayRealName" style="color: #94a3b8;">-</span>) &bull; </span>
                     Status: <span style="color: #f87171; font-weight: 700;">USED / ARCHIVED</span>
                 </div>
             </section>
@@ -791,7 +791,11 @@
             document.getElementById('displaySubId').textContent = id;
             document.getElementById('displayCode').textContent = sub.acceptanceCode || 'N/A';
             document.getElementById('displayArtistName').textContent = sub.mainArtist || 'N/A';
-            document.getElementById('displayRealName').textContent = sub.realName || 'N/A';
+            const realNameWrap = document.getElementById('displayRealNameWrap');
+            if (realNameWrap) {
+                realNameWrap.style.display = sub.realName ? 'inline' : 'none';
+            }
+            document.getElementById('displayRealName').textContent = sub.realName || '-';
 
             document.getElementById('displayTrackTitle').textContent = '"' + (sub.songTitle || 'Untitled') + '"';
             document.getElementById('displayMainArtist').textContent = sub.mainArtist || 'N/A';
@@ -811,7 +815,7 @@
 
             // Metadata Table
             document.getElementById('tableArtist').textContent = sub.mainArtist || 'N/A';
-            document.getElementById('tableRealName').textContent = sub.realName || 'N/A';
+            document.getElementById('tableRealName').textContent = sub.realName || '-';
             
             const locText = [sub.city, sub.country].filter(Boolean).join(', ') || 'Not specified';
             document.getElementById('tableLocation').textContent = locText;

@@ -419,7 +419,7 @@
                     </div>
                     <div class="form-group">
                         <label class="label">Submitter / Artist Real Name (Optional)</label>
-                        <input type="text" id="genRealName" class="input" placeholder="Leave blank to use stage name">
+                        <input type="text" id="genRealName" class="input" placeholder="Optional (leave blank if not provided)">
                     </div>
                 </div>
 
@@ -601,7 +601,7 @@
             const artist = genArtist.value.trim();
             const track = genTrack.value.trim();
             const realNameInput = genRealName.value.trim();
-            const realName = realNameInput || artist;
+            const realName = realNameInput || '';
             const acceptedDate = genDate.value;
             const notes = genNotes.value.trim();
 
@@ -635,7 +635,7 @@
                 const outTrackEl = document.getElementById('outTrack');
                 const outDateEl = document.getElementById('outDate');
                 if (outArtistEl) outArtistEl.textContent = artist;
-                if (outRealNameEl) outRealNameEl.textContent = realName;
+                if (outRealNameEl) outRealNameEl.textContent = realName || '-';
                 if (outTrackEl) outTrackEl.textContent = track || 'To Be Announced';
                 if (outDateEl) outDateEl.textContent = acceptedDate;
 
@@ -669,7 +669,7 @@ To proceed with your release, please fill out our official track submission form
 🔗 Track Submission Portal: https://obscurarecord.com/submit
 🔑 Acceptance Code: ${lastGeneratedRecord.code}
 👤 Registered Artist Name: ${lastGeneratedRecord.artistName}
-📄 Legal Real Name: ${lastGeneratedRecord.realName}
+📄 Legal Real Name: ${lastGeneratedRecord.realName || '-'}
 🎵 Approved Track Title: ${lastGeneratedRecord.trackName || 'To Be Announced'}
 📅 Accepted Date: ${lastGeneratedRecord.acceptedDate}
 
@@ -793,7 +793,7 @@ https://obscurarecord.com`;
             subsTableBody.innerHTML = list.map(item => `
                 <tr>
                     <td><strong style="color: #38bdf8;">${item.songTitle || 'Untitled'}</strong></td>
-                    <td><strong>${item.mainArtist}</strong> (${item.realName || 'N/A'})</td>
+                    <td><strong>${item.mainArtist}</strong>${item.realName ? ` <span style="color: #94a3b8; font-size: 12.5px;">(${item.realName})</span>` : ''}</td>
                     <td><span style="color: #c084fc;">${item.genre || 'N/A'}</span></td>
                     <td>📅 ${item.releaseDate || 'N/A'}</td>
                     <td><span class="code-cell" style="font-size: 12px;">${item.acceptanceCode || '-'}</span></td>

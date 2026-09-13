@@ -745,7 +745,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             verifiedArtist.textContent = data.artistName || 'N/A';
-            verifiedRealName.textContent = data.realName || 'N/A';
+            verifiedRealName.textContent = data.realName || '-';
             if (verifiedTrack) verifiedTrack.textContent = data.trackName || 'To Be Announced';
             verifiedDate.textContent = data.acceptedDate || 'N/A';
 
@@ -788,7 +788,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             verifiedArtist.textContent = data.artistName || 'N/A';
-            verifiedRealName.textContent = data.realName || 'N/A';
+            verifiedRealName.textContent = data.realName || '-';
             if (verifiedTrack) verifiedTrack.textContent = data.trackName || 'To Be Announced';
             verifiedDate.textContent = data.acceptedDate || 'Recently Approved';
 
@@ -1280,7 +1280,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const acceptanceCode = (acceptanceCodeInput?.value || '').toUpperCase().trim();
             const mainArtist = document.getElementById('mainArtist').value.trim();
             const realNameInputVal = document.getElementById('realName').value.trim();
-            const realName = realNameInputVal || mainArtist;
+            const realName = realNameInputVal || '';
             const email = document.getElementById('email').value.trim();
             const city = document.getElementById('city').value.trim();
             const country = document.getElementById('country').value.trim();
