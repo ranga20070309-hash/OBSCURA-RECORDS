@@ -1084,10 +1084,14 @@ const initPortal = () => {
         });
 
         // --- DEMO SUBMISSION HANDLER ---
+        let isSubmittingDemo = false;
         subForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = subForm.querySelector('button');
+            if (isSubmittingDemo) return;
+            
+            const btn = subForm.querySelector('button[type="submit"]') || subForm.querySelector('.cta-primary-small') || subForm.querySelector('button');
             const originalBtnText = btn.textContent;
+            isSubmittingDemo = true;
             btn.textContent = "VERIFYING SECURITY...";
             btn.disabled = true;
 
@@ -1121,6 +1125,7 @@ const initPortal = () => {
                     alert("TRANSMISSION BLOCKED: Please fill in all required fields (Name, Artist Name, Valid Email, Demo Streaming Link).");
                     btn.textContent = originalBtnText;
                     btn.disabled = false;
+                    isSubmittingDemo = false;
                     return;
                 }
 
@@ -1210,9 +1215,10 @@ const initPortal = () => {
                         if (subStatus) subStatus.style.display = 'none';
                         subForm.reset();
 
-                        // Clear extra dynamic links but keep the first one baseline
-                        const rows = dynamicLinksContainer?.querySelectorAll('.dynamic-row');
-                        if (rows) {
+                        // Reset dynamic link inputs
+                        const dynamicContainer = document.getElementById('dynamic-links-container');
+                        if (dynamicContainer) {
+                            const rows = dynamicContainer.querySelectorAll('.dynamic-row');
                             rows.forEach((row, index) => {
                                 if (index > 0) row.remove();
                             });
@@ -1221,6 +1227,7 @@ const initPortal = () => {
                         subForm.querySelectorAll('.mirror-display').forEach(d => d.innerHTML = '');
                         btn.textContent = originalBtnText;
                         btn.disabled = false;
+                        isSubmittingDemo = false;
                         updateSubmitLock();
                     }, 500);
                 }, 3000);
@@ -1230,16 +1237,21 @@ const initPortal = () => {
                 alert("TRANSMISSION ERROR: " + err.message);
                 btn.textContent = originalBtnText;
                 btn.disabled = false;
+                isSubmittingDemo = false;
             }
         });
     }
 
     // --- CONTACT FORM HANDLER ---
     if (contactForm) {
+        let isSubmittingContact = false;
         contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = contactForm.querySelector('button');
+            if (isSubmittingContact) return;
+
+            const btn = contactForm.querySelector('button[type="submit"]') || contactForm.querySelector('button');
             const originalBtnText = btn.innerHTML;
+            isSubmittingContact = true;
             btn.innerHTML = "TRANSMITTING...";
             btn.disabled = true;
 
@@ -1256,6 +1268,7 @@ const initPortal = () => {
                     alert("TRANSMISSION BLOCKED: Please fill in all required contact fields.");
                     btn.innerHTML = originalBtnText;
                     btn.disabled = false;
+                    isSubmittingContact = false;
                     return;
                 }
 
@@ -1311,6 +1324,7 @@ const initPortal = () => {
                         contactForm.reset();
                         btn.innerHTML = originalBtnText;
                         btn.disabled = false;
+                        isSubmittingContact = false;
                     }, 500);
                 }, 3000);
 
@@ -1319,6 +1333,7 @@ const initPortal = () => {
                 alert("TRANSMISSION ERROR: " + err.message);
                 btn.innerHTML = originalBtnText;
                 btn.disabled = false;
+                isSubmittingContact = false;
             }
         });
     }
