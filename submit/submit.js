@@ -35,6 +35,103 @@ document.addEventListener('DOMContentLoaded', () => {
     // Client-side cache to eliminate redundant Firebase read requests
     const verificationCache = {};
 
+    // --- Custom In-Site Modal Dialog System ---
+    const obscuraModal = document.getElementById('obscuraCustomModal');
+    const obscuraModalIconWrap = document.getElementById('obscuraModalIconWrap');
+    const obscuraModalIcon = document.getElementById('obscuraModalIcon');
+    const obscuraModalTitle = document.getElementById('obscuraModalTitle');
+    const obscuraModalMessage = document.getElementById('obscuraModalMessage');
+    const obscuraModalCancelBtn = document.getElementById('obscuraModalCancelBtn');
+    const obscuraModalConfirmBtn = document.getElementById('obscuraModalConfirmBtn');
+
+    function showInSiteModal({ title = 'Notice', message = '', confirmText = 'OK', cancelText = null, type = 'info' }) {
+        return new Promise((resolve) => {
+            if (!obscuraModal) {
+                if (cancelText) {
+                    resolve(window.confirm(message));
+                } else {
+                    window.alert(message);
+                    resolve(true);
+                }
+                return;
+            }
+
+            obscuraModalTitle.textContent = title;
+            obscuraModalMessage.textContent = message;
+            obscuraModalConfirmBtn.textContent = confirmText;
+
+            obscuraModalIconWrap.className = 'obscura-modal-icon-wrap ' + type;
+            obscuraModalConfirmBtn.className = 'obscura-modal-btn confirm-btn ' + (type === 'danger' ? 'danger' : '');
+
+            if (type === 'danger') {
+                obscuraModalIcon.className = 'fas fa-exclamation-triangle';
+            } else if (type === 'warning') {
+                obscuraModalIcon.className = 'fas fa-exclamation-circle';
+            } else {
+                obscuraModalIcon.className = 'fas fa-info-circle';
+            }
+
+            if (cancelText) {
+                obscuraModalCancelBtn.style.display = 'inline-block';
+                obscuraModalCancelBtn.textContent = cancelText;
+            } else {
+                obscuraModalCancelBtn.style.display = 'none';
+            }
+
+            obscuraModal.style.display = 'flex';
+            requestAnimationFrame(() => {
+                obscuraModal.classList.add('active');
+                obscuraModalConfirmBtn.focus();
+            });
+
+            function cleanup(result) {
+                obscuraModal.classList.remove('active');
+                setTimeout(() => {
+                    obscuraModal.style.display = 'none';
+                }, 260);
+                obscuraModalConfirmBtn.removeEventListener('click', onConfirm);
+                obscuraModalCancelBtn.removeEventListener('click', onCancel);
+                document.removeEventListener('keydown', onKeyDown);
+                resolve(result);
+            }
+
+            function onConfirm() { cleanup(true); }
+            function onCancel() { cleanup(false); }
+            function onKeyDown(e) {
+                if (e.key === 'Escape') {
+                    cleanup(false);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    cleanup(true);
+                }
+            }
+
+            obscuraModalConfirmBtn.addEventListener('click', onConfirm);
+            obscuraModalCancelBtn.addEventListener('click', onCancel);
+            document.addEventListener('keydown', onKeyDown);
+        });
+    }
+
+    function showInSiteConfirm(options) {
+        return showInSiteModal({
+            title: options.title || 'Please Confirm',
+            message: options.message || '',
+            confirmText: options.confirmText || 'OK',
+            cancelText: options.cancelText || 'Cancel',
+            type: options.type || 'warning'
+        });
+    }
+
+    function showInSiteAlert(options) {
+        return showInSiteModal({
+            title: options.title || 'Notice',
+            message: options.message || '',
+            confirmText: options.okText || 'Got It',
+            cancelText: null,
+            type: options.type || 'info'
+        });
+    }
+
     // Restrict release date to minimum 4 days in advance
     let minReleaseDateStr = '';
     if (releaseDateInput) {
@@ -1120,8 +1217,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Clear Form Button ---
     if (clearFormBtn) {
-        clearFormBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to clear the form? All entered answers will be erased.')) {
+        clearFormBtn.addEventListener('click', async () => {
+            const ok = await showInSiteConfirm({
+                title: 'Clear Form Confirmation',
+                message: 'Are you sure you want to clear the form? All entered answers will be erased.',
+                confirmText: 'Clear Form',
+                cancelText: 'Cancel',
+                type: 'danger'
+            });
+            if (ok) {
                 form.reset();
                 collaboratorsList.innerHTML = '';
                 updateCollabsVisibility();
@@ -1205,7 +1309,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     codeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
                 acceptanceCodeInput?.focus();
-                alert('Submission blocked: Please enter your unique Acceptance Code provided in your official OBSCURA REC LLC acceptance email.');
+                await showInSiteAlert({
+                    title: 'Submission Blocked',
+                    message: 'Please enter your unique Acceptance Code provided in your official OBSCURA REC LLC acceptance email.',
+                    type: 'warning'
+                });
                 return;
             }
 
@@ -1218,24 +1326,42 @@ document.addEventListener('DOMContentLoaded', () => {
                     codeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
                 acceptanceCodeInput?.focus();
-                alert('Submission blocked: Your Acceptance Code has not been verified or has already been used. A valid, active acceptance code is required.');
+                await showInSiteAlert({
+                    title: 'Invalid Acceptance Code',
+                    message: 'Your Acceptance Code has not been verified or has already been used. A valid, active acceptance code is required.',
+                    type: 'danger'
+                });
                 return;
             }
 
             if (!mainArtist || !email || !city || !country || !songTitle || !genre || !language || !mainArtistSpotify || !releaseDate || !driveLink) {
-                alert('Please fill in all required questions marked with an asterisk (*).');
+                await showInSiteAlert({
+                    title: 'Incomplete Questions',
+                    message: 'Please fill in all required questions marked with an asterisk (*).',
+                    type: 'warning'
+                });
                 return;
             }
 
             if (minReleaseDateStr && releaseDate < minReleaseDateStr) {
-                alert(`Requested release date must be at least 4 days in advance (${minReleaseDateStr} or later) to allow digital store ingestion and delivery.`);
+                await showInSiteAlert({
+                    title: 'Release Date Notice',
+                    message: `Requested release date must be at least 4 days in advance (${minReleaseDateStr} or later) to allow digital store ingestion and delivery.`,
+                    type: 'warning'
+                });
                 document.getElementById('releaseDate').focus();
                 return;
             }
 
             // Google drive advice check
             if (!driveLink.toLowerCase().includes('drive.google.com')) {
-                const proceed = confirm('Your audio & artwork link does not appear to be a Google Drive link. Do you want to submit anyway?');
+                const proceed = await showInSiteConfirm({
+                    title: 'External Storage Link',
+                    message: 'Your audio & artwork link does not appear to be a Google Drive link. Do you want to submit anyway?',
+                    confirmText: 'Submit Anyway',
+                    cancelText: 'Edit Link',
+                    type: 'warning'
+                });
                 if (!proceed) return;
             }
 
@@ -1249,7 +1375,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     confirmCard.classList.add('input-error-shake');
                     confirmCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
-                alert('Please check the Final Submission Confirmation box to confirm that your release details are accurate before submitting.');
+                await showInSiteAlert({
+                    title: 'Confirmation Required',
+                    message: 'Please check the Final Submission Confirmation box to confirm that your release details are accurate before submitting.',
+                    type: 'warning'
+                });
                 return;
             }
 
@@ -1380,11 +1510,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     confirmationCard.classList.add('active');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
-                    alert('Submission could not be completed. Please ensure your acceptance code is valid and you have an active internet connection.');
+                    await showInSiteAlert({
+                        title: 'Submission Incomplete',
+                        message: 'Submission could not be completed. Please ensure your acceptance code is valid and you have an active internet connection.',
+                        type: 'danger'
+                    });
                 }
             } catch (err) {
                 console.error('Submission request error:', err);
-                alert('An error occurred while connecting to the submission system. Please try again.');
+                await showInSiteAlert({
+                    title: 'Connection Error',
+                    message: 'An error occurred while connecting to the submission system. Please try again.',
+                    type: 'danger'
+                });
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Submit';

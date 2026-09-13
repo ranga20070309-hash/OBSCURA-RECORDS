@@ -1374,6 +1374,156 @@
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* ==========================================================================
+           Custom In-Site OBSCURA Modal Dialog System
+           ========================================================================== */
+        .obscura-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 999999;
+            background: rgba(4, 5, 14, 0.78);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .obscura-modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .obscura-modal-box {
+            background: rgba(14, 11, 28, 0.95);
+            border: 1px solid rgba(0, 240, 255, 0.32);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 32px rgba(0, 240, 255, 0.15);
+            border-radius: 14px;
+            max-width: 420px;
+            width: 100%;
+            padding: 26px 24px 22px;
+            text-align: center;
+            transform: scale(0.92) translateY(8px);
+            transition: transform 0.26s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .obscura-modal-overlay.active .obscura-modal-box {
+            transform: scale(1) translateY(0);
+        }
+
+        .obscura-modal-icon-wrap {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: #00f0ff;
+            box-shadow: 0 0 16px rgba(0, 240, 255, 0.2);
+        }
+
+        .obscura-modal-icon-wrap.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.38);
+            color: #fbbf24;
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
+        }
+
+        .obscura-modal-icon-wrap.danger {
+            background: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.45);
+            color: #f87171;
+            box-shadow: 0 0 16px rgba(239, 68, 68, 0.28);
+        }
+
+        .obscura-modal-icon-wrap.info {
+            background: rgba(0, 240, 255, 0.08);
+            border-color: rgba(0, 240, 255, 0.3);
+            color: #00f0ff;
+            box-shadow: 0 0 16px rgba(0, 240, 255, 0.2);
+        }
+
+        .obscura-modal-title {
+            font-family: 'Google Sans', 'Outfit', sans-serif;
+            font-size: 17.5px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .obscura-modal-message {
+            font-size: 13.5px;
+            color: #94a3b8;
+            line-height: 1.55;
+            margin-bottom: 22px;
+            word-break: break-word;
+        }
+
+        .obscura-modal-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .obscura-modal-btn {
+            padding: 9px 22px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            border: none;
+        }
+
+        .obscura-modal-btn.cancel-btn {
+            background: rgba(255, 255, 255, 0.06);
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+        }
+
+        .obscura-modal-btn.cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+
+        .obscura-modal-btn.confirm-btn {
+            background: linear-gradient(135deg, #00f0ff 0%, #0070f3 100%);
+            color: #000000;
+            font-weight: 700;
+            box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+        }
+
+        .obscura-modal-btn.confirm-btn:hover {
+            box-shadow: 0 0 24px rgba(0, 240, 255, 0.55);
+            transform: translateY(-1px);
+        }
+
+        .obscura-modal-btn.confirm-btn.danger {
+            background: linear-gradient(135deg, #ff3355 0%, #be123c 100%);
+            color: #ffffff;
+            box-shadow: 0 0 16px rgba(255, 51, 85, 0.35);
+        }
+
+        .obscura-modal-btn.confirm-btn.danger:hover {
+            box-shadow: 0 0 24px rgba(255, 51, 85, 0.55);
+        }
     </style>
 </head>
 <body>
@@ -1744,6 +1894,23 @@
 
     </div>
 
+    <!-- OBSCURA Custom In-Site Modal Dialog -->
+    <div id="obscuraCustomModal" class="obscura-modal-overlay" style="display: none;" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="obscura-modal-box">
+            <div class="obscura-modal-icon-wrap warning" id="obscuraModalIconWrap">
+                <i class="fas fa-exclamation-triangle" id="obscuraModalIcon"></i>
+            </div>
+            <div class="obscura-modal-content">
+                <h3 class="obscura-modal-title" id="obscuraModalTitle">Clear Form Confirmation</h3>
+                <p class="obscura-modal-message" id="obscuraModalMessage">Are you sure you want to clear the form? All entered answers will be erased.</p>
+            </div>
+            <div class="obscura-modal-actions" id="obscuraModalActions">
+                <button type="button" class="obscura-modal-btn cancel-btn" id="obscuraModalCancelBtn">Cancel</button>
+                <button type="button" class="obscura-modal-btn confirm-btn" id="obscuraModalConfirmBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Dual execution script: works standalone inline and keeps local & server logic fully active -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -1782,6 +1949,103 @@
             let codeCheckTimeout = null;
             // Client-side cache to eliminate redundant Firebase read requests
             const verificationCache = {};
+
+            // --- Custom In-Site Modal Dialog System ---
+            const obscuraModal = document.getElementById('obscuraCustomModal');
+            const obscuraModalIconWrap = document.getElementById('obscuraModalIconWrap');
+            const obscuraModalIcon = document.getElementById('obscuraModalIcon');
+            const obscuraModalTitle = document.getElementById('obscuraModalTitle');
+            const obscuraModalMessage = document.getElementById('obscuraModalMessage');
+            const obscuraModalCancelBtn = document.getElementById('obscuraModalCancelBtn');
+            const obscuraModalConfirmBtn = document.getElementById('obscuraModalConfirmBtn');
+
+            function showInSiteModal({ title = 'Notice', message = '', confirmText = 'OK', cancelText = null, type = 'info' }) {
+                return new Promise((resolve) => {
+                    if (!obscuraModal) {
+                        if (cancelText) {
+                            resolve(window.confirm(message));
+                        } else {
+                            window.alert(message);
+                            resolve(true);
+                        }
+                        return;
+                    }
+
+                    obscuraModalTitle.textContent = title;
+                    obscuraModalMessage.textContent = message;
+                    obscuraModalConfirmBtn.textContent = confirmText;
+
+                    obscuraModalIconWrap.className = 'obscura-modal-icon-wrap ' + type;
+                    obscuraModalConfirmBtn.className = 'obscura-modal-btn confirm-btn ' + (type === 'danger' ? 'danger' : '');
+
+                    if (type === 'danger') {
+                        obscuraModalIcon.className = 'fas fa-exclamation-triangle';
+                    } else if (type === 'warning') {
+                        obscuraModalIcon.className = 'fas fa-exclamation-circle';
+                    } else {
+                        obscuraModalIcon.className = 'fas fa-info-circle';
+                    }
+
+                    if (cancelText) {
+                        obscuraModalCancelBtn.style.display = 'inline-block';
+                        obscuraModalCancelBtn.textContent = cancelText;
+                    } else {
+                        obscuraModalCancelBtn.style.display = 'none';
+                    }
+
+                    obscuraModal.style.display = 'flex';
+                    requestAnimationFrame(() => {
+                        obscuraModal.classList.add('active');
+                        obscuraModalConfirmBtn.focus();
+                    });
+
+                    function cleanup(result) {
+                        obscuraModal.classList.remove('active');
+                        setTimeout(() => {
+                            obscuraModal.style.display = 'none';
+                        }, 260);
+                        obscuraModalConfirmBtn.removeEventListener('click', onConfirm);
+                        obscuraModalCancelBtn.removeEventListener('click', onCancel);
+                        document.removeEventListener('keydown', onKeyDown);
+                        resolve(result);
+                    }
+
+                    function onConfirm() { cleanup(true); }
+                    function onCancel() { cleanup(false); }
+                    function onKeyDown(e) {
+                        if (e.key === 'Escape') {
+                            cleanup(false);
+                        } else if (e.key === 'Enter') {
+                            e.preventDefault();
+                            cleanup(true);
+                        }
+                    }
+
+                    obscuraModalConfirmBtn.addEventListener('click', onConfirm);
+                    obscuraModalCancelBtn.addEventListener('click', onCancel);
+                    document.addEventListener('keydown', onKeyDown);
+                });
+            }
+
+            function showInSiteConfirm(options) {
+                return showInSiteModal({
+                    title: options.title || 'Please Confirm',
+                    message: options.message || '',
+                    confirmText: options.confirmText || 'OK',
+                    cancelText: options.cancelText || 'Cancel',
+                    type: options.type || 'warning'
+                });
+            }
+
+            function showInSiteAlert(options) {
+                return showInSiteModal({
+                    title: options.title || 'Notice',
+                    message: options.message || '',
+                    confirmText: options.okText || 'Got It',
+                    cancelText: null,
+                    type: options.type || 'info'
+                });
+            }
 
             // Restrict release date to minimum 4 days in advance
             let minReleaseDateStr = '';
@@ -2873,8 +3137,15 @@
 
             // --- Clear Form Button ---
             if (clearFormBtn) {
-                clearFormBtn.addEventListener('click', () => {
-                    if (confirm('Are you sure you want to clear the form? All entered answers will be erased.')) {
+                clearFormBtn.addEventListener('click', async () => {
+                    const ok = await showInSiteConfirm({
+                        title: 'Clear Form Confirmation',
+                        message: 'Are you sure you want to clear the form? All entered answers will be erased.',
+                        confirmText: 'Clear Form',
+                        cancelText: 'Cancel',
+                        type: 'danger'
+                    });
+                    if (ok) {
                         form.reset();
                         collaboratorsList.innerHTML = '';
                         updateCollabsVisibility();
@@ -2958,7 +3229,11 @@
                             codeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
                         acceptanceCodeInput?.focus();
-                        alert('Submission blocked: Please enter your unique Acceptance Code provided in your official OBSCURA REC LLC acceptance email.');
+                        await showInSiteAlert({
+                            title: 'Submission Blocked',
+                            message: 'Please enter your unique Acceptance Code provided in your official OBSCURA REC LLC acceptance email.',
+                            type: 'warning'
+                        });
                         return;
                     }
 
@@ -2971,24 +3246,42 @@
                             codeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
                         acceptanceCodeInput?.focus();
-                        alert('Submission blocked: Your Acceptance Code has not been verified or has already been used. A valid, active acceptance code is required.');
+                        await showInSiteAlert({
+                            title: 'Invalid Acceptance Code',
+                            message: 'Your Acceptance Code has not been verified or has already been used. A valid, active acceptance code is required.',
+                            type: 'danger'
+                        });
                         return;
                     }
 
                     if (!mainArtist || !email || !city || !country || !songTitle || !genre || !language || !mainArtistSpotify || !releaseDate || !driveLink) {
-                        alert('Please fill in all required questions marked with an asterisk (*).');
+                        await showInSiteAlert({
+                            title: 'Incomplete Questions',
+                            message: 'Please fill in all required questions marked with an asterisk (*).',
+                            type: 'warning'
+                        });
                         return;
                     }
 
                     if (minReleaseDateStr && releaseDate < minReleaseDateStr) {
-                        alert(`Requested release date must be at least 4 days in advance (${minReleaseDateStr} or later) to allow digital store ingestion and delivery.`);
+                        await showInSiteAlert({
+                            title: 'Release Date Notice',
+                            message: `Requested release date must be at least 4 days in advance (${minReleaseDateStr} or later) to allow digital store ingestion and delivery.`,
+                            type: 'warning'
+                        });
                         document.getElementById('releaseDate').focus();
                         return;
                     }
 
                     // Google drive advice check
                     if (!driveLink.toLowerCase().includes('drive.google.com')) {
-                        const proceed = confirm('Your audio & artwork link does not appear to be a Google Drive link. Do you want to submit anyway?');
+                        const proceed = await showInSiteConfirm({
+                            title: 'External Storage Link',
+                            message: 'Your audio & artwork link does not appear to be a Google Drive link. Do you want to submit anyway?',
+                            confirmText: 'Submit Anyway',
+                            cancelText: 'Edit Link',
+                            type: 'warning'
+                        });
                         if (!proceed) return;
                     }
 
@@ -3002,7 +3295,11 @@
                             confirmCard.classList.add('input-error-shake');
                             confirmCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
-                        alert('Please check the Final Submission Confirmation box to confirm that your release details are accurate before submitting.');
+                        await showInSiteAlert({
+                            title: 'Confirmation Required',
+                            message: 'Please check the Final Submission Confirmation box to confirm that your release details are accurate before submitting.',
+                            type: 'warning'
+                        });
                         return;
                     }
 
@@ -3133,11 +3430,19 @@
                             confirmationCard.classList.add('active');
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                         } else {
-                            alert('Submission could not be completed. Please ensure your acceptance code is valid and you have an active internet connection.');
+                            await showInSiteAlert({
+                                title: 'Submission Incomplete',
+                                message: 'Submission could not be completed. Please ensure your acceptance code is valid and you have an active internet connection.',
+                                type: 'danger'
+                            });
                         }
                     } catch (err) {
                         console.error('Submission request error:', err);
-                        alert('An error occurred while connecting to the submission system. Please try again.');
+                        await showInSiteAlert({
+                            title: 'Connection Error',
+                            message: 'An error occurred while connecting to the submission system. Please try again.',
+                            type: 'danger'
+                        });
                     } finally {
                         submitBtn.disabled = false;
                         submitBtn.textContent = 'Submit';
