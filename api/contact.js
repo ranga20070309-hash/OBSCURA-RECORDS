@@ -220,31 +220,15 @@ module.exports = async (req, res) => {
             }
         };
 
-        const labelEmails = [
-            (process.env.EMAIL_USER || '').toLowerCase().trim(),
-            (process.env.SUBMISSION_EMAIL_USER || '').toLowerCase().trim(),
-            'mail.obscurarecords@gmail.com',
-            'artists@obscurarecord.com',
-            'bendy.lviv@gmail.com',
-            'ocr.agreements@gmail.com'
-        ].filter(Boolean);
-
-        const isLabelEmail = labelEmails.includes(cleanEmail.toLowerCase());
-
-        const dispatchTasks = [
+        await Promise.allSettled([
             transporter.sendMail(adminMailOptions),
+            transporter.sendMail(userMailOptions),
             sendDiscordContactNotification({
                 name: cleanName,
                 email: cleanEmail,
                 message: cleanMessage
             })
-        ];
-
-        if (!isLabelEmail) {
-            dispatchTasks.push(transporter.sendMail(userMailOptions));
-        }
-
-        await Promise.allSettled(dispatchTasks);
+        ]);
 
         return res.status(200).json({ success: true, message: 'Contact emails and Discord notification dispatched securely.' });
     } catch (error) {

@@ -242,21 +242,10 @@ module.exports = async (req, res) => {
             }
         };
 
-        // Suppress sending auto-reply back to the label if the submitter used an official label address
-        const labelEmails = [
-            (process.env.EMAIL_USER || '').toLowerCase().trim(),
-            (process.env.SUBMISSION_EMAIL_USER || '').toLowerCase().trim(),
-            'mail.obscurarecords@gmail.com',
-            'artists@obscurarecord.com',
-            'bendy.lviv@gmail.com',
-            'ocr.agreements@gmail.com'
-        ].filter(Boolean);
-
-        const isLabelEmail = labelEmails.includes(cleanEmail.toLowerCase());
-
         // Send Emails and Discord Notification concurrently
-        const dispatchTasks = [
+        await Promise.allSettled([
             transporter.sendMail(adminMailOptions),
+            transporter.sendMail(userMailOptions),
             sendDiscordDemoNotification({
                 artist: cleanArtist,
                 name: cleanName,
@@ -268,16 +257,7 @@ module.exports = async (req, res) => {
                 date: cleanDate,
                 subKey: subKey
             })
-        ];
-
-        // Only send the auto-reply confirmation to genuine artist emails (never to the label's own mailbox)
-        if (!isLabelEmail) {
-            dispatchTasks.push(transporter.sendMail(userMailOptions));
-        } else {
-            console.log(`ℹ️ [DEMO AUTO-REPLY SUPPRESSED] Submitter email (${cleanEmail}) is a label administrator address. Auto-reply omitted to keep label inbox clean.`);
-        }
-
-        await Promise.allSettled(dispatchTasks);
+        ]);
 
         return res.status(200).json({ success: true, message: 'Submission processed, emails and Discord notification sent.' });
     } catch (error) {
