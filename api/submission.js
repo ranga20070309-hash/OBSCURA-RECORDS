@@ -123,13 +123,13 @@ module.exports = async (req, res) => {
         }
 
         // 2. Field Validation
-        if (!realName || !mainArtist || !email || !city || !country || !songTitle || !genre || !language || !driveLink) {
+        const cleanSongTitle = sanitize(songTitle);
+        const cleanMainArtist = sanitize(mainArtist);
+        const cleanRealName = sanitize(realName) || cleanMainArtist;
+
+        if (!cleanMainArtist || !email || !city || !country || !cleanSongTitle || !genre || !language || !driveLink) {
             return res.status(400).json({ error: 'Please fill in all required submission fields.' });
         }
-
-        const cleanSongTitle = sanitize(songTitle);
-        const cleanRealName = sanitize(realName);
-        const cleanMainArtist = sanitize(mainArtist);
         const cleanMainArtistSpotify = (mainArtistSpotify || '').trim();
         const cleanMainArtistApple = (mainArtistApple || '').trim();
         const cleanEmail = email.trim();
