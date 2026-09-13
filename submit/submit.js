@@ -352,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const requiredChecks = [
             isCodeValid,
-            (document.getElementById('realName')?.value || '').trim().length > 1,
+            (document.getElementById('realName')?.value || document.getElementById('mainArtist')?.value || '').trim().length > 1,
             (document.getElementById('mainArtist')?.value || '').trim().length > 1,
             (document.getElementById('email')?.value || '').trim().includes('@'),
             (document.getElementById('city')?.value || '').trim().length > 1,
@@ -1174,8 +1174,9 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
 
             const acceptanceCode = (acceptanceCodeInput?.value || '').toUpperCase().trim();
-            const realName = document.getElementById('realName').value.trim();
             const mainArtist = document.getElementById('mainArtist').value.trim();
+            const realNameInputVal = document.getElementById('realName').value.trim();
+            const realName = realNameInputVal || mainArtist;
             const email = document.getElementById('email').value.trim();
             const city = document.getElementById('city').value.trim();
             const country = document.getElementById('country').value.trim();
@@ -1221,7 +1222,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (!realName || !mainArtist || !email || !city || !country || !songTitle || !genre || !language || !mainArtistSpotify || !releaseDate || !driveLink) {
+            if (!mainArtist || !email || !city || !country || !songTitle || !genre || !language || !mainArtistSpotify || !releaseDate || !driveLink) {
                 alert('Please fill in all required questions marked with an asterisk (*).');
                 return;
             }
