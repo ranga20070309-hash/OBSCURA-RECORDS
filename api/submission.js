@@ -439,13 +439,13 @@ module.exports = async (req, res) => {
                             </div>
 
                             <p style="color: #94a3b8; font-size: 13px; margin-top: 20px;">
-                                Our production and distribution team will verify your master audio (.WAV) and artwork dimensions. We will contact you directly at <strong style="color: #ffffff;">${cleanEmail}</strong> with your release date confirmation, delivery schedule, and pre-save link.
+                                Our production and distribution team will verify your master audio (.WAV) and artwork dimensions. We will contact you directly from <a href="mailto:artists@obscurarecord.com" style="color: #00f0ff; text-decoration: none; font-weight: 600;">artists@obscurarecord.com</a> with your release date confirmation, delivery schedule, and pre-save link.
                             </p>
                             
                             <div style="margin-top: 26px; padding-top: 18px; border-top: 1px solid #1e273a; color: #64748b; font-size: 12px;">
                                 Best regards,<br>
                                 <strong style="color: #ffffff; font-size: 13px;">Distribution &amp; A&amp;R Operations &bull; OBSCURA REC LLC</strong><br>
-                                <a href="https://obscurarecord.com" style="color: #00f0ff; text-decoration: none;">obscurarecord.com</a>
+                                <a href="https://obscurarecord.com" style="color: #00f0ff; text-decoration: none;">obscurarecord.com</a> &bull; <a href="mailto:artists@obscurarecord.com" style="color: #38bdf8; text-decoration: none;">artists@obscurarecord.com</a>
                             </div>
                         </td>
                     </tr>
@@ -473,10 +473,10 @@ module.exports = async (req, res) => {
 
         const artistMailOptions = {
             from: `"OBSCURA REC LLC" <${senderEmail}>`,
-            replyTo: TARGET_SUBMISSION_EMAIL,
+            replyTo: 'artists@obscurarecord.com',
             to: cleanEmail,
             subject: `Release Materials Received [${subId}] - "${cleanSongTitle}" - OBSCURA REC LLC`,
-            text: `Hi ${cleanRealName || cleanMainArtist},\n\nThank you for submitting your release materials for "${cleanSongTitle}" to OBSCURA REC LLC. Your submission (${subId}) has been successfully received.\n\nOur distribution team will inspect your master audio and artwork and will contact you directly with your release schedule and pre-save link.\n\nBest regards,\nOBSCURA REC LLC Distribution Team\nhttps://obscurarecord.com`,
+            text: `Hi ${cleanRealName || cleanMainArtist},\n\nThank you for submitting your release materials for "${cleanSongTitle}" to OBSCURA REC LLC. Your submission (${subId}) has been successfully received.\n\nOur distribution team will inspect your master audio and artwork and will contact you directly from artists@obscurarecord.com with your release schedule and pre-save link.\n\nDirect Inquiries: artists@obscurarecord.com\n\nBest regards,\nOBSCURA REC LLC Distribution Team\nhttps://obscurarecord.com`,
             html: artistReceiptHtml,
             headers: {
                 'Message-ID': `<receipt-${subId}@obscurarecord.com>`
