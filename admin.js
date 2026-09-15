@@ -2072,21 +2072,50 @@ function initDemosEngine() {
     };
 
     window.updateDemoStatus = function (id, status) {
-        // Update both paths
-        db.ref('siteData/submissions/demo/' + id).update({ status: status });
-        db.ref('demo_submissions/' + id).update({ status: status }).then(() => {
+        // Update primary path first
+        const pPrimary = db.ref('siteData/submissions/demo/' + id).update({ status: status });
+        // Optional legacy path - safely catch permission error
+        const pLegacy = db.ref('demo_submissions/' + id).update({ status: status }).catch(err => {
+            console.warn("Legacy demo_submissions update skipped:", err.message);
+            return null;
+        });
+
+        pPrimary.then(() => {
             logSecurityEvent("Updated Demo Submission Status: " + status, { id: id, status: status });
             showToast(`STATUS UPDATED: ${status}`);
-        }).catch(err => showToast("ERROR: " + err.message, 'error'));
+        }).catch(err => {
+            pLegacy.then(res => {
+                if (res) {
+                    showToast(`STATUS UPDATED: ${status}`);
+                } else {
+                    showToast("ERROR: " + err.message, 'error');
+                }
+            }).catch(() => showToast("ERROR: " + err.message, 'error'));
+        });
     };
 
     window.deleteDemoSubmission = function (id) {
         if (!confirm("Permanently delete this demo submission record?")) return;
-        db.ref('siteData/submissions/demo/' + id).remove();
-        db.ref('demo_submissions/' + id).remove().then(() => {
+        // Primary path where main site stores demo submissions
+        const pPrimary = db.ref('siteData/submissions/demo/' + id).remove();
+        // Optional legacy path - safely catch permission error so it never blocks deletion
+        const pLegacy = db.ref('demo_submissions/' + id).remove().catch(err => {
+            console.warn("Legacy demo_submissions remove skipped:", err.message);
+            return null;
+        });
+
+        pPrimary.then(() => {
             logSecurityEvent("Deleted Demo Submission Record", { id: id });
             showToast("SUBMISSION DELETED!");
-        }).catch(err => showToast("ERROR: " + err.message, 'error'));
+        }).catch(err => {
+            pLegacy.then(res => {
+                if (res) {
+                    showToast("SUBMISSION DELETED!");
+                } else {
+                    showToast("ERROR: " + err.message, 'error');
+                }
+            }).catch(() => showToast("ERROR: " + err.message, 'error'));
+        });
     };
 }
 
@@ -2157,11 +2186,24 @@ function initContactEngine() {
 
     window.deleteContactMsg = function (id) {
         if (!confirm("Delete this contact message?")) return;
-        db.ref('siteData/submissions/contact/' + id).remove();
-        db.ref('contact_messages/' + id).remove().then(() => {
+        const pPrimary = db.ref('siteData/submissions/contact/' + id).remove();
+        const pLegacy = db.ref('contact_messages/' + id).remove().catch(err => {
+            console.warn("Legacy contact_messages removal skipped:", err.message);
+            return null;
+        });
+
+        pPrimary.then(() => {
             logSecurityEvent("Deleted Contact Message Record", { id: id });
             showToast("MESSAGE REMOVED!");
-        }).catch(err => showToast("ERROR: " + err.message, 'error'));
+        }).catch(err => {
+            pLegacy.then(res => {
+                if (res) {
+                    showToast("MESSAGE REMOVED!");
+                } else {
+                    showToast("ERROR: " + err.message, 'error');
+                }
+            }).catch(() => showToast("ERROR: " + err.message, 'error'));
+        });
     };
 }
 
@@ -2807,8 +2849,8 @@ function initSecurityLogsEngine() {
                 Promise.all([
                     db.ref('siteData/submissions/demo').remove(),
                     db.ref('siteData/submissions/contact').remove(),
-                    db.ref('demo_submissions').remove(),
-                    db.ref('contact_messages').remove()
+                    db.ref('demo_submissions').remove().catch(e => null),
+                    db.ref('contact_messages').remove().catch(e => null)
                 ]).then(() => {
                     rawDemoLogs = [];
                     rawContactLogs = [];
@@ -2895,7 +2937,7 @@ function initSecurityLogsEngine() {
             promises.push(db.ref(item.dbPath + '/' + dbKey).remove());
         }
         if (item.altDbPath && dbKey) {
-            promises.push(db.ref(item.altDbPath + '/' + dbKey).remove());
+            promises.push(db.ref(item.altDbPath + '/' + dbKey).remove().catch(e => null));
         }
 
         // Fallbacks if dbKey/dbPath was not set directly
@@ -2904,11 +2946,11 @@ function initSecurityLogsEngine() {
             if (item.type === 'DEMO_SUBMISSION') {
                 const k = rawId.replace('DEMO_SUB_', '');
                 promises.push(db.ref('siteData/submissions/demo/' + k).remove());
-                promises.push(db.ref('demo_submissions/' + k).remove());
+                promises.push(db.ref('demo_submissions/' + k).remove().catch(e => null));
             } else if (item.type === 'CONTACT_MESSAGE') {
                 const k = rawId.replace('CONTACT_SUB_', '');
                 promises.push(db.ref('siteData/submissions/contact/' + k).remove());
-                promises.push(db.ref('contact_messages/' + k).remove());
+                promises.push(db.ref('contact_messages/' + k).remove().catch(e => null));
             } else if (item.type === 'ADMIN_AUDIT') {
                 promises.push(db.ref('siteData/security/audit_logs/' + rawId).remove());
             } else if (item.type === 'VISITOR_ACCESS') {
