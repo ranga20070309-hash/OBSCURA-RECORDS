@@ -5,6 +5,7 @@ const fs = require('fs');
 
 const SUBMISSION_OFFICIAL_EMAIL = 'mail.obscurarecords@gmail.com';
 const TARGET_SUBMISSION_EMAIL = 'mail.obscurarecords@gmail.com';
+const SUBMISSION_FROM_EMAIL = (process.env.SUBMISSION_FROM_EMAIL || 'service@obscurarecord.com').trim();
 const FIREBASE_DB_URL = "https://submission-code-and-mail-sys-default-rtdb.asia-southeast1.firebasedatabase.app";
 
 // Dedicated mailer configuration for Track Submission portal
@@ -477,7 +478,7 @@ module.exports = async (req, res) => {
         const allArtistReplyEmails = [cleanEmail, ...collaboratorEmails];
 
         const adminMailOptions = {
-            from: `"OBSCURA A&R Operations" <${senderEmail}>`,
+            from: `"OBSCURA A&R Operations" <${SUBMISSION_FROM_EMAIL}>`,
             replyTo: allArtistReplyEmails,
             to: TARGET_SUBMISSION_EMAIL,
             subject: `[SUBMISSION] ${cleanMainArtist} - "${cleanSongTitle}" (${subId})`,
@@ -492,7 +493,7 @@ module.exports = async (req, res) => {
         };
 
         const artistMailOptions = {
-            from: `"OBSCURA REC LLC" <${senderEmail}>`,
+            from: `"OBSCURA REC LLC" <${SUBMISSION_FROM_EMAIL}>`,
             replyTo: 'artists@obscurarecord.com',
             to: cleanEmail,
             ...(collaboratorEmails.length > 0 ? { cc: collaboratorEmails } : {}),
