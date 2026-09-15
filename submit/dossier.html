@@ -870,6 +870,7 @@
                                 <th>#</th>
                                 <th>Artist Name</th>
                                 <th>Real Name</th>
+                                <th>Email Address</th>
                                 <th>Role</th>
                                 <th>Spotify</th>
                                 <th>Apple Music</th>
@@ -881,6 +882,9 @@
                                     <td style="color: #64748b; font-weight: bold;">${i + 1}</td>
                                     <td style="color: #38bdf8; font-weight: 600;">${c.artistName || 'N/A'}</td>
                                     <td style="color: #cbd5e1;">${c.realName || 'N/A'}</td>
+                                    <td>
+                                        ${c.email ? `<a href="mailto:${c.email}" style="color: #00f0ff; text-decoration: underline; font-weight: 500;">${c.email}</a>` : '<span style="color: #64748b;">None</span>'}
+                                    </td>
                                     <td><span class="role-pill">${c.role || 'Featured'}</span></td>
                                     <td>
                                         ${c.spotifyLink ? `<a href="${c.spotifyLink}" target="_blank" style="color: #38bdf8; text-decoration: underline;">Spotify &rarr;</a>` : '<span style="color: #64748b;">None</span>'}

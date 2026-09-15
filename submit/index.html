@@ -3116,12 +3116,16 @@
                     </div>
                     <div class="collab-fields-grid">
                         <div class="collab-field">
-                            <label class="collab-field-label">Artist Name (Stage Name)</label>
+                            <label class="collab-field-label">Artist Name (Stage Name) <span class="req-star" style="color: var(--required-star, #ff4d6d);">*</span></label>
                             <input type="text" class="collab-field-input collab-artist" placeholder="e.g. Ghostface" required>
                         </div>
                         <div class="collab-field">
                             <label class="collab-field-label">Legal Real Name</label>
                             <input type="text" class="collab-field-input collab-realname" placeholder="e.g. Dennis Coles">
+                        </div>
+                        <div class="collab-field" style="grid-column: 1 / -1;">
+                            <label class="collab-field-label">Email Address <span class="req-star" style="color: var(--required-star, #ff4d6d);">*</span></label>
+                            <input type="email" class="collab-field-input collab-email" placeholder="e.g. collaborator@gmail.com" required>
                         </div>
                         <div class="collab-field" style="grid-column: 1 / -1;">
                             <label class="collab-field-label">Contribution / Role</label>
@@ -3142,6 +3146,11 @@
                 removeBtn.addEventListener('click', () => {
                     box.remove();
                     updateCollabsVisibility();
+                });
+
+                // Trigger hydration progress whenever collaborator inputs are typed in
+                box.querySelectorAll('input').forEach(inputEl => {
+                    inputEl.addEventListener('input', () => updateWaterLevel());
                 });
 
                 collaboratorsList.appendChild(box);
@@ -3323,20 +3332,73 @@
                         return;
                     }
 
-                    // Collect collaborators
+                    // Check collaborators: If any collaborator box is added, Artist Name and Email Address are strictly MANDATORY!
                     const collabBoxes = collaboratorsList.querySelectorAll('.collaborator-box');
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    for (let i = 0; i < collabBoxes.length; i++) {
+                        const cBox = collabBoxes[i];
+                        const cArtist = cBox.querySelector('.collab-artist')?.value.trim();
+                        const emailInp = cBox.querySelector('.collab-email');
+                        const cEmail = emailInp?.value.trim();
+
+                        if (!cArtist) {
+                            cBox.classList.remove('input-error-shake');
+                            void cBox.offsetWidth;
+                            cBox.classList.add('input-error-shake');
+                            cBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            cBox.querySelector('.collab-artist')?.focus();
+                            await showInSiteAlert({
+                                title: 'Collaborator Name Required',
+                                message: `Please provide the Artist Name for Collaborator ${i + 1}.`,
+                                type: 'warning'
+                            });
+                            return;
+                        }
+
+                        if (!cEmail) {
+                            cBox.classList.remove('input-error-shake');
+                            void cBox.offsetWidth;
+                            cBox.classList.add('input-error-shake');
+                            cBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            emailInp?.focus();
+                            await showInSiteAlert({
+                                title: 'Collaborator Email Required',
+                                message: `Please enter an official contact email address for Collaborator ${i + 1} (${cArtist}). Email is mandatory for each collaborator.`,
+                                type: 'warning'
+                            });
+                            return;
+                        }
+
+                        if (!emailRegex.test(cEmail)) {
+                            cBox.classList.remove('input-error-shake');
+                            void cBox.offsetWidth;
+                            cBox.classList.add('input-error-shake');
+                            cBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            emailInp?.focus();
+                            await showInSiteAlert({
+                                title: 'Invalid Collaborator Email',
+                                message: `Please enter a valid email address for Collaborator ${i + 1} (${cArtist}).`,
+                                type: 'warning'
+                            });
+                            return;
+                        }
+                    }
+
+                    // Collect collaborators
                     const collaborators = [];
                     collabBoxes.forEach(box => {
                         const artist = box.querySelector('.collab-artist')?.value.trim();
                         const real = box.querySelector('.collab-realname')?.value.trim();
+                        const cEmail = box.querySelector('.collab-email')?.value.trim();
                         const role = box.querySelector('.collab-role')?.value.trim();
                         const spotify = box.querySelector('.collab-spotify')?.value.trim();
                         const apple = box.querySelector('.collab-apple')?.value.trim();
 
-                        if (artist || real || role || spotify || apple) {
+                        if (artist || real || cEmail || role || spotify || apple) {
                             collaborators.push({
                                 artistName: artist || 'N/A',
                                 realName: real || 'N/A',
+                                email: cEmail || '',
                                 role: role || 'Collaborator',
                                 spotifyLink: spotify || '',
                                 appleLink: apple || ''
