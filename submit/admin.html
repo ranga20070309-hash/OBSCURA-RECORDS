@@ -54,8 +54,15 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1400px;
+            width: 95%;
             margin: 0 auto;
+        }
+
+        .card-generator {
+            max-width: 860px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         /* Header */
@@ -284,6 +291,26 @@
 
         .codes-table-wrap {
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(10, 8, 22, 0.5);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .codes-table-wrap::-webkit-scrollbar {
+            height: 7px;
+        }
+        .codes-table-wrap::-webkit-scrollbar-track {
+            background: rgba(10, 8, 24, 0.8);
+            border-radius: 4px;
+        }
+        .codes-table-wrap::-webkit-scrollbar-thumb {
+            background: rgba(56, 189, 248, 0.25);
+            border-radius: 4px;
+        }
+        .codes-table-wrap::-webkit-scrollbar-thumb:hover {
+            background: rgba(56, 189, 248, 0.5);
         }
 
         .codes-table {
@@ -292,37 +319,58 @@
             font-size: 13.5px;
         }
 
+        #codesTable {
+            min-width: 920px;
+        }
+
+        #subsTable {
+            min-width: 1180px;
+        }
+
         .codes-table th {
             text-align: left;
-            padding: 10px 12px;
+            padding: 12px 14px;
             background: rgba(255, 255, 255, 0.04);
             color: var(--text-muted);
-            font-size: 12px;
+            font-size: 11.5px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.6px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            white-space: nowrap;
         }
 
         .codes-table td {
-            padding: 12px 12px;
+            padding: 12px 14px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             color: #e2e8f0;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .codes-table tbody tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
         }
 
         .code-cell {
             font-family: 'Roboto Mono', monospace;
             font-weight: 600;
             color: var(--cyan);
+            white-space: nowrap;
+            word-break: keep-all;
         }
 
         .badge {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
             padding: 3px 8px;
             border-radius: 4px;
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
         .badge.active {
@@ -394,7 +442,7 @@
         </header>
 
         <!-- Generator Card -->
-        <section class="card card-header-bar">
+        <section class="card card-header-bar card-generator">
             <h2 class="card-title">
                 <i class="fas fa-key"></i>
                 <span>Issue New Acceptance Code</span>
@@ -474,7 +522,7 @@
             </div>
 
             <div class="codes-table-wrap">
-                <table class="codes-table">
+                <table class="codes-table" id="codesTable">
                     <thead>
                         <tr>
                             <th>Code</th>
@@ -528,7 +576,7 @@
             </div>
 
             <div class="codes-table-wrap">
-                <table class="codes-table">
+                <table class="codes-table" id="subsTable">
                     <thead>
                         <tr>
                             <th>Submission ID</th>
@@ -763,24 +811,24 @@ https://obscurarecord.com`;
             codesTableBody.innerHTML = filtered.map(item => `
                 <tr>
                     <td class="code-cell">
-                        <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
                             <span>${item.code}</span>
                             <button type="button" class="btn-secondary" style="padding: 2px 6px; font-size: 10px; border-radius: 4px;" onclick="copyText('${item.code}', 'Acceptance Code')" title="Copy Code">
                                 <i class="fas fa-copy"></i>
                             </button>
                         </div>
                     </td>
-                    <td><strong>${item.artistName}</strong></td>
+                    <td><strong style="color: #ffffff;">${item.artistName}</strong></td>
                     <td>${item.realName || '-'}</td>
                     <td><span style="color: #38bdf8; font-weight: 500;">${item.trackName || '-'}</span></td>
-                    <td>${item.acceptedDate || '-'}</td>
+                    <td><span style="color: #94a3b8; font-size: 12.5px;">${item.acceptedDate || '-'}</span></td>
                     <td>
-                        <span class="badge ${item.status === 'used' ? 'used' : 'active'}">
+                        <span class="badge ${item.status === 'used' ? 'used' : 'active'}" style="white-space: nowrap;">
                             ${item.status === 'used' ? 'Code Already Used' : 'Ready to Use'}
                         </span>
                         ${item.submissionId ? `
-                            <div style="margin-top: 4px;">
-                                <a href="./dossier.html?id=${encodeURIComponent(item.submissionId)}" target="_blank" style="color: #00f0ff; font-size: 11px; text-decoration: underline; font-family: monospace; display: inline-flex; align-items: center; gap: 4px;" title="View Dossier for this submission">
+                            <div style="margin-top: 5px;">
+                                <a href="./dossier.html?id=${encodeURIComponent(item.submissionId)}" target="_blank" style="color: #00f0ff; font-size: 11px; text-decoration: underline; font-family: monospace; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;" title="View Dossier for this submission">
                                     <i class="fas fa-fingerprint"></i> ${item.submissionId}
                                 </a>
                             </div>
@@ -918,8 +966,8 @@ https://obscurarecord.com`;
                 return `
                     <tr>
                         <td>
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <span class="code-cell" style="font-size: 12px; color: #00f0ff; letter-spacing: 0.5px; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px;">
+                            <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+                                <span class="code-cell" style="font-size: 12px; color: #00f0ff; letter-spacing: 0.5px; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); padding: 4px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;">
                                     <i class="fas fa-fingerprint" style="font-size: 10px; opacity: 0.8;"></i> ${subId}
                                 </span>
                                 <button type="button" class="btn-secondary" style="padding: 3px 7px; font-size: 10px; border-radius: 4px;" onclick="copyText('${subId}', 'Submission ID')" title="Copy Submission ID">
@@ -927,31 +975,31 @@ https://obscurarecord.com`;
                                 </button>
                             </div>
                         </td>
-                        <td><strong style="color: #ffffff; font-size: 14px;">"${item.songTitle || 'Untitled'}"</strong></td>
+                        <td><strong style="color: #ffffff; font-size: 13.5px;">"${item.songTitle || 'Untitled'}"</strong></td>
                         <td>
-                            <strong>${item.mainArtist}</strong>${item.realName ? ` <span style="color: #94a3b8; font-size: 12px;">(${item.realName})</span>` : ''}
+                            <strong style="color: #f1f5f9;">${item.mainArtist}</strong>${item.realName ? ` <span style="color: #94a3b8; font-size: 12px;">(${item.realName})</span>` : ''}
                             ${collabBadge}
                         </td>
                         <td>
-                            ${item.email ? `<a href="mailto:${item.email}" style="color: #38bdf8; text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-envelope" style="font-size: 10px;"></i> ${item.email}</a>` : '<span style="color: #64748b;">-</span>'}
+                            ${item.email ? `<a href="mailto:${item.email}" style="color: #38bdf8; text-decoration: none; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;"><i class="fas fa-envelope" style="font-size: 10px;"></i> ${item.email}</a>` : '<span style="color: #64748b;">-</span>'}
                         </td>
                         <td><span style="color: #c084fc; font-weight: 600;">${item.genre || 'N/A'}</span></td>
-                        <td><span style="color: #fde047; font-size: 12px; font-weight: 500;">📅 ${item.releaseDate || 'Flexible'}</span></td>
+                        <td><span style="color: #fde047; font-size: 12px; font-weight: 500; white-space: nowrap;">📅 ${item.releaseDate || 'Flexible'}</span></td>
                         <td>
-                            <span class="badge used" style="font-family: monospace; font-size: 11px; letter-spacing: 0.6px;">
-                                <i class="fas fa-key" style="font-size: 9px; opacity: 0.8; margin-right: 2px;"></i> ${code}
+                            <span class="badge used" style="font-family: monospace; font-size: 11px; letter-spacing: 0.6px; white-space: nowrap;">
+                                <i class="fas fa-key" style="font-size: 9px; opacity: 0.8; margin-right: 3px;"></i> ${code}
                             </span>
                         </td>
                         <td>
-                            <div style="display: inline-flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-                                <a href="./dossier.html?id=${encodeURIComponent(subId)}" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.5); color: #c084fc; text-decoration: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                            <div style="display: inline-flex; gap: 6px; flex-wrap: nowrap; align-items: center; white-space: nowrap;">
+                                <a href="./dossier.html?id=${encodeURIComponent(subId)}" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.5); color: #c084fc; text-decoration: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap;">
                                     <i class="fas fa-file-alt"></i> Dossier
                                 </a>
                                 ${item.driveLink ? `
-                                <a href="${item.driveLink}" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.4); color: var(--cyan); text-decoration: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                                <a href="${item.driveLink}" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.4); color: var(--cyan); text-decoration: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap;">
                                     <i class="fab fa-google-drive"></i> Open Assets
                                 </a>` : ''}
-                                <button type="button" class="btn-del" onclick="deleteSubmission('${subId}')" title="Delete submission record from vault">
+                                <button type="button" class="btn-del" onclick="deleteSubmission('${subId}')" title="Delete submission record from vault" style="padding: 4px 8px;">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
