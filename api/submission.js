@@ -5,7 +5,7 @@ const fs = require('fs');
 
 const SUBMISSION_OFFICIAL_EMAIL = 'mail.obscurarecords@gmail.com';
 const TARGET_SUBMISSION_EMAIL = 'mail.obscurarecords@gmail.com';
-const SUBMISSION_FROM_EMAIL = (process.env.SUBMISSION_FROM_EMAIL || 'service@obscurarecord.com').trim();
+const SUBMISSION_FROM_EMAIL = (process.env.SUBMISSION_FROM_EMAIL || 'label@obscurarecord.com').trim();
 const FIREBASE_DB_URL = "https://submission-code-and-mail-sys-default-rtdb.asia-southeast1.firebasedatabase.app";
 
 // Dedicated mailer configuration for Track Submission portal
@@ -494,7 +494,7 @@ module.exports = async (req, res) => {
 
         const artistMailOptions = {
             from: `"OBSCURA REC LLC" <${SUBMISSION_FROM_EMAIL}>`,
-            replyTo: 'artists@obscurarecord.com',
+            replyTo: 'label@obscurarecord.com',
             to: cleanEmail,
             subject: `Release Materials Received [${subId}] - "${cleanSongTitle}" - OBSCURA REC LLC`,
             text: `Hi ${cleanRealName || cleanMainArtist},\n\nThank you for submitting your release materials for "${cleanSongTitle}" to OBSCURA REC LLC. Your submission (${subId}) has been successfully received.\n\nOur distribution team will inspect your master audio and artwork and will contact you directly from artists@obscurarecord.com with your release schedule and pre-save link.\n\nDirect Inquiries: artists@obscurarecord.com\n\nBest regards,\nOBSCURA REC LLC Distribution Team\nhttps://obscurarecord.com`,
