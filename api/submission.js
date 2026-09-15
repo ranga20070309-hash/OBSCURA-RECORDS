@@ -146,15 +146,26 @@ module.exports = async (req, res) => {
         // Sanitize collaborators
         const cleanCollaborators = Array.isArray(collaborators)
             ? collaborators
-                .filter(c => c && (c.artistName || c.realName || c.role || c.spotifyLink || c.appleLink))
+                .filter(c => c && (c.artistName || c.realName || c.email || c.role || c.spotifyLink || c.appleLink))
                 .map(c => ({
                     artistName: sanitize(c.artistName) || 'N/A',
                     realName: sanitize(c.realName) || 'N/A',
+                    email: (c.email || '').trim().toLowerCase(),
                     role: sanitize(c.role) || 'Featured / Collaborator',
                     spotifyLink: (c.spotifyLink || '').trim(),
                     appleLink: (c.appleLink || '').trim()
                 }))
             : [];
+
+        // Validate that if collaborators are submitted, each collaborator has a valid contact email
+        for (let i = 0; i < cleanCollaborators.length; i++) {
+            const c = cleanCollaborators[i];
+            if (!c.email || !c.email.includes('@')) {
+                return res.status(400).json({
+                    error: `A valid contact email address is required for Collaborator ${i + 1} (${c.artistName}).`
+                });
+            }
+        }
 
         // 3. Mark Acceptance Code as "used" & Archive Submission in Firebase RTDB FIRST
         // Doing this before email dispatch guarantees database state is updated immediately!
@@ -201,13 +212,16 @@ module.exports = async (req, res) => {
         const collabHtml = cleanCollaborators.length > 0
             ? `
             <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed #1e2638;">
-                <div style="font-size: 11px; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;">Collaborator Credits:</div>
+                <div style="font-size: 11px; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;">Collaborator Credits &amp; Contact Emails:</div>
                 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 12px; color: #cbd5e1;">
                     ${cleanCollaborators.map((c, i) => `
                         <tr>
-                            <td style="padding: 3px 0; color: #38bdf8; font-weight: 600;">${i + 1}. ${c.artistName}</td>
-                            <td style="padding: 3px 6px; color: #94a3b8;">(${c.role})</td>
-                            <td style="padding: 3px 0; text-align: right;">
+                            <td style="padding: 4px 0; color: #38bdf8; font-weight: 600;">${i + 1}. ${c.artistName}</td>
+                            <td style="padding: 4px 6px; color: #94a3b8;">(${c.role})</td>
+                            <td style="padding: 4px 6px;">
+                                ${c.email ? `<a href="mailto:${c.email}" style="color: #00f0ff; text-decoration: none; font-size: 11px;">✉️ ${c.email}</a>` : '<span style="color: #64748b;">No email</span>'}
+                            </td>
+                            <td style="padding: 4px 0; text-align: right;">
                                 ${c.spotifyLink ? `<a href="${c.spotifyLink}" target="_blank" style="color: #38bdf8; font-size: 11px; text-decoration: none; margin-right: 6px;">Spotify &rarr;</a>` : ''}
                                 ${c.appleLink ? `<a href="${c.appleLink}" target="_blank" style="color: #fa586a; font-size: 11px; text-decoration: none;">Apple &rarr;</a>` : ''}
                             </td>
@@ -456,12 +470,18 @@ module.exports = async (req, res) => {
 
         const { transporter, senderEmail } = getSubmissionTransporter();
 
+        const collaboratorEmails = cleanCollaborators
+            .map(c => (c.email || '').trim().toLowerCase())
+            .filter(e => e && e.includes('@'));
+
+        const allArtistReplyEmails = [cleanEmail, ...collaboratorEmails];
+
         const adminMailOptions = {
             from: `"OBSCURA A&R Operations" <${senderEmail}>`,
-            replyTo: cleanEmail,
+            replyTo: allArtistReplyEmails,
             to: TARGET_SUBMISSION_EMAIL,
             subject: `[SUBMISSION] ${cleanMainArtist} - "${cleanSongTitle}" (${subId})`,
-            text: `NEW TRACK SUBMISSION RECEIVED - OBSCURA REC LLC\n-------------------------------------------------\nTrack Title: "${cleanSongTitle}"\nMain Artist: ${cleanMainArtist}${cleanRealName ? ` (${cleanRealName})` : ''}\nLocation: ${cleanCity}, ${cleanCountry}\nSubmission ID: ${subId}\nAcceptance Code: ${cleanCode} (VERIFIED & CONSUMED)\nPrimary Genre: ${cleanGenre}\nLanguage: ${cleanLanguage}\nTarget Release Date: ${cleanReleaseDate}\nArtist Contact Email: ${cleanEmail}\nSpotify Profile: ${cleanMainArtistSpotify || 'Not provided'}\nApple Music Profile: ${cleanMainArtistApple || 'Not provided'}\n\n📄 VIEW FULL RELEASE DOSSIER (Metadata, Audio, Split Sheet, Notes):\n${dossierUrl}\n\n📂 GOOGLE DRIVE MASTER ASSETS:\n${cleanDriveLink}\n\n-------------------------------------------------\nSubmitted at: ${timestamp}`,
+            text: `NEW TRACK SUBMISSION RECEIVED - OBSCURA REC LLC\n-------------------------------------------------\nTrack Title: "${cleanSongTitle}"\nMain Artist: ${cleanMainArtist}${cleanRealName ? ` (${cleanRealName})` : ''}\nLocation: ${cleanCity}, ${cleanCountry}\nSubmission ID: ${subId}\nAcceptance Code: ${cleanCode} (VERIFIED & CONSUMED)\nPrimary Genre: ${cleanGenre}\nLanguage: ${cleanLanguage}\nTarget Release Date: ${cleanReleaseDate}\nArtist Contact Email: ${cleanEmail}\nSpotify Profile: ${cleanMainArtistSpotify || 'Not provided'}\nApple Music Profile: ${cleanMainArtistApple || 'Not provided'}\n\nCOLLABORATORS:${cleanCollaborators.length > 0 ? cleanCollaborators.map((c, i) => `\n${i + 1}. ${c.artistName} (${c.role}) - Email: ${c.email || 'N/A'}${c.spotifyLink ? ` - Spotify: ${c.spotifyLink}` : ''}${c.appleLink ? ` - Apple: ${c.appleLink}` : ''}`).join('') : ' None'}\n\n📄 VIEW FULL RELEASE DOSSIER (Metadata, Audio, Split Sheet, Notes):\n${dossierUrl}\n\n📂 GOOGLE DRIVE MASTER ASSETS:\n${cleanDriveLink}\n\n-------------------------------------------------\nSubmitted at: ${timestamp}`,
             html: adminEmailHtml,
             headers: {
                 'Message-ID': `<submission-${subId}@obscurarecord.com>`,
@@ -475,6 +495,7 @@ module.exports = async (req, res) => {
             from: `"OBSCURA REC LLC" <${senderEmail}>`,
             replyTo: 'artists@obscurarecord.com',
             to: cleanEmail,
+            ...(collaboratorEmails.length > 0 ? { cc: collaboratorEmails } : {}),
             subject: `Release Materials Received [${subId}] - "${cleanSongTitle}" - OBSCURA REC LLC`,
             text: `Hi ${cleanRealName || cleanMainArtist},\n\nThank you for submitting your release materials for "${cleanSongTitle}" to OBSCURA REC LLC. Your submission (${subId}) has been successfully received.\n\nOur distribution team will inspect your master audio and artwork and will contact you directly from artists@obscurarecord.com with your release schedule and pre-save link.\n\nDirect Inquiries: artists@obscurarecord.com\n\nBest regards,\nOBSCURA REC LLC Distribution Team\nhttps://obscurarecord.com`,
             html: artistReceiptHtml,
