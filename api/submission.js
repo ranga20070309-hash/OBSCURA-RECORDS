@@ -496,7 +496,6 @@ module.exports = async (req, res) => {
             from: `"OBSCURA REC LLC" <${SUBMISSION_FROM_EMAIL}>`,
             replyTo: 'artists@obscurarecord.com',
             to: cleanEmail,
-            ...(collaboratorEmails.length > 0 ? { cc: collaboratorEmails } : {}),
             subject: `Release Materials Received [${subId}] - "${cleanSongTitle}" - OBSCURA REC LLC`,
             text: `Hi ${cleanRealName || cleanMainArtist},\n\nThank you for submitting your release materials for "${cleanSongTitle}" to OBSCURA REC LLC. Your submission (${subId}) has been successfully received.\n\nOur distribution team will inspect your master audio and artwork and will contact you directly from artists@obscurarecord.com with your release schedule and pre-save link.\n\nDirect Inquiries: artists@obscurarecord.com\n\nBest regards,\nOBSCURA REC LLC Distribution Team\nhttps://obscurarecord.com`,
             html: artistReceiptHtml,
